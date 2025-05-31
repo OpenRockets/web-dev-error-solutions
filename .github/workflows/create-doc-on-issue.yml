@@ -31,22 +31,26 @@ jobs:
         id: topic
         run: |
           CONTENT=$(cat title.txt body.txt | tr '[:upper:]' '[:lower:]')
-          if echo "$CONTENT" | grep -q "react"; then
+          if echo "$CONTENT" | grep -q "nextjs"; then
+            echo "topic=nextjs" >> $GITHUB_OUTPUT
+          elif echo "$CONTENT" | grep -q "tailwind"; then
+            echo "topic=tailwinds" >> $GITHUB_OUTPUT
+          elif echo "$CONTENT" | grep -q "mern"; then
+            echo "topic=mern" >> $GITHUB_OUTPUT
+          elif echo "$CONTENT" | grep -q "react"; then
             echo "topic=react" >> $GITHUB_OUTPUT
+          elif echo "$CONTENT" | grep -q "express"; then
+            echo "topic=expressjs" >> $GITHUB_OUTPUT
+          elif echo "$CONTENT" | grep -q "openai"; then
+            echo "topic=openai" >> $GITHUB_OUTPUT
+          elif echo "$CONTENT" | grep -q "vue"; then
+            echo "topic=vuejs" >> $GITHUB_OUTPUT
+          elif echo "$CONTENT" | grep -q "jquery"; then
+            echo "topic=jquery" >> $GITHUB_OUTPUT
           elif echo "$CONTENT" | grep -q "javascript"; then
             echo "topic=javascript" >> $GITHUB_OUTPUT
           elif echo "$CONTENT" | grep -q "css"; then
             echo "topic=css" >> $GITHUB_OUTPUT
-          elif echo "$CONTENT" | grep -q "nextjs"; then
-            echo "topic=nextjs" >> $GITHUB_OUTPUT  
-          elif echo "$CONTENT" | grep -q "expressjs"; then
-            echo "topic="expressjs" >> $GITHUB_OUTPUT    
-          elif echo "$CONTENT" | grep -q "openai"; then
-            echo "topic=openai" >> $GITHUB_OUTPUT  
-          elif echo "$CONTENT" | grep -q "jquery"; then
-            echo "topic=jquery" >> $GITHUB_OUTPUT
-          elif echo "$CONTENT" | grep -q "vuejs"; then
-            echo "topic=vuejs" >> $GITHUB_OUTPUT
           else
             echo "topic=general" >> $GITHUB_OUTPUT
           fi
@@ -74,6 +78,6 @@ jobs:
           TOKEN: ${{ secrets.OPENROCKETS_PAT }}
         run: |
           git add .
-          git commit -m "updated" || echo "Nothing to commit"
+          git commit -m "📁 Auto-generated issue documentation" || echo "Nothing to commit"
           git remote set-url origin https://openrocketsofficial:${TOKEN}@github.com/${{ github.repository }}
           git push origin HEAD
