@@ -27,11 +27,11 @@ jobs:
           -d '{
             "contents": [{
               "parts": [{
-                "text": "Generate a documentation with Markdown about a randomly chosen CSS styling project or trick with detailed description about it.you can choose css3, tailwind. Include:
+                "text": "Generate a documentation with Markdown about a random css project on codepen.io or trick with detailed description about it.you can choose css3, tailwind. Include:
                           - A Markdown H1 title
                           - Description of the styling
                           - full code
-                          - external references with links
+                          - link to original codepen.io project
                           - Explanation
                           - End with: Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish."
               }]
