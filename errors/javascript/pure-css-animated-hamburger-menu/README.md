@@ -1,3 +1,5 @@
+# 🐞 Pure CSS Animated Hamburger Menu
+
 
 This document details a pure CSS animated hamburger menu, a common UI element often used for navigation on smaller screens.  This example utilizes CSS transitions and transforms to create a smooth and visually appealing animation. No JavaScript is required.
 

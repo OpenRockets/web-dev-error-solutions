@@ -1,1 +1,1 @@
-CSS-Only Expanding Card with Hover Effect
+Pure CSS Animated Hamburger Menu
