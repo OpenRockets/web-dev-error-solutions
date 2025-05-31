@@ -78,6 +78,6 @@ jobs:
           TOKEN: ${{ secrets.OPENROCKETS_PAT }}
         run: |
           git add .
-          git commit -m "📁 Auto-generated issue documentation" || echo "Nothing to commit"
+          git commit -m "updated" || echo "Nothing to commit"
           git remote set-url origin https://openrocketsofficial:${TOKEN}@github.com/${{ github.repository }}
           git push origin HEAD
