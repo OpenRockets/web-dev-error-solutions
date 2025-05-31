@@ -1,1 +1,1 @@
-Creating a CSS-Only Expanding Card with a Subtle Reveal
+Creating a CSS-only Expanding Card with a Subtle Reveal
