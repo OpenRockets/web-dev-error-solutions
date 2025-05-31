@@ -1,3 +1,5 @@
+# 🐞 Handling `CastError: Cast to ObjectId failed` in a MERN Stack Application
+
 
 This document addresses a common error encountered when working with MongoDB, Express.js, React.js, and Next.js (MERN) stacks: the `CastError: Cast to ObjectId failed` error.  This error typically arises when an incorrect ObjectID is passed to a MongoDB query, often due to a mismatch in data types or incorrect data manipulation.
 
