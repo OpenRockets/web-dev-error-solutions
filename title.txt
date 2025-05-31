@@ -1,1 +1,1 @@
-Handling `CastError: Cast to ObjectId failed` in a MERN Stack Application
+Handling CORS Errors in a MERN Stack Application

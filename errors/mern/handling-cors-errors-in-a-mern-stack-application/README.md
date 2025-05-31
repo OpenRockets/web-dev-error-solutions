@@ -1,3 +1,5 @@
+# 🐞 Handling CORS Errors in a MERN Stack Application
+
 
 This document addresses a common problem faced by developers working with MongoDB, Express.js, React.js, and Next.js (MERN) stacks: **CORS (Cross-Origin Resource Sharing) errors**.  These errors occur when a web application (e.g., built with React or Next.js) running on a different domain tries to make requests to an API (e.g., built with Express.js and connecting to MongoDB) on a different domain.  Browsers implement CORS security to prevent malicious websites from accessing data from other sites without permission.
 
