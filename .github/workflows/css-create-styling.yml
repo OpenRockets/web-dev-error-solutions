@@ -31,7 +31,7 @@ jobs:
                           - A Markdown H1 title
                           - Description of the styling
                           - full code
-                          - link to original codepen.io project
+                          - links to resources to learn more
                           - Explanation
                           - End with: Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish."
               }]
