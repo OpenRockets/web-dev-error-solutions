@@ -27,7 +27,7 @@ jobs:
           -d '{
             "contents": [{
               "parts": [{
-                "text": "Generate a documentation with Markdown about a random css project on codepen.io or trick with detailed description about it.you can choose css3, tailwind. Include:
+                "text": "Generate a documentation with Markdown about a randomly selected CSS project on the internet or CSS trick with detailed description about it.you can choose css3, tailwind. Include:
                           - A Markdown H1 title
                           - Description of the styling
                           - full code
