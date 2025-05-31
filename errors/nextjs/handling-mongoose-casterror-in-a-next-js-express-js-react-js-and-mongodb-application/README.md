@@ -1,3 +1,5 @@
+# 🐞 Handling Mongoose `CastError` in a Next.js, Express.js, React.js, and MongoDB Application
+
 
 This document describes a common error encountered when working with MongoDB, Mongoose, Express.js, React.js, and Next.js: the `CastError`.  This error typically arises when an incorrect data type is passed to a route handler expecting a specific MongoDB ObjectId.
 
