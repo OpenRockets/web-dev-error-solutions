@@ -1,86 +1,78 @@
 
-This document describes how to create a circular progress bar using only CSS.  This avoids the need for JavaScript, making it a lightweight and efficient solution for simple progress indicators.  The technique utilizes the `clip-path` property to mask a circle, creating the visual effect of a filling progress bar.
+This document details how to create an expanding card effect using only CSS.  This effect reveals hidden content within a card upon hover, providing a visually engaging user experience without JavaScript.  We'll be using CSS transitions and transforms to achieve this.
 
 
-**Description of the Styling:**
+## Description of the Styling
 
-This method uses a single circular element, styled as a background ring.  We then use a pseudo-element (`::before`) to create a "filling" segment on top.  The `clip-path` property, combined with a `rotate` transform, dynamically controls the visible portion of the fill, simulating the progress.
+This technique uses a single `<div>` element to represent the card.  The hidden content is initially positioned outside the visible area of the card. On hover, we utilize CSS transitions to smoothly animate the height and transform properties of the card, revealing the hidden content.  The effect is clean, subtle, and adds a touch of dynamism to your web page.
 
 
-**Full Code:**
+## Full Code
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<title>CSS Circular Progress Bar</title>
+<title>Expanding Card</title>
 <style>
-.progress-ring {
-  width: 150px;
+.card {
+  width: 200px;
   height: 150px;
-  border-radius: 50%;
-  background-color: #f0f0f0; /* Background color of the ring */
-  border: 5px solid #ccc; /* Border of the ring */
-  position: relative;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden; /* Hide content outside the card initially */
+  transition: height 0.3s ease-in-out, transform 0.3s ease-in-out; /* Smooth transitions */
 }
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background-color: #4CAF50; /* Color of the progress fill */
-  clip-path: circle(50% at 50% 50%); /* Initial clip-path */
-  transform-origin: 50% 50%; /* Center of rotation */
-  transform: rotate(0deg); /* Initial rotation */
-  transition: transform 0.5s ease; /* Smooth transition */
+.card:hover {
+  height: 300px; /* Increased height to reveal hidden content */
+  transform: translateY(-10px); /* subtle lift on hover */
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2); /* add a hover shadow */
 }
 
-.progress-ring.progress-75::before {
-  transform: rotate(270deg); /* Rotate to 75% progress */
+.card-content {
+  padding: 10px;
 }
 
-.progress-ring.progress-50::before {
-  transform: rotate(180deg); /* Rotate to 50% progress */
+.card-title {
+  font-weight: bold;
 }
 
-.progress-ring.progress-25::before {
-  transform: rotate(90deg); /* Rotate to 25% progress */
+.card-text {
+  font-size: 14px;
 }
 </style>
 </head>
 <body>
 
-<h1>CSS Circular Progress Bar</h1>
-
-<div class="progress-ring progress-75"></div>
-<div class="progress-ring progress-50"></div>
-<div class="progress-ring progress-25"></div>
-<div class="progress-ring"></div>
-
+<div class="card">
+  <div class="card-content">
+    <h3 class="card-title">Expanding Card</h3>
+    <p class="card-text">This is some sample text that will be revealed on hover.</p>
+    <p class="card-text">More hidden content here.</p>
+  </div>
+</div>
 
 </body>
 </html>
 ```
 
 
-**Explanation:**
+## Explanation
 
-* The `.progress-ring` class styles the base circular element.
-* The `::before` pseudo-element creates the filling segment.
-* `clip-path: circle(50% at 50% 50%);` creates a circular clip-path centered on the element.
-* `transform: rotate(xdeg);` rotates the fill segment.  A full circle (360deg) represents 100% progress.  We calculate the rotation angle based on the percentage.  For example, 75% progress corresponds to `(75/100) * 360 = 270deg`.
-* The `transition` property ensures a smooth animation as the progress changes.
-* The different `.progress-x` classes demonstrate how to control the progress. You can easily adjust the class name and rotation angle to display different progress levels.
+* **`.card`:** This class styles the main card container.  `overflow: hidden;` is crucial; it prevents the hidden content from peeking out before the hover effect.  `transition` sets up smooth animations for the `height` and `transform` properties.
+
+* **`.card:hover`:** This styles the card when the mouse hovers over it.  `height` is increased to reveal the hidden content. `transform: translateY(-10px);` creates a slight lift effect, adding a more dynamic feel. `box-shadow` adds a subtle shadow for visual enhancement on hover.
+
+* **`.card-content`, `.card-title`, `.card-text`:** These classes style the content within the card for better readability and presentation.
 
 
-**External References:**
+## External References
 
-* [MDN Web Docs - clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* [MDN Web Docs - transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+While this effect is relatively simple and doesn't require external libraries, understanding CSS transitions and transforms is key.  Here are some helpful resources:
+
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

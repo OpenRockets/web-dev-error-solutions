@@ -1,1 +1,1 @@
-Creating a CSS-only Circular Progress Bar
+Creating a CSS-only Expanding Card with a Reveal Effect
