@@ -27,7 +27,7 @@ jobs:
           -d '{
             "contents": [{
               "parts": [{
-                "text": "Generate a documentation with Markdown about a randomly chosen problem developers face in either NextJS or MERN-stac or VanillaJS or ExpressJS or DotEnv or Langchain or OpenAI-API-javascript or  Tailwind CSS or Bootstrap or Node.js. Include:
+                "text": "Generate a documentation with Markdown about a randomly chosen problem developers face in MongoDB, ExpressJS, ReactJS, and NextJS. Include:
                           - A Markdown H1 title
                           - Description of the error
                           - full code of fixing step by step
