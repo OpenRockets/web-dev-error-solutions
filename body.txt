@@ -1,104 +1,82 @@
 
-This document details a CSS-only technique to create an expanding card effect.  The card expands smoothly when hovered over, revealing additional content hidden initially. We'll utilize CSS transitions and transforms to achieve this effect without JavaScript.  This example is applicable to both standard CSS3 and frameworks like Tailwind CSS (though the Tailwind implementation would simply replace the standard CSS classes with their Tailwind equivalents).
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required. This technique leverages CSS gradients and transforms to achieve a visually appealing and responsive progress indicator.
+
 
 **Description of the Styling:**
 
-The card starts with a compact size. On hover, it expands smoothly to a larger size, revealing hidden content beneath.  We'll use a `max-height` property initially set to a small value.  The `transition` property will handle the smooth animation during the expansion.  We'll also use `transform: scale()` for a subtle "zoom in" effect alongside the height expansion.
+This method creates a circular progress bar by using a circular `border` as the base and then overlays a semi-circular gradient to represent the progress. The gradient's position is controlled via a `transform: rotate()` function, dynamically changing based on the percentage value. This allows for a smooth animation effect without relying on JavaScript.
 
-**Full Code (Standard CSS):**
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<title>Expanding Card</title>
+<title>CSS Circular Progress Bar</title>
 <style>
-.card {
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  overflow: hidden; /* Hide content that overflows during transition */
-  transition: max-height 0.3s ease-in-out, transform 0.3s ease-in-out; /* Smooth transition */
-  max-height: 100px; /* Initially compact */
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #f2f2f2; /* Light gray background */
+  border: 10px solid #ddd; /* Light gray border */
+  position: relative; /* Needed for absolute positioning of the progress indicator */
 }
 
-.card:hover {
-  max-height: 300px; /* Expand on hover */
-  transform: scale(1.02); /* Subtle zoom effect */
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center the progress indicator */
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border-style: solid;
+  border-width: 10px;
+  border-color: transparent; /* Initially transparent */
+  border-left-color: #4CAF50; /* Green progress color */
+  z-index: 1;
 }
 
-.card-content {
-  padding: 15px;
+.progress-ring.progress-75::before {
+  transform: translate(-50%, -50%) rotate(270deg); /* Rotate 270 degrees for 75% progress */
 }
 
-.hidden-content {
-  display: none; /* Initially hidden */
+.progress-ring.progress-50::before {
+  transform: translate(-50%, -50%) rotate(180deg);
 }
 
-.card:hover .hidden-content {
-  display: block; /* Show on hover */
-}
+/*You can add more classes like progress-25, progress-10 etc. */
 </style>
 </head>
 <body>
 
-<div class="card">
-  <div class="card-content">
-    <h2>Card Title</h2>
-    <p>Some initial content.</p>
-    <div class="hidden-content">
-      <h3>Hidden Section</h3>
-      <p>This content is revealed on hover.</p>
-    </div>
-  </div>
-</div>
+<div class="progress-ring progress-75"></div>
+
+<div class="progress-ring progress-50"></div>
 
 </body>
 </html>
 ```
-
-**Full Code (Tailwind CSS):**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body>
-
-<div class="card bg-gray-100 rounded-lg overflow-hidden transition-all duration-300 ease-in-out max-h-[100px] shadow-md">
-  <div class="card-content p-4">
-    <h2 class="text-xl font-bold">Card Title</h2>
-    <p class="mb-4">Some initial content.</p>
-    <div class="hidden-content hidden">
-      <h3 class="text-lg font-semibold">Hidden Section</h3>
-      <p>This content is revealed on hover.</p>
-    </div>
-  </div>
-</div>
-
-</body>
-</html>
-```
-
-**(Remember to include the Tailwind CSS CDN link in your `<head>` for the Tailwind version.)**
-
 
 **Explanation:**
 
-* **`max-height`:** Controls the initial height of the card.
-* **`transition`:** Specifies the properties to animate (`max-height` and `transform`), the duration (0.3 seconds), and the easing function (`ease-in-out`).
-* **`transform: scale(1.02)`:**  Adds a subtle scaling effect on hover, enhancing the visual expansion.
-* **`overflow: hidden`:** Prevents content from spilling out of the card during the transition.
-* **`.hidden-content`:** This class is initially hidden and revealed on hover using the `:hover` pseudo-class.
+1. **Base Ring:** The `.progress-ring` class creates the base circular shape using `border-radius: 50%`.
+
+2. **Pseudo-element:** The `::before` pseudo-element creates the progress indicator.  `border-color: transparent;` makes the whole border transparent except for `border-left-color` which is set to the progress color (green in this example).
+
+3. **Rotation:** The `transform: rotate()` property is key.  It rotates the semi-circular gradient. A full circle (360 degrees) represents 100% progress.  We calculate the rotation angle based on the percentage. For example, 75% progress corresponds to 270 degrees (75% * 360 degrees).
+
+4. **Classes for different progress:**  We use classes like `progress-75`, `progress-50` to easily switch progress value. You can dynamically add or remove these classes with Javascript if needed to change the progress in real-time.
+
+
 
 **External References:**
 
-* [MDN Web Docs on CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
 * [MDN Web Docs on CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* [Tailwind CSS Documentation](https://tailwindcss.com/)
+* [MDN Web Docs on CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* [Various CSS Progress Bar Tutorials](Search on Google for "CSS Circular Progress Bar")
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

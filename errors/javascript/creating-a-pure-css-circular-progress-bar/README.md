@@ -1,11 +1,12 @@
 # 🐞 Creating a Pure CSS Circular Progress Bar
 
 
-This document details how to create a visually appealing circular progress bar using only CSS.  No JavaScript is required! This technique leverages CSS gradients and transforms to achieve a smooth, animated effect.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required. This technique leverages CSS gradients and transforms to achieve a visually appealing and responsive progress indicator.
+
 
 **Description of the Styling:**
 
-This circular progress bar uses a combination of techniques to create the visual effect.  A `radial-gradient` creates the circular base, while a `linear-gradient` masked with a circle is used to represent the progress.  CSS animations smoothly transition the progress.  This method is efficient and avoids the performance overhead of JavaScript solutions.
+This method creates a circular progress bar by using a circular `border` as the base and then overlays a semi-circular gradient to represent the progress. The gradient's position is controlled via a `transform: rotate()` function, dynamically changing based on the percentage value. This allows for a smooth animation effect without relying on JavaScript.
 
 **Full Code:**
 
@@ -19,8 +20,9 @@ This circular progress bar uses a combination of techniques to create the visual
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background: radial-gradient(circle at center, #e5e5e5, #e5e5e5 90%, transparent 100%);
-  position: relative;
+  background-color: #f2f2f2; /* Light gray background */
+  border: 10px solid #ddd; /* Light gray border */
+  position: relative; /* Needed for absolute positioning of the progress indicator */
 }
 
 .progress-ring::before {
@@ -28,59 +30,55 @@ This circular progress bar uses a combination of techniques to create the visual
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); /* Center the progress indicator */
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: linear-gradient(to right, #4CAF50, #4CAF50) no-repeat;
-  background-size: 100% 100%;
-  clip-path: circle(50% at center);
-  animation: progress 3s linear forwards;
+  border-style: solid;
+  border-width: 10px;
+  border-color: transparent; /* Initially transparent */
+  border-left-color: #4CAF50; /* Green progress color */
+  z-index: 1;
 }
 
-@keyframes progress {
-  to {
-    transform: translate(-50%, -50%) rotate(360deg); /* Adjust 360deg for progress percentage */
-    background-size: calc(100% * var(--progress)) 100%; /* Adjust var(--progress) accordingly */
-  }
+.progress-ring.progress-75::before {
+  transform: translate(-50%, -50%) rotate(270deg); /* Rotate 270 degrees for 75% progress */
 }
 
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
+.progress-ring.progress-50::before {
+  transform: translate(-50%, -50%) rotate(180deg);
 }
 
-/* Example usage with progress percentage (0-100%) */
-.container .progress-ring {
-  --progress: 0.75; /* 75% progress */
-}
-
+/*You can add more classes like progress-25, progress-10 etc. */
 </style>
 </head>
 <body>
-<div class="container">
-  <div class="progress-ring"></div>
-</div>
+
+<div class="progress-ring progress-75"></div>
+
+<div class="progress-ring progress-50"></div>
+
 </body>
 </html>
 ```
 
 **Explanation:**
 
-* **`progress-ring`:** This is the main container, setting the size and basic style of the circle.  The `radial-gradient` creates the grey background with a transparent outer ring to give a 3D effect.
-* **`progress-ring::before`:** This pseudo-element creates the progress bar itself.  The `linear-gradient` provides the color, `clip-path` makes it circular, and the `background-size` and animation control its length.
-* **`@keyframes progress`:** This defines the animation. The `transform: rotate()` rotates the `linear-gradient`, and the `background-size` dynamically changes the progress arc length based on the `--progress` custom property.
-* **Custom Property `--progress`:** This allows easy control of the progress percentage.  A value of `0` represents 0% progress, `1` represents 100%, and so on.
+1. **Base Ring:** The `.progress-ring` class creates the base circular shape using `border-radius: 50%`.
+
+2. **Pseudo-element:** The `::before` pseudo-element creates the progress indicator.  `border-color: transparent;` makes the whole border transparent except for `border-left-color` which is set to the progress color (green in this example).
+
+3. **Rotation:** The `transform: rotate()` property is key.  It rotates the semi-circular gradient. A full circle (360 degrees) represents 100% progress.  We calculate the rotation angle based on the percentage. For example, 75% progress corresponds to 270 degrees (75% * 360 degrees).
+
+4. **Classes for different progress:**  We use classes like `progress-75`, `progress-50` to easily switch progress value. You can dynamically add or remove these classes with Javascript if needed to change the progress in real-time.
+
 
 
 **External References:**
 
-* [MDN Web Docs on `radial-gradient`](https://developer.mozilla.org/en-US/docs/Web/CSS/radial-gradient)
-* [MDN Web Docs on `linear-gradient`](https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient)
-* [MDN Web Docs on `clip-path`](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* [MDN Web Docs on CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* [MDN Web Docs on CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* [MDN Web Docs on CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* [Various CSS Progress Bar Tutorials](Search on Google for "CSS Circular Progress Bar")
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
