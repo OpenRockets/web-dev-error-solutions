@@ -1,1 +1,1 @@
-Creating a Pure CSS Loading Spinner with Keyframes
+CSS-Only Expanding Card with Hover Effect

@@ -1,3 +1,5 @@
+# 🐞 CSS-Only Expanding Card with Hover Effect
+
 
 This document details a CSS-only expanding card effect, achieved solely using CSS transitions and transforms. No JavaScript is required.  The card expands on hover, revealing hidden content smoothly. This effect is ideal for showcasing product details, brief descriptions, or adding interactive elements to a website without the overhead of JavaScript.
 
