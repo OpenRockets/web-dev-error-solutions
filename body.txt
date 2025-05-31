@@ -1,82 +1,86 @@
 
-This document details the creation of an expanding card effect using only CSS.  No JavaScript is required.  We'll leverage CSS transitions and transforms to achieve a smooth and visually appealing expansion when the card is hovered over. This technique is suitable for various design contexts, adding a subtle yet engaging interactive element to your web pages.
+This document describes how to create a circular progress bar using only CSS.  This avoids the need for JavaScript, making it a lightweight and efficient solution for simple progress indicators.  The technique utilizes the `clip-path` property to mask a circle, creating the visual effect of a filling progress bar.
 
-## Description of the Styling
 
-This effect creates a card that expands horizontally when the mouse hovers over it.  The expansion reveals additional content hidden initially. The transition is smooth and uses a simple scaling transform.
+**Description of the Styling:**
 
-## Full Code
+This method uses a single circular element, styled as a background ring.  We then use a pseudo-element (`::before`) to create a "filling" segment on top.  The `clip-path` property, combined with a `rotate` transform, dynamically controls the visible portion of the fill, simulating the progress.
+
+
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<title>Expanding Card</title>
+<title>CSS Circular Progress Bar</title>
 <style>
-.card {
-  background-color: #f2f2f2;
-  border-radius: 5px;
-  padding: 20px;
-  margin: 20px;
-  transition: transform 0.3s ease-in-out; /* Smooth transition */
-  overflow: hidden; /* Hide content outside the initial card size */
-  width: 200px; /* Initial card width */
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #f0f0f0; /* Background color of the ring */
+  border: 5px solid #ccc; /* Border of the ring */
+  position: relative;
 }
 
-.card:hover {
-  transform: scaleX(1.2); /* Expand horizontally on hover */
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #4CAF50; /* Color of the progress fill */
+  clip-path: circle(50% at 50% 50%); /* Initial clip-path */
+  transform-origin: 50% 50%; /* Center of rotation */
+  transform: rotate(0deg); /* Initial rotation */
+  transition: transform 0.5s ease; /* Smooth transition */
 }
 
-.card-content {
-  white-space: nowrap; /* Prevent text wrapping for horizontal expansion */
-  overflow: hidden;
+.progress-ring.progress-75::before {
+  transform: rotate(270deg); /* Rotate to 75% progress */
 }
 
-.card-hidden {
-  opacity: 0;
-  transform: translateX(20px);
-  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+.progress-ring.progress-50::before {
+  transform: rotate(180deg); /* Rotate to 50% progress */
 }
 
-.card:hover .card-hidden {
-  opacity: 1;
-  transform: translateX(0);
+.progress-ring.progress-25::before {
+  transform: rotate(90deg); /* Rotate to 25% progress */
 }
 </style>
 </head>
 <body>
 
-<div class="card">
-  <div class="card-content">
-    <h3>This is the Card Title</h3>
-    <p>This is some initial text visible by default.</p>
-    <div class="card-hidden">
-      <p>This additional text is hidden initially and reveals on hover.</p>
-      <p>More hidden text here.</p>
-    </div>
-  </div>
-</div>
+<h1>CSS Circular Progress Bar</h1>
+
+<div class="progress-ring progress-75"></div>
+<div class="progress-ring progress-50"></div>
+<div class="progress-ring progress-25"></div>
+<div class="progress-ring"></div>
+
 
 </body>
 </html>
 ```
 
 
-## Explanation
+**Explanation:**
 
-* **`.card`:** This class styles the base card with background color, padding, margin, and importantly, a transition property for `transform`.  The `overflow: hidden;` ensures that the expanding content doesn't spill outside the card's boundaries initially. The `width` sets the initial size.
-* **`.card:hover`:** This applies styles specifically when the mouse hovers over the `.card` element. `transform: scaleX(1.2);` scales the card horizontally by 120%, creating the expansion effect.
-* **`.card-content`:** This container ensures that the text inside doesn't wrap, allowing the horizontal scaling to work effectively.  `overflow: hidden` is crucial for this as well.
-* **`.card-hidden`:** This class styles the initially hidden content. `opacity: 0` makes it invisible, and `transform: translateX(20px)` shifts it slightly to the right, ensuring a smooth transition when revealed. The transition property mirrors the main card's transition for a coordinated effect.
-* **`.card:hover .card-hidden`:** This selector targets the `.card-hidden` content *only* when hovering over the parent `.card`.  It changes the `opacity` and `transform` to reveal the content smoothly.
+* The `.progress-ring` class styles the base circular element.
+* The `::before` pseudo-element creates the filling segment.
+* `clip-path: circle(50% at 50% 50%);` creates a circular clip-path centered on the element.
+* `transform: rotate(xdeg);` rotates the fill segment.  A full circle (360deg) represents 100% progress.  We calculate the rotation angle based on the percentage.  For example, 75% progress corresponds to `(75/100) * 360 = 270deg`.
+* The `transition` property ensures a smooth animation as the progress changes.
+* The different `.progress-x` classes demonstrate how to control the progress. You can easily adjust the class name and rotation angle to display different progress levels.
 
 
-## External References
+**External References:**
 
-While this technique doesn't rely on specific libraries, understanding CSS transitions and transforms is crucial.  Here are some helpful resources:
-
-* [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* [MDN Web Docs - clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* [MDN Web Docs - transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
