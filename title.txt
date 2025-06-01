@@ -1,1 +1,1 @@
-Handling CORS Errors in a MERN Stack Application
+Handling Mongoose `CastError` in a Next.js, Express.js, and React.js Application
