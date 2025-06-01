@@ -1,3 +1,5 @@
+# 🐞 Handling Discord.js Rate Limits: A Step-by-Step Guide
+
 
 This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limiting errors.  These errors occur when your bot sends messages, edits messages, or performs other actions too frequently, exceeding the limits imposed by Discord's API.  Ignoring these limits can lead to your bot being temporarily or permanently banned.
 
