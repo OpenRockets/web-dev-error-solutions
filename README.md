@@ -3,7 +3,7 @@
   
   [![OpenRockets](https://img.shields.io/badge/OpenRockets-Verified%20Contributor-white?labelColor=black&style=for-the-badge&logo=Rocket&logoColor=white&link=https://www.github.com/openrockets)](https://www.github.com/openrockets)
 
-![File Count](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/<OpenRockets>/<web-dev-error-solutions>/main/filecount-badge.json)
+![File Count](https://github.com/OpenRockets/web-dev-error-solutions/blob/743baf8d882c04dd57fa7e6e3c08a88f93f1be43/filecount-badge.json)
 
 
   <br>
