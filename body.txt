@@ -1,101 +1,85 @@
 
-## Description of the Error
-
-Discord.js, a popular Node.js library for interacting with the Discord API, implements rate limits to prevent abuse and maintain the stability of the platform.  When your bot sends messages, edits messages, or performs other actions too quickly, you'll encounter a rate limit error. This typically manifests as a `DiscordAPIError` with a code related to rate limiting (e.g., `429`).  Ignoring these limits can lead to your bot being temporarily or permanently banned from the Discord API.
-
-## Code: Fixing Rate Limits in Discord.js
-
-This example demonstrates how to handle rate limits using `setTimeout` for simple scenarios. For more complex scenarios involving multiple rate limits and different endpoints, consider using a dedicated rate limit handler library.
-
-**Step 1: Basic Implementation with `setTimeout`**
-
-This simple method adds a delay before sending another message. It's not ideal for complex bots but is a good starting point.
-
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-client.on('messageCreate', async msg => {
-  if (msg.content === '!test') {
-    try {
-      await msg.reply('This is a test message.');
-    } catch (error) {
-      if (error.code === 50007) { //If the message was deleted, the following check wont run
-        console.log("Rate limited, waiting 1 second...");
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
-        try {
-          await msg.reply('This is a test message.');
-        } catch (error) {
-          console.error('Failed to send message after waiting:', error);
-        }
-      } else if (error.code === 50013){
-        console.log("Message was deleted")
-      }
-      else {
-        console.error('Error sending message:', error);
-      }
-    }
-  }
-});
-
-client.login('YOUR_BOT_TOKEN');
-```
-
-**Step 2:  More Robust Handling (using a queue)**
-
-For more complex bots, using a queue is crucial to manage rate limits efficiently.  This example utilizes an async queue:
-
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const { Queue } = require('bull'); //Requires installing `bull` npm package
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
-
-const queue = new Queue('messageQueue'); //Create a queue named 'messageQueue'
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-client.on('messageCreate', async msg => {
-  if (msg.content === '!test') {
-    queue.add({ msg, replyText: 'This is a test message from the queue.' });
-  }
-});
+This document details the creation of an expanding card using only CSS.  The card expands on hover, revealing hidden content.  This effect is achieved using CSS transitions and transforms without any JavaScript.  We'll utilize standard CSS properties for a broad compatibility.
 
 
-queue.process(async (job) => {
-  try {
-    await job.data.msg.reply(job.data.replyText);
-  } catch (error) {
-    if (error.code === 429) {
-      const retryAfter = error.retryAfter ? error.retryAfter * 1000 : 1000; // Wait at least 1 second
-      console.log(`Rate limited, retrying in ${retryAfter / 1000} seconds...`);
-      await new Promise(resolve => setTimeout(resolve, retryAfter));
-      await job.data.msg.reply(job.data.replyText); //Retry sending the message.
-    } else {
-      console.error('Error sending message:', error);
-    }
-  }
-});
+## Description of the Styling
 
-client.login('YOUR_BOT_TOKEN');
+The card's base style is a simple rectangular container.  On hover, the card's height increases, revealing a hidden section. A smooth transition effect is applied to make the expansion visually appealing.  We'll use a subtle background color change on hover to enhance the user experience.
 
+
+## Full Code
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f2f2f2;
+  border-radius: 5px;
+  padding: 20px;
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+  overflow: hidden; /* Hide the expanding content initially */
+  height: 150px; /* Initial height of the card */
+}
+
+.card:hover {
+  background-color: #e0e0e0;
+  height: 250px; /* Height on hover, revealing hidden content */
+}
+
+.card-content {
+  /* Content within the card */
+}
+
+.hidden-content {
+  /* Initially hidden content, displayed on hover */
+  padding-top: 10px;
+  display: none;
+}
+
+.card:hover .hidden-content {
+    display: block;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2>Card Title</h2>
+    <p>This is the main content of the card.</p>
+  </div>
+  <div class="hidden-content">
+    <p>This content is initially hidden and reveals on hover.</p>
+    <p>More detailed information can be placed here.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
 
 ## Explanation
 
-The `setTimeout` method introduces a simple delay.  The queue approach is better as it manages the order of tasks and ensures that messages are sent sequentially, respecting rate limits.  The queue handles potential errors, retries if necessary, and prevents overwhelming the Discord API.  Crucially, both methods check for the `429` error code which is indicative of a rate limit violation.  Always ensure you handle errors gracefully and log errors to aid debugging.
+* **`.card`**: This class styles the main card container.  `transition: height 0.3s ease-in-out;` is crucial for the smooth expansion.  `overflow: hidden;` prevents the hidden content from peeking before the hover effect.  The initial `height` is set.
+
+* **`.card:hover`**: This selector applies styles when the card is hovered over.  The `height` is increased to reveal the hidden content. The background color change provides visual feedback.
+
+* **`.hidden-content`**: This class styles the content that's initially hidden.  `display: none;` ensures it's not visible initially.
+
+* **`.card:hover .hidden-content`**:  This selector specifically targets the `.hidden-content` *only* when the parent `.card` is hovered, making the hidden content visible on hover.
 
 
-## External References
 
-* **Discord.js Documentation:** [https://discord.js.org/#/](https://discord.js.org/#/)  (Check for the latest API documentation as it may change)
-* **Bull (Queue library):** [https://github.com/OptimalBits/bull](https://github.com/OptimalBits/bull)
+## Resources to Learn More
 
-## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks:** [https://css-tricks.com/](https://css-tricks.com/) (Search for "CSS transitions" or "CSS hover effects")
+
+
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
