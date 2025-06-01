@@ -1,79 +1,79 @@
 
-This document details the creation of an expanding card using only CSS.  The card expands on hover, revealing more content with a smooth transition. We'll use standard CSS3 properties for this effect. No JavaScript required!
+## Description of the Error
 
-**Description of the Styling:**
+Discord's API has rate limits to prevent abuse and ensure fair usage.  If your Discord bot sends too many requests within a short period, you'll encounter a 429 error (Too Many Requests). This error usually manifests as a HTTP status code 429 in your bot's responses, halting its operation.  Ignoring rate limits can lead to temporary or even permanent bans from the Discord API.
 
-The card is designed with a simple box structure.  The primary content is initially visible, while secondary content is hidden. On hover, the card expands vertically, revealing the hidden content.  A subtle transition effect makes the expansion smooth and visually appealing.  We'll use a simple gradient for background styling.
+## Fixing Rate Limits in Discord.js
 
+This example demonstrates handling rate limits using `discord.js`'s built-in features and adding retry logic. We'll focus on handling rate limits during message sending.  This assumes you have a basic understanding of `discord.js` and asynchronous programming in Node.js.
 
-**Full Code:**
+### Step-by-Step Code Fix
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background: linear-gradient(to bottom, #f0f0f0, #d0d0d0);
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Hide overflowing content before expansion */
-  transition: max-height 0.3s ease-in-out; /* Smooth transition for expansion */
-  max-height: 150px; /* Initial height of the card */
+```javascript
+const { Client, GatewayIntentBits } = require('discord.js');
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
+
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
+
+async function sendMessageWithRetry(channel, message, retries = 3) {
+  try {
+    await channel.send(message);
+  } catch (error) {
+    if (error.code === 50035) { // Discord API changed error code to 50035 for missing access. Catch that as well.
+      console.error(`Missing permissions. Message not sent.`);
+      return;
+    }
+    if (error.httpStatus === 429) {
+      const retryAfter = error.retryAfter || 1000; // Default to 1 second if retryAfter is missing.
+      console.error(`Rate limited. Retrying in ${retryAfter / 1000} seconds...`, error);
+      await new Promise(resolve => setTimeout(resolve, retryAfter)); // Wait before retrying
+
+      if (retries > 0) {
+        return sendMessageWithRetry(channel, message, retries - 1); // Recursive call for retry
+      } else {
+        console.error(`Failed to send message after multiple retries.`);
+      }
+    } else {
+      console.error(`An unexpected error occurred:`, error);
+    }
+  }
 }
 
-.card:hover {
-  max-height: 300px; /* Expanded height on hover */
-}
+client.on('messageCreate', async message => {
+  if (message.content === '!test') {
+    await sendMessageWithRetry(message.channel, 'This message was sent using rate limit handling!');
+  }
+});
 
-.card-content {
-  padding: 15px;
-}
 
-.card-title {
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.card-details {
-  display: none; /* Initially hidden */
-}
-
-.card:hover .card-details {
-  display: block; /* Revealed on hover */
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-content">
-    <h2 class="card-title">My Expanding Card</h2>
-    <p>This is the initial content visible before hovering.</p>
-    <div class="card-details">
-      <p>This is the extra content revealed on hover.  This demonstrates the expanding card functionality using only CSS!</p>
-    </div>
-  </div>
-</div>
-
-</body>
-</html>
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
 ```
 
 **Explanation:**
 
-* **`max-height`:**  This property controls the initial and expanded height of the card.  The `transition` property makes the change in `max-height` smooth.
-* **`:hover` Pseudo-class:** This selector targets the card when the mouse hovers over it.
-* **`overflow: hidden`:** This prevents the hidden content from spilling outside the card's boundaries before expansion.
-* **`display: none` and `display: block`:** These properties control the visibility of the secondary content.  Initially hidden, it becomes visible on hover.
-* **Transition:** The `transition` property is crucial for the smooth animation. It specifies the property to animate (`max-height`), duration (`0.3s`), and easing function (`ease-in-out`).
+1. **Import necessary modules:** We import `Client` and `GatewayIntentBits` from `discord.js`.
+2. **Create a client:** We create a new Discord client instance, specifying the necessary intents.
+3. **`sendMessageWithRetry` function:** This function handles the message sending and retries.
+    * It uses a `try...catch` block to handle potential errors.
+    * If a 429 error occurs, it logs the error, waits for the specified `retryAfter` time (in milliseconds), and recursively calls itself with a decremented retry count.  If `retryAfter` isn't provided it defaults to 1 second. It also handles error 50035.
+    * If the retry count reaches 0, it logs a failure message.
+    * Other errors are also logged.
+4. **Event listener:** The `messageCreate` event listener checks for the "!test" command.
+5. **Calling `sendMessageWithRetry`:** When the "!test" command is received, `sendMessageWithRetry` is called to send a message with rate limit handling.
+6. **Login:** The bot logs in using your bot token.  Remember to replace `'YOUR_BOT_TOKEN'` with your actual token.
 
-**Links to Resources to Learn More:**
 
-* **CSS Transitions:**  [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
-* **CSS Box Model:** [MDN Web Docs - CSS Box Model](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing)
+## External References
+
+* **discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)  (Check for the latest API documentation and best practices.)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Understanding Discord's rate limit policies is crucial.)
+
+
+## Explanation of the Importance of Handling Rate Limits
+
+Failing to handle rate limits can lead to your bot being temporarily or permanently banned from the Discord API.  The retry mechanism ensures that your bot will eventually send the message, even if it encounters temporary rate limits, without overwhelming the API.  The code above provides a robust foundation; you might want to add more sophisticated retry strategies (e.g., exponential backoff) for production environments.  Always check Discord's API documentation for the most up-to-date information on rate limits.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
