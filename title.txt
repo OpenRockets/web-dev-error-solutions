@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with a Subtle Reveal
+Handling CORS Errors in a MERN Stack Application
