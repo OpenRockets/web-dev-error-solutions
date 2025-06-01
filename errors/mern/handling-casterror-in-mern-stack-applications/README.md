@@ -1,3 +1,5 @@
+# 🐞 Handling `CastError` in MERN Stack Applications
+
 
 This document addresses a common error developers encounter when working with MongoDB, Express.js, React.js, and Next.js (MERN) stacks: the `CastError`. This error typically arises when attempting to perform operations (like finding a document) using an incorrect data type in your MongoDB queries. For instance, if your database expects an ID as a `ObjectId` but you're providing a string, a `CastError` will be thrown.
 

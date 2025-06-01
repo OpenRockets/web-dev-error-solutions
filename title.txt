@@ -1,1 +1,1 @@
-Handling `TypeError: Converting circular structure to JSON` in a MERN Stack Application
+Handling `CastError` in MERN Stack Applications
