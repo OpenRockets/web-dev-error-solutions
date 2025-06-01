@@ -1,3 +1,5 @@
+# 🐞 Handling `TypeError: Converting circular structure to JSON` in a MERN Stack Application
+
 
 This document addresses a common error encountered when building applications using MongoDB, Express.js, React.js, and Next.js (MERN stack): the `TypeError: Converting circular structure to JSON` error. This usually happens when attempting to send data containing circular references (objects referencing each other in a loop) to the client.  Next.js's API routes are particularly prone to this issue when dealing with data fetched from MongoDB.
 
