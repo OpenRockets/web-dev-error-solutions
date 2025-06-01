@@ -1,1 +1,1 @@
-Handling MERN Stack Errors:  `TypeError: Cannot read properties of undefined (reading 'map')` in React
+Creating a CSS-Only Expanding Card with a Subtle Reveal
