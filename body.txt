@@ -1,90 +1,90 @@
 
-This document details how to create an expanding card effect using only CSS.  This effect is achieved without JavaScript, relying solely on CSS transitions and pseudo-elements.  The card expands vertically to reveal additional content when hovered.
+## Description of the Error
 
-**Description of the Styling:**
+When using the Discord.js library to interact with the Discord API, you might encounter a `429 Too Many Requests` error. This signifies that your bot has exceeded the Discord API's rate limits for a specific endpoint.  This can lead to your bot temporarily ceasing functionality, potentially causing issues like failed message sends, inability to fetch user data, or disruptions to other bot operations.  The error typically manifests as a HTTP status code 429 in the response from the Discord API.
 
-The card uses a simple design.  The main content is initially visible. On hover, a pseudo-element (`::before`) expands downwards, revealing hidden content.  This is achieved using `height` transitions and clever positioning.
+## Fixing the Error Step-by-Step
 
+This example focuses on handling rate limits when sending messages.  Proper rate limit handling is crucial for robust bot development.
 
-**Full Code:**
+**Step 1: Install Necessary Packages (if not already installed):**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 300px;
-  background-color: #f2f2f2;
-  border-radius: 5px;
-  overflow: hidden; /* Hide the expanding pseudo-element initially */
-  position: relative; /* Required for absolute positioning of the pseudo-element */
-  transition: 0.3s ease-in-out; /* Smooth transition for expansion */
-}
-
-.card:hover {
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1); /* Add shadow on hover */
-}
-
-.card-content {
-  padding: 20px;
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  top: 100%; /* Start at the bottom */
-  left: 0;
-  width: 100%;
-  height: 0; /* Initially hidden */
-  background-color: #fff;
-  transition: height 0.3s ease-in-out; /* Smooth height transition */
-}
-
-.card:hover::before {
-  height: 100px; /* Expand to reveal hidden content */
-}
-
-.hidden-content {
-  padding: 10px;
-  background-color: #fff;
-  margin-top: 10px; /* Add some spacing from the main content*/
-
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-content">
-    <h3>Card Title</h3>
-    <p>This is the main content of the card.</p>
-  </div>
-  <div class="hidden-content">
-    <p>This is the hidden content that appears on hover.</p>
-  </div>
-</div>
-
-</body>
-</html>
+```bash
+npm install discord.js
 ```
 
-**Explanation:**
+**Step 2: Implement Rate Limit Handling:**
 
-* **`overflow: hidden;` on `.card`:** This is crucial. It hides the `::before` pseudo-element until it's expanded.
-* **`position: relative;` on `.card`:** This allows the absolutely positioned pseudo-element to be relative to the card.
-* **`::before` pseudo-element:** This creates an invisible element at the bottom. Its `height` is manipulated on hover.
-* **`transition` property:** This provides the smooth animation for both the box-shadow and the height of the pseudo-element.
-* **`height: 0;` initially:** Keeps the hidden content out of sight until hover.
-* **`height: 100px;` on hover:** This expands the pseudo-element, revealing the hidden content. Adjust `100px` to control the expansion height.
+This code demonstrates using `setTimeout` for simple rate limiting.  For more advanced scenarios (like using queues or dedicated rate limit handling libraries), see the "Explanation" section below.
 
 
-**Links to Resources to Learn More:**
+```javascript
+const { Client, GatewayIntentBits } = require('discord.js');
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
 
-* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs on Pseudo-elements:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* **CSS-Tricks (various articles on CSS animations and effects):** [https://css-tricks.com/](https://css-tricks.com/)
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
+
+
+client.on('messageCreate', async msg => {
+  if (msg.content === '!test') {
+    try {
+      await msg.reply('This is a test message!');
+
+    } catch (error) {
+      if (error.code === 50007) {
+        console.error('Message was deleted before it was sent.');
+      } else if (error.code === 10008) {
+        console.error('Unknown message.');
+      } else if (error.httpStatus === 429){
+        const retryAfter = error.retryAfter || 1000; // Default to 1 second if not specified
+        console.log(`Rate limited. Retrying in ${retryAfter}ms`);
+        await new Promise(resolve => setTimeout(resolve, retryAfter)); // Wait before retrying
+
+        //Retry sending the message after the delay.
+        try{
+          await msg.reply('This is a test message sent after delay!');
+        } catch (error){
+          console.error("Failed to send message even after delay: ", error)
+        }
+
+      } else {
+        console.error('An error occurred:', error);
+      }
+    }
+  }
+});
+
+
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+```
+
+**Step 3: Run the code:**
+
+Save the code as a `.js` file (e.g., `bot.js`), then run it from your terminal:
+
+```bash
+node bot.js
+```
+
+
+## Explanation
+
+The crucial part of the fix is the `try...catch` block and the handling of the `429` error.  If a `429` error is caught, the code extracts the `retryAfter` value from the error object (this indicates how long to wait before retrying). If `retryAfter` is not present, it defaults to 1000 milliseconds (1 second).  `setTimeout` pauses execution for the specified duration, allowing the bot to avoid further rate limiting.  After the delay, the message sending is retried. This simple approach is sufficient for many situations.
+
+However, for more complex bots or high-traffic scenarios, a more sophisticated strategy is recommended.  Consider using:
+
+* **Asynchronous Queues:**  Use a queue (e.g., using the `bull` library) to manage outgoing requests.  The queue will handle concurrency and prevent exceeding rate limits.
+* **Dedicated Rate Limit Libraries:** Libraries are available to simplify rate limit handling, providing more advanced features like bucket management and retry strategies.
+* **Official Discord.js Documentation:**  Always refer to the official Discord.js documentation for the most up-to-date information and best practices.
+
+
+## External References
+
+* [Discord.js Guide](https://discord.js.org/#/docs/main/stable/general/welcome)
+* [Discord API Rate Limits](https://discord.com/developers/docs/topics/rate-limits)  (This link is subject to change based on Discord's API documentation updates)
+* [Node.js `setTimeout`](https://nodejs.org/api/timers.html#settimeouttimeout-callback-0-arg)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
