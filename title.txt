@@ -1,1 +1,1 @@
-Handling 404 Errors in Next.js API Routes with MongoDB and Express.js
+Creating a CSS-only Expanding Card with Subtle Animations
