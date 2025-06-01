@@ -1,103 +1,81 @@
 # 🐞 Handling Discord.js Rate Limits: A Step-by-Step Guide
 
 
-## Description of the Error
+This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and maintain server stability.  Exceeding these limits results in your bot being temporarily locked out from sending messages or making API requests.
 
-Discord.js, a popular Node.js library for interacting with the Discord API, implements rate limits to prevent abuse and maintain the stability of the platform.  When your bot sends messages, edits messages, or performs other actions too quickly, you'll encounter a rate limit error. This typically manifests as a `DiscordAPIError` with a code related to rate limiting (e.g., `429`).  Ignoring these limits can lead to your bot being temporarily or permanently banned from the Discord API.
+**Description of the Error:**
 
-## Code: Fixing Rate Limits in Discord.js
+When your bot attempts to send messages, edit messages, or perform other actions too frequently, you might encounter a rate limit error.  This typically manifests as an HTTP error response from the Discord API, often with a status code like 429 (Too Many Requests).  The error message might include details about the rate limit bucket, the remaining requests allowed, and the time until the reset.  Your bot may stop responding or throw an error, depending on your error handling.
 
-This example demonstrates how to handle rate limits using `setTimeout` for simple scenarios. For more complex scenarios involving multiple rate limits and different endpoints, consider using a dedicated rate limit handler library.
 
-**Step 1: Basic Implementation with `setTimeout`**
+**Fixing Rate Limits Step-by-Step:**
 
-This simple method adds a delay before sending another message. It's not ideal for complex bots but is a good starting point.
+The core solution is to implement proper rate limit handling within your bot's code. This involves checking the response headers from the Discord API and waiting accordingly before making further requests.
+
+Here's a step-by-step guide with code examples:
+
+**Step 1: Install `discord.js` (if you haven't already):**
+
+```bash
+npm install discord.js
+```
+
+**Step 2:  Basic Bot Structure (with rate limit handling):**
 
 ```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
+const { Client, GatewayIntentBits } = require('discord.js');
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] }); // Add necessary intents
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
 client.on('messageCreate', async msg => {
-  if (msg.content === '!test') {
+  if (msg.content === '!hello') {
     try {
-      await msg.reply('This is a test message.');
+      await msg.reply('Hello there!'); 
     } catch (error) {
-      if (error.code === 50007) { //If the message was deleted, the following check wont run
-        console.log("Rate limited, waiting 1 second...");
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
+      if (error.httpStatus === 429) {
+        // Rate limit hit!  Extract information from the error
+        const retryAfter = error.response.headers['retry-after']; // Time to wait in seconds (or milliseconds, check the docs)
+        console.log(`Rate limited! Retrying after ${retryAfter} seconds...`);
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000)); // Wait
         try {
-          await msg.reply('This is a test message.');
-        } catch (error) {
-          console.error('Failed to send message after waiting:', error);
+          await msg.reply('Hello there!'); // Try again
+        } catch(error) {
+          console.error('Failed to send message even after retry:', error);
         }
-      } else if (error.code === 50013){
-        console.log("Message was deleted")
-      }
-      else {
-        console.error('Error sending message:', error);
+      } else {
+        console.error('An error occurred:', error);
       }
     }
   }
 });
 
-client.login('YOUR_BOT_TOKEN');
-```
-
-**Step 2:  More Robust Handling (using a queue)**
-
-For more complex bots, using a queue is crucial to manage rate limits efficiently.  This example utilizes an async queue:
-
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const { Queue } = require('bull'); //Requires installing `bull` npm package
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
-
-const queue = new Queue('messageQueue'); //Create a queue named 'messageQueue'
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-client.on('messageCreate', async msg => {
-  if (msg.content === '!test') {
-    queue.add({ msg, replyText: 'This is a test message from the queue.' });
-  }
-});
-
-
-queue.process(async (job) => {
-  try {
-    await job.data.msg.reply(job.data.replyText);
-  } catch (error) {
-    if (error.code === 429) {
-      const retryAfter = error.retryAfter ? error.retryAfter * 1000 : 1000; // Wait at least 1 second
-      console.log(`Rate limited, retrying in ${retryAfter / 1000} seconds...`);
-      await new Promise(resolve => setTimeout(resolve, retryAfter));
-      await job.data.msg.reply(job.data.replyText); //Retry sending the message.
-    } else {
-      console.error('Error sending message:', error);
-    }
-  }
-});
-
-client.login('YOUR_BOT_TOKEN');
-
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
 ```
 
 
-## Explanation
+**Step 3:  More Robust Rate Limiting (using a Queue):**
 
-The `setTimeout` method introduces a simple delay.  The queue approach is better as it manages the order of tasks and ensures that messages are sent sequentially, respecting rate limits.  The queue handles potential errors, retries if necessary, and prevents overwhelming the Discord API.  Crucially, both methods check for the `429` error code which is indicative of a rate limit violation.  Always ensure you handle errors gracefully and log errors to aid debugging.
+For more complex bots sending frequent messages, a queueing system can be beneficial.  This allows you to manage requests and avoid overwhelming the API.  Libraries like `bull` or simple queue implementations can help.
 
 
-## External References
+**Step 4 (Advanced): Handling Different Rate Limit Buckets:**
 
-* **Discord.js Documentation:** [https://discord.js.org/#/](https://discord.js.org/#/)  (Check for the latest API documentation as it may change)
-* **Bull (Queue library):** [https://github.com/OptimalBits/bull](https://github.com/OptimalBits/bull)
+Discord uses different rate limit buckets for different endpoints and actions. The error response will provide information about the specific bucket that's been exceeded.  You can improve your rate limiting by storing and managing limits for each bucket individually.  This requires a more sophisticated system, possibly using a Redis cache or an in-memory store to track the limits of various buckets.
 
-## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+
+**Explanation:**
+
+The provided code catches the `429` HTTP error. It then extracts the `retry-after` header from the response, which tells you how long to wait before retrying the request.  The `setTimeout` function pauses execution for the specified duration, ensuring your bot doesn't bombard the Discord API again immediately.  The `try...catch` block handles potential errors during the retry as well.
+
+**External References:**
+
+* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)  (Check for the latest API documentation and best practices)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official documentation on Discord's rate limits)
+* **Bull (Queueing library):** [https://github.com/OptimalBits/bull](https://github.com/OptimalBits/bull) (Optional, for advanced rate limit handling)
+
+
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
