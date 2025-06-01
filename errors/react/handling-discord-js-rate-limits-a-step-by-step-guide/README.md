@@ -1,3 +1,5 @@
+# 🐞 Handling Discord.js Rate Limits: A Step-by-Step Guide
+
 
 ## Description of the Error
 
