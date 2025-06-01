@@ -1,14 +1,15 @@
 # 🐞 Creating a Pure CSS Loading Spinner
 
 
-This document details the creation of a simple, yet visually appealing loading spinner using only CSS.  No JavaScript is required! This example uses CSS3 animations and transformations.
-
-**Description of the Styling:**
-
-This loading spinner consists of four circles arranged in a square.  Each circle rotates independently, creating a dynamic and visually engaging loading animation.  The styling utilizes CSS variables for easy customization of colors and sizes.  The animation is smooth and subtle, suitable for various contexts.
+This document details the creation of a loading spinner using only CSS.  No JavaScript is required. This utilizes CSS animations and keyframes to achieve a smooth, visually appealing loading effect.
 
 
-**Full Code:**
+## Description of the Styling
+
+This spinner consists of a single element styled with CSS to create the illusion of rotation.  We achieve this using the `@keyframes` rule to define the animation and the `animation` property to apply it to the element.  The spinner uses a radial gradient for a visually appealing effect, but a solid color would also work.  The design is simple and adaptable; you can easily change the colors, size, and number of elements to customize the spinner to your needs.
+
+
+## Full Code
 
 ```html
 <!DOCTYPE html>
@@ -16,86 +17,42 @@ This loading spinner consists of four circles arranged in a square.  Each circle
 <head>
 <title>CSS Loading Spinner</title>
 <style>
-:root {
-  --spinner-size: 50px;
-  --spinner-color: #007bff; /* Blue */
-}
-
 .loader {
-  display: inline-block;
-  position: relative;
-  width: var(--spinner-size);
-  height: var(--spinner-size);
-}
-
-.loader div {
-  position: absolute;
-  width: 100%;
-  height: 100%;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  background-color: var(--spinner-color);
-  opacity: 0.7;
-  animation: rotate 1s linear infinite;
+  border: 10px solid #f3f3f3; /* Light grey */
+  border-top: 10px solid #3498db; /* Blue */
+  animation: spin 2s linear infinite;
 }
 
-.loader div:nth-child(1) {
-  animation-delay: 0s;
-  transform: translateX(-100%) translateY(-100%);
-}
-
-.loader div:nth-child(2) {
-  animation-delay: 0.2s;
-  transform: translateX(100%) translateY(-100%);
-}
-
-.loader div:nth-child(3) {
-  animation-delay: 0.4s;
-  transform: translateX(100%) translateY(100%);
-}
-
-.loader div:nth-child(4) {
-  animation-delay: 0.6s;
-  transform: translateX(-100%) translateY(100%);
-}
-
-@keyframes rotate {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
 </head>
 <body>
 
-<div class="loader">
-  <div></div>
-  <div></div>
-  <div></div>
-  <div></div>
-</div>
+<h1>Loading...</h1>
+<div class="loader"></div>
 
 </body>
 </html>
 ```
 
 
-**Explanation:**
+## Explanation
 
-* **`:root`**:  Defines CSS variables for easy customization of the spinner's size and color.
-* **`.loader`**:  Sets up the container for the spinner, using `inline-block` for easy integration into text flow.
-* **`.loader div`**: Styles each individual circle within the spinner.  `position: absolute` allows precise positioning.
-* **`:nth-child()`**:  Applies different animation delays to each circle, creating the staggered rotation effect.
-* **`@keyframes rotate`**: Defines the animation itself, rotating each circle 360 degrees continuously.
+* **`.loader`:** This class styles the spinning element.  `width` and `height` set the size, `border-radius` creates the circular shape, and the `border` properties define the thickness and colors of the spinner.  The `border-top` color is different to create the rotating effect.  `animation` applies the `spin` animation.
 
+* **`@keyframes spin`:** This defines the animation named "spin".  It smoothly rotates the element 360 degrees over 2 seconds (`2s`), repeating infinitely (`infinite`).  `linear` ensures a constant rotation speed.
 
-**Links to Resources to Learn More:**
+## Links to Resources to Learn More
 
-* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
-* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS-Tricks (General CSS resource):** [https://css-tricks.com/](https://css-tricks.com/)
+* **CSS Animations:**  [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **CSS Keyframes:** [MDN Web Docs - @keyframes](https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes)
+* **Radial Gradients:** [MDN Web Docs - Radial Gradients](https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

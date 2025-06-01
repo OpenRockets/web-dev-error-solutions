@@ -1,1 +1,1 @@
-Handling 404 Errors in a MERN Stack Application with Next.js
+Creating a Pure CSS Loading Spinner
