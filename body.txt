@@ -1,93 +1,105 @@
 
-This project demonstrates how to create an expanding card effect using only CSS. No JavaScript is required!  The card expands vertically to reveal additional content when hovered over, providing a smooth and visually appealing user experience. This example utilizes standard CSS properties and avoids any specific frameworks like Tailwind CSS.
+This document addresses a common problem developers encounter when building applications using Next.js API routes, Express.js, and MongoDB: handling 404 (Not Found) errors effectively.  This often arises when fetching data from MongoDB based on requests made through Next.js API routes, and the requested resource doesn't exist.
 
-**Description of the Styling:**
+**Description of the Error:**
 
-The styling utilizes a combination of transitions, transforms, and pseudo-elements (`::before` and `::after`) to achieve the expanding effect. The card itself has a fixed height when initially rendered. On hover, the `transform` property is used to increase the height smoothly, revealing hidden content. The `::before` pseudo-element is styled to create a subtle overlay effect during the transition.
+When a request is made to your Next.js API route, which interacts with a MongoDB database via Express.js, a 404 error will occur if the database query returns no results.  By default, this might simply return a blank page or a generic error message, hindering a smooth user experience.  We need a robust way to handle these cases, providing informative feedback to the client-side.
 
+**Code to Fix Step-by-Step:**
 
-**Full Code:**
+This example demonstrates using `async/await` for clarity, and assumes you're using `mongoose` for MongoDB interaction.  Replace placeholders like `<YOUR_MONGODB_URI>`, `<YOUR_COLLECTION_NAME>`, and `<YOUR_ID>` with your actual values.
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Expanding Card</title>
-<style>
-.card {
-  width: 300px;
-  height: 150px;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-  overflow: hidden; /* Hide content outside the initial height */
-  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
-  position: relative; /* Needed for absolute positioning of pseudo-elements */
+**1.  Next.js API Route (`pages/api/data/[id].js`):**
+
+```javascript
+import { MongoClient } from 'mongodb';
+
+const uri = process.env.MONGODB_URI || "<YOUR_MONGODB_URI>"; // Replace with your MongoDB connection string
+const client = new MongoClient(uri);
+
+export default async function handler(req, res) {
+  const { id } = req.query;
+
+  try {
+    await client.connect();
+    const db = client.db("yourDatabaseName"); //Replace with your database name
+    const collection = db.collection("<YOUR_COLLECTION_NAME>"); // Replace with your collection name
+
+    const data = await collection.findOne({ _id: new ObjectId(id) });
+
+    if (!data) {
+      return res.status(404).json({ message: "Data not found" }); // Handle 404 gracefully
+    }
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  } finally {
+    await client.close();
+  }
 }
 
-.card:hover {
-  height: 300px; /* Expand to reveal hidden content */
+```
+
+**2.  Next.js Frontend (`pages/index.js` Example):**
+
+```javascript
+import { useEffect, useState } from 'react';
+
+export default function Home() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/data/12345'); //Replace with your actual ID
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError("Data not found");
+          } else {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+        }
+        const result = await response.json();
+        setData(result);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (!data) return <p>No data available</p>; // Handle potential data absence
+
+  return (
+    <div>
+      <h1>Data</h1>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
 }
 
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.2); /* Semi-transparent overlay */
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out; /* Smooth transition for overlay opacity */
-}
-
-.card:hover::before {
-  opacity: 1; /* Show overlay on hover */
-}
-
-.card-content {
-  padding: 20px;
-  color: #333;
-}
-
-.card-title {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.card-text {
-  font-size: 1em;
-  line-height: 1.5;
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-content">
-    <h2 class="card-title">Expanding Card</h2>
-    <p class="card-text">This is the content that will be revealed when the card is hovered over.  You can add as much text as you like here and it will smoothly expand the card!</p>
-  </div>
-</div>
-
-</body>
-</html>
 ```
 
 **Explanation:**
 
-* **`transition` property:** This allows for smooth animations when the `height` property changes.  The `ease-in-out` timing function provides a natural-feeling acceleration and deceleration.
-* **`transform` property (implicitly):**  The change in `height` implicitly uses the browser's layout engine to smoothly resize the element.
-* **Pseudo-elements (`::before`):**  These create a visually appealing overlay effect that appears on hover.
-* **`overflow: hidden`:** This ensures that content exceeding the initial height of the card is hidden until the expansion occurs.
-* **`position: relative`:** This is necessary for the absolute positioning of the pseudo-element.
+The API route now explicitly checks if the `findOne` operation returns null. If it does, a 404 JSON response with a descriptive message is sent.  The frontend code then handles this 404 response, displaying a user-friendly error message instead of a generic error.  The `try...catch...finally` block ensures proper error handling and database connection closure.  Remember to install `mongodb` package using `npm install mongodb`.
 
 
-**Links to Resources to Learn More:**
+**External References:**
 
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs - Pseudo-elements:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* **CSS-Tricks (general CSS resources):** [https://css-tricks.com/](https://css-tricks.com/)
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
+* [MongoDB Node.js Driver](https://www.mongodb.com/docs/drivers/node/)
+* [Express.js Documentation](https://expressjs.com/)
+* [Mongoose documentation](https://mongoosejs.com/docs/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
