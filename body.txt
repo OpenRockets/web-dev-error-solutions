@@ -1,79 +1,104 @@
 
-## Description of the Error
+This document details the creation of an expanding card using only CSS.  The card expands smoothly when hovered over, revealing additional content. We'll leverage CSS transitions and transforms for a polished effect. No JavaScript required!
 
-Discord.js, the popular Node.js library for interacting with the Discord API, employs rate limits to prevent abuse and maintain the stability of the platform.  When your bot sends messages, edits messages, or performs other actions too quickly, you'll encounter a rate limit error. This usually manifests as a `DiscordAPIError` with a message indicating you've exceeded the allowed request rate.  Ignoring these limits can lead to your bot being temporarily or permanently banned from the Discord API.
+**Description of the Styling:**
 
-## Fixing Rate Limits in Discord.js: Step-by-Step Guide
+The card consists of a main container that holds the front and back content.  The front displays a summary, while the back expands to reveal more detailed information. The expansion utilizes a CSS transition on `transform: scale()` and `opacity` to create a smooth, visually appealing effect.  The design uses a subtle shadow to enhance depth.
 
-This guide demonstrates how to handle rate limits using `setTimeout` for simple scenarios. For more complex situations, consider using a dedicated rate limiting library.
+**Full Code:**
 
-**Step 1: Identifying the Rate-Limited Action**
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 300px;
+  height: 200px;
+  perspective: 1000px; /* Enables 3D transforms */
+  border-radius: 8px;
+  overflow: hidden; /* Hides overflowing content during transition */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
 
-First, identify the specific action in your code that's causing the rate limit. This is often within a loop or function that sends many messages rapidly.
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* Prevents flickering during transition */
+  transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out; /* Smooth transition */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+}
 
-**Step 2: Implementing `setTimeout` for Rate Limiting**
+.card-front {
+  background-color: #f0f0f0;
+  color: #333;
+}
 
-We'll use `setTimeout` to introduce delays between API calls.  This ensures that your bot doesn't exceed the Discord API's rate limits. The delay time depends on the specific rate limit you're encountering (check Discord's API documentation for details).
+.card-back {
+  background-color: #ddd;
+  color: #333;
+  transform: rotateY(180deg); /* Initially hidden */
+  opacity: 0; /* Initially hidden */
+}
 
-**Code Example (Before):**
+.card:hover .card-front {
+  transform: rotateY(-180deg); /* Rotate front to show back */
+  opacity: 0; /* Fade out front */
+}
 
-```javascript
-// This code will likely hit rate limits
-client.on('message', msg => {
-  if (msg.content.startsWith('!spam')) {
-    for (let i = 0; i < 100; i++) {
-      msg.channel.send(`Message ${i + 1}`);
-    }
-  }
-});
+.card:hover .card-back {
+  transform: rotateY(0deg); /* Rotate back to be visible */
+  opacity: 1; /* Fade in back */
+}
+
+.card-content {
+  text-align: center;
+  padding: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-front">
+    <div class="card-content">
+      <h2>Front</h2>
+      <p>Summary of the content.</p>
+    </div>
+  </div>
+  <div class="card-back">
+    <div class="card-content">
+      <h2>Back</h2>
+      <p>More detailed information here. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**Code Example (After):**
-
-```javascript
-// This code incorporates a delay to prevent rate limits
-const delay = 1000; // 1-second delay (adjust as needed)
-
-client.on('message', msg => {
-  if (msg.content.startsWith('!spam')) {
-    let i = 0;
-    const sendMessage = () => {
-      if (i < 100) {
-        msg.channel.send(`Message ${i + 1}`)
-          .then(() => {
-            i++;
-            setTimeout(sendMessage, delay);
-          })
-          .catch(error => {
-            console.error('Error sending message:', error);
-            // Handle errors appropriately, e.g., retry after a longer delay
-          });
-      }
-    };
-    sendMessage();
-  }
-});
-
-```
 
 **Explanation:**
 
-The improved code uses a recursive function `sendMessage` and `setTimeout`. Each message is sent, and then `setTimeout` schedules the next call to `sendMessage` after a `delay` of 1000 milliseconds (1 second).  The `.catch` block is crucial for handling potential errors, including rate limit errors. You might want to add more sophisticated error handling, like exponential backoff (increasing the delay after multiple failures).
-
-**Step 3:  Monitoring and Adjustment**
-
-Monitor your bot's activity and adjust the `delay` variable as necessary.  If you still encounter rate limits, increase the delay.  Observe Discord's API documentation for specific rate limit details.
-
-
-## External References
-
-* **Discord.js Documentation:** [https://discord.js.org/#/](https://discord.js.org/#/) (Navigate to the relevant sections for API interactions and error handling)
-* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord documentation on rate limits)
+* **`perspective`:**  Gives the card a 3D space for the rotation to occur.
+* **`backface-visibility: hidden`:** Prevents the back of the card from being visible during the transition.
+* **`transition`:**  Smoothly animates the `transform` and `opacity` properties over 0.5 seconds.
+* **`transform: rotateY()`:** Rotates the card around the Y-axis to create the flip effect.
+* **`opacity`:** Controls the visibility of the front and back sides during the transition.
+* **The hover effect:**  The `:hover` pseudo-class triggers the rotation and opacity changes when the mouse hovers over the card.
 
 
-## Explanation
+**Links to Resources to Learn More:**
 
-Rate limiting is a crucial aspect of interacting with any API, including Discord's. Implementing proper rate limit handling ensures the longevity and functionality of your bot. Ignoring these limits can lead to your application being blocked, requiring you to appeal to Discord for reinstatement.  The `setTimeout` method is a basic approach; more robust solutions might involve using dedicated rate-limiting libraries or queuing systems for managing asynchronous tasks.
+* [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* [CSS-Tricks - Understanding CSS Transforms](https://css-tricks.com/almanac/properties/t/transform/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
