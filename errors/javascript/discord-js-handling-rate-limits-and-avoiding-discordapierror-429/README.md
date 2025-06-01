@@ -1,3 +1,5 @@
+# 🐞 Discord.js: Handling Rate Limits and Avoiding `DiscordAPIError: 429`
+
 
 ## Description of the Error
 
