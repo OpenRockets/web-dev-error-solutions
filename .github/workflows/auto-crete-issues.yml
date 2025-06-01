@@ -27,7 +27,7 @@ jobs:
           -d '{
             "contents": [{
               "parts": [{
-                "text": "Generate a documentation with Markdown about a randomly chosen problem developers face in MongoDB, ExpressJS, ReactJS, and NextJS. Include:
+                "text": "Generate a documentation with Markdown about a randomly chosen problem developers face in CanvasJ or VideoJS or DiscordJS Include:
                           - A Markdown H1 title
                           - Description of the error
                           - full code of fixing step by step
