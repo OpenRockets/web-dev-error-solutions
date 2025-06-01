@@ -1,1 +1,1 @@
-Creating a Pure CSS Loading Spinner
+Handling CORS Errors in a MERN Stack Application
