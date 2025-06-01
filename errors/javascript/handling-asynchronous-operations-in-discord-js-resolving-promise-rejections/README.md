@@ -1,3 +1,5 @@
+# 🐞 Handling Asynchronous Operations in Discord.js: Resolving Promise Rejections
+
 
 This document addresses a common issue encountered when working with Discord.js: unhandled promise rejections. These occur when asynchronous operations (like fetching user data or sending messages) fail, and the error isn't properly caught, leading to silent failures and potential instability in your bot.  This is especially problematic in long-running bots.
 
