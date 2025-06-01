@@ -1,1 +1,1 @@
-Handling "TypeError: Converting circular structure to JSON" in a MERN Stack Application
+Creating a CSS-only Expanding Card with a Subtle Reveal
