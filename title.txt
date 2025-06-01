@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with Hover Effect
+Handling `TypeError: Converting circular structure to JSON` in a MERN Stack Application
