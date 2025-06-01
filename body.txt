@@ -1,85 +1,89 @@
 
-This document details the creation of an expanding card effect using only CSS.  No JavaScript is required. The effect involves a card that expands vertically when hovered over, revealing hidden content with a smooth transition.  We'll leverage CSS transitions and transforms for this effect.
+This document addresses a common issue encountered when developing Discord bots using the Discord.js library: rate limits.  Discord imposes rate limits to prevent abuse and maintain server stability.  Exceeding these limits results in errors, preventing your bot from functioning correctly.
 
-**Description of the Styling:**
+## Description of the Error
 
-The card initially displays a concise title and a small image.  On hover, the card smoothly expands to reveal additional text content below the initial image.  The expansion is achieved using CSS transitions on the `height` and `transform` properties, creating a subtle vertical "lift" effect as it expands.  We'll use simple styling to keep the card clean and modern.  While this example doesn't utilize a specific framework like Tailwind CSS, the principles can be readily adapted for framework integration.
+When your bot sends messages, edits messages, or performs other actions too quickly, Discord will respond with a rate limit error. This typically manifests as a `DiscordAPIError` with a code related to rate limiting (e.g., `429`, `502`). The error message will often include information about the rate limit, such as the retry-after time in milliseconds.  This prevents further actions until the specified time has elapsed.  Ignoring these limits can lead to your bot being temporarily or permanently banned from the Discord API.
 
-**Full Code:**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 300px;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  overflow: hidden; /* Hide content outside the initial height */
-  transition: height 0.3s ease-in-out, transform 0.3s ease-in-out; /* Smooth transitions */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
+## Step-by-Step Code Fix
 
-.card img {
-  width: 100%;
-  height: auto;
-}
+This example focuses on implementing a simple rate limit handler using `setTimeout` for illustrative purposes.  For more robust solutions, consider using dedicated rate limit libraries.
 
-.card-content {
-  padding: 15px;
-}
+**Before:** (Problematic Code)
 
-.card-title {
-  font-weight: bold;
-  margin-bottom: 10px;
-}
+```javascript
+const Discord = require('discord.js');
+const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] });
 
-.card:hover {
-  height: 350px; /* Expanded height */
-  transform: translateY(-5px); /* Subtle lift on hover */
-}
+client.on('messageCreate', msg => {
+  if (msg.content === '!spam') {
+    for (let i = 0; i < 100; i++) {
+      msg.channel.send(`Message ${i + 1}`);
+    }
+  }
+});
 
-.card-content.hidden {
-  height: 0; /* Initially hidden content */
-  overflow: hidden; /* Hide overflow while content is hidden */
-  transition: height 0.3s ease-in-out; /* Smooth transition for content height */
-}
-
-.card:hover .card-content.hidden {
-  height: auto; /* Show content on hover */
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <img src="https://via.placeholder.com/300x150" alt="Card Image">
-  <div class="card-content">
-    <h3 class="card-title">Card Title</h3>
-    <p class="hidden">This is some additional content that will be revealed when you hover over the card.  This demonstrates the expanding card effect using pure CSS.  No JavaScript required!</p>
-  </div>
-</div>
-
-</body>
-</html>
+client.login('YOUR_BOT_TOKEN');
 ```
 
-**Explanation:**
+This code will quickly trigger rate limits due to the rapid message sending.
 
-* **`transition` property:**  This is crucial for the smooth animation. It specifies that the `height` and `transform` properties should transition over 0.3 seconds using an ease-in-out timing function.
-* **`transform: translateY(-5px)`:** This creates the subtle lift effect when hovering, making the animation more visually appealing.
-* **`overflow: hidden`:** This prevents the hidden content from overflowing the card's initial height before expansion.
-* **`.hidden` class:** This class is used to initially hide the expanded content. The `height: 0` and `overflow: hidden` ensure it's invisible until the hover state is triggered.
-* **`height: 350px` on hover:** This increases the card's height, revealing the hidden content. The specific height should be adjusted based on your content.
+**After:** (Improved Code with Rate Limiting)
 
+```javascript
+const Discord = require('discord.js');
+const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] });
 
-**Links to Resources to Learn More:**
+let canSend = true;
 
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **Understanding CSS Box Model:** [Understanding the CSS Box Model](https://css-tricks.com/box-sizing/)
+client.on('messageCreate', msg => {
+  if (msg.content === '!spam') {
+    sendMessage(msg, 100); // Send 100 messages with rate limiting
+  }
+});
+
+async function sendMessage(msg, count) {
+  if (!canSend) return; // Check if we're rate limited
+  canSend = false; // Set rate limit flag
+
+  for (let i = 0; i < count; i++) {
+    try {
+      await msg.channel.send(`Message ${i + 1}`);
+      await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms between messages
+    } catch (error) {
+      if (error.code === 50013) { // Check for missing permission
+        console.error("Missing permission to send messages in this channel.")
+      } else if (error.code === 429){
+        console.error("Rate limited! Waiting before continuing...")
+        const retryAfter = error.retryAfter || 1000; // Extract retry time from error, default to 1000ms (1 sec)
+        await new Promise(resolve => setTimeout(resolve, retryAfter));
+      } else {
+        console.error("An error occurred:", error);
+      }
+    }
+  }
+  canSend = true; // Reset rate limit flag
+}
+
+client.login('YOUR_BOT_TOKEN');
+```
+
+This improved code introduces a `canSend` flag and a delay between messages using `setTimeout`. It also includes more comprehensive error handling for rate limits and permissions.
+
+## Explanation
+
+The improved code addresses the rate limit issue by:
+
+1. **Introducing a Flag:** The `canSend` boolean variable prevents the bot from sending multiple messages concurrently.
+2. **Using `setTimeout`:** The `setTimeout` function introduces a delay between each message, giving Discord time to process each request.  Adjust the delay (500ms in this example) as needed to avoid rate limits.
+3. **Error Handling:** The `try...catch` block handles potential errors, including rate limits and permission issues, logging them to the console and pausing execution appropriately.
+4. **Rate Limit Specific Handling:** The code explicitly checks for the error code 429 (rate limit), using the retry-after value from the error object if available. If the error code 429 is not explicitly provided, a default wait time is set to 1000ms.
+
+## External References
+
+* **Discord.js Documentation:** [https://discord.js.org/#/](https://discord.js.org/#/)  (Check for the latest API information)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord documentation on rate limits)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
