@@ -1,29 +1,22 @@
 
-This document addresses a common problem encountered when working with asynchronous operations in Discord.js: unhandled promise rejections. These often manifest as silent failures, making debugging difficult.  This example focuses on a scenario where a database operation (using a hypothetical `database` object) fails within an event handler.
+## Description of the Error
 
+Discord.js, a popular Node.js library for interacting with the Discord API, implements rate limits to prevent abuse and ensure the stability of the platform.  When your bot sends messages, edits messages, or performs other actions too frequently, it will encounter rate limits. This typically manifests as errors indicating that you've exceeded the allowed request rate for a specific endpoint.  These errors can halt your bot's functionality and lead to unexpected behavior.  Common error messages might include variations of "429: Too Many Requests" or messages indicating rate limit bucket exhaustion.
 
-**Description of the Error:**
+## Step-by-Step Code Fix
 
-When using asynchronous functions within Discord.js event handlers (like `messageCreate`), errors within Promises might not be immediately apparent. If a Promise rejects (due to a database error, network issue, or other failure), the application continues running, but the error is lost unless explicitly handled. This can lead to subtle bugs and unexpected behavior. The console might show a warning like `(node:12345) UnhandledPromiseRejectionWarning`, but the root cause remains unclear.
+This example demonstrates how to handle rate limits using `setTimeout` for simple scenarios.  For more complex situations, consider using a dedicated rate limit library like `bottleneck`.
 
-
-**Code (Problematic):**
+**Before:** (Problematic Code)
 
 ```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
+const Discord = require('discord.js');
+const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] });
 
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-client.on('messageCreate', async (message) => {
-  if (message.content === '!database') {
-    try {
-      const result = await database.query('SELECT * FROM users WHERE id = 1'); //Hypothetical database query
-      console.log('Database query successful:', result);
-    } catch (error) {
-      console.error('Database error:', error); //This handles errors within the try/catch
+client.on('messageCreate', message => {
+  if (message.content === '!spam') {
+    for (let i = 0; i < 100; i++) {
+      message.channel.send('Spamming!');
     }
   }
 });
@@ -31,48 +24,53 @@ client.on('messageCreate', async (message) => {
 client.login('YOUR_BOT_TOKEN');
 ```
 
-**Code (Corrected):**
+This code will almost certainly hit rate limits due to the rapid sending of messages.
+
+**After:** (Corrected Code with Rate Limiting)
 
 ```javascript
-const { Client, IntentsBitField, GatewayIntentBits } = require('discord.js');
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
+const Discord = require('discord.js');
+const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] });
 
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-client.on('messageCreate', async (message) => {
-  if (message.content === '!database') {
-    try {
-      const result = await database.query('SELECT * FROM users WHERE id = 1'); //Hypothetical database query
-      console.log('Database query successful:', result);
-    } catch (error) {
-      console.error('Database error:', error); //This handles errors within the try/catch
-      //  Add error reporting/handling here, e.g., sending a message to a log channel
-      message.reply("An error occurred while processing your request.");
-      
+client.on('messageCreate', async message => {
+  if (message.content === '!spam') {
+    for (let i = 0; i < 100; i++) {
+      try {
+        await message.channel.send('Message ' + (i + 1));
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+      } catch (error) {
+        if (error.code === 50013) { //Example error code - check Discord.js documentation for specifics.
+            console.error("Missing Permissions");
+        } else if (error.code === 429) {
+          console.error('Rate limited! Waiting...', error);
+          const retryAfter = error.retryAfter || 1000; // Default to 1 second if retryAfter is not available.
+          await new Promise(resolve => setTimeout(resolve, retryAfter));
+          console.log("Retrying...");
+        } else {
+          console.error('An error occurred:', error);
+        }
+      }
     }
   }
-});
-
-//Properly handle unhandled rejections
-process.on('unhandledRejection', error => {
-    console.error('Unhandled promise rejection:', error);
-    // Add more robust error handling here (e.g., logging to a file, alerting admins)
 });
 
 client.login('YOUR_BOT_TOKEN');
 ```
 
-**Explanation:**
+This improved code includes:
 
-The corrected code adds crucial error handling using a `try...catch` block within the asynchronous function.  This catches any errors thrown by `database.query` and prevents them from silently failing.  Furthermore, the `process.on('unhandledRejection', ...)` event listener is crucial.  Even with `try...catch`,  other asynchronous operations outside of that block *could* still cause unhandled rejections.  This listener will catch those and provide a central point to manage all unhandled promise rejections.  The example also demonstrates the inclusion of a user-friendly response within Discord itself.
+1. **`async/await`:**  Allows for asynchronous operations and pausing execution.
+2. **`setTimeout`:** Introduces a 1-second delay between each message, significantly reducing the chance of hitting rate limits.  Adjust the delay as needed.
+3. **Error Handling:** A `try...catch` block catches potential errors, specifically looking for rate limit errors (`429`) and handles them by pausing execution for a specified time (`retryAfter` from the error object or a default value). It also checks for a permission error.  You'll need to adjust error codes based on your Discord.js version.
 
-**External References:**
+## Explanation
 
-* **Discord.js Guide:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome)  (General Discord.js documentation)
-* **Node.js Documentation on `process.on('unhandledRejection')`:**  [https://nodejs.org/api/process.html#event-unhandledrejection](https://nodejs.org/api/process.html#event-unhandledrejection)
-* **Promise Handling in JavaScript:** [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
+Rate limiting is a crucial aspect of API design. It prevents a single application from overwhelming the server's resources and ensures fair access for all users.  The corrected code demonstrates a basic approach to handling rate limits by introducing artificial delays between requests. For more robust solutions, use a dedicated rate-limiting library.  These libraries offer sophisticated algorithms to manage requests efficiently and avoid exceeding rate limits.
+
+## External References
+
+* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/) (Check for the latest error codes and best practices)
+* **Bottleneck Library (for advanced rate limiting):** [https://github.com/Sannis/bottleneck](https://github.com/Sannis/bottleneck)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
