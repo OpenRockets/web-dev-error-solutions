@@ -1,78 +1,80 @@
 
-## Description of the Error
+This document details the creation of an expanding card using only CSS.  The card expands on hover, revealing more content with a smooth transition. We'll use standard CSS3 properties for this effect. No JavaScript required!
 
-Discord.js, the popular Node.js library for interacting with the Discord API, enforces rate limits to prevent abuse and maintain service stability.  When your bot sends messages, edits messages, or performs other actions too quickly, it will encounter a rate limit error. This typically manifests as a 429 HTTP status code in the response from Discord's API.  Ignoring these rate limits can lead to your bot being temporarily or permanently banned from the Discord servers.
+**Description of the Styling:**
 
-## Step-by-Step Code Fix
-
-This example demonstrates handling rate limits when sending messages using `setTimeout`.  A more robust solution would involve a dedicated rate limiting library, but this approach is suitable for simpler applications.
+The card is designed with a simple box structure.  The primary content is initially visible, while secondary content is hidden. On hover, the card expands vertically, revealing the hidden content.  A subtle transition effect makes the expansion smooth and visually appealing.  We'll use a simple gradient for background styling.
 
 
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
+**Full Code:**
 
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-let messageQueue = []; // Queue to hold messages to be sent
-
-function sendMessageWithRateLimit(channel, message) {
-  if (messageQueue.length === 0) {
-    // Send immediately if queue is empty
-    channel.send(message)
-      .catch(error => {
-        if (error.code === 50007){
-          console.error("Error: Message too long")
-        } else if (error.code === 429){
-          console.error("Rate limited! Retrying in 1 second...");
-          setTimeout(() => sendMessageWithRateLimit(channel, message), 1000); //Retry after 1 sec
-        } else {
-          console.error("An unexpected error occured:", error);
-        }
-      });
-  } else {
-    // Add message to the queue if queue is not empty
-    messageQueue.push({channel: channel, message: message});
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background: linear-gradient(to bottom, #f0f0f0, #d0d0d0);
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide overflowing content before expansion */
+  transition: max-height 0.3s ease-in-out; /* Smooth transition for expansion */
+  max-height: 150px; /* Initial height of the card */
 }
 
-client.on('messageCreate', msg => {
-  if (msg.content === '!test') {
-    // Simulate sending multiple messages
-    for (let i = 0; i < 10; i++) {
-      const newMessage = `Message ${i + 1}`;
-      sendMessageWithRateLimit(msg.channel, newMessage);
-    }
-  }
-});
+.card:hover {
+  max-height: 300px; /* Expanded height on hover */
+}
 
-client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+.card-content {
+  padding: 15px;
+}
 
+.card-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
 
+.card-details {
+  display: none; /* Initially hidden */
+}
+
+.card:hover .card-details {
+  display: block; /* Revealed on hover */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">My Expanding Card</h2>
+    <p>This is the initial content visible before hovering.</p>
+    <div class="card-details">
+      <p>This is the extra content revealed on hover.  This demonstrates the expanding card functionality using only CSS!</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**Explanation of Changes:**
+**Explanation:**
 
+* **`max-height`:**  This property controls the initial and expanded height of the card.  The `transition` property makes the change in `max-height` smooth.
+* **`:hover` Pseudo-class:** This selector targets the card when the mouse hovers over it.
+* **`overflow: hidden`:** This prevents the hidden content from spilling outside the card's boundaries before expansion.
+* **`display: none` and `display: block`:** These properties control the visibility of the secondary content.  Initially hidden, it becomes visible on hover.
+* **Transition:** The `transition` property is crucial for the smooth animation. It specifies the property to animate (`max-height`), duration (`0.3s`), and easing function (`ease-in-out`).
 
-1. **Message Queue:** A `messageQueue` array is introduced to store messages awaiting sending. This prevents the bot from sending messages continuously.
+**Links to Resources to Learn More:**
 
-2. **`sendMessageWithRateLimit` Function:** This function checks if the queue is empty. If empty, it sends the message. Otherwise, it adds the message to the queue.  The `.catch` block handles the 429 error specifically and uses `setTimeout` to retry after a delay.  It also handles message too long error (50007).
+* **CSS Transitions:**  [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+* **CSS Box Model:** [MDN Web Docs - CSS Box Model](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing)
 
-3. **`messageCreate` Event:**  The `!test` command simulates sending multiple messages, demonstrating how the queue handles rate limits.
-
-4. **Error Handling:** The improved `catch` block explicitly checks for the `429` error code, providing informative logging and retrying after a short delay.  It also includes basic error handling for messages that are too long.  More sophisticated error handling might be beneficial in a production environment.
-
-## External References
-
-* [Discord.js Guide](https://discord.js.org/#/docs/main/stable/general/welcome): The official Discord.js documentation.
-* [Discord API Rate Limits](https://discord.com/developers/docs/topics/rate-limits):  Discord's documentation on rate limits.
-
-## Explanation
-
-The core of the solution lies in the use of a message queue and the `setTimeout` function within the error handling. The queue prevents the bot from overwhelming the Discord API by sending messages one by one. The `setTimeout` function introduces a delay after a rate limit error is encountered, allowing the bot to retry sending the message after the rate limit window has expired.  This is a basic implementation; for more complex scenarios, consider using a dedicated rate limiting library to manage more sophisticated rate limit scenarios.
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
