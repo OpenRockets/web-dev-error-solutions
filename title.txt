@@ -1,1 +1,1 @@
-Handling Asynchronous Operations in Discord.js: Resolving Promise Rejections
+Handling Discord.js Rate Limits: A Step-by-Step Guide
