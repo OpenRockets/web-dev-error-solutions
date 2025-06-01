@@ -1,3 +1,5 @@
+# 🐞 Handling MERN Stack Data Fetching Errors with `async/await` and Error Boundaries
+
 
 This document addresses a common problem encountered in MERN (MongoDB, Express.js, React.js, Next.js) stack development:  handling data fetching errors gracefully within a Next.js application using `async/await` and React error boundaries.  Specifically, we'll focus on scenarios where an API request to an Express.js backend fails, causing the frontend to crash or display unhelpful error messages.
 
