@@ -1,92 +1,75 @@
 # 🐞 Handling Discord.js Rate Limits: A Step-by-Step Guide
 
 
-This document addresses a common issue encountered when developing Discord bots using the Discord.js library: rate limits.  Discord imposes rate limits to prevent abuse and maintain server stability.  Exceeding these limits results in errors, preventing your bot from functioning correctly.
+This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limiting errors.  These errors occur when your bot attempts to send messages, edit messages, or perform other actions too frequently, exceeding the limits set by Discord to prevent abuse and maintain server stability.
 
 ## Description of the Error
 
-When your bot sends messages, edits messages, or performs other actions too quickly, Discord will respond with a rate limit error. This typically manifests as a `DiscordAPIError` with a code related to rate limiting (e.g., `429`, `502`). The error message will often include information about the rate limit, such as the retry-after time in milliseconds.  This prevents further actions until the specified time has elapsed.  Ignoring these limits can lead to your bot being temporarily or permanently banned from the Discord API.
+Discord.js will typically throw an error when a rate limit is encountered.  The exact error message may vary depending on the version of the library and the specific action causing the limit, but it usually indicates that a request has been rejected due to exceeding the rate limit. You might see something like: `DiscordAPIError: 429: Too Many Requests`  This often results in your bot ceasing to function correctly, failing to respond to commands or messages.
 
 
-## Step-by-Step Code Fix
+## Fixing Rate Limits in Discord.js
 
-This example focuses on implementing a simple rate limit handler using `setTimeout` for illustrative purposes.  For more robust solutions, consider using dedicated rate limit libraries.
+The most effective way to handle rate limits is to use the built-in rate limit handling provided by Discord.js.  This involves using `await` and catching the `DiscordAPIError` to implement a delay before retrying.
 
-**Before:** (Problematic Code)
+**Step-by-Step Code:**
 
-```javascript
-const Discord = require('discord.js');
-const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] });
-
-client.on('messageCreate', msg => {
-  if (msg.content === '!spam') {
-    for (let i = 0; i < 100; i++) {
-      msg.channel.send(`Message ${i + 1}`);
-    }
-  }
-});
-
-client.login('YOUR_BOT_TOKEN');
-```
-
-This code will quickly trigger rate limits due to the rapid message sending.
-
-**After:** (Improved Code with Rate Limiting)
+Let's say you have a function that sends a message:
 
 ```javascript
-const Discord = require('discord.js');
-const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] });
+const { Client, IntentsBitField } = require('discord.js');
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
 
-let canSend = true;
-
-client.on('messageCreate', msg => {
-  if (msg.content === '!spam') {
-    sendMessage(msg, 100); // Send 100 messages with rate limiting
-  }
-});
-
-async function sendMessage(msg, count) {
-  if (!canSend) return; // Check if we're rate limited
-  canSend = false; // Set rate limit flag
-
-  for (let i = 0; i < count; i++) {
-    try {
-      await msg.channel.send(`Message ${i + 1}`);
-      await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms between messages
-    } catch (error) {
-      if (error.code === 50013) { // Check for missing permission
-        console.error("Missing permission to send messages in this channel.")
-      } else if (error.code === 429){
-        console.error("Rate limited! Waiting before continuing...")
-        const retryAfter = error.retryAfter || 1000; // Extract retry time from error, default to 1000ms (1 sec)
-        await new Promise(resolve => setTimeout(resolve, retryAfter));
-      } else {
-        console.error("An error occurred:", error);
-      }
+async function sendMessage(channel, message) {
+  try {
+    await channel.send(message);
+  } catch (error) {
+    if (error.code === 50007) {
+        console.log("Message too long. Please shorten the message.");
+        return;
+    }
+    if (error.httpStatus === 429) {
+      const retryAfter = error.rateLimitRemaining ? error.rateLimitRemaining * 1000 : 1000; // Delay in milliseconds
+      console.log(`Rate limited. Retrying in ${retryAfter / 1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, retryAfter));
+      await sendMessage(channel, message); // Retry the message sending
+    } else {
+      console.error('An error occurred:', error);
     }
   }
-  canSend = true; // Reset rate limit flag
 }
 
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
+
+client.on('messageCreate', msg => {
+    if (msg.content === '!test') {
+      sendMessage(msg.channel, 'This is a test message!');
+    }
+});
+
 client.login('YOUR_BOT_TOKEN');
 ```
 
-This improved code introduces a `canSend` flag and a delay between messages using `setTimeout`. It also includes more comprehensive error handling for rate limits and permissions.
+**Explanation:**
 
-## Explanation
+1. **`async function sendMessage(...)`:** The `async` keyword allows us to use `await` within the function.
+2. **`try...catch` block:** This handles potential errors during message sending.
+3. **`error.code === 50007`:** This specifically catches message too long errors.
+4. **`error.httpStatus === 429`:** This checks if the error code is 429 (Too Many Requests).
+5. **`retryAfter` calculation:** This determines the delay before retrying.  It uses the `rateLimitRemaining` property from the error object if available; otherwise it defaults to a 1-second delay.
+6. **`await new Promise(resolve => setTimeout(resolve, retryAfter))`:** This pauses execution for the specified `retryAfter` time.
+7. **`await sendMessage(channel, message)`:** This recursively calls the `sendMessage` function to retry sending the message after the delay.
+8. **Error Handling:** The `else` block logs any other errors encountered.  More robust error handling could be implemented here as needed.
 
-The improved code addresses the rate limit issue by:
 
-1. **Introducing a Flag:** The `canSend` boolean variable prevents the bot from sending multiple messages concurrently.
-2. **Using `setTimeout`:** The `setTimeout` function introduces a delay between each message, giving Discord time to process each request.  Adjust the delay (500ms in this example) as needed to avoid rate limits.
-3. **Error Handling:** The `try...catch` block handles potential errors, including rate limits and permission issues, logging them to the console and pausing execution appropriately.
-4. **Rate Limit Specific Handling:** The code explicitly checks for the error code 429 (rate limit), using the retry-after value from the error object if available. If the error code 429 is not explicitly provided, a default wait time is set to 1000ms.
 
 ## External References
 
-* **Discord.js Documentation:** [https://discord.js.org/#/](https://discord.js.org/#/)  (Check for the latest API information)
-* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord documentation on rate limits)
+* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/) (Refer to the API documentation for more detailed information on error handling and rate limits)
+* **Discord API Documentation:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Understand Discord's rate limit policies)
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
