@@ -1,1 +1,1 @@
-Creating a CSS-Only Expanding Card with Hover Effect
+Handling Asynchronous Operations in Discord.js: Promise Rejection

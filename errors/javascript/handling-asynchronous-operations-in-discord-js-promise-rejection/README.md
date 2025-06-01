@@ -1,3 +1,5 @@
+# 🐞 Handling Asynchronous Operations in Discord.js: Promise Rejection
+
 
 This document addresses a common problem encountered when working with asynchronous operations in Discord.js: unhandled promise rejections. These often manifest as silent failures, making debugging difficult.  This example focuses on a scenario where a database operation (using a hypothetical `database` object) fails within an event handler.
 
