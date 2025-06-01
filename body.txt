@@ -1,102 +1,78 @@
 
-This document details a CSS-only solution for creating an expanding card effect.  No JavaScript is required! The effect involves a card that, when hovered, expands to reveal more content. This uses only CSS3 transitions and transforms for a smooth and performant animation.
+This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord imposes rate limits to prevent abuse and ensure the stability of its platform.  Exceeding these limits results in errors, typically manifesting as HTTP errors (e.g., 429 Too Many Requests).
 
-**Description of the Styling:**
+## Description of the Error
 
-The card is constructed using a simple `div` with inner divs for the front and back content. The primary styling leverages CSS transitions for a smooth expansion and `transform: scale()` for the actual scaling effect.  The hover state changes the `transform` property, causing the expansion, and uses a slight opacity change for emphasis.
+When your bot sends messages, edits messages, or performs other actions too frequently, Discord will respond with a rate limit error. This error usually involves a `HTTP 429` status code and may include information about the retry-after time in the response headers.  The bot will stop functioning until the rate limit window expires.  Ignoring this can lead to your bot being temporarily or permanently banned.
 
-**Full Code:**
+## Code: Fixing Rate Limits with `Discord.js`
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 200px;
-  height: 150px;
-  perspective: 1000px; /* For 3D effect */
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Hide overflowing content */
-  transition: transform 0.3s ease-in-out; /* Smooth transition */
+The following code demonstrates how to handle rate limits gracefully using `Discord.js`'s built-in features and promises.  This example focuses on message sending but the principles apply to other API interactions.
+
+```javascript
+const { Client, IntentsBitField } = require('discord.js');
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
+
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
+
+// Function to send messages with rate limit handling
+async function sendMessageWithRateLimit(channel, message) {
+  try {
+    await channel.send(message);
+  } catch (error) {
+    if (error.code === 50035) { //Discord API error code for messages exceeding character limits.
+      console.error("Message too long!");
+      const parts = message.match(/.{1,1900}/g);
+      for (const part of parts) {
+          await sendMessageWithRateLimit(channel, part);
+      }
+    }
+    else if (error.code === 50013) { //Discord API error code for messages that are not allowed to be sent in that channel.
+      console.error("Message not allowed in this channel!");
+    }
+    else if (error.httpStatus === 429) { // Rate limit hit
+      console.error('Rate limit hit:', error);
+      const retryAfter = error.response.headers['retry-after']; //get retry time.
+      await new Promise(resolve => setTimeout(resolve, retryAfter * 1000)); // Wait before retrying (adjust as needed)
+      await sendMessageWithRateLimit(channel, message); // Retry sending the message
+    } else {
+      console.error('An unexpected error occurred:', error);
+      // Handle other errors as needed
+    }
+  }
 }
 
-.card:hover {
-  transform: scale(1.1);
-  opacity: 0.9; /* Subtle opacity change on hover */
-}
 
-.card-front, .card-back {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 8px; /* Inherit card border-radius */
-  backface-visibility: hidden; /* Prevent back content from showing during transition */
+client.on('messageCreate', async (msg) => {
+  if (msg.content === '!test') {
+    await sendMessageWithRateLimit(msg.channel, 'This is a test message to demonstrate rate limit handling!');
+  }
+});
 
-}
 
-.card-front {
-  background-color: #fff;
-  color: #333;
-  z-index: 1; /* Ensure front is on top */
-}
-
-.card-back {
-  background-color: #ddd;
-  color: #666;
-  transform: rotateY(180deg); /* Initially hidden on the back */
-}
-
-.card-content {
-  text-align: center;
-}
-
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-front">
-    <div class="card-content">
-      <h2>Front</h2>
-      <p>Click or hover!</p>
-    </div>
-  </div>
-  <div class="card-back">
-    <div class="card-content">
-      <h2>Back</h2>
-      <p>More details here!</p>
-    </div>
-  </div>
-</div>
-
-</body>
-</html>
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
 ```
 
-**Explanation:**
 
-* **`perspective`**: Creates a 3D space for the card to transform in.
-* **`transform: scale(1.1)`**: Scales the card up by 10% on hover.
-* **`transition`**: Smoothly animates the `transform` property over 0.3 seconds.
-* **`backface-visibility: hidden`**: Prevents the back content from being visible during the transition.
-* **`z-index`**:  Ensures the front face stays on top.
-* **`overflow: hidden`**: Prevents content from spilling out during the transition.
+## Explanation
+
+1. **Error Handling:** The `try...catch` block catches errors during message sending.
+
+2. **Rate Limit Detection:**  The code specifically checks for `error.httpStatus === 429`.  This indicates a rate limit violation.  Error handling also includes checks for common discord api errors.
+
+3. **Retry Mechanism:**  If a rate limit is detected, the code extracts the `retry-after` header from the error response. This header specifies how long to wait before retrying.  `setTimeout` is used to pause execution for the specified duration.  The function then recursively calls itself to retry sending the message.  
+
+4. **Recursive Call:** The recursive call to `sendMessageWithRateLimit` ensures the message is sent once the rate limit window has passed.
+
+5. **Error logging:** Thorough error logging helps identify and debug issues.
 
 
-**Links to Resources to Learn More:**
+## External References
 
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS3 Perspective:** [Understanding CSS 3D Transforms](https://css-tricks.com/almanac/properties/t/transform/)
+* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)  (Refer to the API documentation for details on methods and error codes.)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord documentation on rate limits.)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
