@@ -1,3 +1,5 @@
+# 🐞 Handling 404 Errors in Next.js API Routes with MongoDB and Express.js
+
 
 This document addresses a common problem developers encounter when building applications with the MERN stack (MongoDB, Express.js, React.js, Next.js): receiving 404 Not Found errors when fetching data from a Next.js API route that interacts with a MongoDB database via Express.js. This typically happens when the API route doesn't correctly handle requests or when data isn't found in the database.
 
