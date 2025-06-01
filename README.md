@@ -2,6 +2,9 @@
   <img src="https://i.ibb.co/YB4ZZfRN/210044478.png" width="100" alt="OpenRockets" /><br>
   
   [![OpenRockets](https://img.shields.io/badge/OpenRockets-Verified%20Contributor-white?labelColor=black&style=for-the-badge&logo=Rocket&logoColor=white&link=https://www.github.com/openrockets)](https://www.github.com/openrockets)
+
+  ![Total Contributions](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/<openrockets>/<web-dev-error-solutions>/main/filecount-badge.json)
+
   <br>
   <span>The Web Developer's Error Solutions Handbook</span>
     
