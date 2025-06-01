@@ -1,3 +1,5 @@
+# 🐞 Handling Asynchronous Operations in Discord.js: The Promise.all Solution
+
 
 This document addresses a common problem encountered when working with Discord.js: managing multiple asynchronous operations concurrently to avoid race conditions and ensure data consistency.  Specifically, we'll focus on fetching multiple pieces of data from the Discord API and processing them in a reliable way.
 
