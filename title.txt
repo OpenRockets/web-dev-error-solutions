@@ -1,1 +1,1 @@
-Handling `CastError` in MERN Stack Applications
+Handling 404 Errors in a MERN Stack Application with Next.js

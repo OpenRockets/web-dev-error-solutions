@@ -1,3 +1,5 @@
+# 🐞 Handling 404 Errors in a MERN Stack Application with Next.js
+
 
 This document addresses a common problem encountered when building applications using MongoDB, Express.js, React.js, and Next.js: handling 404 (Not Found) errors gracefully.  Specifically, we'll focus on routing issues where Next.js routes don't correctly map to your Express.js API endpoints, resulting in 404 errors on the client-side.
 
