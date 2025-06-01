@@ -1,97 +1,74 @@
 
-This document addresses a common issue encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its platform. Exceeding these limits results in your bot being temporarily disabled, preventing it from sending messages, editing messages, or performing other actions.
+This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered over, revealing additional content.  No JavaScript is required. This example uses plain CSS3; however, the concepts could easily be adapted to a framework like Tailwind CSS.
+
+**Description of the Styling:**
+
+The card uses a simple layout with a header and a content area. The content area is initially hidden using `max-height: 0;` and `overflow: hidden;`.  On hover, the `max-height` is set to a large value, allowing the content to expand.  Smooth transitions are added for a polished effect using `transition`.
 
 
-## Description of the Error
+**Full Code:**
 
-When your bot hits a rate limit, you'll typically encounter errors resembling this (the exact message might vary slightly depending on the Discord.js version and the specific API endpoint you're hitting):
-
-```
-DiscordAPIError: 429: Too Many Requests
-    at RequestHandler.execute (/path/to/node_modules/discord.js/src/rest/RequestHandler.js:151:17)
-    at processTicksAndRejections (node:internal/process/task_queues:96:5)
-```
-
-This indicates that your bot has sent too many requests to Discord's API within a given timeframe.  Your bot will effectively freeze until the rate limit is lifted (usually after a short delay).
-
-
-## Fixing the Issue: Step-by-Step Code
-
-The solution involves implementing proper rate limit handling within your Discord bot.  Discord.js provides mechanisms to manage this, primarily through the `rateLimit` property of the `RESTManager`.  However, it's crucial to understand *why* rate limits are exceeded to prevent the issue from recurring.
-
-
-**Step 1: Identify the Problem Area**
-
-The first step is to pinpoint the part of your code that's excessively hitting the API. This often involves sending many messages rapidly, frequently updating the bot's status, or making repeated API calls within a short period. Analyze your code, particularly parts that use methods like `channel.send()`, `message.edit()`, `client.user.setActivity()`, etc.
-
-**Step 2: Implement Asynchronous Queues**
-
-A simple yet effective approach is using an asynchronous queue, allowing you to process actions sequentially rather than concurrently.  This limits the number of requests sent to Discord.  The following example uses the `async` and `await` keywords with a simple array-based queue:
-
-```javascript
-const Discord = require('discord.js');
-const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] }); // Add necessary intents
-
-const queue = [];
-let processing = false;
-
-async function processQueue() {
-  if (!processing && queue.length > 0) {
-    processing = true;
-    const task = queue.shift();
-    try {
-      await task();
-    } catch (error) {
-      console.error("Error processing queue task:", error);
-    } finally {
-      processing = false;
-      processQueue(); // Process the next task
-    }
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 300px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden; /* Hide content that overflows */
+  transition: 0.3s ease-in-out; /* Smooth transition */
 }
 
+.card-header {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px;
+  text-align: center;
+}
 
-client.on('messageCreate', async (message) => {
-  if (message.content === '!command') {
-    queue.push(async () => {
-      // Your API call here, e.g., sending a message
-      await message.reply('This message is queued!');
-      // Simulate a delay to emphasize the queuing effect
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    });
-    processQueue(); // Start or continue processing the queue
-  }
-});
+.card-content {
+  padding: 10px;
+  max-height: 0; /* Initially hidden */
+  overflow: hidden; /* Hide overflow */
+  transition: max-height 0.3s ease-in-out; /* Smooth transition */
+}
 
-client.login('YOUR_BOT_TOKEN');
+.card:hover .card-content {
+  max-height: 200px; /* Expand on hover */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    Card Title
+  </div>
+  <div class="card-content">
+    This is the card content that will expand when you hover over the card.  You can add as much text or other elements as you like here.  This is just an example to show the expanding effect.  Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Nulla nec purus feugiat, molestie ipsum et, consequat nibh.
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**Step 3 (Advanced): Utilize `rateLimit` Property (Discord.js v14 and later)**
+**Explanation:**
 
+* **`.card`:** This class styles the overall card container.  `overflow: hidden` is crucial for preventing the content from overflowing before expansion.
+* **`.card-header`:** Styles the card's header.
+* **`.card-content`:** Styles the card's content area.  `max-height: 0;` and `overflow: hidden;` initially hide the content. The `transition` property enables smooth animation.
+* **`.card:hover .card-content`:** This targets the `.card-content` when the `.card` is hovered. `max-height: 200px;` sets the maximum height to allow the content to expand.  Adjust this value as needed.
 
-For more fine-grained control, you can leverage the `rateLimit` property of the `RESTManager`. This property provides information about the remaining requests allowed before hitting the rate limit and the time until the reset.  However, this is generally less necessary with proper queueing.
+**Resources to Learn More:**
 
-```javascript
-client.ws.on('RATE_LIMIT', (rateLimitInfo) => {
-    console.log(`Rate limited for ${rateLimitInfo.time}ms on ${rateLimitInfo.route}`);
-});
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Overflow Property:** [MDN Web Docs - CSS Overflow](https://developer.mozilla.org/en-US/docs/Web/CSS/overflow)
+* **CSS Selectors:**  Understanding how to target elements with CSS selectors is essential for creating more complex effects.  Search for "CSS selectors tutorial" for many helpful resources.
 
-```
-
-**Step 4: Implement Backoff Strategies (Advanced)**
-
-For more robust handling, implement an exponential backoff strategy. This involves increasing the delay between requests after encountering a rate limit, gradually decreasing the delay as the rate limit reset approaches. This avoids overloading Discord even further. Libraries can assist with this, but a custom implementation is also possible.
-
-
-## Explanation
-
-Rate limiting is a crucial aspect of building robust Discord bots.  Simply wrapping API calls in `try...catch` blocks without addressing the underlying issue isn't a sufficient solution. Asynchronous queues ensure that requests are processed sequentially, preventing a flood of requests.  More advanced techniques such as backoff strategies further refine this by dynamically adjusting request intervals based on the rate limit status.
-
-
-## External References
-
-* **Discord API Documentation:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official documentation on rate limits)
-* **Discord.js Guide:** [https://discord.js.org/#/](https://discord.js.org/#/) (Find the relevant version's documentation for your project)
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
