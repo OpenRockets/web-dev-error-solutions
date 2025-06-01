@@ -1,3 +1,5 @@
+# 🐞 Creating a CSS-only Accordion
+
 
 This document details the creation of a simple accordion using only CSS.  No JavaScript is required.  This utilizes CSS's ability to toggle visibility and height based on sibling selectors and the `:target` pseudo-class.
 

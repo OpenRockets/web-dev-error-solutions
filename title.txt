@@ -1,1 +1,1 @@
-Handling `CastError` in MERN Stack Applications
+Creating a CSS-only Accordion
