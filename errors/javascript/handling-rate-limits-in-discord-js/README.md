@@ -1,3 +1,5 @@
+# 🐞 Handling Rate Limits in Discord.js
+
 
 This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and maintain server stability.  Exceeding these limits results in your bot being temporarily blocked from making API requests, leading to errors and unexpected behavior.
 
