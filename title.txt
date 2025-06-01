@@ -1,1 +1,1 @@
-Handling Mongoose `CastError` in a Next.js, Express.js, and React.js Application
+Creating a CSS-only Animated Loading Spinner

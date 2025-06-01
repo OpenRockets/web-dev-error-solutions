@@ -1,3 +1,5 @@
+# 🐞 Creating a CSS-only Animated Loading Spinner
+
 
 This document details the creation of a simple, yet visually appealing loading spinner using only CSS. No JavaScript is required!  This utilizes CSS animations and keyframes to achieve the effect.
 
