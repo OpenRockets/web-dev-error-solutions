@@ -1,3 +1,5 @@
+# 🐞 Creating a Pure CSS Expanding Card with a Hover Effect
+
 
 This document details the creation of an expanding card using only CSS.  No JavaScript is required. The effect involves a card that smoothly expands its content area on hover, revealing hidden information.  This is achieved using CSS transitions and animations.
 
