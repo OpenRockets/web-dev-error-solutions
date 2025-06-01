@@ -1,3 +1,5 @@
+# 🐞 Discord.js: Handling Rate Limits and Avoiding 429 Errors
+
 
 ## Description of the Error
 
