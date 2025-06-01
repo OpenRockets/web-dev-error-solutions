@@ -1,1 +1,1 @@
-Creating a CSS-only Animated Loading Spinner
+Handling `TypeError: Converting circular structure to JSON` in a MERN Stack Application
