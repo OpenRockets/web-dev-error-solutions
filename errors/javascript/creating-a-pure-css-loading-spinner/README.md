@@ -1,14 +1,14 @@
 # 🐞 Creating a Pure CSS Loading Spinner
 
 
-This document details the creation of a simple, visually appealing loading spinner using only CSS.  No JavaScript is required. This example utilizes CSS animations and transformations to achieve the spinning effect.
+This document details the creation of a simple, yet visually appealing loading spinner using only CSS.  No JavaScript is required! This example uses CSS3 animations and transformations.
 
-## Description of the Styling
+**Description of the Styling:**
 
-The spinner consists of a single element styled to look like a set of rotating bars.  The key to the animation is the `@keyframes` rule, which defines the animation sequence, and the `animation` property, which applies the animation to the element.  Transformations (`rotate`) are used to create the spinning effect, and box-shadow creates a subtle three-dimensional appearance.
+This loading spinner consists of four circles arranged in a square.  Each circle rotates independently, creating a dynamic and visually engaging loading animation.  The styling utilizes CSS variables for easy customization of colors and sizes.  The animation is smooth and subtle, suitable for various contexts.
 
 
-## Full Code
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
@@ -16,43 +16,86 @@ The spinner consists of a single element styled to look like a set of rotating b
 <head>
 <title>CSS Loading Spinner</title>
 <style>
-.loader {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: 5px solid #f3f3f3; /* Light grey */
-  border-top: 5px solid #3498db; /* Blue */
-  animation: spin 1s linear infinite;
-  margin: 20px auto;
+:root {
+  --spinner-size: 50px;
+  --spinner-color: #007bff; /* Blue */
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.loader {
+  display: inline-block;
+  position: relative;
+  width: var(--spinner-size);
+  height: var(--spinner-size);
+}
+
+.loader div {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: var(--spinner-color);
+  opacity: 0.7;
+  animation: rotate 1s linear infinite;
+}
+
+.loader div:nth-child(1) {
+  animation-delay: 0s;
+  transform: translateX(-100%) translateY(-100%);
+}
+
+.loader div:nth-child(2) {
+  animation-delay: 0.2s;
+  transform: translateX(100%) translateY(-100%);
+}
+
+.loader div:nth-child(3) {
+  animation-delay: 0.4s;
+  transform: translateX(100%) translateY(100%);
+}
+
+.loader div:nth-child(4) {
+  animation-delay: 0.6s;
+  transform: translateX(-100%) translateY(100%);
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
 </head>
 <body>
 
-<div class="loader"></div>
+<div class="loader">
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
 
 </body>
 </html>
 ```
 
-## Explanation
 
-1. **`loader` class:** This class styles the main div element that will represent the spinner.  `width` and `height` set the dimensions, `border-radius` creates the circular shape, and `border` styles the circular border. The `border-top` color is different to create the rotating effect.
+**Explanation:**
 
-2. **`animation` property:** This applies the `spin` animation to the element.  `1s` sets the animation duration to 1 second, `linear` ensures a constant speed, and `infinite` makes the animation loop indefinitely.
+* **`:root`**:  Defines CSS variables for easy customization of the spinner's size and color.
+* **`.loader`**:  Sets up the container for the spinner, using `inline-block` for easy integration into text flow.
+* **`.loader div`**: Styles each individual circle within the spinner.  `position: absolute` allows precise positioning.
+* **`:nth-child()`**:  Applies different animation delays to each circle, creating the staggered rotation effect.
+* **`@keyframes rotate`**: Defines the animation itself, rotating each circle 360 degrees continuously.
 
-3. **`@keyframes spin`:** This defines the animation itself.  From 0% to 100% of the animation's duration, the element rotates 360 degrees using the `transform: rotate()` property.
 
-## Resources to Learn More
+**Links to Resources to Learn More:**
 
-* **CSS Animations:**  [Mozilla Developer Network - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
-* **CSS Transforms:** [Mozilla Developer Network - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **Understanding `@keyframes`:**  Many tutorials on YouTube and other coding websites explain `@keyframes` in detail.  Search for "CSS Keyframes Tutorial".
+* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks (General CSS resource):** [https://css-tricks.com/](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

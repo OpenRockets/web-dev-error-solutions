@@ -1,1 +1,1 @@
-Handling "TypeError: fetch is not a function" in Next.js API Routes
+Creating a Pure CSS Loading Spinner
