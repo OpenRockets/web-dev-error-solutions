@@ -1,1 +1,1 @@
-Handling MERN Stack Errors:  `CastError: Cast to ObjectId failed for value "..."` in MongoDB
+Handling Mongoose `CastError` in a Next.js, Express.js, and React.js Application
