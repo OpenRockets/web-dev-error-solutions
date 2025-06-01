@@ -1,1 +1,1 @@
-Handling Discord.js Rate Limits: A Step-by-Step Guide
+Handling DiscordJS Rate Limits: A Step-by-Step Guide
