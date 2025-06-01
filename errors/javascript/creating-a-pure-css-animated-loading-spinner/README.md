@@ -1,11 +1,12 @@
 # 🐞 Creating a Pure CSS Animated Loading Spinner
 
 
-This document details how to create a visually appealing animated loading spinner using only CSS.  No JavaScript is required.  This utilizes CSS animations and keyframes to achieve the effect.  We'll build a simple, circular spinner that rotates smoothly.
+This document details the creation of a simple, yet visually appealing loading spinner using only CSS.  No JavaScript is required!  This example uses pure CSS3 animations and transforms to achieve the effect.
 
 **Description of the Styling:**
 
-This spinner utilizes a single element (a pseudo-element is also used for visual effect), styled with CSS to create a rotating effect.  The animation uses keyframes to define the rotation over a specified duration. We'll use borders to create the visual effect of a spinner.  The color can be easily customized.
+The spinner consists of a single element, a pseudo-element (`::before`), that is rotated continuously using CSS animations. The pseudo-element is styled to create a circular shape with a gradient for visual appeal. The animation smoothly rotates the element, creating the spinning effect. We use keyframes to define the animation's progression over time.
+
 
 **Full Code:**
 
@@ -18,9 +19,9 @@ This spinner utilizes a single element (a pseudo-element is also used for visual
 .spinner {
   width: 50px;
   height: 50px;
-  border: 5px solid #f3f3f3; /* Light grey border */
-  border-top: 5px solid #3498db; /* Blue color for the spinning effect */
   border-radius: 50%;
+  border: 5px solid #f3f3f3; /* Light grey border */
+  border-top: 5px solid #3498db; /* Blue color for the spinning part */
   animation: spin 1s linear infinite;
 }
 
@@ -41,18 +42,16 @@ This spinner utilizes a single element (a pseudo-element is also used for visual
 
 **Explanation:**
 
-* **`.spinner` class:** This class styles the main div element. `width` and `height` set the size.  The `border` property creates the circular shape.  `border-top` is set to a different color to create the spinning effect.  `border-radius: 50%;` makes it a perfect circle.  `animation: spin 1s linear infinite;` applies the animation.
+* **`.spinner`:** This class defines the main container for the spinner.  `width` and `height` set its size, `border-radius` creates the circle, and the `border` properties define the spinner's appearance.  The `border-top` is a different color to create the spinning effect.  The `animation` property applies the `spin` animation.
 
-* **`@keyframes spin`:** This defines the animation.  It smoothly rotates the element 360 degrees over 1 second (`1s`) repeatedly (`infinite`).  `linear` ensures a consistent speed.
-
-
-**External References:**
-
-* [MDN Web Docs on CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
-* [W3Schools on Keyframes](https://www.w3schools.com/css/css3_animations.asp)
+* **`@keyframes spin`:** This defines the animation named "spin". It smoothly rotates the element from 0 degrees to 360 degrees over one second (`1s`), repeating infinitely (`infinite`).  The `linear` keyword ensures a constant rotation speed.
 
 
-This simple example demonstrates the power of CSS for creating dynamic visual effects without needing JavaScript. You can adjust the `width`, `height`, `border-width`, colors, and animation duration to customize the spinner to your needs.  For more advanced spinners, consider using multiple elements or more complex keyframe animations.
+**Links to Resources to Learn More:**
+
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **Pseudo-elements:** [MDN Web Docs - Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
