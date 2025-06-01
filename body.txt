@@ -1,79 +1,105 @@
 
-This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and maintain server stability.  Exceeding these limits results in errors, preventing your bot from functioning correctly.  This guide provides a comprehensive solution.
+## Description of the Error
 
+One common problem encountered when developing Discord bots using Discord.js is hitting rate limits.  Discord's API has limitations on how many requests your bot can make within a specific timeframe. Exceeding these limits results in receiving a `HTTP 429 Too Many Requests` error. This error prevents your bot from functioning correctly and can lead to temporary bans or even permanent suspension from the Discord API if not handled properly.  The error manifests itself as a rejected promise or an explicit error message in your console log, depending on your error handling.
 
-**Description of the Error:**
+## Code: Fixing Rate Limits in Discord.js
 
-When your bot sends messages, edits messages, or performs other actions too frequently, Discord's rate limiters will intervene.  This typically manifests as a `DiscordAPIError` with a message containing "429: Too Many Requests".  This error halts further actions until the rate limit resets.  Ignoring this can lead to your bot being temporarily or permanently banned from the Discord API.
+This example demonstrates how to use `setTimeout` for basic rate limiting.  For more robust solutions, consider using dedicated libraries like `discord.js-rate-limiter`.
 
+**Step 1: Basic Implementation with `setTimeout`**
 
-**Code: Fixing Rate Limits Step-by-Step**
-
-This example demonstrates using `setTimeout` for simple rate limiting.  For more complex scenarios, consider using dedicated rate limit libraries (see External References).
+This approach introduces a simple delay after each API call.  **This is not ideal for complex bots and might still lead to rate limiting in high-volume scenarios**.
 
 ```javascript
 const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds] }); // Replace with your intents
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-// Simulate sending many messages quickly.  This will trigger rate limits without handling.
-//  Replace this with your actual bot logic.
-let messageCount = 0;
-function sendMessageLoop() {
-    if (messageCount < 100) {
-        client.channels.cache.get('YOUR_CHANNEL_ID').send(`Message ${messageCount + 1}`)
-          .then(() => {
-            messageCount++;
-            setTimeout(sendMessageLoop, 1000); // Wait 1 second before sending the next message
-          })
-          .catch(error => {
-            if (error.code === 50007){
-                console.log("Message too long!");
-                setTimeout(sendMessageLoop, 1000);
-            } else if (error.code === 429) {
-              console.error("Rate limited! Waiting before retrying...");
-              const retryAfter = error.retryAfter || 1000; // Default to 1-second wait if not specified
-              setTimeout(sendMessageLoop, retryAfter);
-            } else {
-              console.error("An error occurred:", error);
-            }
-          });
-    } else {
-        console.log('Message sending loop completed.');
+client.on('messageCreate', async msg => {
+  if (msg.content === '!test') {
+    try {
+      //Simulate API call (replace with your actual API call)
+      await simulateApiCall();
+      console.log('API call successful!');
+    } catch (error) {
+      if (error.code === 50007) {  //Adjust this for your exact error code from Discord's error response
+        console.error("Discord API rate limit hit. Retrying...");
+        setTimeout(() => simulateApiCall(), 2000); //Retry after 2 seconds
+      } else {
+        console.error('An error occurred:', error);
+      }
     }
+  }
+});
+
+
+async function simulateApiCall() {
+  // Replace this with your actual API call
+  // Example:  await client.channels.cache.get('channelID').send('Hello!');
+  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
 }
 
-client.on('messageCreate', (msg) => {
-  if (msg.content === '!start') {
-    sendMessageLoop();
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+```
+
+
+**Step 2: Using `discord.js-rate-limiter` (Recommended)**
+
+This library provides more sophisticated rate limiting capabilities, handling different rate limit buckets more effectively.
+
+```bash
+npm install discord.js-rate-limiter
+```
+
+```javascript
+const { Client, IntentsBitField } = require('discord.js');
+const RateLimiter = require('discord.js-rate-limiter');
+
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds] });
+const limiter = new RateLimiter({
+    interval: 1000, // 1 second
+    max: 1, // 1 request per interval
+});
+
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
+
+client.on('messageCreate', async msg => {
+  if (msg.content === '!test') {
+    const { success, rateLimited } = await limiter.acquire(msg.author.id); // Acquire a token
+    if (!success) {
+      console.log('Rate limited. Try again later.');
+      return;
+    }
+    try {
+      // Your API call here.  This call will now be rate limited.
+      await client.channels.cache.get('YOUR_CHANNEL_ID').send('Hello!');
+    } catch (error) {
+      console.error("Error during API call:", error);
+    }
   }
 });
 
 client.login('YOUR_BOT_TOKEN');
-
 ```
 
-**Explanation:**
-
-1. **Import necessary modules:** We import `Client` and `IntentsBitField` from `discord.js`.
-2. **Create a client:** We initialize a new Discord client with the necessary intents.  Remember to replace `YOUR_CHANNEL_ID` and `YOUR_BOT_TOKEN` with your actual values.
-3. **`sendMessageLoop()` function:** This function simulates sending multiple messages.  Crucially, it uses `setTimeout` to introduce a delay of 1 second between each message.
-4. **Error Handling:** The `.catch()` block handles errors. It specifically checks for the `429` error code (Too Many Requests). If it occurs, it logs a message and uses `setTimeout` to wait for the specified retry time (`error.retryAfter`) before trying again.  It also handles the error code 50007 (message too long).
-5. **Event Listener:** The `messageCreate` event listener triggers the `sendMessageLoop` function when a message containing "!start" is sent to the bot.
-6. **Login:**  Finally, the bot logs in using your token.
+Remember to replace `'YOUR_BOT_TOKEN'` and `'YOUR_CHANNEL_ID'` with your actual token and channel ID.
 
 
-**External References:**
+## Explanation
 
-* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)  - Official documentation for the library.
-* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) - Discord's documentation on rate limits.
-* **(Optional) Rate Limiting Libraries:**  For more robust rate limiting, consider using a dedicated library like `node-rate-limiter`.
+Rate limiting is a crucial aspect of building scalable and reliable Discord bots. The `setTimeout` method provides a simple, but limited solution.  It introduces a fixed delay after each API request. However,  this approach doesn't account for different rate limits applied to various API endpoints or user interactions.  Using a library like `discord.js-rate-limiter` is highly recommended because it intelligently manages rate limits based on specific endpoints and user IDs, making it significantly more robust and preventing unexpected rate limiting issues.
 
 
-**Important Note:** The `setTimeout` method provides a basic approach. For more sophisticated rate-limiting strategies, especially when dealing with multiple endpoints or different rate limit buckets, consider using a dedicated rate-limiting library.  These libraries often handle bucket identification and more complex scenarios more efficiently.
+## External References
+
+* **Discord API Rate Limits Documentation:**  (Unfortunately, Discord doesn't have a centralized, easily linkable document specifically detailing all rate limits.  The information is spread across their API documentation and error responses.)  You'll need to refer to the official Discord API documentation and examine the responses you receive when exceeding limits.
+* **`discord.js-rate-limiter` npm package:** [https://www.npmjs.com/package/discord.js-rate-limiter](https://www.npmjs.com/package/discord.js-rate-limiter)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
