@@ -1,11 +1,12 @@
 # 🐞 Creating a Pure CSS Loading Spinner
 
 
-This document details how to create a visually appealing loading spinner using only CSS. No JavaScript required! This example utilizes CSS animations and keyframes to achieve a smooth, rotating effect.  We will create a simple circular spinner with a gradient.
+This document details the creation of a simple, visually appealing loading spinner using only CSS.  No JavaScript is required. This example utilizes CSS animations and transformations to achieve the spinning effect.
 
 ## Description of the Styling
 
-This CSS-only loading spinner creates a circular shape that rotates continuously. The animation is smooth and uses a linear gradient for visual appeal.  The spinner's size and colors are easily customizable through CSS variables.
+The spinner consists of a single element styled to look like a set of rotating bars.  The key to the animation is the `@keyframes` rule, which defines the animation sequence, and the `animation` property, which applies the animation to the element.  Transformations (`rotate`) are used to create the spinning effect, and box-shadow creates a subtle three-dimensional appearance.
+
 
 ## Full Code
 
@@ -15,28 +16,20 @@ This CSS-only loading spinner creates a circular shape that rotates continuously
 <head>
 <title>CSS Loading Spinner</title>
 <style>
-  :root {
-    --spinner-size: 80px;
-    --spinner-color1: #4CAF50; /* Green */
-    --spinner-color2: #FF9800; /* Orange */
-  }
+.loader {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 5px solid #f3f3f3; /* Light grey */
+  border-top: 5px solid #3498db; /* Blue */
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
 
-  .loader {
-    width: var(--spinner-size);
-    height: var(--spinner-size);
-    border-radius: 50%;
-    border: 6px solid #f3f3f3; /* Light grey border */
-    border-top: 6px solid var(--spinner-color1);
-    border-right: 6px solid var(--spinner-color2);
-    border-bottom: 6px solid var(--spinner-color1);
-    border-left: 6px solid var(--spinner-color2);
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 </style>
 </head>
 <body>
@@ -49,17 +42,18 @@ This CSS-only loading spinner creates a circular shape that rotates continuously
 
 ## Explanation
 
-* **`:root`:** This defines CSS variables that can be easily changed to alter the spinner's size and colors.
-* **`.loader`:** This class styles the spinner itself.  `border-radius: 50%` makes it circular. The `border` properties create the rotating effect using different colors.  The `animation` property applies the `spin` keyframes.
-* **`@keyframes spin`:** This defines the animation, smoothly rotating the spinner 360 degrees over one second, repeating infinitely (`infinite`).
+1. **`loader` class:** This class styles the main div element that will represent the spinner.  `width` and `height` set the dimensions, `border-radius` creates the circular shape, and `border` styles the circular border. The `border-top` color is different to create the rotating effect.
 
-## External References
+2. **`animation` property:** This applies the `spin` animation to the element.  `1s` sets the animation duration to 1 second, `linear` ensures a constant speed, and `infinite` makes the animation loop indefinitely.
 
-While this is a relatively simple technique, here are some resources that might be helpful for understanding the underlying concepts:
+3. **`@keyframes spin`:** This defines the animation itself.  From 0% to 100% of the animation's duration, the element rotates 360 degrees using the `transform: rotate()` property.
 
-* [CSS Animations MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations):  A comprehensive guide to CSS animations from Mozilla Developer Network.
-* [CSS Variables (Custom Properties) MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties):  Learn more about using CSS variables for better code maintainability.
+## Resources to Learn More
+
+* **CSS Animations:**  [Mozilla Developer Network - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS Transforms:** [Mozilla Developer Network - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **Understanding `@keyframes`:**  Many tutorials on YouTube and other coding websites explain `@keyframes` in detail.  Search for "CSS Keyframes Tutorial".
 
 
-## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
