@@ -1,3 +1,5 @@
+# 🐞 Handling Mongoose `CastError` in a Next.js, Express.js, and React.js Application
+
 
 This document addresses a common error encountered when building applications using the MERN stack (MongoDB, Express.js, React.js, and Next.js): the Mongoose `CastError`. This error typically arises when attempting to perform a database query using an invalid data type.  For instance, passing a string to a field expecting a number, or vice-versa.
 
