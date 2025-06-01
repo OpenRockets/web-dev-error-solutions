@@ -1,94 +1,87 @@
 
-## Description of the Error
-
-One common hurdle encountered when developing Discord bots using Discord.js is hitting rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its platform.  When your bot sends messages, edits messages, creates reactions, or performs other actions too frequently, Discord will respond with a rate limit error. This typically manifests as a HTTP error code (e.g., 429 Too Many Requests) or a similar error message within the Discord.js library.  This can cause your bot to stop functioning correctly or even be temporarily banned.
-
-## Fixing the Rate Limit Issue: A Step-by-Step Approach
+This document details how to create an expanding card effect using only CSS.  No JavaScript required! This effect uses CSS transitions and transforms to smoothly expand a card when it's hovered over.  We'll use standard CSS3 properties; no Tailwind CSS is needed for this particular example.
 
 
-This example focuses on rate limiting when sending messages.  Other actions (e.g., creating guilds) have their own rate limits and require similar strategies.
+## Description of the Styling
 
-**Step 1: Understanding the `rateLimit` Property**
-
-Discord.js provides a `rateLimit` property on the `GuildChannel` object after sending a message.  This property contains information about the rate limit, including the time until the rate limit resets (`reset`) and the remaining number of requests allowed before hitting the limit again (`remaining`).
+The card will have a basic design initially. On hover, the card will expand slightly, revealing more content and subtly changing its shadow.  The expansion will be a smooth transition, enhancing the user experience.
 
 
-**Step 2: Implementing a Rate Limiting Handler**
+## Full Code
 
-The best solution involves asynchronous queuing and handling of requests. This ensures that your bot won't overwhelm Discord's servers. Here's how you can implement it:
-
-```javascript
-const Discord = require('discord.js');
-const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES] }); //Remember to adjust intents
-const queue = [];
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-async function sendMessageWithRateLimit(channel, message) {
-  if (channel.rateLimit) {
-    const delay = channel.rateLimit.reset - Date.now();
-    console.log(`Rate limited on channel ${channel.name}. Waiting ${delay}ms...`);
-    await new Promise(resolve => setTimeout(resolve, delay));
-  }
-    try {
-    await channel.send(message);
-  } catch (error) {
-    if (error.code === 50007) { //Missing Access
-        console.log("Bot does not have permission to send messages in this channel");
-    } else if (error.code === 50013){
-        console.log("The channel is not found")
-    }
-    else if (error.code === 429) {
-        //If it is a rate limit error handle it here
-        console.error("Rate limit hit, handling with queue.");
-        await new Promise(resolve => setTimeout(resolve, error.rateLimit.reset - Date.now() + 100)); // Add a small buffer
-        await channel.send(message);
-    } else {
-      console.error(`Error sending message: ${error}`);
-    }
-  }
-
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 200px;
+  height: 150px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  overflow: hidden; /* Hide content that overflows on smaller cards */
+  position: relative; /* For absolute positioning of inner content*/
 }
 
-client.on('messageCreate', async (msg) => {
-  if (msg.content === '!test') {
-      //Push messages to the queue to handle them one by one.
-    queue.push(async () => sendMessageWithRateLimit(msg.channel, 'Hello from the queue!'));
-  }
-});
-
-//Process the queue in a separate function
-async function processQueue() {
-    while (true) {
-        if (queue.length > 0) {
-            const task = queue.shift();
-            await task();
-        } else {
-            await new Promise(resolve => setTimeout(resolve, 500)); //Check every 500 milliseconds
-        }
-    }
+.card:hover {
+  transform: scale(1.1);
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
 }
 
-client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
-processQueue();
+.card-content {
+  padding: 15px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 
+
+.card h2 {
+  margin-top: 0;
+}
+
+.card p {
+  margin-bottom: 0;
+  font-size: 14px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2>Card Title</h2>
+    <p>Some card content goes here.  This is a longer paragraph to demonstrate expansion.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
 
-**Step 3:  Using a Dedicated Rate Limiting Library (Optional)**
-
-For more robust rate limiting management, consider using a dedicated library. While not strictly necessary for simple bots, these libraries can handle more complex scenarios and provide additional features.
-
 ## Explanation
 
-The code above uses an asynchronous queue (`queue`) to manage messages that need to be sent. The `sendMessageWithRateLimit` function checks for rate limits before sending a message. If a rate limit is detected, it waits until the rate limit resets before attempting to send the message again.  The `processQueue` function handles processing messages from the queue. This prevents the bot from sending messages too quickly and triggering rate limits. The catch block includes specific error codes to help identify and handle issues that are not rate limits.  Adding a buffer ensures that after the rate limit resets, there's some time before attempting to send a message again, thus preventing a cascading effect of rate limits.
+* **`.card`:** This class styles the main card element. `width` and `height` define its dimensions. `border-radius` creates rounded corners. `box-shadow` adds a subtle shadow.  `transition` specifies the smooth animation for `transform` (scaling) and `box-shadow` properties. `overflow: hidden;` ensures content doesn't spill outside the card's bounds. `position: relative;` allows us to absolutely position the inner content.
+* **`.card:hover`:**  This styles the card when the mouse hovers over it. `transform: scale(1.1);` increases the card size by 10%. `box-shadow` is intensified. `cursor: pointer;` changes the cursor to a hand, indicating an interactive element.
+* **`.card-content`:** This class styles the content within the card. `padding` adds spacing, `position: absolute;` and the width and height properties make it fill the card completely. The flexbox properties (`display: flex`, etc.) centers the content.
 
-## External References
+## Links to Resources to Learn More
 
-* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)  (Check the API documentation for details on `GuildChannel.rateLimit`)
-* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord documentation on rate limits)
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks:** [https://css-tricks.com/](https://css-tricks.com/) (Search for "CSS transitions" or "CSS transforms" for numerous tutorials)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
