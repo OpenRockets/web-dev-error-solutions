@@ -1,1 +1,1 @@
-Handling Asynchronous Operations in Discord.js: The Promise.all Solution
+Creating a CSS-only Pulsating Circle
