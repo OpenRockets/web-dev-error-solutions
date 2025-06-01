@@ -1,3 +1,5 @@
+# 🐞 Handling "TypeError: fetch is not a function" in Next.js API Routes
+
 
 This document addresses a common error encountered when building applications with Next.js, Express.js, MongoDB, and React.js: the `TypeError: fetch is not a function` within a Next.js API route. This usually occurs when attempting to make HTTP requests from within an API route without the proper setup.  While Next.js API routes run within a Node.js environment, they don't automatically include the browser's `fetch` API.
 
