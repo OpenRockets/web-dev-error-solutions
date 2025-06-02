@@ -1,1 +1,1 @@
-Discord.js: Handling Rate Limits and Avoiding 429 Errors
+Handling Asynchronous Operations and Promises in Discord.js
