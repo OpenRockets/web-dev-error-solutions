@@ -1,1 +1,1 @@
-Fixing Discord.js `DiscordAPIError: Missing Permissions`
+Creating a CSS-only Expanding Card
