@@ -1,125 +1,88 @@
 
-This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its platform.  Exceeding these limits results in your bot being temporarily blocked from sending messages or performing other actions.
-
-## Description of the Error
-
-When your bot attempts actions too frequently (e.g., sending many messages in quick succession, making numerous API requests), Discord will respond with a rate limit error. This typically manifests as a HTTP error code (e.g., 429 Too Many Requests) or an error within the Discord.js library indicating a rate limit has been exceeded.  The error messages can vary depending on the specific API endpoint and the type of rate limit exceeded.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This example uses pure CSS and leverages the `conic-gradient` function for a smooth and visually appealing result.
 
 
-## Fixing Rate Limits Step-by-Step
+## Description of the Styling
 
-This example focuses on handling rate limits when sending messages.  The key is to implement proper error handling and delays to respect Discord's rate limits.
+This CSS-only circular progress bar dynamically updates its visual representation based on a percentage value set via the custom property `--progress`. The bar uses a `conic-gradient` to create a filled arc, with the filled portion representing the progress percentage.  The styling incorporates a clean, modern look, easily customizable through the CSS variables.
 
-**Step 1: Install `discord.js`:**
 
-If you haven't already, install the library:
+## Full Code
 
-```bash
-npm install discord.js
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+  .progress-ring {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #f0f0f0; /* Light grey background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .progress-ring::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: conic-gradient(
+      #4CAF50 0deg var(--progress),
+      #f0f0f0 var(--progress),
+      #f0f0f0 360deg
+    );
+    mask: radial-gradient(circle 50% at 50% 50%, transparent 90%, #000 100%); /* For consistent circle shape */
+    mask-type:luminance;
+  }
+
+  .progress-ring span {
+    position: relative;
+    z-index: 1;
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+
+
+</style>
+</head>
+<body>
+
+  <div class="progress-ring" style="--progress: 75%;">
+    <span>75%</span>
+  </div>
+
+  <div class="progress-ring" style="--progress: 20%;">
+    <span>20%</span>
+  </div>
+
+  <div class="progress-ring" style="--progress: 90%;">
+    <span>90%</span>
+  </div>
+
+
+</body>
+</html>
 ```
 
-**Step 2: Implement Error Handling and Delays:**
-
-The following code snippet demonstrates how to handle rate limit errors and implement delays using `async/await` and `setTimeout`.  It uses a simple queue to manage message sending.
-
-
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
-
-const messageQueue = [];
-let isSending = false;
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-// Function to send messages, handling rate limits
-async function sendMessage(channel, message) {
-  if (isSending) {
-    messageQueue.push({ channel, message });
-    return;
-  }
-  isSending = true;
-  try {
-    await channel.send(message);
-  } catch (error) {
-    if (error.code === 50007) { // 50007 means "Cannot send messages to this user"
-      console.error('Cannot send messages to this user.', error);
-    } else if (error.code === 50013){ //50013 means that the user is not available to send to.
-      console.error('Cannot send to unavailable user.', error);
-    }
-    else if (error.httpStatus === 429) { // Rate limit hit
-      const retryAfter = error.response.headers['retry-after'];
-      console.log(`Rate limited. Retrying after ${retryAfter}ms`);
-      await new Promise(resolve => setTimeout(resolve, retryAfter * 1000)); // Convert seconds to milliseconds
-    } else {
-      console.error('An error occurred:', error);
-    }
-  } finally {
-    isSending = false;
-    if (messageQueue.length > 0) {
-      const { channel, message } = messageQueue.shift();
-      sendMessage(channel, message); // Process the next message in the queue
-    }
-  }
-}
-
-client.on('messageCreate', msg => {
-  if (msg.content === '!test') {
-    sendMessage(msg.channel, 'Hello from my bot!');
-  }
-});
-
-
-client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
-```
-
-**Step 3:  Using the `Collection` Object for more robust queueing (Advanced):**
-
-For more sophisticated queue management across multiple channels and better performance use `Collection`
-
-```javascript
-const { Client, IntentsBitField, Collection } = require('discord.js');
-
-const messageQueue = new Collection();
-let isSending = false;
-
-// ... (rest of the code remains the same, except replace `messageQueue.push` and `messageQueue.shift` with `messageQueue.set` and `messageQueue.shift` respectively)
-
-//Example Implementation
-client.on('messageCreate', msg => {
-  if (msg.content === '!test') {
-    const key = `${msg.channel.id}-${Date.now()}`;
-    messageQueue.set(key, { channel: msg.channel, message: 'Hello from my bot!' });
-    sendMessage(); //Start the process if not running
-  }
-});
-
-
-async function sendMessage() {
-  if (isSending || messageQueue.size === 0) return;
-  isSending = true;
-  const { channel, message } = messageQueue.first();
-  messageQueue.delete(messageQueue.firstKey()); // Remove from queue once processed
-  try{
-    // ... (rest of the try-catch block remains same)
-  } finally {
-    isSending = false;
-    sendMessage();
-  }
-}
-```
 
 ## Explanation
 
-The code utilizes `async/await` for asynchronous operations.  The `try...catch` block handles potential errors, specifically checking for the 429 status code indicating a rate limit.  If a rate limit is detected, the code waits for the specified `retry-after` period before attempting to send the message again. The queue ensures messages are sent sequentially, preventing further rate limit violations.
+* **`conic-gradient`:** This is the core of the progress bar. It creates a gradient that sweeps around a circle.  `var(--progress)` is used to dynamically determine the filled portion.  The gradient starts with the green color (`#4CAF50`) and transitions to light grey (`#f0f0f0`).
+* **`mask` and `mask-type: luminance;`:**  This ensures that the progress bar maintains a perfect circular shape even if the browser doesn't perfectly support conic-gradients or has rounding errors.  The mask creates a circle, covering any potential artifacts.
+* **CSS Variables (`--progress`):** This allows for easy adjustment of the progress percentage simply by changing the value in the `style` attribute of the `.progress-ring` div.
+* **`::before` Pseudo-element:** This creates the visual progress ring, making the layering clean and simple.
 
 
-## External References
+## Resources to Learn More
 
-* **Discord.js Guide:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome)
-* **Discord API Rate Limits:**  (No single, publicly accessible, comprehensive documentation exists.  The information is distributed across different sections of the Discord Developer Portal and gleaned from experience.)
+* **MDN Web Docs on `conic-gradient`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **MDN Web Docs on CSS Masks:** [https://developer.mozilla.org/en-US/docs/Web/CSS/masking](https://developer.mozilla.org/en-US/docs/Web/CSS/masking)
+* **CSS Tricks (General CSS learning):** [https://css-tricks.com/](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
