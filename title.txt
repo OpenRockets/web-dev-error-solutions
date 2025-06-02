@@ -1,1 +1,1 @@
-Handling DiscordJS Rate Limits: A Step-by-Step Guide
+Handling Asynchronous Operations in Discord.js: The Promise Hell

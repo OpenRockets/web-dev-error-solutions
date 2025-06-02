@@ -1,3 +1,5 @@
+# 🐞 Handling Asynchronous Operations in Discord.js: The Promise Hell
+
 
 This document addresses a common problem faced by developers using Discord.js: managing asynchronous operations and avoiding "callback hell" or "promise hell."  Asynchronous operations are crucial in Discord.js because many API calls (like fetching user information or sending messages) don't happen instantly.  Poorly managed asynchronous code leads to messy, difficult-to-read, and error-prone applications.
 
