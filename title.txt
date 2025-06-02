@@ -1,1 +1,1 @@
-Discord.js: Handling Rate Limits and Avoiding `DiscordAPIError: 429`
+Creating a CSS-Only Expanding Card
