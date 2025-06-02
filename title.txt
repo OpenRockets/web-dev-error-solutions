@@ -1,1 +1,1 @@
-Fixing Discord.js's "Missing Permissions" Error
+Handling Discord.js Rate Limits: A Step-by-Step Guide
