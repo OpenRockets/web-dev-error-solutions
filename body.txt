@@ -1,74 +1,82 @@
 
-This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its platform.  Exceeding these limits results in errors, often leading to your bot ceasing functionality temporarily or permanently.
+This document details how to create an expanding card effect using only CSS.  No JavaScript is required! This effect involves a card that smoothly expands on hover, revealing additional content. We'll utilize CSS transitions and transforms to achieve this elegant animation.
 
-**Description of the Error:**
 
-When your bot sends messages, edits messages, creates reactions, or performs other actions too frequently, Discord will respond with a rate limit error.  This typically manifests as a `DiscordAPIError` with a `HTTP` code of `429` (Too Many Requests). The error message will often include details about the rate limit bucket that was exceeded, including the remaining requests and the reset time.
+## Description of the Styling
 
-**Full Code of Fixing Step-by-Step:**
+The card will be a simple rectangular element with a background image.  On hover, the card will increase in height, revealing text initially hidden by overflow.  A subtle shadow effect will be added for depth. We will use only standard CSS properties, not a CSS framework like Tailwind.
 
-This example demonstrates how to handle rate limits using `async`/`await` and a simple retry mechanism.  More sophisticated solutions might involve using a dedicated rate limit handling library.
 
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
+## Full Code
 
-// Function to send a message with rate limit handling
-async function sendMessageWithRetry(channel, message, retries = 3) {
-  try {
-    await channel.send(message);
-  } catch (error) {
-    if (error.code === 50035) { //Missing Access
-        console.error("Missing Access to send message");
-        return;
-    }
-    if (error.httpStatus === 429) {
-      const retryAfter = error.retryAfter || 1000; // Default retry after 1 second if not specified
-      console.warn(`Rate limited. Retrying in ${retryAfter / 1000} seconds...`);
-      await new Promise(resolve => setTimeout(resolve, retryAfter));
-      if (retries > 0) {
-        return sendMessageWithRetry(channel, message, retries - 1);
-      } else {
-        console.error(`Failed to send message after multiple retries: ${error}`);
-      }
-    } else {
-      console.error(`Error sending message: ${error}`);
-    }
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 300px;
+  height: 200px;
+  background-image: url('https://via.placeholder.com/300x200'); /* Replace with your image */
+  background-size: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
 }
 
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
+.card:hover {
+  height: 400px; /* Expand on hover */
+}
 
+.card-content {
+  padding: 20px;
+  color: white;
+  opacity: 0; /* Initially hidden */
+  transition: opacity 0.3s ease-in-out; /* Smooth transition for opacity change */
+}
 
-client.on('messageCreate', async (msg) => {
-    if (msg.content.toLowerCase() === "!test"){
-        const channel = msg.channel;
-        await sendMessageWithRetry(channel, "This message handles rate limits!");
-    }
+.card:hover .card-content {
+  opacity: 1; /* Show on hover */
+}
 
-});
+.card-text {
+    font-size: 16px;
+}
+</style>
+</head>
+<body>
 
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Expanding Card</h2>
+    <p class="card-text">This is some extra content revealed on hover.  You can add as much text as you like here.</p>
+  </div>
+</div>
 
-client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+</body>
+</html>
 ```
 
-**Explanation:**
-
-1. **`sendMessageWithRetry` function:** This function encapsulates the message sending logic and retry mechanism.
-2. **Error Handling:**  It catches the `DiscordAPIError` and checks for the `httpStatus` code 429.
-3. **Retry Logic:** If a 429 error occurs, it waits for the specified `retryAfter` time (in milliseconds) before attempting to send the message again.  It recursively calls itself with a decremented retry count.
-4. **Fallback:** If all retries fail, it logs an error message.
-5. **Integration:** The `messageCreate` event listener uses the `sendMessageWithRetry` function to handle potential rate limits when sending messages.
-
-**External References:**
-
-* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)  (Check for API updates and best practices)
-* **Discord API Rate Limits:**  (Unfortunately, Discord doesn't have a single, comprehensive page detailing *all* rate limits.  You'll need to observe and adapt to the limits encountered.)
+Replace `https://via.placeholder.com/300x200` with a URL to your preferred background image.
 
 
-**Note:** This example provides a basic retry mechanism. For production bots, you should implement a more robust solution that manages rate limits per route and bucket, potentially using a library specifically designed for rate limiting.
+## Explanation
+
+* **`transition: height 0.3s ease-in-out;`**: This line creates a smooth transition for the `height` property over 0.3 seconds, using an `ease-in-out` timing function.
+* **`overflow: hidden;`**: This prevents the content from overflowing the card before the hover effect.
+* **`opacity: 0;`**: Initially hides the card content.
+* **`transition: opacity 0.3s ease-in-out;`**: Creates a smooth transition for the `opacity` property when the card is hovered.
+* **`.card:hover { height: 400px; }`**:  Increases the card's height on hover, revealing the hidden content.
+* **`.card:hover .card-content { opacity: 1; }`**:  Makes the content visible on hover.
+
+
+## Links to Resources to Learn More
+
+* **MDN Web Docs CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
+* **MDN Web Docs CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks (General CSS learning):** [https://css-tricks.com/](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
