@@ -1,78 +1,75 @@
 
-This document addresses a common problem encountered when developing Discord bots using the Discord.js library: managing asynchronous operations and properly handling promises to prevent errors and ensure smooth bot functionality.  The core issue arises from the asynchronous nature of many Discord.js methods, which can lead to unexpected behavior if not handled correctly with promises or `async/await`.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This utilizes CSS gradients and the `clip-path` property for a clean and efficient solution.  This example will be styled using plain CSS, but the concepts can be easily adapted to frameworks like Tailwind CSS.
 
-## Description of the Error
+**Description of the Styling:**
 
-A frequent error stems from attempting to access data returned from an asynchronous function before the operation has completed. This often manifests as `undefined` or other unexpected values being used, leading to crashes or illogical bot behavior.  For example, attempting to use a user object retrieved from a `guild.members.fetch()` call before the promise resolves will result in an error or undefined properties.
-
-## Code: Step-by-Step Fix
-
-Let's say we want to fetch a user's profile and then send a message containing their username.  The incorrect approach would be:
+The progress bar is created using a circle. A semi-circle representing the progress is overlaid on top.  The semi-circle's size and visibility are controlled via CSS variables, making it easily customizable. The `clip-path` property cuts the circle into a semi-circle, creating the progress bar effect.  We use a linear gradient to add color to the progress.
 
 
-```javascript
-const Discord = require('discord.js');
-const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES] });
+**Full Code:**
 
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.circular-progress {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #ddd 0%,
+    #ddd calc(var(--progress) * 1%),
+    #4CAF50 calc(var(--progress) * 1%),
+    #4CAF50 100%
+  );
+  clip-path: inset(0 round 0 0); /* This is the important part! Adjust 0 for the inset amount */
+  position: relative;
+}
 
-client.on('messageCreate', msg => {
-  if (msg.content === '!profile') {
-    const userId = 'YOUR_USER_ID_HERE'; // Replace with actual user ID
-    const member = msg.guild.members.cache.get(userId); //Incorrect: Does not handle if user not cached
+.circular-progress::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: white;
+  z-index: 1; /* Ensure it's on top of the progress */
+}
 
-    //This will fail if the user is not cached.
-    msg.reply(`User: ${member.user.username}`); 
-  }
-});
+.circular-progress-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px; /* Adjust as needed */
+}
+</style>
+</head>
+<body>
 
-client.login('YOUR_BOT_TOKEN_HERE'); // Replace with your bot token
+<div class="circular-progress-container">
+  <div class="circular-progress" style="--progress: 0.75;"></div> </div>
+
+</body>
+</html>
 ```
 
-This code fails because `msg.guild.members.cache.get(userId)` only checks the bot's cache.  If the user is not in the cache, it will return `undefined` causing an error when accessing `.user.username`.
+**Explanation:**
 
-Here's the corrected version using `async/await` and proper promise handling:
+* **`conic-gradient`:** This creates a radial gradient that starts from the top and goes clockwise.  We use two colors (`#ddd` and `#4CAF50`) to represent the empty and filled portions of the circle, respectively.  `calc(var(--progress) * 1%)` dynamically calculates the percentage of the circle to fill based on the `--progress` CSS variable.
+* **`clip-path: inset(0 round 0 0);`:** This is the key to creating the semi-circle.  The `inset()` function creates an inset shape. `round` creates the rounded corners. Adjust the values to modify the shape or start position.
+* **CSS Variables (`--progress`):** This allows you to easily change the percentage of the progress bar by simply adjusting the value within the `style` attribute of the `.circular-progress` div.  The value should be between 0 and 1 (representing 0% to 100%).
+* **`::before` Pseudo-element:** This creates a white circle on top to give the appearance of a clear center.
 
-```javascript
-const Discord = require('discord.js');
-const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES] });
+**Resources to Learn More:**
 
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-client.on('messageCreate', async msg => {
-  if (msg.content === '!profile') {
-    const userId = 'YOUR_USER_ID_HERE'; // Replace with actual user ID
-
-    try {
-      const member = await msg.guild.members.fetch(userId); //Correct: Uses async/await and handles non-cached users
-      msg.reply(`User: ${member.user.username}`);
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      msg.reply('Could not fetch user profile. Please try again later.');
-    }
-  }
-});
-
-client.login('YOUR_BOT_TOKEN_HERE'); // Replace with your bot token
-```
-
-This improved code uses `async/await` to elegantly handle the asynchronous `guild.members.fetch()` method. The `try...catch` block handles potential errors during the fetch operation, preventing the bot from crashing and providing a user-friendly error message.
-
-
-## Explanation
-
-The original code failed because it assumed that `msg.guild.members.cache.get(userId)` would always return a valid member object.  This is not guaranteed, as Discord.js only keeps a limited cache of members.  The improved code utilizes `msg.guild.members.fetch(userId)`, which is an asynchronous operation that retrieves the member's data from the Discord API.
-
-The `async` keyword before the `messageCreate` event listener makes it an asynchronous function. The `await` keyword pauses execution until the `member.fetch()` promise resolves, ensuring that the `member` variable contains valid data before accessing its properties. The `try...catch` block handles any errors that might occur during the fetching process, such as the user not being found or a network issue.
-
-## External References
-
-* **Discord.js Guide:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome)  (General documentation, essential for understanding Discord.js concepts)
-* **Promise Handling in JavaScript:** [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) (Explains how promises work in JavaScript)
+* **CSS Gradients:** [MDN Web Docs - CSS Gradients](https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient)
+* **CSS Clip-path:** [MDN Web Docs - CSS clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS Variables:** [MDN Web Docs - CSS Variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

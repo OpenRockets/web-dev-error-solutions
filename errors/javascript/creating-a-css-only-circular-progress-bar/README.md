@@ -1,11 +1,11 @@
 # 🐞 Creating a CSS-only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This utilizes CSS gradients and the `conic-gradient` function for a clean and efficient solution.  This example will demonstrate a simple 75% progress bar, but the percentage can easily be adjusted.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This utilizes CSS gradients and the `clip-path` property for a clean and efficient solution.  This example will be styled using plain CSS, but the concepts can be easily adapted to frameworks like Tailwind CSS.
 
 **Description of the Styling:**
 
-The styling relies on a single `<div>` element.  We use a combination of `border-radius`, `box-sizing`, and `conic-gradient` to create the circular shape and the progress indicator.  The `conic-gradient` function allows us to define a gradient that sweeps around a circle, creating the progress bar effect.  The percentage is controlled by adjusting the angle of the gradient.
+The progress bar is created using a circle. A semi-circle representing the progress is overlaid on top.  The semi-circle's size and visibility are controlled via CSS variables, making it easily customizable. The `clip-path` property cuts the circle into a semi-circle, creating the progress bar effect.  We use a linear gradient to add color to the progress.
 
 
 **Full Code:**
@@ -16,43 +16,45 @@ The styling relies on a single `<div>` element.  We use a combination of `border
 <head>
 <title>CSS Circular Progress Bar</title>
 <style>
-.progress-ring {
+.circular-progress {
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  box-sizing: border-box;
-  border: 10px solid #f0f0f0; /* Light gray border */
-  background-color: transparent; /* Needed for conic-gradient to work properly */
-  position: relative; /* For positioning the percentage text */
-}
-
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  width: calc(100% - 10px);
-  height: calc(100% - 10px);
-  border-radius: 50%;
-  background-image: conic-gradient(
-    #4CAF50 75%, /* Green color for progress, adjust percentage here */
-    #f0f0f0 75%  /* Light gray color for remaining progress */
+  background: conic-gradient(
+    #ddd 0%,
+    #ddd calc(var(--progress) * 1%),
+    #4CAF50 calc(var(--progress) * 1%),
+    #4CAF50 100%
   );
+  clip-path: inset(0 round 0 0); /* This is the important part! Adjust 0 for the inset amount */
+  position: relative;
 }
 
-.progress-ring::after{
-  content: "75%"; /* Percentage Display, adjust as needed*/
+.circular-progress::before {
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 1.2em;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: white;
+  z-index: 1; /* Ensure it's on top of the progress */
+}
+
+.circular-progress-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px; /* Adjust as needed */
 }
 </style>
 </head>
 <body>
 
-<div class="progress-ring"></div>
+<div class="circular-progress-container">
+  <div class="circular-progress" style="--progress: 0.75;"></div> </div>
 
 </body>
 </html>
@@ -60,21 +62,16 @@ The styling relies on a single `<div>` element.  We use a combination of `border
 
 **Explanation:**
 
-1. **`progress-ring` class:** This sets the basic dimensions, shape (circle using `border-radius: 50%`), and border of the progress bar.  `box-sizing: border-box` ensures that the border is included within the specified width and height.
+* **`conic-gradient`:** This creates a radial gradient that starts from the top and goes clockwise.  We use two colors (`#ddd` and `#4CAF50`) to represent the empty and filled portions of the circle, respectively.  `calc(var(--progress) * 1%)` dynamically calculates the percentage of the circle to fill based on the `--progress` CSS variable.
+* **`clip-path: inset(0 round 0 0);`:** This is the key to creating the semi-circle.  The `inset()` function creates an inset shape. `round` creates the rounded corners. Adjust the values to modify the shape or start position.
+* **CSS Variables (`--progress`):** This allows you to easily change the percentage of the progress bar by simply adjusting the value within the `style` attribute of the `.circular-progress` div.  The value should be between 0 and 1 (representing 0% to 100%).
+* **`::before` Pseudo-element:** This creates a white circle on top to give the appearance of a clear center.
 
-2. **`::before` pseudo-element:** This creates the colored segment of the progress bar.  `conic-gradient` is the key here.  The first color (`#4CAF50` - a green color in this example) is the progress color, and its angle determines the progress percentage (75% in this case). The second color is the background color of the remaining section.
+**Resources to Learn More:**
 
-3. **`::after` pseudo-element:** This adds the percentage text to the center of the progress bar. `transform: translate(-50%, -50%)` centers the text.
-
-**To adjust the percentage:**
-
-Simply change the first percentage value in the `conic-gradient` function (e.g., `#4CAF50 90%` for 90% progress). Also, remember to change the percentage displayed in the `::after` pseudo-element content.  You can also change the colors used for a different visual effect.
-
-
-**Links to Resources to Learn More:**
-
-* **MDN Web Docs - `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
-* **CSS-Tricks - Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/)
+* **CSS Gradients:** [MDN Web Docs - CSS Gradients](https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient)
+* **CSS Clip-path:** [MDN Web Docs - CSS clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS Variables:** [MDN Web Docs - CSS Variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
