@@ -1,110 +1,96 @@
 
-This document details the creation of an expanding card effect using only CSS.  This effect involves a card that expands smoothly when hovered over, revealing additional content.  We'll utilize CSS transitions and transforms for a smooth and elegant animation.
+## Description of the Error
+
+Discord.js, a popular Node.js library for interacting with the Discord API, implements rate limits to prevent abuse and ensure server stability.  When your bot sends too many requests within a short period, it encounters a rate limit error.  This typically manifests as a `DiscordAPIError` with a `HTTP 429` status code, indicating that your application has exceeded the allowed request rate.  This can prevent your bot from functioning correctly, leading to missed events and unresponsive commands.
 
 
-**Description of the Styling:**
+## Code: Fixing Rate Limits in Discord.js
 
-The card will initially show a title and a small preview image. On hover, the card will smoothly expand horizontally, revealing a larger image and a detailed description. We will achieve this without any JavaScript, solely relying on CSS transitions and the `:hover` pseudo-class.
+This example demonstrates how to handle rate limits using `setTimeout` for simple scenarios.  For more complex applications, consider using dedicated rate limit libraries like `bottleneck`.
 
-**Full Code:**
+**Step 1: Implement a basic rate limit handler.**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 300px;
-  height: 200px;
-  perspective: 1000px; /* For 3D transform smoothness */
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: #f0f0f0;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease-in-out; /* Smooth transition on hover */
-}
+This approach uses a simple `setTimeout` to pause execution after encountering a rate limit.  It's suitable for less frequent operations, but less efficient for high-volume bots.
 
-.card:hover {
-  transform: scale(1.1); /* Expand on hover */
-}
+```javascript
+const { Client, IntentsBitField } = require('discord.js');
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds] }); // Replace with your intents
 
-.card-content {
-  display: flex;
-  flex-direction: column;
-  padding: 15px;
-}
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
 
-.card-title {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.card-image-small {
-  width: 100%;
-  height: 100px;
-  object-fit: cover;
-  margin-bottom: 10px;
-}
-
-.card-image-large {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: none; /* Initially hidden */
-}
-
-.card:hover .card-image-small {
-  display: none;
-}
-
-.card:hover .card-image-large {
-  display: block;
-}
-
-.card-description {
-  font-size: 0.9rem;
-  color: #555;
-  display: none; /* Initially hidden */
-}
-
-.card:hover .card-description {
-  display: block;
+async function sendMessage(channel, message) {
+    try {
+        await channel.send(message);
+    } catch (error) {
+        if (error.httpStatus === 429) {
+            const retryAfter = error.retryAfter; // Get retryAfter in milliseconds
+            console.error(`Rate limited. Retrying in ${retryAfter}ms...`);
+            await new Promise(resolve => setTimeout(resolve, retryAfter)); // Wait before retrying
+            await sendMessage(channel, message); //Retry sending the message
+        } else {
+            console.error("An error occurred:", error);
+        }
+    }
 }
 
 
-</style>
-</head>
-<body>
+client.on('messageCreate', async message => {
+    if (message.content === '!test') {
+        const channel = message.channel;
+        await sendMessage(channel, 'This message might be rate-limited!');
+    }
+});
 
-<div class="card">
-  <div class="card-content">
-    <h2 class="card-title">Expanding Card Example</h2>
-    <img src="https://via.placeholder.com/300x100" alt="Small Image" class="card-image-small">
-    <img src="https://via.placeholder.com/300x200" alt="Large Image" class="card-image-large">
-    <p class="card-description">This is a sample description that appears on hover.  You can add more details here.</p>
-  </div>
-</div>
 
-</body>
-</html>
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
 ```
 
-**Explanation:**
+**Step 2 (Recommended): Using a Rate Limiting Library (bottleneck)**
 
-* **`perspective`:** This property creates a 3D space, making the scaling effect smoother.
-* **`transition`:** This property smoothly animates the `transform` property over 0.3 seconds.
-* **`transform: scale(1.1)`:** This scales the card up by 10% on hover.
-* **`:hover` pseudo-class:** This applies the styles only when the mouse hovers over the card.
-* **`display: none;` and `display: block;`:** These are used to show/hide the larger image and description on hover.
+For robust rate limit handling, especially in high-traffic scenarios, a dedicated library like `bottleneck` is recommended.
+
+```javascript
+const { Client, IntentsBitField } = require('discord.js');
+const Bottleneck = require('bottleneck');
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds] });
+
+const limiter = new Bottleneck({
+    maxConcurrent: 1, // Adjust as needed.  Discord's limits vary by endpoint.
+    minTime: 500, // Minimum time between requests (milliseconds).  Adjust as needed.
+});
+
+client.on('ready', () => {
+    console.log(`Logged in as ${client.user.tag}!`);
+});
 
 
-**Resources to Learn More:**
+client.on('messageCreate', async message => {
+    if (message.content === '!test') {
+        const channel = message.channel;
+        limiter.schedule(() => channel.send('This message uses Bottleneck!'))
+            .then(() => console.log('Message sent successfully.'))
+            .catch(error => console.error('Error sending message:', error));
+    }
+});
 
-* **MDN Web Docs (CSS Transitions):** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs (CSS Transforms):** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS-Tricks (various articles on CSS animations):** [https://css-tricks.com/](https://css-tricks.com/) (Search for "CSS animations" or "CSS transitions")
+client.login('YOUR_BOT_TOKEN');
+```
+
+
+## Explanation
+
+The `setTimeout` approach adds a delay before retrying the message send. This simple method works well for occasional rate limits. However, it doesn't account for varying rate limit window sizes or different limits across various Discord API endpoints.
+
+Using `bottleneck` offers more sophisticated rate limiting. You define the maximum concurrent requests and the minimum time between requests.  `bottleneck` handles queuing and retrying automatically, making your code more robust and less prone to rate limit issues.  Always consult the Discord API documentation for the specific rate limits applied to different endpoints.
+
+
+## External References
+
+* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)
+* **Bottleneck Library:** [https://github.com/Sannis/bottleneck](https://github.com/Sannis/bottleneck)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (This link may require a Discord developer account.)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
