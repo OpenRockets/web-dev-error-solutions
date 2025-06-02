@@ -1,73 +1,76 @@
 
-This document addresses a common problem encountered when developing Discord bots using the Discord.js library:  the dreaded "429 Too Many Requests" error. This error arises when your bot sends requests to the Discord API faster than the allowed rate limits.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This example utilizes pure CSS and leverages the `conic-gradient` function for a smooth, visually appealing result.
 
-## Description of the Error
+**Description of the Styling:**
 
-The HTTP 429 Too Many Requests error indicates that your bot has exceeded the rate limits set by Discord for a specific endpoint or globally.  This can manifest in various ways, from individual commands failing to respond to the bot completely ceasing to function.  The error message usually provides information about the retry-after header, specifying how long you should wait before sending more requests.
+This technique uses a combination of a circle created with `border-radius` and a `conic-gradient` to represent the progress. The `conic-gradient` allows us to create a gradient that starts at a specific angle and sweeps across a specified portion of the circle, representing the percentage of completion. We use a pseudo-element (`::before`) to create the progress indicator on top of the base circle.  Styling is kept concise for clarity, but could easily be customized with colors, fonts, and sizes.
 
+**Full Code:**
 
-## Fixing the Error: Step-by-Step Code
-
-The solution involves implementing rate limiting in your bot's code.  This prevents the bot from sending requests too frequently. We'll use the `node-fetch` library for making API calls and a simple `setTimeout` function for rate limiting.  Remember to install `node-fetch`:  `npm install node-fetch`
-
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const fetch = require('node-fetch');
-
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds] }); // Replace with your intents
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-//Example command that might trigger rate limits without proper handling.
-client.on('interactionCreate', async interaction => {
-  if (!interaction.isChatInputCommand()) return;
-
-  if (interaction.commandName === 'mycommand') {
-    //Simulate an API call which needs rate limiting. Replace with your actual API call.
-    const response = await rateLimitedFetch('https://some-api.com/data'); //using our custom function
-    if (response.ok) {
-        const data = await response.json();
-        await interaction.reply(`API data: ${data.someProperty}`);
-    } else {
-        await interaction.reply(`API request failed with status: ${response.status}`);
-    }
-  }
-});
-
-
-//Custom function implementing rate limiting.  Adjust the delay as needed.
-async function rateLimitedFetch(url, delay = 1000){ //Default 1 second delay
-    try{
-        const response = await fetch(url);
-        return response;
-    }catch(error){
-        if(error.response && error.response.status === 429){
-            const retryAfter = parseInt(error.response.headers.get('Retry-After'), 10) || 1;
-            console.log(`Rate limited! Retrying after ${retryAfter} seconds...`);
-            await new Promise(resolve => setTimeout(resolve, retryAfter * 1000)); //Retry after specified time.
-            return await rateLimitedFetch(url); //Recursive call for retry
-        }
-        throw error; //Re-throw errors other than 429
-    }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #f0f0f0; /* Light gray background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(#4CAF50 75%, #e0e0e0 75%); /* Green progress, gray background */
+  mask: conic-gradient(#fff 0%, #fff 75%, transparent 75%); /* Creates the circular cut-out */
+  mask-type:luminosity;
+  transform: rotate(calc(var(--progress) * 3.6deg));
+}
 
-client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+/* Example usage with variable progress */
+.progress-ring--75 {
+  --progress: 75;
+}
+</style>
+</head>
+<body>
+
+<h1>Circular Progress: 75%</h1>
+<div class="progress-ring progress-ring--75">
+  <span>75%</span>
+</div>
+
+<h1>Circular Progress: 25%</h1>
+<div class="progress-ring progress-ring--25">
+  <span>25%</span>
+</div>
+
+</body>
+</html>
 ```
 
+**Explanation:**
 
-## Explanation
+* **`progress-ring`:** This class styles the base circle.  `border-radius: 50%` creates the circular shape.
+* **`::before` pseudo-element:** This creates the progress indicator.
+    * `conic-gradient`: This creates the circular gradient.  The first color is the progress color, and the second color is the background. The percentage value determines the extent of the progress.
+    * `mask` and `mask-type`: This is crucial for creating the clean cut-out effect, ensuring only the specified portion of the gradient shows. We use the same conic gradient for the mask to determine the progress arc; this will cut off the background.
+    * `transform: rotate`: This rotates the gradient based on the `--progress` custom property, effectively setting the progress visually.  3.6deg is 1% of 360 degrees.
+* **Custom Property `--progress`:** This CSS custom property allows easy adjustment of the progress percentage.
 
-The code above introduces a `rateLimitedFetch` function. This function handles API calls, and importantly, if it receives a 429 error, it extracts the `Retry-After` header.  It then uses `setTimeout` to pause execution for the specified number of seconds before retrying the request.  The recursive call to `rateLimitedFetch` ensures that retries are attempted until the request is successful or a non-rate-limit error occurs.  This is crucial for robust error handling.  Remember to adjust the `delay` parameter in `rateLimitedFetch` based on your needs and the specifics of the API you're using.
+**Links to Resources to Learn More:**
 
-
-## External References
-
-* **Discord.js Documentation:** [https://discord.js.org/#/](https://discord.js.org/#/)  (Refer to the API documentation for details on rate limits and best practices).
-* **Node-fetch Documentation:** [https://www.npmjs.com/package/node-fetch](https://www.npmjs.com/package/node-fetch) (For information on using the `node-fetch` library).
-* **Discord API Rate Limits:**  (Check the official Discord API documentation for the most up-to-date rate limits; this information is not consistently available in a single, easily linked location).
+* **MDN Web Docs on `conic-gradient`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **CSS Tricks on gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/)
+* **Understanding CSS Custom Properties (Variables):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
