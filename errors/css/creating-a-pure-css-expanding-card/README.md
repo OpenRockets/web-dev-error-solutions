@@ -1,3 +1,5 @@
+# 🐞 Creating a Pure CSS Expanding Card
+
 
 This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered over, revealing hidden content.  We'll use only CSS3 for this, making it lightweight and easily integrable into any project.
 
