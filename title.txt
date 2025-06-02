@@ -1,1 +1,1 @@
-Creating a CSS-only 3D Cube
+Handling Discord.js Rate Limits: A Step-by-Step Guide

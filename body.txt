@@ -1,114 +1,75 @@
 
-This document details how to create a three-dimensional cube using only CSS.  No JavaScript is required. This effect leverages CSS transforms (`rotateX`, `rotateY`) and multiple pseudo-elements to build the illusion of depth.
+This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its platform.  Exceeding these limits results in errors, typically causing your bot to stop responding or fail to send messages.
 
-**Description of the Styling:**
+## Description of the Error
 
-The cube is constructed using a single `div` element as the base, and six pseudo-elements (`::before` and `::after` nested to create a total of six faces). Each face is styled individually with a different background color to distinguish them.  CSS transforms are then applied to rotate these faces into a three-dimensional arrangement.  The perspective property is crucial in creating the sense of depth.
-
-
-**Full Code:**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS 3D Cube</title>
-<style>
-.cube {
-  width: 100px;
-  height: 100px;
-  position: relative;
-  perspective: 150px; /* Adjust for perspective strength */
-  margin: 50px auto;
-}
-
-.cube, .cube::before, .cube::after {
-  background-color: #ddd; /* Base color */
-  display: block;
-}
-
-.cube::before, .cube::after {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-}
-
-.cube::before {
-  transform: translateZ(-50px) rotateX(90deg);
-  background-color: lightblue; /* Top Face */
-}
-
-.cube::after {
-  transform: translateZ(50px) rotateX(180deg) rotateY(180deg);
-  background-color: lightgreen; /* Bottom Face */
-}
-
-.cube:before::before, .cube:before::after, .cube:after::before, .cube:after::after {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    transform-style: preserve-3d;
-    background-color: #ddd;
-}
+When your bot sends messages, edits messages, or performs other actions too quickly, Discord's API will respond with a rate limit error. This error typically manifests as a `HTTP 429` response, indicating that your request was throttled.  The error response often includes information about the remaining requests allowed within the specified time window (a "bucket"). Ignoring these limits can lead to your bot being temporarily or permanently banned from the Discord API.
 
 
-/*Side Faces*/
+## Fixing Rate Limits Step-by-Step
 
-.cube::before::before {
-  transform: translateZ(-50px) rotateY(90deg);
-  background-color: lightcoral; /* Right Face */
-}
+This example demonstrates how to handle rate limits when sending messages.  We'll use `async/await` for cleaner code and error handling.
 
-.cube::before::after {
-  transform: translateZ(-50px) rotateY(-90deg);
-  background-color: lightyellow; /* Left Face */
-}
+**Step 1: Install the `discord.js` library:**
 
-.cube::after::before {
-  transform: translateZ(50px) rotateY(90deg);
-  background-color: lightpink; /* Right Face Bottom */
-}
-
-.cube::after::after {
-  transform: translateZ(50px) rotateY(-90deg);
-  background-color: lightcyan; /* Left Face Bottom */
-}
-
-
-
-.cube::before::before, .cube::before::after, .cube::after::before, .cube::after::after {
-    background-size: 100% 100%;
-}
-</style>
-</head>
-<body>
-
-<div class="cube"></div>
-
-</body>
-</html>
+```bash
+npm install discord.js
 ```
 
-**Explanation:**
+**Step 2: Implement Rate Limit Handling:**
 
-1. **`perspective`:** This property on the main `.cube` element creates the 3D viewing space.  Adjust the value (in pixels) to change the perspective strength.
+This code snippet shows how to gracefully handle rate limits using `setTimeout` to pause execution until the rate limit is reset.  A more robust solution might involve a dedicated rate-limiting library, but this example demonstrates a basic, effective approach.
 
-2. **`transform-style: preserve-3d;`:** This crucial property ensures that the transformations on child elements are applied in 3D space.
+```javascript
+const { Client, IntentsBitField } = require('discord.js');
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
 
-3. **`translateZ()`:** This moves the pseudo-elements along the z-axis (into and out of the screen), creating the depth.
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
 
-4. **`rotateX()` and `rotateY()`:** These rotate the elements around the x and y axes, creating the cube's faces.
+client.on('messageCreate', async msg => {
+  if (msg.content === '!test') {
+    try {
+      await msg.reply('This is a test message!');
+    } catch (error) {
+      if (error.code === 50001) { // This could be a more general error code. Discord's error codes aren't always consistent. 
+        console.error("Rate limited. Waiting before sending.");
+        const waitTime = error.retryAfter || 1000; //Default to 1 second if no retryAfter is given.
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        // Retry sending the message after the wait time.
+        try {
+          await msg.reply('Retrying test message!');
+        } catch(error){
+          console.error("Failed to send message even after retry. Error: ", error)
+        }
+      } else {
+        console.error('An error occurred:', error);
+      }
+    }
+  }
+});
 
-5. **Nested Pseudo-elements:** We use nested pseudo-elements to efficiently create the cube's six faces. The careful arrangement of rotations and translations is key to achieve the desired effect.
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+```
+
+**Step 3: Explanation:**
+
+* The code listens for messages containing "!test".
+* It attempts to send a reply using `msg.reply`.
+* The `try...catch` block handles potential errors.
+* If a rate limit error (`HTTP 429` -  error code may vary, check your console for the exact code) is detected, the code logs an error message.
+*  It then uses `setTimeout` with the `retryAfter` value from the error (if provided) to pause execution before attempting to send the message again.  If `retryAfter` isn't available, it defaults to a 1-second wait.
+
+## External References
+
+* **Discord.js Guide:** [https://discord.js.org/#/](https://discord.js.org/#/)  (Check for the latest documentation; specific error handling might change)
+* **Discord API Rate Limits:**  (Unfortunately, Discord doesn't have a single, centralized documentation page clearly detailing *all* rate limits. You'll need to refer to the Discord API documentation and monitor your bot's interactions to understand the rate limits applied to your specific use case.)
 
 
-**Links to Resources to Learn More:**
+## Explanation
 
-* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Tricks on 3D Transforms:** (Search for "CSS 3D Transforms" on CSS Tricks website)
+This approach provides a basic mechanism to handle rate limits. For more complex scenarios or higher message volumes, consider using a dedicated rate-limiting library that provides more sophisticated handling of different rate limit buckets and strategies.  Remember to always log errors to help debug and monitor your bot's performance.  Always check the Discord API documentation for the most up-to-date information on rate limits.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
