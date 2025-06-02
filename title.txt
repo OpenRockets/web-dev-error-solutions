@@ -1,1 +1,1 @@
-Handling Discord.js Rate Limits: A Step-by-Step Guide
+Discord.js: Handling Rate Limits and Avoiding "429 Too Many Requests" Errors

@@ -1,90 +1,82 @@
 # 🐞 Discord.js: Handling Rate Limits and Avoiding "429 Too Many Requests" Errors
 
 
-This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits and the dreaded "429 Too Many Requests" error.  This error occurs when your bot sends requests to the Discord API too frequently, exceeding the allowed rate limit for a specific endpoint.
-
 ## Description of the Error
 
-The "429 Too Many Requests" error is a HTTP status code indicating that your bot has made too many API calls within a given timeframe.  Discord implements rate limits to prevent abuse and ensure the stability of its service. When this limit is exceeded, Discord responds with a 429 error, often including information about the retry-after time (how long you need to wait before making more requests).  Ignoring these limits can lead to your bot being temporarily or permanently banned from accessing the Discord API.
-
+Discord.js, the popular Node.js library for interacting with the Discord API, has rate limits in place to prevent abuse and ensure the stability of the platform.  When your bot sends too many requests within a short period, Discord responds with a HTTP 429 error: "Too Many Requests". This can manifest as your bot stopping functioning, failing to send messages, or experiencing delays.  This error often occurs when dealing with a large number of users or performing actions that require multiple API calls in quick succession.
 
 ## Fixing the Error: Step-by-Step Code
 
-This example demonstrates how to handle rate limits using `node-fetch` and asynchronous programming within a Discord.js bot.  We'll use a simple `setTimeout` function for illustrative purposes.  For production applications, consider using more robust rate-limit handling libraries.
+This example demonstrates how to handle rate limits using `discord.js` v14.  It's crucial to adapt this to your specific bot's structure and actions.
 
-**Step 1: Install `node-fetch` (if you haven't already):**
+**Step 1: Install `discord.js` (If you haven't already):**
 
 ```bash
-npm install node-fetch
+npm install discord.js
 ```
 
 **Step 2: Implement Rate Limit Handling:**
 
 ```javascript
-const Discord = require('discord.js');
-const fetch = require('node-fetch');
-const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds] }); // Adjust intents as needed
+const { Client, GatewayIntentBits } = require('discord.js');
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] }); // Adjust intents as needed
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-async function sendMessage(channelId, message) {
-  try {
-    const response = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bot ${process.env.DISCORD_BOT_TOKEN}`, // Replace with your bot token
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ content: message }),
-    });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        const retryAfter = response.headers.get('Retry-After');
-        console.error(`Rate limited! Retrying after ${retryAfter}ms`);
-        await new Promise(resolve => setTimeout(resolve, parseInt(retryAfter, 10))); // Wait before retrying
-        return sendMessage(channelId, message); // Recursive call to retry
+async function sendMessageWithRateLimit(channel, message) {
+    try {
+      await channel.send(message);
+    } catch (error) {
+      if (error.httpStatus === 429) {
+        // Rate limited!
+        const retryAfter = error.rateLimitRemaining ? error.rateLimitRemaining : 1; // Wait at least 1 second
+        console.error(`Rate limited. Retrying after ${retryAfter} seconds.`, error);
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000)); // Wait before retrying
+        await sendMessageWithRateLimit(channel, message); // Recursive call to retry
       } else {
-        console.error(`Error sending message: ${response.status} ${response.statusText}`);
-        console.error(await response.text()); // Log the error response for debugging
+        console.error('An error occurred:', error); // Handle other errors
       }
-    } else {
-      console.log('Message sent successfully!');
     }
-
-  } catch (error) {
-    console.error('An error occurred:', error);
   }
-}
 
 
 client.on('messageCreate', async message => {
-  if (message.content === '!test') {
-    await sendMessage(message.channel.id, 'This message was sent using rate limit handling!');
+  if (message.author.bot) return; // Ignore bot messages
+
+  if (message.content.startsWith('!send')) {
+    const args = message.content.slice(5).trim().split(/ +/);
+    const messageToSend = args.join(' ');
+
+    await sendMessageWithRateLimit(message.channel, messageToSend); // Use the rate-limit-handling function
   }
 });
 
 
-client.login(process.env.DISCORD_BOT_TOKEN); //Remember to set DISCORD_BOT_TOKEN as environment variable
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
 ```
 
-**Step 3: Explanation**
 
-The `sendMessage` function now includes error handling.  If a 429 error is received, it extracts the `Retry-After` header, waits for the specified duration, and then recursively calls itself to retry sending the message.  This ensures that the bot respects Discord's rate limits and avoids further errors.  Proper error handling is crucial; logging the error response helps in troubleshooting.
+**Explanation:**
+
+- The `sendMessageWithRateLimit` function attempts to send a message.
+- If a 429 error is caught, it logs the error, calculates a retry time (using `error.rateLimitRemaining` if available, otherwise defaulting to 1 second), and waits before recursively calling itself to retry the message.
+- Other errors are also logged to the console.
+- The `messageCreate` event listener checks for a specific command (`!send`) to trigger the message sending.  You can adapt this to fit your bot's logic.
 
 
 ## External References
 
-* **Discord API Rate Limits Documentation:**  (Unfortunately, Discord doesn't have a single, centralized, consistently updated document on rate limits.  Information is spread across various resources and often needs to be inferred from the API responses and developer experience.) Search for "Discord API Rate Limits" on Google for relevant community discussions and unofficial guides.  Always refer to the official Discord API documentation for the most up-to-date information on API endpoints and their usage.
-
-* **node-fetch Documentation:** [https://www.npmjs.com/package/node-fetch](https://www.npmjs.com/package/node-fetch)
+* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)  (Check for the latest version's API details)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Understand Discord's rate limit policies)
+* **Node.js `setTimeout`:** [https://nodejs.org/api/timers.html#settimeouttimeout-callback-args](https://nodejs.org/api/timers.html#settimeouttimeout-callback-args) (Understanding asynchronous operations in Node.js)
 
 
 ## Explanation
 
-This solution provides a basic framework for handling rate limits.  For more sophisticated rate limiting, consider using dedicated libraries that offer features like bucket management and more efficient retry mechanisms.  Remember to always respect Discord's API terms of service and guidelines to avoid account issues.  Logging and proper error handling are essential for debugging and maintaining a robust bot.
+The key to avoiding 429 errors is to implement robust rate limit handling.  This involves catching the 429 error specifically, waiting for the specified retry time (provided by Discord in the error response), and then retrying the request.  The recursive call in `sendMessageWithRateLimit` ensures the message is sent eventually, unless another error occurs.  It's important to consider exponential backoff strategies for more sophisticated rate limit handling in production environments, where longer delays might be introduced after multiple failed attempts.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
