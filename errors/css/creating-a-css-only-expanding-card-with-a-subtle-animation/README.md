@@ -1,3 +1,5 @@
+# 🐞 Creating a CSS-only Expanding Card with a subtle animation
+
 
 This document details the creation of an expanding card using only CSS.  The card expands smoothly on hover, revealing more content. This effect leverages CSS transitions and transforms for a polished, interactive experience. We'll be using plain CSS3; no frameworks like Tailwind are needed.
 
