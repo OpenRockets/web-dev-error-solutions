@@ -1,78 +1,98 @@
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This utilizes CSS gradients and the `conic-gradient` function for a clean and efficient solution.  This example will demonstrate a simple 75% progress bar, but the percentage can easily be adjusted.
+## Description of the Error
 
-**Description of the Styling:**
+One of the most common issues developers encounter when using Discord.js is hitting rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its API.  When your bot sends messages, edits messages, or performs other actions too quickly, Discord's servers will respond with a rate limit error. This usually manifests as a HTTP error code (e.g., 429 Too Many Requests) and can temporarily prevent your bot from functioning correctly.  The error message often includes details about the specific rate limit that was exceeded (e.g., the bucket that was limited, the remaining requests, and the reset time).
 
-The styling relies on a single `<div>` element.  We use a combination of `border-radius`, `box-sizing`, and `conic-gradient` to create the circular shape and the progress indicator.  The `conic-gradient` function allows us to define a gradient that sweeps around a circle, creating the progress bar effect.  The percentage is controlled by adjusting the angle of the gradient.
+## Fixing Rate Limits in Discord.js: A Step-by-Step Guide
 
+This guide demonstrates how to handle rate limits gracefully using `discord.js` v14.  The key is to implement proper error handling and potentially utilize delays to respect Discord's rate limits.
 
-**Full Code:**
+**Step 1: Install `discord.js`**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
-.progress-ring {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  box-sizing: border-box;
-  border: 10px solid #f0f0f0; /* Light gray border */
-  background-color: transparent; /* Needed for conic-gradient to work properly */
-  position: relative; /* For positioning the percentage text */
-}
+If you haven't already, install the library:
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  width: calc(100% - 10px);
-  height: calc(100% - 10px);
-  border-radius: 50%;
-  background-image: conic-gradient(
-    #4CAF50 75%, /* Green color for progress, adjust percentage here */
-    #f0f0f0 75%  /* Light gray color for remaining progress */
-  );
-}
-
-.progress-ring::after{
-  content: "75%"; /* Percentage Display, adjust as needed*/
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.2em;
-}
-</style>
-</head>
-<body>
-
-<div class="progress-ring"></div>
-
-</body>
-</html>
+```bash
+npm install discord.js
 ```
 
-**Explanation:**
+**Step 2:  Basic Error Handling**
 
-1. **`progress-ring` class:** This sets the basic dimensions, shape (circle using `border-radius: 50%`), and border of the progress bar.  `box-sizing: border-box` ensures that the border is included within the specified width and height.
-
-2. **`::before` pseudo-element:** This creates the colored segment of the progress bar.  `conic-gradient` is the key here.  The first color (`#4CAF50` - a green color in this example) is the progress color, and its angle determines the progress percentage (75% in this case). The second color is the background color of the remaining section.
-
-3. **`::after` pseudo-element:** This adds the percentage text to the center of the progress bar. `transform: translate(-50%, -50%)` centers the text.
-
-**To adjust the percentage:**
-
-Simply change the first percentage value in the `conic-gradient` function (e.g., `#4CAF50 90%` for 90% progress). Also, remember to change the percentage displayed in the `::after` pseudo-element content.  You can also change the colors used for a different visual effect.
+This code snippet shows a basic example of how to catch rate limit errors and log them to the console:
 
 
-**Links to Resources to Learn More:**
+```javascript
+const { Client, GatewayIntentBits } = require('discord.js');
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
 
-* **MDN Web Docs - `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
-* **CSS-Tricks - Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/)
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
+
+client.on('messageCreate', async msg => {
+  if (msg.content === '!test') {
+    try {
+      await msg.reply('This is a test message!');
+    } catch (error) {
+      if (error.code === 50001) {  //Missing Access
+        console.error("Missing Access");
+      } else if (error.code === 10008) { //Unknown Message
+        console.error("Unknown Message");
+      } else if (error.code === 50013) { //Missing Permissions
+        console.error("Missing Permissions");
+      } else if (error.httpStatus === 429) {
+        console.error('Rate limit hit!', error);
+        // Implement a delay here (see Step 3)
+      } else {
+        console.error('An error occurred:', error);
+      }
+    }
+  }
+});
+
+
+client.login('YOUR_BOT_TOKEN');
+```
+
+Replace `'YOUR_BOT_TOKEN'` with your actual bot token.
+
+
+**Step 3: Implementing Delays**
+
+To avoid hitting rate limits, you need to introduce delays between API calls.  This can be done using `setTimeout` or a more sophisticated approach using a queueing system. Here's a simple example using `setTimeout`:
+
+
+```javascript
+client.on('messageCreate', async msg => {
+  // ... (previous code)
+
+      } else if (error.httpStatus === 429) {
+        console.error('Rate limit hit!', error);
+        const retryAfter = error.headers['retry-after'] || 1000; // Default to 1 second
+        await new Promise(resolve => setTimeout(resolve, retryAfter)); //Wait for Retry-After
+        //Try again after the delay
+        try{
+          await msg.reply('This is a test message!');
+        } catch (error){
+          console.error("Retry Failed", error);
+        }
+
+      } else {
+        // ... (rest of error handling)
+      }
+  }
+});
+```
+
+This code waits for the specified `retry-after` time (in milliseconds) before retrying the message.  If `retry-after` isn't present in the headers, it defaults to a 1-second delay.  A more robust approach would be to use a queue to manage API requests.
+
+## Explanation
+
+Rate limits are a necessary mechanism to protect Discord's API.  Ignoring them can lead to your bot being temporarily or permanently banned.  The key to handling rate limits is to anticipate them and incorporate appropriate error handling and delays into your code.  Always check the response headers for the `retry-after` value, as this provides the most accurate information on when you can resume your requests.
+
+## External References
+
+* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)  (Check the API reference for details on methods and error codes.)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord documentation on rate limits)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
