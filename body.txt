@@ -1,92 +1,68 @@
 
-## Description of the Error
+This document details how to create an expanding card effect using only CSS.  This is a common challenge showcasing CSS transitions and transforms to improve user experience and add visual appeal to web interfaces.  No JavaScript is required.
 
-Discord's API implements rate limits to prevent abuse and ensure stability.  When your bot makes too many requests within a short period, it receives a HTTP 429 error – "Too Many Requests".  This prevents your bot from functioning correctly and can lead to unexpected behavior or complete shutdowns.  Discord's rate limits are complex, involving different buckets (groups of requests) and reset times.  Ignoring these limits can result in your bot being temporarily or permanently banned from the API.
+**Description of the Styling:**
 
-## Fixing the Error: Step-by-Step Code
+This design implements a card that expands vertically when hovered over.  The expansion is smooth thanks to CSS transitions.  The card uses a subtle shadow to provide depth and visual separation. The text within the card remains static while the card itself expands to reveal more content that would normally be hidden.
 
-This example uses the `discord.js` library and the `node-fetch` library for making HTTP requests (although discord.js handles this internally).  This approach is more robust for managing rate limits than simply relying on `setTimeout`.
 
-```javascript
-const { Client, GatewayIntentBits } = require('discord.js');
-const fetch = require('node-fetch'); // For demonstration of external request - not essential with discord.js v14+
+**Full Code:**
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-
-const rateLimit = new Map(); // Store rate limit information
-
-async function makeApiRequest(url, options = {}) {
-  const bucket = url; //  Simplify bucket ID for this example - ideally a more sophisticated system
-
-  const now = Date.now();
-  const existingLimit = rateLimit.get(bucket);
-
-  if (existingLimit && existingLimit.reset > now) {
-    const remainingTime = existingLimit.reset - now;
-    console.log(`Rate limited on ${bucket}. Waiting ${remainingTime}ms...`);
-    await new Promise(resolve => setTimeout(resolve, remainingTime)); // Wait until rate limit resets
-  }
-
-  try {
-    const response = await fetch(url, options); // replace with discord.js methods
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        const retryAfter = response.headers.get('Retry-After');
-        const resetTime = now + (retryAfter * 1000); //Retry-After is in seconds
-        rateLimit.set(bucket, { reset: resetTime });
-        console.log(`Rate limited on ${bucket}, retrying after ${retryAfter} seconds`);
-        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000 + 100)); // Add a small buffer
-        return await makeApiRequest(url, options); // Recursive call to retry
-      } else {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-    }
-    return await response.json(); // Or handle the response as needed
-  } catch (error) {
-    console.error("Error making API request:", error);
-    throw error; // Re-throw the error for handling higher up
-  } finally {
-    // Clean up rateLimit map to prevent memory leaks
-    // Remove entries after their reset time has passed
-    for (const [key, value] of rateLimit) {
-        if (value.reset < now) {
-            rateLimit.delete(key);
-        }
-    }
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Prevents content from overflowing during expansion */
+  transition: max-height 0.3s ease-in-out; /* Smooth transition for height change */
+  max-height: 100px; /* Initial height */
 }
 
+.card:hover {
+  max-height: 300px; /* Expanded height on hover */
+}
 
+.card-content {
+  padding: 15px;
+}
 
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-  //Example API call, replace with your actual API call.
-  makeApiRequest('https://discord.com/api/v10/users/@me').then(data => console.log(data))
-    .catch(err => console.error('Error fetching user data:',err));
-});
+.card-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+</style>
+</head>
+<body>
 
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Card Title</h2>
+    <p>This is some example text that will be hidden initially and revealed on hover.</p>
+    <p>More text to demonstrate the expansion effect.</p>
+    <p>Even more text to make sure the expansion is noticeable.</p>
+  </div>
+</div>
 
-client.login('YOUR_BOT_TOKEN');
+</body>
+</html>
 ```
 
-## Explanation
+**Explanation:**
 
-This improved code addresses rate limits by:
+* **`.card`:** This class styles the card itself. `overflow: hidden;` is crucial to prevent the content from overflowing before the expansion.  The `transition` property defines the smooth animation of the `max-height` property.  `max-height` initially limits the card's height.
+* **`.card:hover`:** This selector applies styles when the mouse hovers over the card. The `max-height` is increased to reveal the full content.
+* **`.card-content` and `.card-title`:** These classes style the content within the card for better readability and organization.
 
-1. **Tracking Rate Limits:** A `rateLimit` Map stores the reset time for each API bucket.  This example simplifies the bucket identification; a more robust implementation would use Discord's specific bucket headers.
+**Links to Resources to Learn More:**
 
-2. **Waiting Before Retrying:** If a 429 error is encountered, the code waits for the specified `Retry-After` time before retrying the request.  A small buffer is added to account for network latency.
-
-3. **Recursive Retry:** The `makeApiRequest` function recursively calls itself to retry failed requests after the rate limit reset.
-
-4. **Error Handling:**  The code includes `try...catch` blocks to handle errors during the API request process.
-
-
-## External References
-
-* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord Documentation)
-* **node-fetch:** [https://www.npmjs.com/package/node-fetch](https://www.npmjs.com/package/node-fetch)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **Understanding Selectors:** [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
