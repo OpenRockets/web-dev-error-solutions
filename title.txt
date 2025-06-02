@@ -1,1 +1,1 @@
-Creating a CSS-only Circular Progress Bar
+Discord.js: Handling Rate Limits and Avoiding 429 Errors
