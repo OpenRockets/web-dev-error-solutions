@@ -1,88 +1,82 @@
 
-## Description of the Error
-
-Discord.js, a popular Node.js library for interacting with the Discord API, incorporates rate limits to prevent abuse and ensure the stability of the platform.  When your bot sends messages, edits messages, creates channels, or performs other actions too quickly, Discord will respond with a rate limit error. This typically manifests as a 429 HTTP status code in your application's logs.  Ignoring these rate limits can lead to your bot being temporarily or permanently banned from the Discord API.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This utilizes CSS gradients and transformations to achieve a visually appealing and performant progress indicator.  We'll be focusing on a solution using pure CSS rather than a framework like Tailwind, to demonstrate the underlying concepts.
 
 
-## Fixing the Error: Step-by-Step Guide
+**Description of the Styling:**
 
-This example demonstrates handling rate limits when sending messages.  We'll use `async/await` for cleaner error handling.
-
-**Step 1:  Install the necessary library (if not already installed):**
-
-```bash
-npm install discord.js
-```
-
-**Step 2: Implement rate limit handling:**
-
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] }); // Add necessary intents
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
+This circular progress bar consists of two concentric circles. The outer circle acts as the track, while the inner circle represents the progress. We use a `radial-gradient` to create a semi-circular fill for the progress indicator, rotating it to simulate progress. The percentage of progress is controlled by a single CSS custom property (variable).
 
 
-async function sendMessageWithRateLimit(channel, message) {
-  try {
-    await channel.send(message);
-  } catch (error) {
-    if (error.code === 50013) { //Missing Access
-        console.error("Missing Access to send message in channel.");
-        return;
-    }
-    if (error.code === 10008) { //Unknown message
-        console.error("Unknown Message.");
-        return;
-    }
-    if (error.httpStatus === 429) {
-      const retryAfter = error.retryAfter || 1000; // Default to 1 second if not specified
-      console.log(`Rate limited. Retrying after ${retryAfter / 1000} seconds...`);
-      await new Promise(resolve => setTimeout(resolve, retryAfter));
-      return sendMessageWithRateLimit(channel, message); // Recursive call to retry
-    } else {
-      console.error(`An error occurred: ${error}`);
-      //Handle other errors as needed.
-    }
-  }
+**Full Code:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #ddd 0%,
+    #ddd 70%,
+    transparent 70%,
+    transparent 100%
+  ); /*Outer track*/
+  position: relative;
 }
 
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #4CAF50 0%,
+    #4CAF50 calc(var(--progress, 0) * 3.6deg),
+    transparent calc(var(--progress, 0) * 3.6deg),
+    transparent 100%
+  );
+}
 
-client.on('messageCreate', async (message) => {
-  if (message.content === '!test') {
-    const channel = message.channel;
-    await sendMessageWithRateLimit(channel, 'This message is rate-limit safe!');
-  }
-});
+/* Example Usage with 75% progress */
+.progress-ring-example {
+  --progress: 0.75;
+}
+</style>
+</head>
+<body>
 
+<h1>CSS Circular Progress Bar</h1>
 
-client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+<div class="progress-ring progress-ring-example"></div>
+
+<div class="progress-ring" style="--progress: 0.3;"></div>
+<div class="progress-ring" style="--progress: 0.9;"></div>
+
+</body>
+</html>
 ```
 
-**Explanation of the Code:**
 
-* The `sendMessageWithRateLimit` function attempts to send a message.
-* It catches errors and specifically checks for HTTP status code 429 (rate limit).
-* If a rate limit is encountered, it logs a message, waits for the specified `retryAfter` time (in milliseconds), and then recursively calls itself to retry sending the message.  This ensures the message is eventually sent without violating the rate limits.
-*  The code also includes basic error handling for other potential issues like missing permissions (code 50013) and unknown message (code 10008).  You should adapt this to handle other errors relevant to your application.
-* Remember to replace `'YOUR_BOT_TOKEN'` with your actual bot token.
+**Explanation:**
 
+* **`conic-gradient`:** This is the key to creating the circular progress. It creates a gradient that radiates from the center. We use `transparent` sections to control the visible portion of the progress.
+* **`calc(var(--progress, 0) * 3.6deg)`:** This dynamically calculates the angle of the progress based on the `--progress` custom property (a value between 0 and 1 representing the percentage).  360 degrees / 100% = 3.6 degrees per percentage point.
+* **`::before` pseudo-element:** This is used to create the inner circle representing the progress.
+* **Custom Property `--progress`:** This allows easy modification of the progress level by simply changing its value.
 
-## External References
+**Resources to Learn More:**
 
-* **Discord.js Guide:** [https://discord.js.org/#/](https://discord.js.org/#/)  (The official Discord.js documentation is your primary resource)
-* **Discord API Rate Limits:**  [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Understand Discord's rate limit policies)
-
-
-## Explanation of Rate Limits and Best Practices
-
-Discord's rate limits are crucial for maintaining a stable and fair environment for all bots.  They prevent any single bot from overwhelming the API with requests.  By implementing robust rate limit handling, as shown above, you ensure your bot functions reliably and avoids getting banned.  Consider these best practices:
-
-* **Implement Queues:** For higher throughput, consider using a queueing system (like Redis or Bull) to manage outgoing requests, ensuring they are processed at a safe rate.
-* **Bucket Identification:**  Pay attention to Discord's rate limit buckets.  Requests within the same bucket are subject to the same rate limit.  Proper bucket management can improve your efficiency.
-* **Exponential Backoff:** Instead of simply retrying after a fixed delay, consider implementing an exponential backoff strategy. This increases the retry delay exponentially with each failure, reducing the load on the API in case of sustained rate limits.
+* **MDN Web Docs on `conic-gradient`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **CSS Tricks on Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/)
+* **Understanding CSS Variables (Custom Properties):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
