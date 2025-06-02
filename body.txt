@@ -1,81 +1,86 @@
 
-## Description of the Error
+This document details the creation of an expanding card effect using only CSS.  No JavaScript is required. The effect involves a card that, on hover, expands to reveal additional content smoothly. We will use pure CSS to achieve this.
 
-One common frustration when developing Discord bots with Discord.js is encountering rate limits.  Discord implements rate limits to prevent abuse and maintain server stability.  When your bot sends messages, edits messages, or performs other actions too quickly, it will receive a rate limit error. This usually manifests as a `DiscordAPIError` with a code related to rate limiting (e.g., `13`).  Your bot's operations will be temporarily halted, potentially leading to incomplete functionality or unresponsive behavior.  The error message itself might not be immediately clear about the specific rate limit that was exceeded.
+**Description of the Styling:**
 
-
-## Fixing the Problem: Step-by-Step
-
-This example demonstrates how to handle rate limits using `setTimeout` for simple scenarios.  For more complex situations, consider using a dedicated rate limiting library.
-
-**Step 1: Identifying the Rate-Limited Operation**
-
-First, pinpoint which part of your code is triggering the rate limit. It's often related to sending a high volume of messages within a short period, but it can also be other actions like creating channels or updating guild member roles.
-
-**Step 2: Implementing a Simple Delay with `setTimeout`**
-
-This approach adds a delay after each rate-limited operation.  It's a basic solution, but effective for many situations.
-
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] }); // Add necessary intents
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-client.on('messageCreate', async msg => {
-  if (msg.content === '!send') {
-    // Simulate sending multiple messages - replace with your actual logic
-    const messages = ['Message 1', 'Message 2', 'Message 3', 'Message 4', 'Message 5'];
-    let i = 0;
-
-    function sendMessageWithDelay() {
-      if (i < messages.length) {
-        msg.channel.send(messages[i]).then(() => {
-          i++;
-          setTimeout(sendMessageWithDelay, 1000); // 1-second delay between messages
-        }).catch(error => {
-          if (error.code === 50013) { //check for rate limit
-              console.error("Rate limited, waiting before sending");
-              setTimeout(sendMessageWithDelay, 2000); //double the wait time in case of rate limit.
-          } else {
-            console.error("Error sending message:", error);
-          }
-        });
-      }
-    }
-
-    sendMessageWithDelay();
-  }
-});
+The card is styled using a simple container with a background image and text. On hover, the card expands vertically, revealing hidden content below. We achieve the smooth transition using CSS transitions and transforms.  The hidden content slides up from below the card.
 
 
-client.login('YOUR_BOT_TOKEN');
+**Full Code:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 300px;
+  height: 200px;
+  background-image: url('https://via.placeholder.com/300x200'); /* Replace with your image */
+  background-size: cover;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+}
+
+.card:hover {
+  height: 400px; /* Expand on hover */
+}
+
+.card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px; /* Height of the hidden content */
+  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+  color: white;
+  padding: 20px;
+  transform: translateY(200px); /* Initially hidden below the card */
+  transition: transform 0.3s ease-in-out; /* Smooth transition for transform */
+}
+
+.card:hover .card-content {
+  transform: translateY(0); /* Reveal on hover */
+}
+
+.card-title {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Hidden Content Revealed</h2>
+    <p>This content is initially hidden and revealed on hover.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
 
-**Step 3:  Advanced Rate Limiting (Using a Library)**
+**Explanation:**
 
-For more robust handling of various rate limits and different API endpoints, consider using a dedicated library.  While there isn't a single, officially supported Discord.js rate limiting library, you can create your own custom solutions using techniques like token buckets or leaky buckets. This allows for more sophisticated control over your bot's interactions with the Discord API.
+1. **`card` class:**  Sets the basic dimensions, background, border radius, and `overflow: hidden` to keep the hidden content initially invisible.  `position: relative` is crucial for absolute positioning of the content. The transition property smoothly animates the height change on hover.
 
+2. **`card:hover`:**  On hover, the card's height doubles, triggering the expansion.
 
+3. **`card-content` class:** The hidden content.  `position: absolute` allows it to be positioned relative to its parent (`card`). `transform: translateY(200px)` moves it initially 200px below the card (its own height), making it hidden. The transition property animates the transform property.
 
-## Explanation
+4. **`card:hover .card-content`:** When hovering over the card, the `transform` property changes to `translateY(0)`, smoothly sliding the content up into view.
 
-The `setTimeout` function introduces a delay between sending messages.  This prevents the bot from overwhelming Discord's servers by sending messages too rapidly. The delay time (1000 milliseconds = 1 second) can be adjusted based on your bot's needs and the observed rate limits.  The added `catch` block specifically handles the `50013` error code, increasing the delay if a rate limit is hit.
+**Resources to Learn More:**
 
-Remember to replace `'YOUR_BOT_TOKEN'` with your actual bot token. Also, ensure you've installed the `discord.js` library:
-
-```bash
-npm install discord.js
-```
-
-
-## External References
-
-* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/) - The official Discord.js documentation is an invaluable resource for understanding the library and handling errors.
-* **Discord API Rate Limits:**  (Unfortunately, Discord doesn't have a centralized, easily accessible public document specifically detailing all rate limits.  You'll need to observe them in practice and adjust your code accordingly.)  Searching the Discord developer portal for "rate limits" might provide some additional information.
+* **MDN Web Docs CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
+* **MDN Web Docs CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **Understanding CSS Positioning:** Search for "CSS positioning" on MDN Web Docs or other reputable tutorial sites.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
