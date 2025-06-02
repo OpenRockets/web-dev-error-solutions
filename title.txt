@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card
+Handling Asynchronous Operations and Promises in Discord.js
