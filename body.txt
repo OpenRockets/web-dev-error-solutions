@@ -1,84 +1,107 @@
 
-This document addresses a common error encountered when developing Discord bots using the Discord.js library: the "Missing Permissions" error. This error arises when your bot attempts an action (e.g., sending a message, creating a role, banning a user) it lacks the necessary permissions to perform.
+This document details a CSS-only solution to create an expanding card effect.  The card expands smoothly on hover, revealing additional content. This example uses only CSS3 properties, demonstrating the power of CSS for creating interactive elements without JavaScript.
 
 
-## Description of the Error
+**Description of the Styling:**
 
-The "Missing Permissions" error typically manifests as an error message within your bot's console or log. The exact wording might vary slightly depending on the action and the version of Discord.js, but it generally indicates that your bot is missing one or more permissions required for the intended operation within a specific guild (server).  You might see messages like: `DiscordAPIError: Missing Permissions` or a more specific error indicating which permission is missing (e.g., `Missing Permissions: SendMessages`).
+The card uses a combination of transitions, transforms, and pseudo-elements (`::before` and `::after`) to achieve the effect.  The `::before` pseudo-element creates a subtle background overlay that darkens on hover, drawing attention to the expanding content.  The card itself uses `transform: scale()` for the expanding animation, ensuring a smooth and visually appealing transition.
 
 
-## Code Example and Fixing Steps
+**Full Code:**
 
-Let's illustrate this with a scenario where a bot tries to send a message in a channel but lacks the "Send Messages" permission.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 300px;
+  height: 200px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.3s ease-in-out; /* Smooth transition for scaling */
+}
 
-**Problematic Code:**
+.card:hover {
+  transform: scale(1.1); /* Expand on hover */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add a subtle shadow on hover */
+}
 
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2); /* Dark overlay */
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out; /* Smooth transition for opacity */
+}
 
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-  //Attempting to send a message without checking permissions
-  client.channels.cache.get('CHANNEL_ID').send('Hello from the bot!'); 
-});
+.card:hover::before {
+  opacity: 0.6; /* Increase opacity on hover */
+}
 
-client.login('YOUR_BOT_TOKEN');
+.card-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white; /* Text color for better contrast */
+}
+
+.card-content h2 {
+  margin-bottom: 0.5rem;
+}
+
+
+.hidden-content {
+  display: none; /*Initially Hidden*/
+}
+
+.card:hover .hidden-content{
+  display: block; /* Show on hover */
+}
+
+
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2>Card Title</h2>
+    <p>This is some sample text.</p>
+    <div class="hidden-content">
+      <h3>Extra Information</h3>
+      <p>This content is revealed on hover.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**Corrected Code (Step-by-step fix):**
+**Explanation:**
 
-1. **Check Permissions:** Before attempting any action, always verify that your bot possesses the required permissions in the target channel or guild.  This involves using the `permissions` property of a `GuildMember` or `GuildChannel` object.
-
-2. **Revised Code with Permission Check:**
-
-```javascript
-const { Client, IntentsBitField, PermissionsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-  const channel = client.channels.cache.get('CHANNEL_ID');
-  if (!channel) {
-    console.error("Channel not found!");
-    return;
-  }
-
-  const botMember = channel.guild.members.cache.get(client.user.id);
-  if (!botMember) {
-    console.error("Bot member not found!");
-    return;
-  }
-
-  if (botMember.permissionsIn(channel).has(PermissionsBitField.Flags.SendMessages)) {
-    channel.send('Hello from the bot!');
-  } else {
-    console.error('Bot lacks permission to send messages in this channel.');
-    //Consider alternative actions, like logging the error or sending a message to another channel where the bot has permissions.
-  }
-});
-
-client.login('YOUR_BOT_TOKEN');
-```
-
-**Explanation of Changes:**
-
-* We fetch the `GuildMember` object representing the bot within the channel's guild.
-* We use `permissionsIn(channel).has(PermissionsBitField.Flags.SendMessages)` to check if the bot possesses the `SendMessages` permission specifically within that channel.  Crucially, checking permissions in the channel context is important, as channel-specific overrides can affect permissions.
-* If the permission is missing, an error message is logged, and the bot doesn't attempt the action to avoid the error.  You could implement alternative error handling here (e.g., alerting an admin).  Remember to replace `'CHANNEL_ID'` with the actual ID of your channel.
-
-3. **Granting Permissions (Discord Server Settings):** If the permission check fails, you need to manually grant the necessary permission to your bot in the Discord server's settings. Navigate to the server settings, go to "Roles", find the role your bot is using, and ensure that "Send Messages" (and any other required permissions) are enabled for that role.
+* **Transitions:**  `transition` property is used on both the `.card` and `::before` pseudo-element to create the smooth animation effect.  
+* **Transforms:** `transform: scale()` is used to enlarge the card on hover.
+* **Pseudo-elements:** The `::before` pseudo-element is used to create a darkening overlay that enhances the hover effect.
+* **Opacity:**  The `opacity` property controls the visibility of the overlay.
+* **Hidden Content:** The `.hidden-content` class initially hides the extra information and is shown on hover using the `.card:hover .hidden-content` selector.
 
 
-## External References
+**Links to Resources to Learn More:**
 
-* **Discord.js Guide:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome) (Check the documentation for the latest version)
-* **Discord Permissions:** [https://discord.com/developers/docs/topics/permissions](https://discord.com/developers/docs/topics/permissions) (Understanding Discord's permission system is crucial)
-
-
-## Explanation
-
-The core issue is a mismatch between the actions your bot attempts and the permissions it has been granted.  Always proactively check for permissions before executing sensitive operations.  Failing to do so will result in errors, and potentially prevent your bot from functioning correctly.  Robust error handling is essential to create reliable bots.
+* [MDN Web Docs on CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* [MDN Web Docs on CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* [MDN Web Docs on CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
