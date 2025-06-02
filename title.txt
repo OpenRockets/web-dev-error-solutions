@@ -1,1 +1,1 @@
-Creating a CSS-only Circular Progress Bar
+Fixing Discord.js "Missing Permissions" Error
