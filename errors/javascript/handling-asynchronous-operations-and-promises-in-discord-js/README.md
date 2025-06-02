@@ -1,3 +1,5 @@
+# 🐞 Handling Asynchronous Operations and Promises in Discord.js
+
 
 This document addresses a common issue faced by developers using the Discord.js library: managing asynchronous operations and properly handling promises to prevent errors and ensure code execution flows correctly.  This often manifests as unexpected behavior, such as commands not executing in the intended order or errors being silently swallowed.
 

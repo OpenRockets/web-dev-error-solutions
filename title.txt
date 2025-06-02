@@ -1,1 +1,1 @@
-Handling Rate Limits in Discord.js
+Handling Asynchronous Operations and Promises in Discord.js
