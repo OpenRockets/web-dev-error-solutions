@@ -1,127 +1,78 @@
 # 🐞 Handling Discord.js Rate Limits: A Step-by-Step Guide
 
 
-This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its platform.  Exceeding these limits results in your bot being temporarily blocked from sending messages or performing other actions.
+This document addresses a common problem encountered when developing Discord bots using the Discord.js library: **rate limits**.  Discord implements rate limits to prevent abuse and maintain the stability of its platform.  Exceeding these limits can result in your bot being temporarily or permanently banned. This guide demonstrates how to gracefully handle these limits.
+
 
 ## Description of the Error
 
-When your bot attempts actions too frequently (e.g., sending many messages in quick succession, making numerous API requests), Discord will respond with a rate limit error. This typically manifests as a HTTP error code (e.g., 429 Too Many Requests) or an error within the Discord.js library indicating a rate limit has been exceeded.  The error messages can vary depending on the specific API endpoint and the type of rate limit exceeded.
+When your bot sends messages, edits messages, or performs other actions too rapidly, Discord's API will respond with a rate limit error. This typically manifests as a HTTP 429 response, indicating that your request was throttled.  The error message might contain details like the remaining time before you can make further requests (reset time) and the number of requests allowed within a specific time window (bucket).  Ignoring these errors can lead to your bot being temporarily or permanently disabled.
 
 
-## Fixing Rate Limits Step-by-Step
+## Fixing Rate Limits: Step-by-Step Guide
 
-This example focuses on handling rate limits when sending messages.  The key is to implement proper error handling and delays to respect Discord's rate limits.
-
-**Step 1: Install `discord.js`:**
-
-If you haven't already, install the library:
-
-```bash
-npm install discord.js
-```
-
-**Step 2: Implement Error Handling and Delays:**
-
-The following code snippet demonstrates how to handle rate limit errors and implement delays using `async/await` and `setTimeout`.  It uses a simple queue to manage message sending.
-
+This example focuses on handling rate limits when sending messages.  The core principle is to wait for the specified `reset` time before sending further messages.  This code utilizes `async/await` for cleaner asynchronous handling.
 
 ```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
-
-const messageQueue = [];
-let isSending = false;
+const { Client, GatewayIntentBits } = require('discord.js');
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-// Function to send messages, handling rate limits
-async function sendMessage(channel, message) {
-  if (isSending) {
-    messageQueue.push({ channel, message });
-    return;
-  }
-  isSending = true;
+//  Function to send messages with rate limit handling
+async function sendMessageWithRateLimit(channel, message) {
   try {
     await channel.send(message);
   } catch (error) {
-    if (error.code === 50007) { // 50007 means "Cannot send messages to this user"
-      console.error('Cannot send messages to this user.', error);
-    } else if (error.code === 50013){ //50013 means that the user is not available to send to.
-      console.error('Cannot send to unavailable user.', error);
-    }
-    else if (error.httpStatus === 429) { // Rate limit hit
-      const retryAfter = error.response.headers['retry-after'];
-      console.log(`Rate limited. Retrying after ${retryAfter}ms`);
-      await new Promise(resolve => setTimeout(resolve, retryAfter * 1000)); // Convert seconds to milliseconds
+    if (error.code === 50007) { // Check for rate limit error (specifically, message sending limit). Other codes may also indicate rate limits.
+      console.error("Rate limit hit:", error);
+      const resetTime = error.rateLimitReset; //Fetch reset time from error object.
+      const remaining = error.rateLimitRemaining;
+      console.log(`Rate limit remaining: ${remaining}, Reset Time: ${new Date(resetTime)}`);
+      const waitTime = resetTime - Date.now(); //Calculate remaining wait time.
+
+      if (waitTime > 0) {
+        console.log(`Waiting for ${waitTime / 1000} seconds before retrying...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime)); // Wait for reset time.
+        // Retry sending the message after the wait.  Consider adding a retry mechanism with exponential backoff for robustness.
+        await channel.send(message); 
+      } else {
+          console.log("Rate limit seems to be resolved. Trying to send the message.");
+          await channel.send(message)
+      }
     } else {
-      console.error('An error occurred:', error);
-    }
-  } finally {
-    isSending = false;
-    if (messageQueue.length > 0) {
-      const { channel, message } = messageQueue.shift();
-      sendMessage(channel, message); // Process the next message in the queue
+      console.error("An unexpected error occurred:", error);
+      //Handle other errors appropriately.
     }
   }
 }
 
-client.on('messageCreate', msg => {
+
+client.on('messageCreate', async (msg) => {
   if (msg.content === '!test') {
-    sendMessage(msg.channel, 'Hello from my bot!');
+    const channel = msg.channel;
+    await sendMessageWithRateLimit(channel, 'This message handles rate limits!');
   }
 });
-
 
 client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
 ```
 
-**Step 3:  Using the `Collection` Object for more robust queueing (Advanced):**
-
-For more sophisticated queue management across multiple channels and better performance use `Collection`
-
-```javascript
-const { Client, IntentsBitField, Collection } = require('discord.js');
-
-const messageQueue = new Collection();
-let isSending = false;
-
-// ... (rest of the code remains the same, except replace `messageQueue.push` and `messageQueue.shift` with `messageQueue.set` and `messageQueue.shift` respectively)
-
-//Example Implementation
-client.on('messageCreate', msg => {
-  if (msg.content === '!test') {
-    const key = `${msg.channel.id}-${Date.now()}`;
-    messageQueue.set(key, { channel: msg.channel, message: 'Hello from my bot!' });
-    sendMessage(); //Start the process if not running
-  }
-});
-
-
-async function sendMessage() {
-  if (isSending || messageQueue.size === 0) return;
-  isSending = true;
-  const { channel, message } = messageQueue.first();
-  messageQueue.delete(messageQueue.firstKey()); // Remove from queue once processed
-  try{
-    // ... (rest of the try-catch block remains same)
-  } finally {
-    isSending = false;
-    sendMessage();
-  }
-}
-```
 
 ## Explanation
 
-The code utilizes `async/await` for asynchronous operations.  The `try...catch` block handles potential errors, specifically checking for the 429 status code indicating a rate limit.  If a rate limit is detected, the code waits for the specified `retry-after` period before attempting to send the message again. The queue ensures messages are sent sequentially, preventing further rate limit violations.
-
+1. **Error Handling:** The `try...catch` block catches errors during message sending.
+2. **Rate Limit Detection:** We specifically check for error code 50007 (Discord's rate limit error for sending messages). Other error codes might also indicate rate limits, adjust this check accordingly based on the error object's structure.
+3. **Wait Time Calculation:** We extract the `rateLimitReset` timestamp from the error object and calculate the time remaining until we can send another message.
+4. **Delay:**  `setTimeout` with `await` pauses the execution for the calculated `waitTime`, ensuring we respect Discord's rate limits.
+5. **Retry:** This example includes a simple retry, but for a production bot, a more robust retry mechanism (e.g., exponential backoff) is highly recommended to handle intermittent network issues or fluctuating rate limits effectively.  The else block handles situations where the waitTime is 0, which means the limit has potentially already been resolved.
 
 ## External References
 
-* **Discord.js Guide:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome)
-* **Discord API Rate Limits:**  (No single, publicly accessible, comprehensive documentation exists.  The information is distributed across different sections of the Discord Developer Portal and gleaned from experience.)
+* **Discord.js Guide:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome) -  The official Discord.js documentation.  Refer to the API documentation for details on error handling.
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) -  Discord's official documentation on rate limits.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
