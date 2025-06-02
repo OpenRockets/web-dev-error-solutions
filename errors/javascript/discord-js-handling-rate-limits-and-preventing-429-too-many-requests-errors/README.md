@@ -1,3 +1,5 @@
+# 🐞 Discord.js: Handling Rate Limits and Preventing "429 Too Many Requests" Errors
+
 
 This document addresses a common issue encountered when developing Discord bots using the Discord.js library: rate limiting errors.  These errors, typically manifested as HTTP status code 429 ("Too Many Requests"), occur when your bot sends requests to the Discord API too frequently, exceeding the allowed rate limits. This can result in your bot temporarily or permanently being unable to function.
 

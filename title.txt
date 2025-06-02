@@ -1,1 +1,1 @@
-Discord.js: Handling Rate Limits and Avoiding "DiscordAPIError: 429"
+Discord.js: Handling Rate Limits and Preventing "429 Too Many Requests" Errors
