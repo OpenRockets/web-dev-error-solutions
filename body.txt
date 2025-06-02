@@ -1,73 +1,70 @@
 
-This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and maintain the stability of its platform.  Exceeding these limits results in errors that can disrupt your bot's functionality.
+This document details how to create an expanding card effect using only CSS.  No JavaScript is required! This effect involves a card that expands to reveal more content when hovered over, providing a smooth and engaging user experience.  We'll leverage CSS transitions and transforms to achieve this.
 
-## Description of the Error
+**Description of the Styling:**
 
-When your bot sends messages, edits messages, creates channels, or performs other actions too quickly, Discord will respond with a rate limit error.  This typically manifests as a `DiscordAPIError` with a code related to rate limiting (e.g., `13`).  Your bot's actions will be temporarily blocked until the rate limit window expires.  The error message might look something like this (the exact message varies):
+The card uses a simple design with a background color and padding. The key to the expanding effect lies in the use of CSS transitions on the `transform` and `box-shadow` properties. On hover, the card scales up slightly, creating an expanding animation.  Simultaneously, a subtle box shadow appears, adding depth and highlighting the interaction.
 
+
+**Full Code:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 5px;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth transitions */
+  width: 300px;
+  cursor: pointer; /* Indicate interactivity */
+}
+
+.card:hover {
+  transform: scale(1.05); /* Expand on hover */
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2); /* Add a shadow on hover */
+}
+
+.card-content {
+  /*Content Styling*/
+  font-family: sans-serif;
+  color: #333;
+}
+
+.card h2 {
+  margin-top: 0;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2>Expanding Card</h2>
+    <p>This is a simple card that expands on hover, showcasing a CSS-only animation effect.  No JavaScript required!</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
-DiscordAPIError: 429: Rate limited.
-```
 
+**Explanation:**
 
-## Fixing Rate Limits Step-by-Step
+* **`transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;`**: This line is crucial. It defines the transition properties for `transform` and `box-shadow`.  `0.3s` sets the duration of the transition, and `ease-in-out` specifies the timing function, creating a smooth animation.
 
-The solution involves implementing rate limiting on your bot's side, using delays or queues to space out requests to Discord's API.  Below is an example demonstrating a simple approach using `setTimeout` to add delays. More robust solutions often involve using libraries like `discord.js-rate-limiter` for more advanced management.
+* **`transform: scale(1.05);`**: This line, within the `:hover` pseudo-class, scales the card up by 5% on hover, creating the expanding effect.
 
-**Step 1: Identify Rate-Limited Actions:**
+* **`box-shadow: 0 10px 20px rgba(0,0,0,0.2);`**: This line adds a box shadow to the card on hover, giving it more depth and visual feedback.  The `rgba` value allows you to control the shadow's opacity.
 
-Determine which parts of your bot's code are triggering the rate limits. This might involve logging API calls or using a debugger.
+**Links to Resources to Learn More:**
 
-**Step 2: Implement Delays using `setTimeout`:**
-
-This example shows how to add a delay before sending a message:
-
-```javascript
-const Discord = require('discord.js');
-const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] }); // Add necessary intents
-
-client.on('messageCreate', async (message) => {
-  if (message.content === '!mycommand') {
-    // Simulate a rate-limited action (replace with your actual action)
-    const sendMessage = async () => {
-      try {
-        await message.channel.send('Hello from a rate-limited command!');
-      } catch (error) {
-        if (error.code === 50013) { //Missing Permissions, handle it separately
-            console.error("Missing Permissions");
-        } else if (error.code === 10008) { //Unknown Message
-            console.error("Unknown Message");
-        } else if (error.httpStatus === 429) {
-          console.error('Rate limited. Retrying in 1 second...');
-          setTimeout(sendMessage, 1000); // Retry after 1 second
-        } else {
-          console.error('An error occurred:', error);
-        }
-      }
-    }
-    sendMessage();
-
-  }
-});
-
-client.login('YOUR_BOT_TOKEN');
-```
-
-**Step 3: Consider a More Robust Solution:**
-
-For more complex scenarios, consider using a dedicated rate limiting library like `discord.js-rate-limiter`.  This provides more sophisticated control over rate limiting, allowing you to manage different limits for various API endpoints.
-
-
-## Explanation
-
-The code above uses a simple `setTimeout` function to introduce a delay before attempting to send a message again.  If a rate limit error is caught, the `sendMessage` function calls itself after a 1-second delay. This ensures your bot doesn't flood the Discord API.  A more robust approach is crucial for production bots.  You could also implement Exponential Backoff for more refined retry mechanisms in case of rate limiting.
-
-
-## External References
-
-* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/) (Check the API documentation for details on rate limits and error handling)
-* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord documentation on rate limits)
-* **discord.js-rate-limiter:** (Search npm for this library – a helpful tool for advanced rate limiting)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
