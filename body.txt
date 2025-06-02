@@ -1,107 +1,111 @@
 
-This document details a CSS-only solution to create an expanding card effect.  The card expands smoothly on hover, revealing additional content. This example uses only CSS3 properties, demonstrating the power of CSS for creating interactive elements without JavaScript.
+## Description of the Error
+
+Discord.js, the popular Node.js library for interacting with the Discord API, employs rate limits to prevent abuse and maintain server stability.  When your bot sends messages, edits messages, or performs other actions too frequently, you'll encounter rate limit errors. These manifest in various ways, often as HTTP errors (like 429 Too Many Requests)  or as silent failures where your bot appears unresponsive.  Ignoring rate limits can lead to your bot being temporarily or permanently banned from the Discord API.
 
 
-**Description of the Styling:**
+## Step-by-Step Code Fix
 
-The card uses a combination of transitions, transforms, and pseudo-elements (`::before` and `::after`) to achieve the effect.  The `::before` pseudo-element creates a subtle background overlay that darkens on hover, drawing attention to the expanding content.  The card itself uses `transform: scale()` for the expanding animation, ensuring a smooth and visually appealing transition.
+This example demonstrates how to handle rate limits when sending messages using `discord.js`. We'll use the `setTimeout` function for simplicity, but for more sophisticated handling, consider using a dedicated rate limiting library.
 
+**1. Basic Message Sending (Without Rate Limit Handling):**
 
-**Full Code:**
+```javascript
+const { Client, IntentsBitField } = require('discord.js');
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 300px;
-  height: 200px;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  transition: transform 0.3s ease-in-out; /* Smooth transition for scaling */
-}
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+  // This will likely hit rate limits if run repeatedly
+  client.channels.cache.get('YOUR_CHANNEL_ID').send('Hello!'); 
+});
 
-.card:hover {
-  transform: scale(1.1); /* Expand on hover */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add a subtle shadow on hover */
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.2); /* Dark overlay */
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out; /* Smooth transition for opacity */
-}
-
-.card:hover::before {
-  opacity: 0.6; /* Increase opacity on hover */
-}
-
-.card-content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: white; /* Text color for better contrast */
-}
-
-.card-content h2 {
-  margin-bottom: 0.5rem;
-}
-
-
-.hidden-content {
-  display: none; /*Initially Hidden*/
-}
-
-.card:hover .hidden-content{
-  display: block; /* Show on hover */
-}
-
-
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-content">
-    <h2>Card Title</h2>
-    <p>This is some sample text.</p>
-    <div class="hidden-content">
-      <h3>Extra Information</h3>
-      <p>This content is revealed on hover.</p>
-    </div>
-  </div>
-</div>
-
-</body>
-</html>
+client.login('YOUR_BOT_TOKEN');
 ```
 
-**Explanation:**
+**2. Implementing Basic Rate Limiting with `setTimeout`:**
 
-* **Transitions:**  `transition` property is used on both the `.card` and `::before` pseudo-element to create the smooth animation effect.  
-* **Transforms:** `transform: scale()` is used to enlarge the card on hover.
-* **Pseudo-elements:** The `::before` pseudo-element is used to create a darkening overlay that enhances the hover effect.
-* **Opacity:**  The `opacity` property controls the visibility of the overlay.
-* **Hidden Content:** The `.hidden-content` class initially hides the extra information and is shown on hover using the `.card:hover .hidden-content` selector.
+```javascript
+const { Client, IntentsBitField } = require('discord.js');
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
+
+let canSend = true; // Flag to track rate limit
+
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+  sendMessage('Hello!');
+});
+
+function sendMessage(message) {
+  if (canSend) {
+    canSend = false; // Prevent sending while processing
+    client.channels.cache.get('YOUR_CHANNEL_ID').send(message)
+      .then(() => {
+        setTimeout(() => { canSend = true; }, 1000); // Wait 1 second before allowing another message
+      })
+      .catch(error => {
+        console.error('Error sending message:', error);
+        // Handle error appropriately, e.g., retry after a longer delay
+        setTimeout(() => { canSend = true; }, 5000); //Wait 5 seconds after an error
+      });
+  }
+}
+
+client.login('YOUR_BOT_TOKEN');
+```
+
+**3.  More Robust Handling with `discord.js`'s Built-in Features (Recommended):**
+
+Discord.js v14+ provides more sophisticated rate limit handling built-in.  The library automatically handles many rate limits, but you still might need to catch errors and implement retries.  The previous example with `setTimeout` is a simplified illustration.
 
 
-**Links to Resources to Learn More:**
+```javascript
+const { Client, IntentsBitField, GatewayIntentBits } = require('discord.js');
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
 
-* [MDN Web Docs on CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* [MDN Web Docs on CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* [MDN Web Docs on CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+  sendMessage('Hello!');
+});
+
+async function sendMessage(message) {
+  try {
+    await client.channels.cache.get('YOUR_CHANNEL_ID').send(message);
+  } catch (error) {
+    if (error.code === 50013) { //Missing Permissions
+        console.error('Bot lacks permissions to send messages in that channel.');
+        return;
+    } else if (error.code === 50001) { //Missing Access
+        console.error('Bot lacks access to that channel.');
+        return;
+    } else if (error.httpStatus === 429) { // Rate Limit Hit
+      console.error('Rate limit hit. Retrying in', error.retryAfter, 'ms');
+      await new Promise(resolve => setTimeout(resolve, error.retryAfter));
+      await sendMessage(message); // Recursive retry
+    } else {
+      console.error('An unexpected error occurred:', error);
+    }
+  }
+}
+
+
+client.login('YOUR_BOT_TOKEN');
+
+```
+
+Remember to replace `'YOUR_CHANNEL_ID'` and `'YOUR_BOT_TOKEN'` with your actual values.
+
+
+
+## Explanation
+
+The core issue is that the Discord API restricts the number of requests your bot can make within a specific timeframe. The improved code implements a simple mechanism to pause sending messages if a rate limit is detected. More advanced techniques involve using a queue to manage outgoing messages and employing more sophisticated retry logic with exponential backoff.
+
+
+## External References
+
+* **Discord.js Documentation:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome)  (Check the API documentation for the most up-to-date information on rate limits and error handling)
+* **Node.js `setTimeout` Function:** [https://nodejs.org/api/timers.html#settimeout](https://nodejs.org/api/timers.html#settimeout)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
