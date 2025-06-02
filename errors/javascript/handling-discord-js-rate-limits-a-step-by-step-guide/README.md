@@ -3,20 +3,20 @@
 
 ## Description of the Error
 
-One common frustration when developing Discord bots with Discord.js is encountering rate limits.  Discord implements rate limits to prevent abuse and maintain server stability.  When your bot sends messages, edits messages, or performs other actions too quickly, it will receive a rate limit error. This usually manifests as a `DiscordAPIError` with a code related to rate limiting (e.g., `13`).  Your bot's operations will be temporarily halted, potentially leading to incomplete functionality or unresponsive behavior.  The error message itself might not be immediately clear about the specific rate limit that was exceeded.
+Discord.js, a popular Node.js library for interacting with the Discord API, incorporates rate limits to prevent abuse and ensure the stability of the platform.  When your bot sends messages, edits messages, creates channels, or performs other actions too quickly, Discord will respond with a rate limit error. This typically manifests as a 429 HTTP status code in your application's logs.  Ignoring these rate limits can lead to your bot being temporarily or permanently banned from the Discord API.
 
 
-## Fixing the Problem: Step-by-Step
+## Fixing the Error: Step-by-Step Guide
 
-This example demonstrates how to handle rate limits using `setTimeout` for simple scenarios.  For more complex situations, consider using a dedicated rate limiting library.
+This example demonstrates handling rate limits when sending messages.  We'll use `async/await` for cleaner error handling.
 
-**Step 1: Identifying the Rate-Limited Operation**
+**Step 1:  Install the necessary library (if not already installed):**
 
-First, pinpoint which part of your code is triggering the rate limit. It's often related to sending a high volume of messages within a short period, but it can also be other actions like creating channels or updating guild member roles.
+```bash
+npm install discord.js
+```
 
-**Step 2: Implementing a Simple Delay with `setTimeout`**
-
-This approach adds a delay after each rate-limited operation.  It's a basic solution, but effective for many situations.
+**Step 2: Implement rate limit handling:**
 
 ```javascript
 const { Client, IntentsBitField } = require('discord.js');
@@ -26,58 +26,65 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on('messageCreate', async msg => {
-  if (msg.content === '!send') {
-    // Simulate sending multiple messages - replace with your actual logic
-    const messages = ['Message 1', 'Message 2', 'Message 3', 'Message 4', 'Message 5'];
-    let i = 0;
 
-    function sendMessageWithDelay() {
-      if (i < messages.length) {
-        msg.channel.send(messages[i]).then(() => {
-          i++;
-          setTimeout(sendMessageWithDelay, 1000); // 1-second delay between messages
-        }).catch(error => {
-          if (error.code === 50013) { //check for rate limit
-              console.error("Rate limited, waiting before sending");
-              setTimeout(sendMessageWithDelay, 2000); //double the wait time in case of rate limit.
-          } else {
-            console.error("Error sending message:", error);
-          }
-        });
-      }
+async function sendMessageWithRateLimit(channel, message) {
+  try {
+    await channel.send(message);
+  } catch (error) {
+    if (error.code === 50013) { //Missing Access
+        console.error("Missing Access to send message in channel.");
+        return;
     }
+    if (error.code === 10008) { //Unknown message
+        console.error("Unknown Message.");
+        return;
+    }
+    if (error.httpStatus === 429) {
+      const retryAfter = error.retryAfter || 1000; // Default to 1 second if not specified
+      console.log(`Rate limited. Retrying after ${retryAfter / 1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, retryAfter));
+      return sendMessageWithRateLimit(channel, message); // Recursive call to retry
+    } else {
+      console.error(`An error occurred: ${error}`);
+      //Handle other errors as needed.
+    }
+  }
+}
 
-    sendMessageWithDelay();
+
+client.on('messageCreate', async (message) => {
+  if (message.content === '!test') {
+    const channel = message.channel;
+    await sendMessageWithRateLimit(channel, 'This message is rate-limit safe!');
   }
 });
 
 
-client.login('YOUR_BOT_TOKEN');
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
 ```
 
+**Explanation of the Code:**
 
-**Step 3:  Advanced Rate Limiting (Using a Library)**
-
-For more robust handling of various rate limits and different API endpoints, consider using a dedicated library.  While there isn't a single, officially supported Discord.js rate limiting library, you can create your own custom solutions using techniques like token buckets or leaky buckets. This allows for more sophisticated control over your bot's interactions with the Discord API.
-
-
-
-## Explanation
-
-The `setTimeout` function introduces a delay between sending messages.  This prevents the bot from overwhelming Discord's servers by sending messages too rapidly. The delay time (1000 milliseconds = 1 second) can be adjusted based on your bot's needs and the observed rate limits.  The added `catch` block specifically handles the `50013` error code, increasing the delay if a rate limit is hit.
-
-Remember to replace `'YOUR_BOT_TOKEN'` with your actual bot token. Also, ensure you've installed the `discord.js` library:
-
-```bash
-npm install discord.js
-```
+* The `sendMessageWithRateLimit` function attempts to send a message.
+* It catches errors and specifically checks for HTTP status code 429 (rate limit).
+* If a rate limit is encountered, it logs a message, waits for the specified `retryAfter` time (in milliseconds), and then recursively calls itself to retry sending the message.  This ensures the message is eventually sent without violating the rate limits.
+*  The code also includes basic error handling for other potential issues like missing permissions (code 50013) and unknown message (code 10008).  You should adapt this to handle other errors relevant to your application.
+* Remember to replace `'YOUR_BOT_TOKEN'` with your actual bot token.
 
 
 ## External References
 
-* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/) - The official Discord.js documentation is an invaluable resource for understanding the library and handling errors.
-* **Discord API Rate Limits:**  (Unfortunately, Discord doesn't have a centralized, easily accessible public document specifically detailing all rate limits.  You'll need to observe them in practice and adjust your code accordingly.)  Searching the Discord developer portal for "rate limits" might provide some additional information.
+* **Discord.js Guide:** [https://discord.js.org/#/](https://discord.js.org/#/)  (The official Discord.js documentation is your primary resource)
+* **Discord API Rate Limits:**  [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Understand Discord's rate limit policies)
+
+
+## Explanation of Rate Limits and Best Practices
+
+Discord's rate limits are crucial for maintaining a stable and fair environment for all bots.  They prevent any single bot from overwhelming the API with requests.  By implementing robust rate limit handling, as shown above, you ensure your bot functions reliably and avoids getting banned.  Consider these best practices:
+
+* **Implement Queues:** For higher throughput, consider using a queueing system (like Redis or Bull) to manage outgoing requests, ensuring they are processed at a safe rate.
+* **Bucket Identification:**  Pay attention to Discord's rate limit buckets.  Requests within the same bucket are subject to the same rate limit.  Proper bucket management can improve your efficiency.
+* **Exponential Backoff:** Instead of simply retrying after a fixed delay, consider implementing an exponential backoff strategy. This increases the retry delay exponentially with each failure, reducing the load on the API in case of sustained rate limits.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
