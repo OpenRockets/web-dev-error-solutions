@@ -1,13 +1,15 @@
 # 🐞 Creating a CSS-only Expanding Card
 
 
-This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered over, revealing hidden content. This example utilizes plain CSS3; no JavaScript or frameworks like Tailwind are needed.
+This document details a CSS-only solution to create an expanding card effect.  This effect reveals additional content within a card when it's clicked, without using JavaScript. We'll leverage CSS transitions and the `:target` pseudo-class for this.
 
-## Description of the Styling
 
-The styling uses a combination of CSS transitions and pseudo-elements (`::before` and `::after`) to achieve the expanding effect. The card's initial height is set to be smaller than its content. On hover, the height transitions to accommodate the full content, creating a smooth expansion.  A subtle background color change is also included for visual feedback.
+**Description of the Styling:**
 
-## Full Code
+This effect utilizes a simple HTML structure with a container `<div>`, a clickable header `<button>`, and a section for the expandable content `<div>`.  CSS is used to style the card, hide the content initially, and smoothly reveal it upon clicking the header. The `:target` pseudo-class and a unique ID are used to control the visibility based on the URL hash.  We'll also use CSS transitions for a smooth animation.
+
+
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
@@ -17,51 +19,39 @@ The styling uses a combination of CSS transitions and pseudo-elements (`::before
 <style>
 .card {
   background-color: #f2f2f2;
-  border: 1px solid #ccc;
+  border: 1px solid #ddd;
   border-radius: 5px;
-  overflow: hidden; /* Hide overflowing content initially */
-  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+  overflow: hidden; /* Hide content that extends beyond card boundaries */
   width: 300px;
-  height: 100px; /* Initial height */
-  position: relative; /* Needed for absolute positioning of pseudo-elements */
+  transition: max-height 0.5s ease-in-out; /* Smooth transition for height change */
 }
 
-.card:hover {
-  background-color: #e0e0e0;
-  height: auto; /* Expand to full content height on hover */
+.card-header {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
 }
-
 
 .card-content {
   padding: 10px;
+  max-height: 0; /* Initially hidden */
+  overflow: hidden;
+  transition: max-height 0.5s ease-in-out; /* Smooth transition for height change */
 }
 
-.card::before, .card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.1);
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
+.card.active .card-content {
+  max-height: 200px; /* Adjust as needed */
 }
-
-.card:hover::before, .card:hover::after {
-  opacity: 1;
-}
-
-
 </style>
 </head>
 <body>
 
-<div class="card">
-  <div class="card-content">
-    <h3>This is the card title</h3>
-    <p>This is some example text that will be hidden initially and revealed when the card is hovered over.</p>
-    <p>More text to ensure the card expands significantly.</p>
+<div class="card" id="myCard">
+  <button class="card-header" onclick="location.hash = 'content';">Click to Expand</button>
+  <div class="card-content" id="content">
+    This is the expandable content.  Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
   </div>
 </div>
 
@@ -69,19 +59,20 @@ The styling uses a combination of CSS transitions and pseudo-elements (`::before
 </html>
 ```
 
-## Explanation
+**Explanation:**
 
-* **`transition: height 0.3s ease-in-out;`**: This line is crucial for the smooth expansion. It specifies that the `height` property should transition over 0.3 seconds using an ease-in-out timing function.
-* **`height: auto;`**: On hover, the `height` is set to `auto`, allowing the card to naturally expand to fit its content.
-* **`overflow: hidden;`**: This prevents the content from overflowing the initial smaller height before the hover effect.
-* **Pseudo-elements:** The `::before` and `::after` pseudo-elements are used to create a subtle darkening effect when hovered over for better visual feedback. You can customize this further or remove them if preferred.
+* **`card` class:** Styles the overall card appearance. `overflow: hidden` is crucial to prevent content from spilling outside the card during the transition.
+* **`card-header` class:** Styles the clickable header.
+* **`card-content` class:**  Contains the expandable content.  `max-height: 0` initially hides the content, and `overflow: hidden` prevents it from overflowing.  The transition property ensures smooth animation.
+* **`.card.active .card-content`:** This targets the `card-content` when the parent `card` has the class `active`.  This class is added when the URL hash changes to '#content'  (triggered by the `onclick` event).  We set a `max-height` to reveal the content.
+* **`onclick="location.hash = 'content';"`:** This line updates the URL hash when the header is clicked.  This triggers the `.active` class via the `:target` pseudo-class which is implicitly applied to the `#content` element when it's the target of a hash link.
 
-## Resources to Learn More
 
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs - Pseudo-elements:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* **CSS-Tricks:** Search for "CSS transitions" or "CSS hover effects" on [https://css-tricks.com/](https://css-tricks.com/) for more advanced techniques.
+**Resources to Learn More:**
 
+* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs on `:target` Pseudo-class:** [https://developer.mozilla.org/en-US/docs/Web/CSS/:target](https://developer.mozilla.org/en-US/docs/Web/CSS/:target)
+* **Understanding CSS Selectors:** Numerous tutorials are available online by searching "CSS Selectors".
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

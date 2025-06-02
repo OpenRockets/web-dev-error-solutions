@@ -1,86 +1,76 @@
 
-## Description of the Error
-
-Discord.js, a popular Node.js library for interacting with the Discord API, implements rate limits to prevent abuse and ensure the stability of the platform.  When your bot sends messages, edits messages, creates channels, or performs other actions too frequently, you'll encounter rate limit errors. These errors typically manifest as HTTP 429 errors, indicating that your bot has exceeded the allowed request rate for a specific endpoint.  This can disrupt your bot's functionality, causing messages to fail to send or other actions to be delayed or dropped entirely.
+This document details a CSS-only solution to create an expanding card effect.  This effect reveals additional content within a card when it's clicked, without using JavaScript. We'll leverage CSS transitions and the `:target` pseudo-class for this.
 
 
-## Code: Handling Discord.js Rate Limits
+**Description of the Styling:**
 
-This example demonstrates how to handle rate limits using `discord.js`'s built-in features.  We'll use `setTimeout` for simple rate limiting;  for more sophisticated solutions, consider dedicated libraries.
+This effect utilizes a simple HTML structure with a container `<div>`, a clickable header `<button>`, and a section for the expandable content `<div>`.  CSS is used to style the card, hide the content initially, and smoothly reveal it upon clicking the header. The `:target` pseudo-class and a unique ID are used to control the visibility based on the URL hash.  We'll also use CSS transitions for a smooth animation.
 
 
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
+**Full Code:**
 
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-let messageQueue = []; // Queue for messages to send
-let isSending = false; // Flag to track if we're currently sending messages
-
-function sendMessage(channel, message) {
-  if (isSending) {
-    messageQueue.push({ channel, message });
-    return;
-  }
-  isSending = true;
-
-  channel.send(message)
-    .then(() => {
-      isSending = false;
-      if (messageQueue.length > 0) {
-        const nextMessage = messageQueue.shift();
-        sendMessage(nextMessage.channel, nextMessage.message);
-      }
-    })
-    .catch(error => {
-      if (error.code === 50007){ //Exactly handle this error code from discord.
-          console.error("Discord error 50007 caught! Retrying");
-          setTimeout(()=>sendMessage(channel,message), 1000);
-      } else if (error.code === 429) {
-        const retryAfter = error.retryAfter || 1000; //Default to 1 sec
-        console.error(`Rate limited. Retrying after ${retryAfter}ms. Error: ${error}`);
-        setTimeout(() => sendMessage(channel, message), retryAfter);
-      } else {
-        console.error(`Error sending message: ${error}`);
-        isSending = false; // Ensure we don't get stuck
-      }
-    });
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f2f2f2;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  overflow: hidden; /* Hide content that extends beyond card boundaries */
+  width: 300px;
+  transition: max-height 0.5s ease-in-out; /* Smooth transition for height change */
 }
 
+.card-header {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+}
 
-client.on('messageCreate', msg => {
-  if (msg.content === '!test') {
-    sendMessage(msg.channel, 'This message was sent with rate limit handling!');
-  }
-});
+.card-content {
+  padding: 10px;
+  max-height: 0; /* Initially hidden */
+  overflow: hidden;
+  transition: max-height 0.5s ease-in-out; /* Smooth transition for height change */
+}
 
-client.login('YOUR_BOT_TOKEN');
+.card.active .card-content {
+  max-height: 200px; /* Adjust as needed */
+}
+</style>
+</head>
+<body>
+
+<div class="card" id="myCard">
+  <button class="card-header" onclick="location.hash = 'content';">Click to Expand</button>
+  <div class="card-content" id="content">
+    This is the expandable content.  Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
+**Explanation:**
 
-## Explanation
-
-1. **Message Queue:** We use `messageQueue` to store messages waiting to be sent.  This prevents sending messages too rapidly when rate limits are encountered.
-
-2. **`isSending` Flag:** This flag ensures only one message is sent at a time.
-
-3. **`sendMessage` Function:** This function handles sending messages and includes error handling.
-
-4. **Rate Limit Handling:** The `.catch` block specifically checks for HTTP 429 errors (`error.code === 429`). If detected,  `setTimeout` delays the message sending by `error.retryAfter` milliseconds (or a default of 1 second if `retryAfter` is not provided by the Discord API).
+* **`card` class:** Styles the overall card appearance. `overflow: hidden` is crucial to prevent content from spilling outside the card during the transition.
+* **`card-header` class:** Styles the clickable header.
+* **`card-content` class:**  Contains the expandable content.  `max-height: 0` initially hides the content, and `overflow: hidden` prevents it from overflowing.  The transition property ensures smooth animation.
+* **`.card.active .card-content`:** This targets the `card-content` when the parent `card` has the class `active`.  This class is added when the URL hash changes to '#content'  (triggered by the `onclick` event).  We set a `max-height` to reveal the content.
+* **`onclick="location.hash = 'content';"`:** This line updates the URL hash when the header is clicked.  This triggers the `.active` class via the `:target` pseudo-class which is implicitly applied to the `#content` element when it's the target of a hash link.
 
 
-5. **Error 50007 handling:** Added an extra check for Discord error code 50007, which generally refers to sending a message that is too long. Retrying it after a delay is added as a fix.
+**Resources to Learn More:**
 
-6. **Default Delay:**  If no retryAfter is specified, the default delay is 1 second.  Adjust this as needed.
-
-## External References
-
-* **Discord.js Guide:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome) (General Discord.js documentation)
-* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord API rate limit documentation – essential reading!)
-
+* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs on `:target` Pseudo-class:** [https://developer.mozilla.org/en-US/docs/Web/CSS/:target](https://developer.mozilla.org/en-US/docs/Web/CSS/:target)
+* **Understanding CSS Selectors:** Numerous tutorials are available online by searching "CSS Selectors".
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
