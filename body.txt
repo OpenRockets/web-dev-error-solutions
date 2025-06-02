@@ -1,78 +1,68 @@
 
-This document details how to create a circular progress bar using only CSS.  This avoids the need for JavaScript, making it lightweight and efficient. We'll leverage CSS's `conic-gradient` function for a clean and modern look.
+## Description of the Error
+
+One of the most common issues developers encounter when using the Discord.js library is hitting rate limits.  Discord's API employs rate limiting to prevent abuse and ensure server stability. When your bot sends too many requests within a specific timeframe, it receives a `429 Too Many Requests` error. This error prevents your bot from functioning correctly, potentially leading to missed events or disrupted functionality.  The error manifests as a HTTP 429 response from the Discord API, often accompanied by a `retry_after` property indicating how long you need to wait before retrying.
 
 
-**Description of the Styling:**
+## Code: Fixing Rate Limits with `setTimeout` and Error Handling
 
-This styling creates a circular progress bar using a `conic-gradient`. The gradient starts at the top and sweeps clockwise. The percentage of the circle filled is controlled by the `--progress` custom property.  We use a combination of pseudo-elements (`::before` and `::after`) to create the background circle and the progress indicator. The visual effect is enhanced using shadows to give it a three-dimensional appearance.
+This example demonstrates a robust approach to handling rate limits using `setTimeout` to manage delays and error handling to gracefully handle API issues.  We'll focus on a scenario where we're sending messages repeatedly.
 
-**Full Code:**
+```javascript
+const Discord = require('discord.js');
+const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES] }); // Remember to add necessary intents
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
-.progress-ring {
-  --progress: 75; /* Adjust this value to change the progress */
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background-color: #f0f0f0; /* Light gray background */
-  position: relative;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
+
+async function sendMessageWithRateLimitHandling(channel, message) {
+  try {
+    await channel.send(message);
+    console.log('Message sent successfully!');
+  } catch (error) {
+    if (error.code === 50035) { // Check for rate limit exceeded error. Codes may vary slightly based on Discord API updates.
+      console.error('Rate limit hit. Retrying after delay...');
+      const retryAfter = error.retryAfter || 1000; // Default to 1-second delay if retryAfter not specified
+      await new Promise(resolve => setTimeout(resolve, retryAfter)); // Wait before retrying
+      await sendMessageWithRateLimitHandling(channel, message); // Recursive call for retry
+    } else {
+      console.error('An error occurred:', error); //Handle other errors
+    }
+  }
 }
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: conic-gradient(
-    #4CAF50 var(--progress)%,
-    #f0f0f0 var(--progress)%
-  );
-  /*#4CAF50 is the progress color. Change as needed*/
-}
 
-.progress-ring::after {
-    content: attr(data-progress) '%';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #333;
-}
+client.on('messageCreate', async (msg) => {
+  if (msg.content === '!test') {
+    const channel = msg.channel;
+    //Simulate sending multiple messages:
+    for(let i = 0; i < 10; i++){
+      await sendMessageWithRateLimitHandling(channel, `Message ${i + 1}`);
+    }
+  }
+});
 
-</style>
-</head>
-<body>
 
-<div class="progress-ring" data-progress="75"></div>
-
-</body>
-</html>
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
 ```
 
-**Explanation:**
 
-* **`--progress`:**  This custom property dynamically controls the progress percentage. Change its value (between 0 and 100) to adjust the filled portion of the circle.
-* **`conic-gradient`:** This function creates a circular gradient.  The first color (#4CAF50 in this case, a green) fills the percentage defined by `var(--progress)`. The rest is filled with the second color (#f0f0f0, light gray).
-* **Pseudo-elements:** `::before` creates the circular progress indicator using the gradient. `::after` displays the progress percentage in the center.
-* **Positioning and Transformations:** `position: absolute`, `top: 50%`, `left: 50%`, and `transform: translate(-50%, -50%)` are used to center the pseudo-elements within the parent container.
+## Explanation
+
+1. **Error Handling:** The `try...catch` block intercepts errors during message sending.  We specifically check for the error code indicating a rate limit (50035, which corresponds to a specific rate limit issue; this code may vary or be more descriptive in later versions of the Discord.js library – please refer to the API documentation for the most up-to-date codes.  A generic `error.code === 429` check might be used as a broader fallback.).
+
+2. **Retry Mechanism:** If a rate limit is detected, `retryAfter` determines the waiting period. We use `setTimeout` to pause execution, allowing time for the rate limit to reset.  The `sendMessageWithRateLimitHandling` function then recursively calls itself to retry sending the message.  This approach handles multiple consecutive rate limits.  Consider adding a maximum retry count to prevent infinite loops if a rate limit is persistently exceeded.
+
+3. **Default Retry Delay:** If `retryAfter` isn't provided in the error, we use a 1-second delay as a default.
+
+4. **Other Error Handling:** The `else` block handles other errors that might occur during message sending, preventing your bot from crashing due to unforeseen issues.
 
 
-**Links to Resources to Learn More:**
+## External References
 
-* **MDN Web Docs - conic-gradient():** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
-* **CSS Tricks - conic-gradient():** (Search for "conic-gradient" on the CSS Tricks website)
+* **Discord.js Guide:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome) -  The official Discord.js documentation.  Look for sections on API interactions and error handling.
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) -  Discord's official documentation on rate limits.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
