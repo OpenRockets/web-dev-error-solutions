@@ -1,70 +1,76 @@
 
-This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered over, revealing additional content.  No JavaScript is required.  This example utilizes plain CSS; you could easily adapt it to use a CSS framework like Tailwind CSS.
+## Description of the Error
 
-**Description of the Styling:**
+One of the most common frustrations when developing Discord bots using DiscordJS is encountering rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its platform.  When your bot makes too many requests within a short period, Discord will respond with a rate limit error, usually resulting in your bot temporarily ceasing functionality or producing unexpected behavior.  This often manifests as errors like `DiscordAPIError: [RateLimited]` or similar messages.  These errors can be difficult to debug because the rate limit information isn't always immediately apparent.
 
-The effect is achieved using CSS transitions and the `max-height` property. Initially, the card has a `max-height` set to a small value, hiding the extra content. On hover, the `max-height` is changed to `100%`, allowing the card to expand to its full height, revealing the hidden content.  We use transitions to smooth out the animation.  Padding and some basic styling are added for visual appeal.
 
-**Full Code:**
+## Fixing Rate Limits in DiscordJS: A Step-by-Step Guide
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f2f2f2;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  overflow: hidden; /* Hide content that overflows */
-  transition: max-height 0.3s ease-in-out; /* Add transition for smooth animation */
-  max-height: 100px; /* Initial height */
-  padding: 15px;
-  width: 300px;
-}
+This guide focuses on implementing a robust solution using `setTimeout` and promises to gracefully handle rate limits.  We'll create a simple function to send messages with rate limit handling.
 
-.card:hover {
-  max-height: 100%; /* Expand on hover */
-}
 
-.card-content {
-  
-}
+**Step 1:  Import necessary modules**
 
-.card-title {
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.card-text {
-  font-size: 14px;
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <h2 class="card-title">Expanding Card</h2>
-  <p class="card-text">This is some sample text that will be hidden initially. The card will expand to show this text when you hover over it. This is a longer paragraph to demonstrate the expanding effect more clearly.</p>
-</div>
-
-</body>
-</html>
+```javascript
+const { Client, IntentsBitField } = require('discord.js');
 ```
 
-**Explanation:**
+**Step 2: Create a Client Instance**
 
-* **`.card`:** This class styles the card container.  `overflow: hidden;` is crucial; it prevents the content from overflowing its initial height before the expansion. The `transition` property ensures a smooth animation when the `max-height` changes.
-* **`.card:hover`:** This selector targets the card when the mouse hovers over it.  Setting `max-height: 100%;` allows the card to expand vertically to fit all its content.
-* **`.card-title` and `.card-text`:** These classes are used for basic styling of the card's title and text.
+```javascript
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
+```
+
+**Step 3: Create a function to send messages with rate limit handling**
+
+```javascript
+async function sendMessageWithRateLimit(channel, message) {
+  try {
+    await channel.send(message);
+  } catch (error) {
+    if (error.code === 50013) { //This is specific to the "Missing Access" error. It might need to be checked for rate limits specifically.
+        console.error("Missing Permissions");
+        return;
+    }
+    if (error.httpStatus === 429) { // Check for rate limit error specifically
+      const retryAfter = error.retryAfter ? error.retryAfter * 1000 : 1000; //Default to 1 second delay for any other errors (adjust as needed)
+      console.log(`Rate limited. Retrying after ${retryAfter / 1000} seconds.`);
+      await new Promise(resolve => setTimeout(resolve, retryAfter)); // Wait before retrying
+      return sendMessageWithRateLimit(channel, message); // Recursive call to retry
+    }
+    console.error(`An error occurred: ${error}`);
+    throw error; // Re-throw other errors
+  }
+}
+
+```
+
+**Step 4:  Implement the function in your bot**
+
+```javascript
+client.on('messageCreate', async message => {
+    if (message.content === '!test') {
+        await sendMessageWithRateLimit(message.channel, 'This message handles rate limits!');
+    }
+});
+
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+```
+
+**Step 5 (Optional): More Advanced Rate Limit Handling**
+
+For more complex scenarios, consider using a dedicated rate limit handling library or implementing a queue system to manage outgoing messages.  Libraries might provide more sophisticated features like bucket handling.
+
+## Explanation
+
+The core of the solution lies in the `sendMessageWithRateLimit` function. It attempts to send a message. If a rate limit error (`error.httpStatus === 429`) occurs, it extracts the `retryAfter` time (in seconds) from the error object. If no RetryAfter is provided a default 1 second delay will be set. Using `setTimeout` with a `Promise`, the function waits before recursively calling itself to retry sending the message.  This recursive call ensures the message is eventually sent after the rate limit period expires. Other errors are handled and re-thrown as they might represent issues other than rate limiting.  The `try...catch` block is crucial for error handling.
 
 
-**Links to Resources to Learn More:**
+## External References
 
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **CSS `max-height`:** [MDN Web Docs - CSS `max-height`](https://developer.mozilla.org/en-US/docs/Web/CSS/max-height)
-* **CSS Selectors:** [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
+* **Discord.js Guide:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome)  (General Discord.js documentation)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord API rate limit documentation)
+
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

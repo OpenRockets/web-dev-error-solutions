@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card
+Handling DiscordJS Rate Limits: A Step-by-Step Guide
