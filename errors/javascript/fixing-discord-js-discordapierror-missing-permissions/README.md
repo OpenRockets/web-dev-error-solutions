@@ -1,3 +1,5 @@
+# 🐞 Fixing Discord.js `DiscordAPIError: Missing Permissions`
+
 
 This document addresses a common error encountered when using the Discord.js library: `DiscordAPIError: Missing Permissions`.  This error arises when your bot attempts to perform an action it doesn't have permission to do within a specific Discord server.
 
