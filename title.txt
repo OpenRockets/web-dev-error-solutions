@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card
+Discord.js: Handling Rate Limits and Avoiding Errors
