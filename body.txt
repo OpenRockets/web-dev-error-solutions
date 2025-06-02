@@ -1,75 +1,87 @@
 
-This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its platform.  Exceeding these limits results in errors, typically causing your bot to stop responding or fail to send messages.
+This document details a CSS-only solution for creating an expanding card effect, a common interactive element in web design.  This example uses only CSS3, avoiding the need for JavaScript.  The effect involves a card that expands to reveal more content when hovered over.
 
-## Description of the Error
+**Description of the Styling:**
 
-When your bot sends messages, edits messages, or performs other actions too quickly, Discord's API will respond with a rate limit error. This error typically manifests as a `HTTP 429` response, indicating that your request was throttled.  The error response often includes information about the remaining requests allowed within the specified time window (a "bucket"). Ignoring these limits can lead to your bot being temporarily or permanently banned from the Discord API.
+The styling leverages CSS transitions and the `:hover` pseudo-class to achieve the animation. The card starts with a smaller height and then expands vertically on hover.  We'll use simple box-shadow to give it a bit of depth, and some padding for visual comfort.  The inner content will be hidden initially and then revealed with the height expansion.
 
+**Full Code:**
 
-## Fixing Rate Limits Step-by-Step
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f2f2f2;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Prevents content from overflowing during expansion */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+  height: 100px; /* Initial height */
+  width: 300px;
+}
 
-This example demonstrates how to handle rate limits when sending messages.  We'll use `async/await` for cleaner code and error handling.
+.card:hover {
+  height: 300px; /* Expanded height on hover */
+}
 
-**Step 1: Install the `discord.js` library:**
+.card-content {
+  padding: 20px;
+}
 
-```bash
-npm install discord.js
+.card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card-text {
+    font-size: 1em;
+    line-height: 1.6;
+}
+
+.hidden {
+    overflow: hidden;
+    height: 0; /* Initially hidden content */
+    transition: height 0.3s ease-in-out;
+}
+
+.card:hover .hidden {
+    height: auto;  /* Show content on hover */
+}
+
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Expanding Card</h2>
+    <p class="card-text">This is some example text that will be hidden initially and revealed when you hover over the card.  You can add as much text as you like here.</p>
+    <p class="hidden">This is additional hidden content. It will only be visible on hover.</p>
+    <p class="hidden">More hidden content here to demonstrate the expansion!</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**Step 2: Implement Rate Limit Handling:**
+**Explanation:**
 
-This code snippet shows how to gracefully handle rate limits using `setTimeout` to pause execution until the rate limit is reset.  A more robust solution might involve a dedicated rate-limiting library, but this example demonstrates a basic, effective approach.
-
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-client.on('messageCreate', async msg => {
-  if (msg.content === '!test') {
-    try {
-      await msg.reply('This is a test message!');
-    } catch (error) {
-      if (error.code === 50001) { // This could be a more general error code. Discord's error codes aren't always consistent. 
-        console.error("Rate limited. Waiting before sending.");
-        const waitTime = error.retryAfter || 1000; //Default to 1 second if no retryAfter is given.
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-        // Retry sending the message after the wait time.
-        try {
-          await msg.reply('Retrying test message!');
-        } catch(error){
-          console.error("Failed to send message even after retry. Error: ", error)
-        }
-      } else {
-        console.error('An error occurred:', error);
-      }
-    }
-  }
-});
-
-client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
-```
-
-**Step 3: Explanation:**
-
-* The code listens for messages containing "!test".
-* It attempts to send a reply using `msg.reply`.
-* The `try...catch` block handles potential errors.
-* If a rate limit error (`HTTP 429` -  error code may vary, check your console for the exact code) is detected, the code logs an error message.
-*  It then uses `setTimeout` with the `retryAfter` value from the error (if provided) to pause execution before attempting to send the message again.  If `retryAfter` isn't available, it defaults to a 1-second wait.
-
-## External References
-
-* **Discord.js Guide:** [https://discord.js.org/#/](https://discord.js.org/#/)  (Check for the latest documentation; specific error handling might change)
-* **Discord API Rate Limits:**  (Unfortunately, Discord doesn't have a single, centralized documentation page clearly detailing *all* rate limits. You'll need to refer to the Discord API documentation and monitor your bot's interactions to understand the rate limits applied to your specific use case.)
+* **`transition: height 0.3s ease-in-out;`**: This line creates a smooth transition for the `height` property over 0.3 seconds using an ease-in-out timing function.
+* **`:hover`**: This pseudo-class applies the styles within its block only when the element is hovered over.
+* **`overflow: hidden;`**:  This is crucial on the `card` and initially on the hidden content (`hidden` class). It prevents content from spilling outside the card's boundaries during the transition.
+* **`.hidden` class**: This class is used to initially hide the content using `height: 0`. The hover state removes this limitation allowing the text to flow freely based on its natural size.
 
 
-## Explanation
+**Links to Resources to Learn More:**
 
-This approach provides a basic mechanism to handle rate limits. For more complex scenarios or higher message volumes, consider using a dedicated rate-limiting library that provides more sophisticated handling of different rate limit buckets and strategies.  Remember to always log errors to help debug and monitor your bot's performance.  Always check the Discord API documentation for the most up-to-date information on rate limits.
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+* **CSS `overflow` property:** [MDN Web Docs - CSS overflow](https://developer.mozilla.org/en-US/docs/Web/CSS/overflow)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
