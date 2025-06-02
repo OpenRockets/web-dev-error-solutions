@@ -1,81 +1,74 @@
 
-This document details the creation of an expanding card using only CSS.  The card expands smoothly on hover, revealing more content. This effect leverages CSS transitions and transforms for a polished, interactive experience. We'll be using plain CSS3; no frameworks like Tailwind are needed.
+This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its platform.  Exceeding these limits results in errors, often leading to your bot ceasing functionality temporarily or permanently.
 
+**Description of the Error:**
 
-**Description of the Styling:**
+When your bot sends messages, edits messages, creates reactions, or performs other actions too frequently, Discord will respond with a rate limit error.  This typically manifests as a `DiscordAPIError` with a `HTTP` code of `429` (Too Many Requests). The error message will often include details about the rate limit bucket that was exceeded, including the remaining requests and the reset time.
 
-The card is designed with a simple structure: a container holding an image and some text.  On hover, the card increases in height, revealing the hidden text.  A subtle `box-shadow` adds depth, and the transition property ensures a smooth animation.  The  `transform: scale()`  is used for a slight zoom effect on hover, enhancing the expansion feeling.
+**Full Code of Fixing Step-by-Step:**
 
+This example demonstrates how to handle rate limits using `async`/`await` and a simple retry mechanism.  More sophisticated solutions might involve using a dedicated rate limit handling library.
 
-**Full Code:**
+```javascript
+const { Client, IntentsBitField } = require('discord.js');
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 200px;
-  height: 150px;
-  overflow: hidden;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease-in-out; /* Smooth transition */
+// Function to send a message with rate limit handling
+async function sendMessageWithRetry(channel, message, retries = 3) {
+  try {
+    await channel.send(message);
+  } catch (error) {
+    if (error.code === 50035) { //Missing Access
+        console.error("Missing Access to send message");
+        return;
+    }
+    if (error.httpStatus === 429) {
+      const retryAfter = error.retryAfter || 1000; // Default retry after 1 second if not specified
+      console.warn(`Rate limited. Retrying in ${retryAfter / 1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, retryAfter));
+      if (retries > 0) {
+        return sendMessageWithRetry(channel, message, retries - 1);
+      } else {
+        console.error(`Failed to send message after multiple retries: ${error}`);
+      }
+    } else {
+      console.error(`Error sending message: ${error}`);
+    }
+  }
 }
 
-.card:hover {
-  height: 300px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  transform: scale(1.02); /* Subtle zoom effect */
-}
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
 
-.card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
 
-.card-content {
-  padding: 10px;
-  background-color: white;
-  opacity:0; /* Initially hidden */
-  transform: translateY(20px); /* Initially shifted up */
-  transition: all 0.3s ease-in-out;
-}
+client.on('messageCreate', async (msg) => {
+    if (msg.content.toLowerCase() === "!test"){
+        const channel = msg.channel;
+        await sendMessageWithRetry(channel, "This message handles rate limits!");
+    }
 
-.card:hover .card-content {
-  opacity: 1;
-  transform: translateY(0);
-}
-</style>
-</head>
-<body>
+});
 
-<div class="card">
-  <img src="https://via.placeholder.com/200x150" alt="Card Image">
-  <div class="card-content">
-    <h3>Card Title</h3>
-    <p>This is some extra content revealed on hover.</p>
-  </div>
-</div>
 
-</body>
-</html>
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
 ```
 
 **Explanation:**
 
-* **`transition: all 0.3s ease-in-out;`**: This line applies a smooth transition to all properties that change over 0.3 seconds, using an ease-in-out timing function.  This is crucial for the animation effect.
-* **`overflow: hidden;`**: This prevents the content from overflowing the card before the expansion.
-* **`object-fit: cover;`**: This ensures the image covers the entire card area while maintaining its aspect ratio.
-* **`transform: translateY(20px);`**: Initially positions the content slightly above the visible area.  The hover state brings it down with a smooth transition.
+1. **`sendMessageWithRetry` function:** This function encapsulates the message sending logic and retry mechanism.
+2. **Error Handling:**  It catches the `DiscordAPIError` and checks for the `httpStatus` code 429.
+3. **Retry Logic:** If a 429 error occurs, it waits for the specified `retryAfter` time (in milliseconds) before attempting to send the message again.  It recursively calls itself with a decremented retry count.
+4. **Fallback:** If all retries fail, it logs an error message.
+5. **Integration:** The `messageCreate` event listener uses the `sendMessageWithRetry` function to handle potential rate limits when sending messages.
 
-**Links to Resources to Learn More:**
+**External References:**
 
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
-* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Box-shadow:** [MDN Web Docs - CSS box-shadow](https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow)
+* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)  (Check for API updates and best practices)
+* **Discord API Rate Limits:**  (Unfortunately, Discord doesn't have a single, comprehensive page detailing *all* rate limits.  You'll need to observe and adapt to the limits encountered.)
+
+
+**Note:** This example provides a basic retry mechanism. For production bots, you should implement a more robust solution that manages rate limits per route and bucket, potentially using a library specifically designed for rate limiting.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
