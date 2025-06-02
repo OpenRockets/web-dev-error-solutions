@@ -1,71 +1,105 @@
 
-This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered over, revealing additional content. This effect is achieved using CSS transitions and the `max-height` property.  No JavaScript is required.
+## Description of the Error
 
-## Description of the Styling
+Discord.js, a popular Node.js library for interacting with the Discord API, employs rate limits to prevent abuse and ensure the stability of its servers.  When a bot makes too many requests within a specific timeframe, it encounters a rate limit error. This typically manifests as a 429 HTTP status code in the response from the Discord API.  Ignoring these limits can lead to your bot being temporarily or permanently banned from the Discord API.
 
-The card is styled with a simple, clean design. On hover, the `max-height` property transitions smoothly, revealing hidden content within the card. The transition provides a pleasing animation.  We'll use plain CSS for this example, showcasing the power of pure CSS for simple interactions.
+## Step-by-Step Code Fix
 
-## Full Code
+This example focuses on handling rate limits when sending messages.  The solution involves using `setTimeout` to implement exponential backoff.
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f2f2f2;
-  border-radius: 5px;
-  overflow: hidden; /* Hide content that overflows */
-  transition: max-height 0.3s ease-in-out; /* Add smooth transition */
-  max-height: 100px; /* Initial height */
-}
+**1. Install necessary package:**  (If you haven't already)
 
-.card:hover {
-  max-height: 300px; /* Expanded height on hover */
-}
+```bash
+npm install discord.js
+```
 
-.card-content {
-  padding: 15px;
-}
+**2. Basic Bot Structure:**
 
-.card-title {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
+```javascript
+const { Client, IntentsBitField } = require('discord.js');
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
 
-.card-text {
-  font-size: 14px;
-}
-</style>
-</head>
-<body>
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
 
-<div class="card">
-  <div class="card-content">
-    <h2 class="card-title">Card Title</h2>
-    <p class="card-text">This is some example text that will be revealed when you hover over the card.  This is a longer description to demonstrate the expanding effect.</p>
-    <p class="card-text">More text here to further illustrate the expansion.</p>
-  </div>
-</div>
+client.on('messageCreate', msg => {
+  //Your message handling logic here
+});
 
-</body>
-</html>
+client.login('YOUR_BOT_TOKEN');
+```
+
+**3. Implementing Rate Limit Handling:**
+
+```javascript
+const { Client, IntentsBitField, Collection } = require('discord.js');
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
+
+// Store rate limit information
+const rateLimits = new Collection();
+
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
+
+
+client.on('messageCreate', async msg => {
+  if (msg.author.bot) return; // Ignore bot messages
+
+
+  const sendMessage = async (channel, content) => {
+    const now = Date.now();
+    const channelId = channel.id;
+
+    if (rateLimits.has(channelId)) {
+      const { timeout, retryAfter } = rateLimits.get(channelId);
+      if (now < timeout) {
+        const remainingTime = timeout - now;
+        console.log(`Rate limited in channel ${channelId}. Retrying in ${remainingTime}ms`);
+        await new Promise(resolve => setTimeout(resolve, remainingTime));
+      }
+    }
+
+    try {
+      await channel.send(content);
+      rateLimits.delete(channelId);
+    } catch (error) {
+      if (error.code === 50035) {
+          console.log("User is in timeout")
+          return
+      }
+      if (error.httpStatus === 429) {
+        const retryAfter = error.retryAfter || 1000; // Default to 1 second if not specified
+        const timeout = now + retryAfter;
+        rateLimits.set(channelId, { timeout, retryAfter });
+        console.log(`Rate limited in channel ${channelId}. Retrying in ${retryAfter}ms`);
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 2)); //Exponential backoff
+        //Try again after waiting, recursively
+        await sendMessage(channel,content)
+      } else {
+        console.error('Error sending message:', error);
+      }
+    }
+  };
+
+
+  if (msg.content.startsWith('!test')) {
+    await sendMessage(msg.channel, 'This message might be rate limited!');
+  }
+});
+
+client.login('YOUR_BOT_TOKEN');
 ```
 
 ## Explanation
 
-* **`.card`**: This class styles the main card container.  `overflow: hidden` prevents the content from overflowing the initial height. The `transition` property specifies a smooth transition for the `max-height` property over 0.3 seconds using an ease-in-out timing function.  `max-height: 100px;` sets the initial restricted height.
+The improved code uses a `Collection` to store rate limit information per channel.  The `sendMessage` function handles sending the message and implements exponential backoff: If a 429 error is received, it waits for an exponentially increasing amount of time before retrying (doubling the wait time each time).  This strategy avoids overwhelming the Discord API.  The code also includes error handling for other potential issues.
 
-* **`.card:hover`**:  This selector targets the card when the mouse hovers over it.  `max-height: 300px;` increases the height to reveal the hidden content.
+## External References
 
-* **`.card-content`, `.card-title`, `.card-text`**: These classes style the internal elements of the card for better readability and structure.
-
-
-## Links to Resources to Learn More
-
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **CSS-Tricks - Transitions and Animations:** [https://css-tricks.com/almanac/properties/t/transition/](https://css-tricks.com/almanac/properties/t/transition/)
+* **Discord.js Guide:** [https://discord.js.org/#/](https://discord.js.org/#/)  (Check for the latest API documentation)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord documentation on rate limits)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
