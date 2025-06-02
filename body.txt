@@ -1,75 +1,81 @@
 
-This document details a CSS-only solution to create an expanding card effect.  This effect involves a card that reveals more content upon hovering or clicking. We'll achieve this using pure CSS, avoiding any JavaScript.  This example uses standard CSS3, but could easily be adapted to use a CSS framework like Tailwind CSS.
+## Description of the Error
 
-**Description of the Styling:**
+Discord.js, the popular Node.js library for interacting with the Discord API, implements rate limits to prevent abuse and maintain the stability of the platform.  When your bot sends messages, edits messages, or performs other actions too quickly, you'll encounter rate limit errors. These errors typically manifest as HTTP errors with status codes like `429 Too Many Requests`.  Ignoring these errors can lead to your bot being temporarily or permanently banned from the Discord API.
 
-The card is designed with a basic structure: a container holding an image and some text.  The key to the expanding effect is the use of CSS transitions and the `:hover` pseudo-class. On hover, the card's height increases to reveal hidden content, smoothly transitioning due to the applied transitions.
 
-**Full Code:**
+## Fixing Rate Limits in Discord.js: A Step-by-Step Guide
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 300px;
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: #f2f2f2;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: height 0.3s ease; /* Smooth transition for height change */
-}
+This example demonstrates how to handle rate limits when sending messages in a Discord bot using `discord.js`.  We'll use `setTimeout` for simple rate limiting, but for more robust solutions, consider using dedicated libraries like `axios-rate-limit`.
 
-.card img {
-  width: 100%;
-  height: auto;
-  display: block; /* Removes extra space below the image */
-}
+**Step 1:  Install necessary packages (if you haven't already):**
 
-.card-content {
-  padding: 15px;
-  height: 0; /* Initially hidden */
-  overflow: hidden; /* Hide content until expanded */
-  transition: height 0.3s ease; /* Smooth transition for height change */
-}
-
-.card:hover .card-content {
-  height: 100px; /* Height when expanded */
-}
-
-/* Optional: Add some styling for the text content */
-.card-content p {
-  margin: 0;
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <img src="https://via.placeholder.com/300x150" alt="Card Image">
-  <div class="card-content">
-    <p>This is some extra content that will be revealed when you hover over the card.</p>
-    <p>More text can be added here.</p>
-  </div>
-</div>
-
-</body>
-</html>
+```bash
+npm install discord.js
 ```
 
-**Explanation:**
+**Step 2:  Basic Bot Structure (with Rate Limiting):**
 
-*   **`.card`**: This class styles the overall card, including width, border radius, shadow and the crucial `transition` property for smooth animations.
-*   **`.card img`**:  This styles the image to fit the card's width. `display: block` prevents the image from creating extra spacing.
-*   **`.card-content`**: This class styles the content area.  `height: 0` initially hides the content, and `overflow: hidden` ensures that the hidden content doesn't cause layout issues.  The `transition` property mirrors that of the `.card` class.
-*   **`.card:hover .card-content`**: This is the key selector.  It targets the `.card-content` only when the `.card` is hovered over, setting the `height` to `100px` (or adjust as needed) to reveal the content.
+```javascript
+const { Client, IntentsBitField } = require('discord.js');
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
 
-**Resources to Learn More:**
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
 
-*   **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-*   **CSS Tricks Website:** [https://css-tricks.com/](https://css-tricks.com/) (Search for "card hover effects" or similar)
+// Array to store messages to be sent
+const messageQueue = [];
+
+// Function to add a message to the queue
+function sendMessage(channel, message) {
+  messageQueue.push({ channel, message });
+}
+
+// Function to process the message queue with rate limiting
+async function processMessageQueue() {
+  while (messageQueue.length > 0) {
+    const { channel, message } = messageQueue.shift();
+    try {
+      await channel.send(message);
+      console.log("Message sent successfully!");
+    } catch (error) {
+      if (error.code === 50007 || error.code === 50035){ // Check for rate limit specific error codes
+        console.error("Rate limit hit! Retrying in 1 second...");
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
+        messageQueue.unshift({ channel, message }); // Put the message back at the beginning of the queue
+      } else {
+        console.error("An error occurred:", error);
+      }
+    }
+    await new Promise(resolve => setTimeout(resolve, 500)); //Wait for 500ms before processing next message. Adjust as needed.
+  }
+}
+
+client.on('messageCreate', msg => {
+  if (msg.content === '!test') {
+    sendMessage(msg.channel, 'This is a test message!');
+    sendMessage(msg.channel, 'This is another test message!');
+    sendMessage(msg.channel, 'And yet another!');
+  }
+});
+
+//Start processing the message queue
+setInterval(processMessageQueue, 1000); // Check the queue every 1 second
+
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+```
+
+
+**Step 3: Explanation**
+
+This code introduces a message queue (`messageQueue`) and a `processMessageQueue` function that handles sending messages.  The `processMessageQueue` function iterates through the queue, sends each message, and includes error handling.  If a rate limit error (specifically error codes 50007 & 50035 which are related to Discord API rate limits) is encountered, it waits for 1 second before retrying. The `setInterval` function ensures that the `processMessageQueue` function runs every second.  The `setTimeout` function within the loop introduces a delay between message sends.  Adjust the delays (1 second and 500ms) to fine-tune the rate limiting to suit your bot's needs and avoid exceeding Discord's limits.  Always check the official Discord API documentation for the most up-to-date rate limit information.
+
+## External References
+
+* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (This link might require a Discord Developer account)
+* **Axios Rate Limit (Alternative):** [https://www.npmjs.com/package/axios-rate-limit](https://www.npmjs.com/package/axios-rate-limit) (For more advanced rate limiting)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
