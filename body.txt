@@ -1,87 +1,73 @@
 
-This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered over, revealing additional content. We'll be using only CSS3 for this effect, avoiding JavaScript entirely.
+This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and maintain the stability of its platform.  Exceeding these limits results in errors that can disrupt your bot's functionality.
 
-**Description of the Styling:**
+## Description of the Error
 
-The card uses a simple structure: a container div holding a visible front and a hidden back.  On hover, we use CSS transitions and transforms to smoothly expand the card and reveal the hidden back content.  We achieve this by manipulating the height and transform properties.
+When your bot sends messages, edits messages, creates channels, or performs other actions too quickly, Discord will respond with a rate limit error.  This typically manifests as a `DiscordAPIError` with a code related to rate limiting (e.g., `13`).  Your bot's actions will be temporarily blocked until the rate limit window expires.  The error message might look something like this (the exact message varies):
 
-
-**Full Code:**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 200px;
-  height: 150px;
-  perspective: 1000px; /* Ensures 3D effect works correctly */
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  overflow: hidden; /* Hides content that overflows */
-  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
-}
-
-.card-front, .card-back {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden; /* Prevents back content from showing through */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.card-front {
-  background-color: #f0f0f0;
-  color: #333;
-}
-
-.card-back {
-  background-color: #ddd;
-  color: #555;
-  transform: translateY(100%); /* Initially hidden below the front */
-  transition: transform 0.3s ease-in-out; /* Smooth transition for transform */
-}
-
-.card:hover .card-back {
-  transform: translateY(0); /* Reveal back content on hover */
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-front">
-    <h2>Click Me!</h2>
-  </div>
-  <div class="card-back">
-    <p>This is the hidden content. It appears when you hover over the card.</p>
-  </div>
-</div>
-
-</body>
-</html>
+```
+DiscordAPIError: 429: Rate limited.
 ```
 
-**Explanation:**
 
-1. **`perspective`:** This property gives the card a 3D perspective, allowing the `transform: translateY` to work smoothly.
-2. **`transition`:** This creates smooth animations for both the height change and the translation.
-3. **`transform: translateY(100%)`:** This initially positions the back content completely below the front.
-4. **`transform: translateY(0)` (on hover):** This moves the back content to be visible.
-5. **`backface-visibility: hidden`:** Prevents the back content from being visible when the card is not hovered.
+## Fixing Rate Limits Step-by-Step
+
+The solution involves implementing rate limiting on your bot's side, using delays or queues to space out requests to Discord's API.  Below is an example demonstrating a simple approach using `setTimeout` to add delays. More robust solutions often involve using libraries like `discord.js-rate-limiter` for more advanced management.
+
+**Step 1: Identify Rate-Limited Actions:**
+
+Determine which parts of your bot's code are triggering the rate limits. This might involve logging API calls or using a debugger.
+
+**Step 2: Implement Delays using `setTimeout`:**
+
+This example shows how to add a delay before sending a message:
+
+```javascript
+const Discord = require('discord.js');
+const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] }); // Add necessary intents
+
+client.on('messageCreate', async (message) => {
+  if (message.content === '!mycommand') {
+    // Simulate a rate-limited action (replace with your actual action)
+    const sendMessage = async () => {
+      try {
+        await message.channel.send('Hello from a rate-limited command!');
+      } catch (error) {
+        if (error.code === 50013) { //Missing Permissions, handle it separately
+            console.error("Missing Permissions");
+        } else if (error.code === 10008) { //Unknown Message
+            console.error("Unknown Message");
+        } else if (error.httpStatus === 429) {
+          console.error('Rate limited. Retrying in 1 second...');
+          setTimeout(sendMessage, 1000); // Retry after 1 second
+        } else {
+          console.error('An error occurred:', error);
+        }
+      }
+    }
+    sendMessage();
+
+  }
+});
+
+client.login('YOUR_BOT_TOKEN');
+```
+
+**Step 3: Consider a More Robust Solution:**
+
+For more complex scenarios, consider using a dedicated rate limiting library like `discord.js-rate-limiter`.  This provides more sophisticated control over rate limiting, allowing you to manage different limits for various API endpoints.
 
 
-**Links to Resources to Learn More:**
+## Explanation
 
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
-* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Perspective:** [MDN Web Docs - CSS Perspective](https://developer.mozilla.org/en-US/docs/Web/CSS/perspective)
+The code above uses a simple `setTimeout` function to introduce a delay before attempting to send a message again.  If a rate limit error is caught, the `sendMessage` function calls itself after a 1-second delay. This ensures your bot doesn't flood the Discord API.  A more robust approach is crucial for production bots.  You could also implement Exponential Backoff for more refined retry mechanisms in case of rate limiting.
+
+
+## External References
+
+* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/) (Check the API documentation for details on rate limits and error handling)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord documentation on rate limits)
+* **discord.js-rate-limiter:** (Search npm for this library – a helpful tool for advanced rate limiting)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
