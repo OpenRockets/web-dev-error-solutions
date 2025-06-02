@@ -1,75 +1,69 @@
 
-This document details the creation of an expanding card effect using only CSS.  No JavaScript is required.  The effect involves a card that smoothly expands vertically when hovered over, revealing hidden content.  We'll use standard CSS3 properties for this effect, focusing on transitions and transforms.
+## Description of the Error
 
-## Description of the Styling
+Discord's API employs rate limits to prevent abuse and ensure the stability of their service.  When your bot sends too many requests within a short period, it receives a HTTP 429 error – "Too Many Requests". This usually means your bot has exceeded the allowed request rate for a specific endpoint or globally.  Ignoring these limits can lead to temporary or even permanent bans from the Discord API.
 
-The card will have a basic design initially.  On hover, the card's height will increase to reveal additional content initially hidden using the `max-height` property. A subtle ease-in-out transition will smooth the expansion.  We'll also add a slight box-shadow change to enhance the effect.
+## Fixing the Issue Step-by-Step
 
-## Full Code
+This solution focuses on using the built-in `rateLimit` property available in the `discord.js` library's response objects.  This approach provides a more robust and easier-to-implement solution compared to manual rate limiting.
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f0f0f0;
-  border-radius: 5px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Hide content that overflows */
-  transition: all 0.3s ease-in-out; /* Smooth transition for all properties */
-  max-height: 100px; /* Initially hidden content */
-}
+**Code:**
 
-.card:hover {
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
-  max-height: 300px; /* Reveal full content on hover */
-}
+```javascript
+const { Client, IntentsBitField } = require('discord.js');
+const client = new Client({ intents: [IntentsBitField.Flags.Guilds] }); // Replace with your needed intents
 
-.card-content {
-  padding: 15px;
-}
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
 
-.hidden-content {
-  display: block;
-}
-</style>
-</head>
-<body>
+client.on('messageCreate', async message => {
+  if (message.content === '!hello') {
+    try {
+      await message.reply('Hello there!');
+    } catch (error) {
+      if (error.httpStatus === 429) {
+        // Rate limited!  Handle it gracefully.
+        const retryAfter = error.rateLimitReset; // Time in milliseconds until we can retry.
+        const remaining = error.rateLimitRemaining; // Requests remaining before next reset (can be null)
+        console.warn(`Rate limited! Retrying in ${retryAfter}ms. Remaining: ${remaining}`);
 
-<div class="card">
-  <div class="card-content">
-    <h3>Card Title</h3>
-    <p>This is some visible text.</p>
-    <div class="hidden-content">
-      <p>This is the hidden content that appears on hover.</p>
-      <p>More hidden text here to demonstrate the expansion.</p>
-    </div>
-  </div>
-</div>
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, retryAfter));
 
-</body>
-</html>
+        // Retry sending the message.  Consider adding more sophisticated retry logic here if needed.
+        try {
+          await message.reply('Hello there! (Retrying)');
+        } catch (retryError) {
+          console.error('Failed to send message after retry:', retryError);
+        }
+      } else {
+        console.error('An error occurred:', error);
+      }
+    }
+  }
+});
+
+client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
 ```
 
-## Explanation
 
-* **`.card`:** This class styles the main card element.  `overflow: hidden;` prevents the hidden content from spilling out before the hover effect.  The `transition` property applies a smooth transition to all properties that change.  `max-height: 100px;` initially limits the card's height, hiding the extra content.
+**Explanation:**
 
-* **`.card:hover`:** This styles the card when the mouse hovers over it.  `max-height: 300px;` allows the card to expand to its full height, revealing the hidden content. The box-shadow is enhanced to provide visual feedback.
-
-* **`.card-content`:** This class styles the content inside the card.
-
-* **`.hidden-content`:**  This class is used to wrap the hidden text. While not directly affecting the animation, it helps semantically separate the content.
-
-
-## Resources to Learn More
-
-* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS-Tricks (General CSS Learning):** [https://css-tricks.com/](https://css-tricks.com/)
+1. **Import necessary modules:** We import the `Client` and `IntentsBitField` from `discord.js`.  Remember to replace `IntentsBitField.Flags.Guilds` with the intents your bot requires.
+2. **Error Handling:** The `try...catch` block catches errors during message sending.
+3. **429 Error Check:** Inside the `catch` block, we check if the error's `httpStatus` is 429.
+4. **Rate Limit Information:**  We access the `rateLimitReset` and `rateLimitRemaining` properties from the error object. These provide information on when the rate limit will reset and how many requests are left (if available).
+5. **Delayed Retry:**  We use `setTimeout` to pause execution for `retryAfter` milliseconds before attempting to send the message again.  This respects the rate limit imposed by Discord.
+6. **Retry Mechanism:** The code attempts to send the message again after the delay.  More advanced retry logic (e.g., exponential backoff) might be beneficial in production environments.
+7. **Error Logging:**  Comprehensive error logging helps in debugging and monitoring.
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+## External References
+
+* **Discord.js Documentation:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome) -  The official documentation provides comprehensive information about the library and API interactions.
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) -  Discord's official documentation on rate limits.
+
+
+## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
