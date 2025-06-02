@@ -1,3 +1,5 @@
+# 🐞 Handling Asynchronous Operations in Discord.js: Preventing Race Conditions
+
 
 This document addresses a common problem developers encounter when using Discord.js: race conditions stemming from asynchronous operations.  This often manifests as unexpected behavior or errors when multiple asynchronous tasks interact with shared resources, such as the Discord client itself.
 
