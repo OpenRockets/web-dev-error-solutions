@@ -1,1 +1,1 @@
-Handling Asynchronous Operations in Discord.js: Preventing Race Conditions
+Creating a CSS-only Expanding Card with Hover Effect
