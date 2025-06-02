@@ -1,75 +1,105 @@
 
 ## Description of the Error
 
-One of the most common frustrations when developing Discord bots using DiscordJS is encountering rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its platform.  When your bot makes too many requests within a short period, Discord will respond with a rate limit error, usually resulting in your bot temporarily ceasing functionality or producing unexpected behavior.  This often manifests as errors like `DiscordAPIError: [RateLimited]` or similar messages.  These errors can be difficult to debug because the rate limit information isn't always immediately apparent.
+One of the most common problems developers encounter when using the Discord.js library is hitting rate limits.  Discord imposes rate limits to prevent abuse and ensure the stability of its API.  When your bot sends too many requests within a short period, you'll receive a `DiscordAPIError` with a code of `50013` (or similar, indicating a rate limit). This prevents your bot from functioning correctly, potentially causing messages to fail to send, commands to stop working, or even leading to a temporary ban.
 
+## Fixing Rate Limits in Discord.js: A Step-by-Step Guide
 
-## Fixing Rate Limits in DiscordJS: A Step-by-Step Guide
+This guide demonstrates how to handle rate limits gracefully using `setTimeout` for simple cases and the official `discord.js` `Collection` based queue for more complex situations.
 
-This guide focuses on implementing a robust solution using `setTimeout` and promises to gracefully handle rate limits.  We'll create a simple function to send messages with rate limit handling.
+**Method 1: Simple `setTimeout` (Suitable for infrequent, simple operations):**
 
-
-**Step 1:  Import necessary modules**
-
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-```
-
-**Step 2: Create a Client Instance**
+This method is suitable for situations where rate limits are rarely hit and you're performing a simple action like sending a message.
 
 ```javascript
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
-```
+const Discord = require('discord.js');
+const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] }); // Add necessary intents
 
-**Step 3: Create a function to send messages with rate limit handling**
-
-```javascript
-async function sendMessageWithRateLimit(channel, message) {
-  try {
-    await channel.send(message);
-  } catch (error) {
-    if (error.code === 50013) { //This is specific to the "Missing Access" error. It might need to be checked for rate limits specifically.
-        console.error("Missing Permissions");
-        return;
-    }
-    if (error.httpStatus === 429) { // Check for rate limit error specifically
-      const retryAfter = error.retryAfter ? error.retryAfter * 1000 : 1000; //Default to 1 second delay for any other errors (adjust as needed)
-      console.log(`Rate limited. Retrying after ${retryAfter / 1000} seconds.`);
-      await new Promise(resolve => setTimeout(resolve, retryAfter)); // Wait before retrying
-      return sendMessageWithRateLimit(channel, message); // Recursive call to retry
-    }
-    console.error(`An error occurred: ${error}`);
-    throw error; // Re-throw other errors
-  }
-}
-
-```
-
-**Step 4:  Implement the function in your bot**
-
-```javascript
-client.on('messageCreate', async message => {
-    if (message.content === '!test') {
-        await sendMessageWithRateLimit(message.channel, 'This message handles rate limits!');
-    }
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+client.on('messageCreate', async msg => {
+  if (msg.content === '!ratelimittest') {
+    // Simulate a potential rate-limit scenario.  Replace with your actual code.
+    for (let i = 0; i < 10; i++) {
+      try {
+        await msg.reply(`Message ${i + 1}`);
+      } catch (error) {
+        if (error.code === 50013) { // Check for specific rate limit error code
+          console.error('Rate limit hit! Waiting...');
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+          await msg.reply(`Message ${i + 1} (retry)`);
+        } else {
+          console.error('An error occurred:', error);
+        }
+      }
+    }
+  }
+});
+
+
+client.login('YOUR_BOT_TOKEN');
 ```
 
-**Step 5 (Optional): More Advanced Rate Limit Handling**
+**Method 2:  Using a Queue (For complex scenarios):**
 
-For more complex scenarios, consider using a dedicated rate limit handling library or implementing a queue system to manage outgoing messages.  Libraries might provide more sophisticated features like bucket handling.
+For more complex scenarios with multiple tasks that need to be processed, a queue using a `Collection` is more robust and manageable:
+
+```javascript
+const Discord = require('discord.js');
+const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] });
+const queue = new Discord.Collection();
+
+
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
+
+client.on('messageCreate', msg => {
+  if (msg.content === '!queueTest') {
+      queue.set(msg.id, { msg, count: 5 }); // Add message to queue with count of messages to send
+      processQueue();
+  }
+});
+
+async function processQueue() {
+    while(queue.size > 0) {
+        const item = queue.first();
+        for(let i = 0; i < item.count; i++){
+            try {
+                await item.msg.reply(`Message from queue ${i+1}`);
+            } catch (error) {
+                if (error.code === 50013) {
+                    console.error("Ratelimit hit, waiting 1 second");
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    i--; // Retry this message
+                    continue;
+                } else {
+                  console.error("An error occurred:", error);
+                }
+            }
+        }
+        queue.delete(item.msg.id);
+    }
+}
+
+client.login('YOUR_BOT_TOKEN');
+
+```
+
 
 ## Explanation
 
-The core of the solution lies in the `sendMessageWithRateLimit` function. It attempts to send a message. If a rate limit error (`error.httpStatus === 429`) occurs, it extracts the `retryAfter` time (in seconds) from the error object. If no RetryAfter is provided a default 1 second delay will be set. Using `setTimeout` with a `Promise`, the function waits before recursively calling itself to retry sending the message.  This recursive call ensures the message is eventually sent after the rate limit period expires. Other errors are handled and re-thrown as they might represent issues other than rate limiting.  The `try...catch` block is crucial for error handling.
+Method 1 uses a simple `setTimeout` to pause execution for a short duration after encountering a rate limit error.  This provides a basic retry mechanism.
+
+Method 2 employs a more sophisticated approach.  It utilizes a `Discord.js Collection` to store tasks, processing them one by one. If a rate limit is encountered, it pauses and retries, ensuring no messages are lost.  This method is far superior for complex interactions where several operations might be necessary.
 
 
 ## External References
 
-* **Discord.js Guide:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome)  (General Discord.js documentation)
-* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord API rate limit documentation)
+* **Discord.js Guide:** [https://discord.js.org/#/](https://discord.js.org/#/)  (Check for the latest documentation on error handling)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord documentation on rate limits)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
