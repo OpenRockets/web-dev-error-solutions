@@ -1,81 +1,80 @@
 
-## Description of the Error
-
-Discord.js, a popular Node.js library for interacting with the Discord API, employs rate limits to prevent abuse and maintain the stability of the platform.  When your bot sends messages, edits messages, or performs other actions too quickly, Discord will respond with a rate limit error. This typically manifests as a 429 HTTP status code, sometimes accompanied by a `retry_after` value indicating how long you should wait before retrying the request.  Ignoring these limits can lead to your bot being temporarily or permanently banned.
+This document details the creation of an expanding card effect using only CSS.  The card expands on hover to reveal additional content, using a subtle animation for a visually appealing transition. This example uses plain CSS3, but could easily be adapted to use a CSS framework like Tailwind CSS.
 
 
-## Step-by-Step Code Fix
+**Description of the Styling:**
 
-This example demonstrates how to handle rate limits using `discord.js`'s built-in functionality (assuming you're using v14 or later; older versions require different handling).  We'll use `async/await` for cleaner code.
+The card uses a simple layout with a main container holding the visible content and a hidden section for the expanded content.  On hover, the main container's height increases, revealing the hidden section.  A smooth transition using `transition` property creates the animation.  We also apply some basic styling for visual appeal.
 
-**1. Project Setup (Assuming you have Node.js and npm/yarn installed):**
+**Full Code:**
 
-```bash
-npm init -y
-npm install discord.js
-```
-
-**2.  The Code:**
-
-```javascript
-const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] }); // Add necessary intents
-
-client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-});
-
-//Example Function to send messages with rate limit handling
-async function sendMessageWithRateLimitHandling(channel, message) {
-  try {
-    await channel.send(message);
-  } catch (error) {
-    if (error.code === 50013) {
-      console.error("Missing Permissions");
-      return;
-    }
-    if (error.code === 10008) {
-      console.error("Message was deleted too quickly");
-      return;
-    }
-    if (error.httpStatus === 429) {
-      const retryAfter = error.response.headers['retry-after'];
-      const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : 1000; // Default wait time 1s
-
-      console.log(`Rate limited. Waiting for ${waitTime}ms...`);
-      await new Promise(resolve => setTimeout(resolve, waitTime)); // Wait before retrying
-      return await sendMessageWithRateLimitHandling(channel, message); // Retry the message
-    }
-    console.error('An error occurred:', error);
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 300px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden; /* Hide the expanding content initially */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
 }
 
-client.on('messageCreate', async message => {
-    if (message.content === '!test') {
-        const channel = message.channel;
-        await sendMessageWithRateLimitHandling(channel,"This message is rate limit safe!");
-    }
-});
+.card:hover {
+  height: 350px; /* Increase height on hover to reveal hidden content */
+}
 
+.card-content {
+  padding: 20px;
+}
 
-client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+.card-content-hidden {
+  padding: 20px;
+  height: 0; /* Initially hidden */
+  overflow: hidden; /* Hide the content until expanded */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+}
+
+.card:hover .card-content-hidden {
+  height: auto; /* Show hidden content on hover */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2>Title of the Card</h2>
+    <p>Some introductory text for the card.</p>
+  </div>
+  <div class="card-content-hidden">
+    <h3>Expanded Content</h3>
+    <p>This section is revealed when the user hovers over the card.</p>
+    <p>You can add more content here as needed.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**3. Explanation:**
+**Explanation:**
 
-* The `sendMessageWithRateLimitHandling` function attempts to send a message.
-* It catches errors.  Specifically, it looks for HTTP status code 429 (rate limit).
-* If a 429 error occurs, it extracts the `retry-after` header (if present) to determine the wait time.  If `retry-after` is missing, it defaults to a 1-second wait.
-*  It uses `setTimeout` with a `Promise` to pause execution for the specified time.
-* Finally, it recursively calls itself to retry sending the message. This ensures the message is sent once the rate limit is lifted.  Error handling is included for other errors such as missing permissions
-
-
-## External References
-
-* [Discord.js Guide](https://discord.js.org/#/docs/main/stable/general/welcome) - Official Discord.js documentation.
-* [Discord API Rate Limits](https://discord.com/developers/docs/topics/rate-limits) - Discord's official documentation on rate limits.
-* [Node.js `setTimeout`](https://nodejs.org/api/timers.html#settimeouttimeout-callback-arg) - Node.js documentation for `setTimeout`.
+* **`.card`:** This class styles the main card container.  `overflow: hidden` is crucial for hiding the expanded content initially.  `transition` defines the animation.
+* **`.card:hover`:** This styles the card when the mouse hovers over it.  The `height` property increases to reveal the hidden content.
+* **`.card-content`:** Styles the visible content of the card.
+* **`.card-content-hidden`:** Styles the initially hidden content. `height: 0` and `overflow: hidden` keep it hidden until the hover effect.  The `transition` ensures a smooth expansion.
+* **`.card:hover .card-content-hidden`:**  This targets the hidden content *only when* the card is hovered, changing its `height` to `auto` to display the content.
 
 
-## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Resources to Learn More:**
+
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS-Tricks - Transitions and Animations:** [https://css-tricks.com/almanac/properties/t/transition/](https://css-tricks.com/almanac/properties/t/transition/)
+* **Understanding CSS Selectors:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
+
+
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
