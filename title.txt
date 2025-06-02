@@ -1,1 +1,1 @@
-Handling Asynchronous Operations in Discord.js: Promises and `await`
+Discord.js: Handling Rate Limits and Avoiding `DiscordAPIError: 429`
