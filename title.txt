@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with Hover Effect
+Handling DiscordJS Rate Limits: A Step-by-Step Guide
