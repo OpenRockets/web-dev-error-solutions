@@ -1,70 +1,97 @@
 
-This document details how to create an expanding card effect using only CSS.  No JavaScript is required! This effect involves a card that expands to reveal more content when hovered over, providing a smooth and engaging user experience.  We'll leverage CSS transitions and transforms to achieve this.
+## Description of the Error
 
-**Description of the Styling:**
-
-The card uses a simple design with a background color and padding. The key to the expanding effect lies in the use of CSS transitions on the `transform` and `box-shadow` properties. On hover, the card scales up slightly, creating an expanding animation.  Simultaneously, a subtle box shadow appears, adding depth and highlighting the interaction.
+Discord.js, a popular Node.js library for interacting with the Discord API, implements rate limits to prevent abuse and maintain the stability of the Discord platform.  When your bot sends messages, edits messages, or performs other actions too frequently, it will encounter a rate limit error.  This typically manifests as a `DiscordAPIError` with a `HTTPError` code 429 (Too Many Requests), or sometimes a different error code depending on the specific rate limit exceeded.  Ignoring these limits can lead to your bot being temporarily or permanently banned from the Discord API.
 
 
-**Full Code:**
+## Fixing the Error: Step-by-Step Code
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f0f0f0;
-  padding: 20px;
-  border-radius: 5px;
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth transitions */
-  width: 300px;
-  cursor: pointer; /* Indicate interactivity */
-}
+This example demonstrates how to handle rate limits using `setTimeout` for simple scenarios.  For more complex applications, consider using dedicated rate limit handling libraries.
 
-.card:hover {
-  transform: scale(1.05); /* Expand on hover */
-  box-shadow: 0 10px 20px rgba(0,0,0,0.2); /* Add a shadow on hover */
-}
+**Step 1:  Basic Rate Limiting with `setTimeout`**
 
-.card-content {
-  /*Content Styling*/
-  font-family: sans-serif;
-  color: #333;
-}
+This approach is simple but sufficient for many situations.  It pauses execution for a specified time after hitting a rate limit.
 
-.card h2 {
-  margin-top: 0;
-}
-</style>
-</head>
-<body>
+```javascript
+const { Client, GatewayIntentBits } = require('discord.js');
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
 
-<div class="card">
-  <div class="card-content">
-    <h2>Expanding Card</h2>
-    <p>This is a simple card that expands on hover, showcasing a CSS-only animation effect.  No JavaScript required!</p>
-  </div>
-</div>
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
 
-</body>
-</html>
+client.on('messageCreate', async msg => {
+  if (msg.content === '!send') {
+    try {
+      await msg.reply('Message sent!');
+    } catch (error) {
+      if (error.httpStatus === 429) {
+        const retryAfter = error.retryAfter ? error.retryAfter * 1000 : 1000; //milliseconds
+        console.log(`Rate limited! Retrying in ${retryAfter/1000} seconds`);
+        setTimeout(() => {
+          msg.reply('Message sent after rate limit!'); //Retry sending the message
+        }, retryAfter);
+      } else {
+        console.error('Error sending message:', error);
+      }
+    }
+  }
+});
+
+client.login('YOUR_BOT_TOKEN');
 ```
 
-**Explanation:**
+**Step 2:  More Robust Handling (using a queue)**
 
-* **`transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;`**: This line is crucial. It defines the transition properties for `transform` and `box-shadow`.  `0.3s` sets the duration of the transition, and `ease-in-out` specifies the timing function, creating a smooth animation.
+For more sophisticated rate limiting, use a queue to manage requests. This allows you to process requests sequentially, ensuring you don't exceed the rate limit.  This requires a library like `async` to handle asynchronous operations properly.
 
-* **`transform: scale(1.05);`**: This line, within the `:hover` pseudo-class, scales the card up by 5% on hover, creating the expanding effect.
 
-* **`box-shadow: 0 10px 20px rgba(0,0,0,0.2);`**: This line adds a box shadow to the card on hover, giving it more depth and visual feedback.  The `rgba` value allows you to control the shadow's opacity.
+```javascript
+const { Client, GatewayIntentBits } = require('discord.js');
+const { Queue } = require('async'); //You'll need to install this: npm install async
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
 
-**Links to Resources to Learn More:**
+const queue = new Queue(async (task) => {
+  try {
+    await task();
+  } catch (error) {
+    if (error.httpStatus === 429) {
+      const retryAfter = error.retryAfter ? error.retryAfter * 1000 : 1000;
+      console.log(`Rate limited! Retrying in ${retryAfter/1000} seconds`);
+      setTimeout(() => queue.push(task), retryAfter); //re-add to the queue
+    } else {
+      console.error('Error:', error);
+    }
+  }
+}, 1); // concurrency of 1 to process tasks one at a time
 
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
+
+client.on('messageCreate', msg => {
+  if (msg.content === '!send') {
+    queue.push(async () => {
+      await msg.reply('Message sent from queue!');
+    });
+  }
+});
+
+
+client.login('YOUR_BOT_TOKEN');
+```
+
+
+## Explanation
+
+The code above handles rate limits by catching the `DiscordAPIError` with `httpStatus` 429.  It then waits for a specified time (determined by the `retryAfter` property in the error object or defaults to 1 second) before retrying the operation. The queue-based approach adds tasks to a queue and processes them sequentially, preventing flooding of requests.
+
+
+## External References
+
+* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)  (Refer to the API documentation for details on error handling)
+* **Async Library:** [https://caolan.github.io/async/](https://caolan.github.io/async/) (If using the queue method)
+* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Understanding Discord's rate limit policies is crucial)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
