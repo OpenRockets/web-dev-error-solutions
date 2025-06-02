@@ -3,92 +3,90 @@
 
 ## Description of the Error
 
-Discord's API implements rate limits to prevent abuse and ensure stability.  When your bot makes too many requests within a short period, it receives a HTTP 429 error – "Too Many Requests".  This prevents your bot from functioning correctly and can lead to unexpected behavior or complete shutdowns.  Discord's rate limits are complex, involving different buckets (groups of requests) and reset times.  Ignoring these limits can result in your bot being temporarily or permanently banned from the API.
+When interacting with the Discord API using Discord.js, you might encounter a `429 Too Many Requests` error. This HTTP status code indicates that your bot has sent requests to the Discord API too frequently, exceeding the rate limits imposed to prevent abuse and ensure fair usage for all applications.  These rate limits vary depending on the endpoint and the type of your application (bot user, OAuth2 application, etc.).  Ignoring these limits can lead to your bot being temporarily or even permanently banned from accessing the API.
 
 ## Fixing the Error: Step-by-Step Code
 
-This example uses the `discord.js` library and the `node-fetch` library for making HTTP requests (although discord.js handles this internally).  This approach is more robust for managing rate limits than simply relying on `setTimeout`.
+This example demonstrates how to handle rate limits using the `node-fetch` library, which provides a more robust way to handle rate limit responses compared to the built-in `fetch` in some environments.  You'll need to install it: `npm install node-fetch`
+
 
 ```javascript
 const { Client, GatewayIntentBits } = require('discord.js');
-const fetch = require('node-fetch'); // For demonstration of external request - not essential with discord.js v14+
+const fetch = require('node-fetch'); // Import node-fetch
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds] }); // Adjust intents as needed
 
-const rateLimit = new Map(); // Store rate limit information
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+});
 
-async function makeApiRequest(url, options = {}) {
-  const bucket = url; //  Simplify bucket ID for this example - ideally a more sophisticated system
 
-  const now = Date.now();
-  const existingLimit = rateLimit.get(bucket);
-
-  if (existingLimit && existingLimit.reset > now) {
-    const remainingTime = existingLimit.reset - now;
-    console.log(`Rate limited on ${bucket}. Waiting ${remainingTime}ms...`);
-    await new Promise(resolve => setTimeout(resolve, remainingTime)); // Wait until rate limit resets
-  }
-
+async function sendMessage(channel, message) {
   try {
-    const response = await fetch(url, options); // replace with discord.js methods
+    const response = await fetch(`https://discord.com/api/v10/channels/${channel.id}/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bot ${process.env.DISCORD_TOKEN}`, // Replace with your bot token
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content: message }),
+    });
 
     if (!response.ok) {
       if (response.status === 429) {
-        const retryAfter = response.headers.get('Retry-After');
-        const resetTime = now + (retryAfter * 1000); //Retry-After is in seconds
-        rateLimit.set(bucket, { reset: resetTime });
-        console.log(`Rate limited on ${bucket}, retrying after ${retryAfter} seconds`);
-        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000 + 100)); // Add a small buffer
-        return await makeApiRequest(url, options); // Recursive call to retry
+        const rateLimitData = await response.json();
+        const retryAfter = rateLimitData.retry_after;
+        console.log(`Rate limited. Retrying after ${retryAfter}ms`);
+        await new Promise(resolve => setTimeout(resolve, retryAfter)); // Wait before retrying
+        return sendMessage(channel, message); // Recursive call to retry
       } else {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.error(`Error sending message: ${response.status} ${response.statusText}`);
+        console.error(await response.text()); // Log the error details
       }
+    } else {
+      console.log('Message sent successfully!');
     }
-    return await response.json(); // Or handle the response as needed
   } catch (error) {
-    console.error("Error making API request:", error);
-    throw error; // Re-throw the error for handling higher up
-  } finally {
-    // Clean up rateLimit map to prevent memory leaks
-    // Remove entries after their reset time has passed
-    for (const [key, value] of rateLimit) {
-        if (value.reset < now) {
-            rateLimit.delete(key);
-        }
-    }
+    console.error('An error occurred:', error);
   }
 }
 
 
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-  //Example API call, replace with your actual API call.
-  makeApiRequest('https://discord.com/api/v10/users/@me').then(data => console.log(data))
-    .catch(err => console.error('Error fetching user data:',err));
+client.on('messageCreate', async message => {
+  if (message.content === '!test') {
+    await sendMessage(message.channel, 'This is a test message!');
+  }
 });
 
 
-client.login('YOUR_BOT_TOKEN');
+client.login(process.env.DISCORD_TOKEN); // Replace with your bot token
+
 ```
+
 
 ## Explanation
 
-This improved code addresses rate limits by:
+1. **Import `node-fetch`:**  We import the `node-fetch` library for more reliable handling of HTTP requests.
 
-1. **Tracking Rate Limits:** A `rateLimit` Map stores the reset time for each API bucket.  This example simplifies the bucket identification; a more robust implementation would use Discord's specific bucket headers.
+2. **`sendMessage` Function:** This asynchronous function handles sending messages to Discord.
 
-2. **Waiting Before Retrying:** If a 429 error is encountered, the code waits for the specified `Retry-After` time before retrying the request.  A small buffer is added to account for network latency.
+3. **Error Handling:** The `try...catch` block catches potential errors during the API call.
 
-3. **Recursive Retry:** The `makeApiRequest` function recursively calls itself to retry failed requests after the rate limit reset.
+4. **Rate Limit Handling:** If a 429 error is received (`response.status === 429`), the code parses the response body (`await response.json()`) to extract the `retry_after` value. This indicates how long to wait before retrying.
 
-4. **Error Handling:**  The code includes `try...catch` blocks to handle errors during the API request process.
+5. **Retry Mechanism:** A `setTimeout` promise ensures the code waits the specified time, and then the function recursively calls itself (`sendMessage(channel, message)`) to retry sending the message. This is a simple exponential backoff strategy; for more sophisticated approaches consider using libraries that implement more complex retry strategies.
+
+6. **Other Error Handling:** If the response status is not 429 but another error, the error details are logged to the console.
+
+7. **Event Listener:** The `client.on('messageCreate', ...)` listens for messages in the Discord server.  If the message content is "!test", it calls the `sendMessage` function.
+
+8. **Environment Variable:**  The code uses `process.env.DISCORD_TOKEN`.  Remember to set your bot token as an environment variable to prevent exposing your token directly in your code.
 
 
 ## External References
 
-* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord Documentation)
-* **node-fetch:** [https://www.npmjs.com/package/node-fetch](https://www.npmjs.com/package/node-fetch)
+* **Discord API Documentation:** [https://discord.com/developers/docs/](https://discord.com/developers/docs/)  (Refer to the rate limits section in the API documentation for details on specific endpoints)
+* **node-fetch Documentation:** [https://www.npmjs.com/package/node-fetch](https://www.npmjs.com/package/node-fetch)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
