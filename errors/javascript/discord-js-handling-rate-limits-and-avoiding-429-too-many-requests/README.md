@@ -1,3 +1,5 @@
+# 🐞 Discord.js: Handling Rate Limits and Avoiding "429 Too Many Requests"
+
 
 This document addresses a common problem encountered when developing Discord bots using the Discord.js library:  the dreaded "429 Too Many Requests" error. This error arises when your bot sends requests to the Discord API faster than the allowed rate limits.
 
