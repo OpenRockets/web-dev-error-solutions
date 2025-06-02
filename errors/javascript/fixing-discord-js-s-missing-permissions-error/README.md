@@ -1,3 +1,5 @@
+# 🐞 Fixing Discord.js's "Missing Permissions" Error
+
 
 This document addresses a common error encountered when using the Discord.js library: the "Missing Permissions" error. This occurs when your bot attempts to perform an action it doesn't have permission to do on a specific guild (server).
 

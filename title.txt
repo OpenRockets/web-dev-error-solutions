@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with Hover Effect
+Fixing Discord.js's "Missing Permissions" Error
