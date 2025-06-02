@@ -1,101 +1,78 @@
 
-This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its platform.  Exceeding these limits results in errors, often preventing your bot from functioning correctly.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This utilizes CSS gradients and the `conic-gradient` function for a clean and efficient solution.  This example will demonstrate a simple 75% progress bar, but the percentage can easily be adjusted.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-When your bot sends messages, edits messages, or performs other actions too frequently, Discord will respond with a rate limit error.  This typically manifests as a `DiscordAPIError` with a code indicating the rate limit has been exceeded, often accompanied by a `retryAfter` property specifying how long to wait before retrying the action.  The error message might look something like this:
-
-```
-DiscordAPIError: 429: Too Many Requests
-    at RequestHandler.execute (/path/to/node_modules/discord.js/src/rest/RequestHandler.js:313:13)
-    at processTicksAndRejections (node:internal/process/task_queues:96:5)
-```
+The styling relies on a single `<div>` element.  We use a combination of `border-radius`, `box-sizing`, and `conic-gradient` to create the circular shape and the progress indicator.  The `conic-gradient` function allows us to define a gradient that sweeps around a circle, creating the progress bar effect.  The percentage is controlled by adjusting the angle of the gradient.
 
 
-**Full Code of Fixing Step-by-Step:**
+**Full Code:**
 
-This example demonstrates handling rate limits using `setTimeout` for simple cases.  For more complex scenarios, consider using a dedicated rate limiting library like `bottleneck`.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  border: 10px solid #f0f0f0; /* Light gray border */
+  background-color: transparent; /* Needed for conic-gradient to work properly */
+  position: relative; /* For positioning the percentage text */
+}
 
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
+  border-radius: 50%;
+  background-image: conic-gradient(
+    #4CAF50 75%, /* Green color for progress, adjust percentage here */
+    #f0f0f0 75%  /* Light gray color for remaining progress */
+  );
+}
 
-**Step 1: Basic Error Handling**
+.progress-ring::after{
+  content: "75%"; /* Percentage Display, adjust as needed*/
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2em;
+}
+</style>
+</head>
+<body>
 
-This code wraps the message sending operation in a `try...catch` block to catch the `DiscordAPIError`.
+<div class="progress-ring"></div>
 
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages] });
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-client.on('messageCreate', async msg => {
-  if (msg.content === '!hello') {
-    try {
-      await msg.reply('Hello there!');
-    } catch (error) {
-      if (error instanceof DiscordAPIError && error.code === 50007){
-        console.error("Rate limited! Message not sent. Retrying...")
-        setTimeout(() => {
-          msg.reply("Hello there!")
-        }, error.retryAfter * 1000);  
-      }
-      else{
-        console.error('An error occurred:', error);
-      }
-    }
-  }
-});
-
-client.login('YOUR_BOT_TOKEN');
-```
-
-
-**Step 2: Using `retryAfter` for Precise Timing**
-
-The improved code uses the `retryAfter` property from the error to determine the exact waiting time before retrying:
-
-```javascript
-const { Client, IntentsBitField, DiscordAPIError } = require('discord.js');
-// ... (rest of the code remains the same)
-
-client.on('messageCreate', async msg => {
-  // ... (if statement remains the same)
-    try {
-      await msg.reply('Hello there!');
-    } catch (error) {
-      if (error instanceof DiscordAPIError && error.code === 429) {
-        console.error(`Rate limited! Retrying after ${error.retryAfter} seconds...`);
-        setTimeout(async () => {
-          try {
-            await msg.reply('Hello there!');
-          } catch (retryError) {
-            console.error('Retry failed:', retryError);
-          }
-        }, error.retryAfter * 1000);
-      } else {
-        console.error('An error occurred:', error);
-      }
-    }
-  }
-});
-// ... (rest of the code remains the same)
-
+</body>
+</html>
 ```
 
 **Explanation:**
 
-The code first attempts to send a message. If a `DiscordAPIError` with code 429 (Too Many Requests) is caught, it logs the error, extracts the `retryAfter` value (in seconds), and uses `setTimeout` to schedule a retry after the specified delay.  The retry includes another `try...catch` block to handle potential further errors during the retry attempt.  Crucially we are only retrying the *same* message send.
+1. **`progress-ring` class:** This sets the basic dimensions, shape (circle using `border-radius: 50%`), and border of the progress bar.  `box-sizing: border-box` ensures that the border is included within the specified width and height.
+
+2. **`::before` pseudo-element:** This creates the colored segment of the progress bar.  `conic-gradient` is the key here.  The first color (`#4CAF50` - a green color in this example) is the progress color, and its angle determines the progress percentage (75% in this case). The second color is the background color of the remaining section.
+
+3. **`::after` pseudo-element:** This adds the percentage text to the center of the progress bar. `transform: translate(-50%, -50%)` centers the text.
+
+**To adjust the percentage:**
+
+Simply change the first percentage value in the `conic-gradient` function (e.g., `#4CAF50 90%` for 90% progress). Also, remember to change the percentage displayed in the `::after` pseudo-element content.  You can also change the colors used for a different visual effect.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/) (Look for sections on error handling and rate limits)
-* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (Official Discord documentation on rate limits)
-* **Bottleneck Library:** [https://github.com/Sannis/bottleneck](https://github.com/Sannis/bottleneck) (A more robust rate limiting library for Node.js)
-
-
-**Note:**  The provided solutions use simple `setTimeout` for demonstration. For production bots, using a more sophisticated library like `bottleneck` is highly recommended to handle complex rate limit scenarios and queuing of requests efficiently.
+* **MDN Web Docs - `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **CSS-Tricks - Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

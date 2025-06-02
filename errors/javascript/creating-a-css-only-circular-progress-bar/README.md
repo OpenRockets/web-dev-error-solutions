@@ -1,19 +1,14 @@
 # 🐞 Creating a CSS-only Circular Progress Bar
 
 
-This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This example leverages CSS gradients and transforms to achieve the effect.  We'll build a visually appealing progress bar that can easily be customized to fit different design needs.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This utilizes CSS gradients and the `conic-gradient` function for a clean and efficient solution.  This example will demonstrate a simple 75% progress bar, but the percentage can easily be adjusted.
+
+**Description of the Styling:**
+
+The styling relies on a single `<div>` element.  We use a combination of `border-radius`, `box-sizing`, and `conic-gradient` to create the circular shape and the progress indicator.  The `conic-gradient` function allows us to define a gradient that sweeps around a circle, creating the progress bar effect.  The percentage is controlled by adjusting the angle of the gradient.
 
 
-## Description of the Styling
-
-This circular progress bar utilizes a combination of techniques:
-
-* **`clip-path`:**  This CSS property is used to create the circular shape by clipping a portion of the underlying element.
-* **`background-image` (linear-gradient):** A linear gradient creates the visual representation of the progress bar's fill. We'll dynamically adjust the size of this gradient to control the progress percentage.
-* **`transform: rotate()`:**  This rotates the clipped element, giving the impression of a filling circle.
-
-
-## Full Code
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
@@ -25,72 +20,61 @@ This circular progress bar utilizes a combination of techniques:
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background-color: #f0f0f0; /* Background color of the ring */
-  position: relative;
-  display: inline-block;
+  box-sizing: border-box;
+  border: 10px solid #f0f0f0; /* Light gray border */
+  background-color: transparent; /* Needed for conic-gradient to work properly */
+  position: relative; /* For positioning the percentage text */
 }
 
 .progress-ring::before {
   content: "";
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
+  top: 5px;
+  left: 5px;
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
   border-radius: 50%;
-  clip-path: circle(50% at 50% 50%); /* Creates the circular clip */
-  background-image: linear-gradient(to right, #4CAF50 0%, #4CAF50 75%, #fff 75%); /* Dynamic fill */
-  background-size: 200% 200%; /* Adjusts the fill size */
-  background-position: 0% 50%; /* Starts the fill at 0 degree */
-  transform-origin: 50% 50%; /* Correct rotation center */
-  transform: rotate(225deg); /* Example 75% progress (270deg * 0.75) */
-  background-size: 150px 150px; /* Adjust to ring size. */
+  background-image: conic-gradient(
+    #4CAF50 75%, /* Green color for progress, adjust percentage here */
+    #f0f0f0 75%  /* Light gray color for remaining progress */
+  );
 }
 
-/* Customize Percentage Text (optional) */
-.progress-ring .percentage {
+.progress-ring::after{
+  content: "75%"; /* Percentage Display, adjust as needed*/
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 2em;
-  font-weight: bold;
-  color: #333;
+  font-size: 1.2em;
 }
-
 </style>
 </head>
 <body>
 
-<div class="progress-ring">
-  <span class="percentage">75%</span>
-</div>
+<div class="progress-ring"></div>
 
 </body>
 </html>
 ```
 
-To change the progress percentage, adjust the `transform: rotate()` value in the `::before` pseudo-element.  A full circle is 360 degrees;  75% progress would be `rotate(270deg)` (360 * 0.75).
+**Explanation:**
 
-## Explanation
+1. **`progress-ring` class:** This sets the basic dimensions, shape (circle using `border-radius: 50%`), and border of the progress bar.  `box-sizing: border-box` ensures that the border is included within the specified width and height.
 
-1. **The `progress-ring` div:** This acts as the container, establishing the size and shape of the progress bar.
+2. **`::before` pseudo-element:** This creates the colored segment of the progress bar.  `conic-gradient` is the key here.  The first color (`#4CAF50` - a green color in this example) is the progress color, and its angle determines the progress percentage (75% in this case). The second color is the background color of the remaining section.
 
-2. **The `::before` pseudo-element:** This creates the visual progress.
+3. **`::after` pseudo-element:** This adds the percentage text to the center of the progress bar. `transform: translate(-50%, -50%)` centers the text.
 
-    * The `clip-path` creates the circular shape.
-    * The `linear-gradient` defines the progress fill color.  The gradient's size is adjusted with `background-size` to allow for a smooth animation. This part is crucial for filling. 
-    * `transform: rotate()` rotates the filled segment to show progress.
+**To adjust the percentage:**
 
-3. **Customization:** The `background-image` can be easily altered to change the fill color, and the percentage text can be customized.
+Simply change the first percentage value in the `conic-gradient` function (e.g., `#4CAF50 90%` for 90% progress). Also, remember to change the percentage displayed in the `::after` pseudo-element content.  You can also change the colors used for a different visual effect.
 
 
-## Resources to Learn More
+**Links to Resources to Learn More:**
 
-* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **MDN Web Docs - `linear-gradient`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient)
-* **MDN Web Docs - `transform`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **MDN Web Docs - `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **CSS-Tricks - Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
