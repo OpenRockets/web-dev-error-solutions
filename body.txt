@@ -1,105 +1,86 @@
 
-This document addresses a common problem encountered when developing Discord bots using the Discord.js library: rate limits.  Discord implements rate limits to prevent abuse and ensure the stability of its platform. Exceeding these limits results in errors, often preventing your bot from functioning correctly.
+This document details the creation of an expanding card effect using only CSS.  No JavaScript is required.  This effect uses CSS transitions and transforms to achieve a smooth, visually appealing expansion when the card is hovered over.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-When your bot sends too many messages, requests too many guild members, or performs other actions too quickly, Discord will respond with a rate limit error. This usually manifests as a `DiscordAPIError` with a code indicating the specific rate limit that was exceeded.  The error message might look something like this:
+The card is initially displayed in a compact state. On hover, the card expands horizontally, revealing more content.  This is achieved using CSS transitions on the `transform` property (for scaling) and `width` property (for horizontal expansion).  The transition provides a smooth animation effect.  We utilize pseudo-elements (`::before` and `::after`) for decorative purposes, such as a subtle background shadow.
 
-```
-DiscordAPIError: [429] Request to API failed: 429: Too Many Requests
-```
+**Full Code:**
 
-This error halts further interactions until the rate limit resets.  Ignoring these limits can lead to your bot being temporarily or permanently banned from the Discord API.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 200px;
+  height: 150px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  overflow: hidden; /* Hide content that overflows */
+  transition: width 0.3s ease-in-out, transform 0.3s ease-in-out; /* Smooth transition */
+  position: relative; /* Needed for absolute positioning of pseudo-elements */
+}
 
+.card:hover {
+  width: 400px;
+  transform: scale(1.1); /* Subtle zoom effect */
+}
 
-**Fixing the Issue: Step-by-Step Code**
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.1);
+  z-index: -1; /* Place behind the card */
+  border-radius: 5px;
+  transition: background-color 0.3s ease-in-out;
+}
 
-This example demonstrates how to handle rate limits using `setTimeout` for simple scenarios. For more complex situations, consider using dedicated rate limit handling libraries.
+.card:hover::before {
+  background: rgba(0,0,0,0.2);
+}
 
-**Step 1:  Basic Implementation (Illustrative):**
+.card-content {
+  padding: 10px;
+  color: #333;
+}
 
-This simplified example shows how a delay can be introduced to avoid simple rate limits.  **This is not a robust solution for production bots.**
+</style>
+</head>
+<body>
 
-```javascript
-const Discord = require('discord.js');
-const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] }); // Add necessary intents
+<div class="card">
+  <div class="card-content">
+    <h3>Expanding Card</h3>
+    <p>This is some sample text within the card.</p>
+  </div>
+</div>
 
-client.on('messageCreate', async (message) => {
-  if (message.content === '!test') {
-    try {
-      await message.channel.send('Message 1');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
-      await message.channel.send('Message 2');
-    } catch (error) {
-      if (error instanceof Discord.DiscordAPIError && error.code === 50007) { // Handle other potential errors
-          console.error("Error sending message:", error)
-      } else if (error.code === 429) {
-        console.error("Rate limited! Retrying in 1 second...");
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        // Attempt to resend message after delay
-        await message.channel.send('Message 1 (retry)');
-      } else {
-        console.error("An unexpected error occurred:", error);
-      }
-    }
-  }
-});
-
-client.login('YOUR_BOT_TOKEN');
-```
-
-**Step 2: Using a More Robust Approach (Recommended):**
-
-For a production-ready bot, using a dedicated library like `discord-rate-limiter` is crucial.  This handles more sophisticated rate limit scenarios, including different bucket types and global limits.  Install it using:
-
-```bash
-npm install discord-rate-limiter
-```
-
-Then modify your code:
-
-```javascript
-const Discord = require('discord.js');
-const { RateLimiter } = require('discord-rate-limiter');
-
-const client = new Discord.Client({ intents: [Discord.GatewayIntentBits.Guilds, Discord.GatewayIntentBits.GuildMessages] });
-
-const limiter = new RateLimiter({
-  windowMs: 1000, // 1 second window
-  max: 5,       // 5 requests per window
-});
-
-client.on('messageCreate', async (message) => {
-    if (message.content === '!test') {
-    const rateLimited = await limiter.take(message.author.id); // Check rate limit for the user
-    if (rateLimited) {
-        message.reply("Please wait before using this command again.");
-        return;
-    }
-
-    try {
-        await message.channel.send('Message sent!');
-    } catch (error) {
-        console.error('Error sending message:', error);
-    }
-  }
-});
-
-client.login('YOUR_BOT_TOKEN');
-
+</body>
+</html>
 ```
 
 
 **Explanation:**
 
-The core problem is that your bot is making API requests faster than Discord allows.  The solutions presented involve introducing delays or using a rate limiter. The `discord-rate-limiter` library is superior because it intelligently manages requests based on Discord's rate limit structure, automatically handling delays and avoiding errors. The simple `setTimeout` approach is only suitable for very basic examples and doesn't account for different rate limits.
+* **`transition` property:** This property is crucial for the animation. It specifies which properties (`width`, `transform`) should transition smoothly, the duration (`0.3s`), and the easing function (`ease-in-out`).
+* **`transform: scale(1.1)`:** This slightly scales up the card on hover, adding a subtle zoom effect.
+* **`::before` pseudo-element:**  Creates a semi-transparent background layer behind the card, providing a shadow effect that also animates on hover.
+* **`overflow: hidden;`:** Prevents content within the card from spilling outside the card boundaries during the expansion.
+* **`position: relative;`:** Allows absolute positioning of pseudo-elements within the card.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)  (Check the API section for details on rate limits and error handling)
-* **discord-rate-limiter:** [https://www.npmjs.com/package/discord-rate-limiter](https://www.npmjs.com/package/discord-rate-limiter) (For a more robust solution)
-* **Discord API Rate Limits:** (Search for "Discord API Rate Limits" on the Discord Developer Portal for official documentation, which might be scattered across different sections)
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks:** Search for "CSS transitions" or "CSS hover effects" on [https://css-tricks.com/](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
