@@ -1,96 +1,81 @@
 
-## Description of the Error
+This document details how to create a circular progress bar using only CSS.  We'll leverage CSS3's `conic-gradient` for a clean and efficient solution.  No JavaScript needed!
 
-Discord.js, a popular Node.js library for interacting with the Discord API, implements rate limits to prevent abuse and ensure server stability.  When your bot sends too many requests within a short period, it encounters a rate limit error.  This typically manifests as a `DiscordAPIError` with a `HTTP 429` status code, indicating that your application has exceeded the allowed request rate.  This can prevent your bot from functioning correctly, leading to missed events and unresponsive commands.
+**Description of the Styling:**
 
+This example creates a visually appealing circular progress bar.  It utilizes a `conic-gradient` to represent the progress. The gradient's size is controlled by a variable, allowing easy modification of the progress percentage.  The bar sits within a container for better visual management and responsiveness.
 
-## Code: Fixing Rate Limits in Discord.js
+**Full Code:**
 
-This example demonstrates how to handle rate limits using `setTimeout` for simple scenarios.  For more complex applications, consider using dedicated rate limit libraries like `bottleneck`.
-
-**Step 1: Implement a basic rate limit handler.**
-
-This approach uses a simple `setTimeout` to pause execution after encountering a rate limit.  It's suitable for less frequent operations, but less efficient for high-volume bots.
-
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds] }); // Replace with your intents
-
-client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-});
-
-async function sendMessage(channel, message) {
-    try {
-        await channel.send(message);
-    } catch (error) {
-        if (error.httpStatus === 429) {
-            const retryAfter = error.retryAfter; // Get retryAfter in milliseconds
-            console.error(`Rate limited. Retrying in ${retryAfter}ms...`);
-            await new Promise(resolve => setTimeout(resolve, retryAfter)); // Wait before retrying
-            await sendMessage(channel, message); //Retry sending the message
-        } else {
-            console.error("An error occurred:", error);
-        }
-    }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.container {
+  width: 150px;
+  height: 150px;
+  position: relative;
 }
 
+.progress-ring {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(#e74c3c 75%, #f1f1f1 75%); /* Adjust percentage for progress */
+  position: relative;
+}
 
-client.on('messageCreate', async message => {
-    if (message.content === '!test') {
-        const channel = message.channel;
-        await sendMessage(channel, 'This message might be rate-limited!');
-    }
-});
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  background-color: white;
+  z-index: 1;
+}
 
+.percentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.2em;
+    z-index: 2;
+}
+</style>
+</head>
+<body>
 
-client.login('YOUR_BOT_TOKEN'); // Replace with your bot token
+<div class="container">
+  <div class="progress-ring"></div>
+  <div class="percentage">75%</div>
+</div>
+
+</body>
+</html>
 ```
 
-**Step 2 (Recommended): Using a Rate Limiting Library (bottleneck)**
-
-For robust rate limit handling, especially in high-traffic scenarios, a dedicated library like `bottleneck` is recommended.
-
-```javascript
-const { Client, IntentsBitField } = require('discord.js');
-const Bottleneck = require('bottleneck');
-const client = new Client({ intents: [IntentsBitField.Flags.Guilds] });
-
-const limiter = new Bottleneck({
-    maxConcurrent: 1, // Adjust as needed.  Discord's limits vary by endpoint.
-    minTime: 500, // Minimum time between requests (milliseconds).  Adjust as needed.
-});
-
-client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-});
+To change the progress, simply alter the percentage value in the `conic-gradient` function.  For example, `conic-gradient(#e74c3c 50%, #f1f1f1 50%)` would create a half-filled circle.  You can easily customize the colors as well.
 
 
-client.on('messageCreate', async message => {
-    if (message.content === '!test') {
-        const channel = message.channel;
-        limiter.schedule(() => channel.send('This message uses Bottleneck!'))
-            .then(() => console.log('Message sent successfully.'))
-            .catch(error => console.error('Error sending message:', error));
-    }
-});
+**Explanation:**
 
-client.login('YOUR_BOT_TOKEN');
-```
+* **`container`:** This div acts as a wrapper to maintain aspect ratio and position the elements.
+* **`progress-ring`:** This is the main element that creates the circular progress bar using `conic-gradient`.  The `conic-gradient` function creates a gradient that sweeps around a circle. The first color (`#e74c3c` in this example - a red-ish color) is used up to the specified percentage, and then the second color (`#f1f1f1` - a light gray) fills the rest.
+* **`progress-ring::before`:** This pseudo-element creates the inner white circle, making the progress bar more visually appealing.
+* **`percentage`:**  This div displays the percentage value, positioned at the center of the circle.
 
 
-## Explanation
+**Links to Resources to Learn More:**
 
-The `setTimeout` approach adds a delay before retrying the message send. This simple method works well for occasional rate limits. However, it doesn't account for varying rate limit window sizes or different limits across various Discord API endpoints.
-
-Using `bottleneck` offers more sophisticated rate limiting. You define the maximum concurrent requests and the minimum time between requests.  `bottleneck` handles queuing and retrying automatically, making your code more robust and less prone to rate limit issues.  Always consult the Discord API documentation for the specific rate limits applied to different endpoints.
-
-
-## External References
-
-* **Discord.js Documentation:** [https://discord.js.org/](https://discord.js.org/)
-* **Bottleneck Library:** [https://github.com/Sannis/bottleneck](https://github.com/Sannis/bottleneck)
-* **Discord API Rate Limits:** [https://discord.com/developers/docs/topics/rate-limits](https://discord.com/developers/docs/topics/rate-limits) (This link may require a Discord developer account.)
+* **MDN Web Docs on `conic-gradient`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **CSS Tricks on Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
