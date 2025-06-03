@@ -1,86 +1,78 @@
 
-## Description of the Error
-
-A common problem encountered when integrating Video.js into a responsive web design is the player's height not adjusting correctly to maintain its aspect ratio.  This often results in the video appearing stretched, squashed, or with significant letterboxing/pillarboxing, especially on different screen sizes or orientations.  The issue usually stems from the player's dimensions not being dynamically recalculated to match the containing element's size.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required. This technique utilizes the `clip-path` property and some clever manipulation of pseudo-elements.
 
 
-## Step-by-Step Code Fix
+**Description of the Styling:**
 
-This solution uses CSS and JavaScript to ensure the Video.js player maintains its aspect ratio regardless of its container's size.
+This approach creates a circular progress bar by masking a circle using the `clip-path` property.  A pseudo-element is rotated to reveal a portion of the underlying circle, representing the progress percentage. The styling involves setting the background color, stroke color, thickness, and animation for a smooth progress effect. We'll use Tailwind CSS for easier styling.
 
-**1. HTML Structure:**
+
+**Full Code:**
 
 ```html
-<div id="video-container">
-  <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360"
-         data-setup="{}">
-    <source src="your-video.mp4" type="video/mp4">
-    <p class="vjs-no-js">
-      To view this video please enable JavaScript, and consider upgrading to a
-      web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
-    </p>
-  </video>
-</div>
-```
-
-**2. CSS Styling (style.css or within `<style>` tags):**
-
-```css
-#video-container {
-  position: relative; /* Important for aspect ratio calculation */
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
-  height: 0; /* Ensures height is calculated based on padding-bottom */
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Circular Progress Bar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+.progress-ring {
+  --size: 100; /* Adjust size as needed */
+  --progress: 75; /* Adjust progress percentage (0-100) */
+  width: var(--size);
+  height: var(--size);
+  position: relative;
 }
 
-#video-container video {
+.progress-ring::before {
+  content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background-color: #f0f0f0; /* Background color */
+  border: 10px solid #e0e0e0; /* Border color and thickness */
 }
-```
 
-**3. JavaScript (optional, for more dynamic control):**
-
-This JavaScript is not strictly necessary if your aspect ratio is consistent. However,  it allows for more flexibility.
-
-```javascript
-// This is not needed if you use only css and fix aspect ratio in the css
-// This js code adds functionality for dynamic resize
-document.addEventListener('DOMContentLoaded', function() {
-  const videoContainer = document.getElementById('video-container');
-  const videoPlayer = videojs('my-video');
-
-  function resizeVideo() {
-    const containerWidth = videoContainer.offsetWidth;
-    const containerHeight = videoContainer.offsetHeight;
-    const aspectRatio = 16/9; // Adjust this for your desired aspect ratio
-    const newHeight = containerWidth / aspectRatio;
-    videoContainer.style.paddingBottom = (newHeight / containerWidth) * 100 + '%';
-
-  }
-
-  window.addEventListener('resize', resizeVideo);
-  resizeVideo(); //Initial resize
-});
-
+.progress-ring::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(calc(var(--progress) * 3.6deg)); /* Rotate based on progress */
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  border: 10px solid #4CAF50; /* Progress color */
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /* Mask to create the circular progress */
+}
+</style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="progress-ring"></div>
+</body>
+</html>
 ```
 
 
-**Remember to replace `"your-video.mp4"` with the actual path to your video file.**  The `padding-bottom` technique in CSS is crucial. It creates a fixed aspect ratio by dynamically adjusting the height based on the width of the container.  The `16:9` aspect ratio can be changed according to your video's dimensions.
+**Explanation:**
 
-## Explanation
+* **`--size` and `--progress`:**  These CSS custom properties allow for easy adjustment of the circle's size and progress percentage.
+* **`::before` pseudo-element:** Creates the base circle with a background and border.
+* **`::after` pseudo-element:** Creates the progress indicator.  The `rotate()` function calculates the rotation angle based on the `--progress` variable (360 degrees / 100% = 3.6 degrees per percent).  The `clip-path` property masks the rotated element to create the circular segment.
+* **Tailwind CSS:**  The example uses Tailwind CSS classes for basic page styling (`bg-gray-100`, `p-8`).  You can easily customize these classes to match your project's design.
 
-The CSS approach uses the `padding-bottom` trick to maintain the aspect ratio.  By setting `padding-bottom` as a percentage of the container's width, the height is automatically calculated to maintain the desired proportions. The `position: relative` and `position: absolute` on the container and video respectively, ensure the video fills the entire calculated space without overflowing.
+**Links to Resources to Learn More:**
 
-The optional JavaScript enhances this by dynamically recalculating the aspect ratio and resizing the video whenever the browser window is resized. This provides a smoother user experience on responsive layouts.
+* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **MDN Web Docs on CSS Variables:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
 
-## External References
-
-* **Video.js Documentation:** [https://videojs.com/](https://videojs.com/)
-* **Responsive Design Techniques:** [https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Responsive_design](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Responsive_design)
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

@@ -1,91 +1,79 @@
-# 🐞 Creating a CSS-Only Circular Progress Bar
+# 🐞 Creating a CSS-only Circular Progress Bar
 
 
-This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This technique leverages the `clip-path` property and a pseudo-element to achieve a visually appealing and efficient progress indicator.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required. This technique utilizes the `clip-path` property and some clever manipulation of pseudo-elements.
+
 
 **Description of the Styling:**
 
-The circular progress bar is created using a single `div` element.  A pseudo-element (`::before`) is used to create the circular track.  The `clip-path` property is used to dynamically "clip" a portion of the circular track, representing the progress.  We'll use variables for easy customization of the progress bar's appearance (color, size, etc.).
+This approach creates a circular progress bar by masking a circle using the `clip-path` property.  A pseudo-element is rotated to reveal a portion of the underlying circle, representing the progress percentage. The styling involves setting the background color, stroke color, thickness, and animation for a smooth progress effect. We'll use Tailwind CSS for easier styling.
+
 
 **Full Code:**
 
 ```html
-<div class="progress-ring" data-progress="75">
-  <span class="progress-value">75%</span>
-</div>
-```
-
-```css
-:root {
-  --progress-ring-size: 150px;
-  --progress-ring-color: #4CAF50;
-  --progress-ring-track-color: #e0e0e0;
-  --progress-ring-width: 10px;
-}
-
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Circular Progress Bar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
 .progress-ring {
-  width: var(--progress-ring-size);
-  height: var(--progress-ring-size);
+  --size: 100; /* Adjust size as needed */
+  --progress: 75; /* Adjust progress percentage (0-100) */
+  width: var(--size);
+  height: var(--size);
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .progress-ring::before {
   content: "";
   position: absolute;
-  width: var(--progress-ring-size);
-  height: var(--progress-ring-size);
-  background-color: var(--progress-ring-track-color);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--size);
+  height: var(--size);
   border-radius: 50%;
+  background-color: #f0f0f0; /* Background color */
+  border: 10px solid #e0e0e0; /* Border color and thickness */
 }
 
 .progress-ring::after {
   content: "";
   position: absolute;
-  width: var(--progress-ring-size);
-  height: var(--progress-ring-size);
-  background-color: var(--progress-ring-color);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(calc(var(--progress) * 3.6deg)); /* Rotate based on progress */
+  width: var(--size);
+  height: var(--size);
   border-radius: 50%;
-  clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 50%); /* Initial clip path */
-  transform: rotate(-90deg); /* Start at top */
-  transition: transform 0.5s ease; /* Smooth transition */
+  border: 10px solid #4CAF50; /* Progress color */
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /* Mask to create the circular progress */
 }
-
-.progress-ring[data-progress]::after {
-  --progress: calc(var(--progress) * 3.6deg); /* Convert percentage to degrees */
-  transform: rotate(calc(var(--progress, 0deg) - 90deg)); /* Rotate based on progress */
-}
-
-.progress-value {
-  position: absolute;
-  z-index: 1;
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #333;
-}
-
+</style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="progress-ring"></div>
+</body>
+</html>
 ```
+
 
 **Explanation:**
 
-1. **Variables:**  The `:root` selector defines CSS custom properties (variables) for easy customization of the progress bar's size, colors, and width.
-
-2. **`::before` Pseudo-element:** Creates the background circle (track).
-
-3. **`::after` Pseudo-element:** Creates the filled portion of the progress bar.  The `clip-path` initially defines a triangle. The `transform: rotate()` rotates this triangle to create the circular fill effect.
-
-4. **`data-progress` Attribute:** The HTML `data-progress` attribute is used to dynamically set the progress percentage.
-
-5. **Calculation of Rotation:**  The CSS calculates the rotation angle based on the `data-progress` attribute. 360 degrees represent 100%, so we use `calc(var(--progress) * 3.6deg)` to convert the percentage to degrees.
-
+* **`--size` and `--progress`:**  These CSS custom properties allow for easy adjustment of the circle's size and progress percentage.
+* **`::before` pseudo-element:** Creates the base circle with a background and border.
+* **`::after` pseudo-element:** Creates the progress indicator.  The `rotate()` function calculates the rotation angle based on the `--progress` variable (360 degrees / 100% = 3.6 degrees per percent).  The `clip-path` property masks the rotated element to create the circular segment.
+* **Tailwind CSS:**  The example uses Tailwind CSS classes for basic page styling (`bg-gray-100`, `p-8`).  You can easily customize these classes to match your project's design.
 
 **Links to Resources to Learn More:**
 
 * **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **CSS Tricks on Pseudo-elements:** [https://css-tricks.com/pseudo-elements/](https://css-tricks.com/pseudo-elements/)
-* **Understanding CSS Variables (Custom Properties):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+* **MDN Web Docs on CSS Variables:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
