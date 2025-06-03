@@ -1,1 +1,1 @@
-Fixing VideoJS Player Height Issues in Responsive Designs
+Creating a CSS-Only Expanding Card
