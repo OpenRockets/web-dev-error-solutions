@@ -1,1 +1,1 @@
-Fixing VideoJS Playback Issues on iOS Safari Due to MIME Type Mismatch
+Resolving VideoJS Player Initialization Errors on CanvasJS Integration
