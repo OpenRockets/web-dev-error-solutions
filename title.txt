@@ -1,1 +1,1 @@
-Fixing VideoJS's "TypeError: this.options is undefined" Error
+Resolving VideoJS Player Initialization Issues in a CanvasJS Chart Context
