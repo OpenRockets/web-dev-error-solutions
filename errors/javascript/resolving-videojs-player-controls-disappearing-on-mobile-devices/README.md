@@ -1,3 +1,5 @@
+# 🐞 Resolving VideoJS Player Controls Disappearing on Mobile Devices
+
 
 ## Description of the Error
 

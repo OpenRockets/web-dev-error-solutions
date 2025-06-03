@@ -1,1 +1,1 @@
-Resolving CanvasJS Chart Rendering Issues in High-Density Displays
+Resolving VideoJS Player Controls Disappearing on Mobile Devices
