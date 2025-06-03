@@ -1,11 +1,13 @@
 # 🐞 Creating a CSS-Only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This uses a combination of CSS `radial-gradient`, `mask-image`, and `transform` to achieve a smooth, animated effect.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This leverages the `clip-path` property for a clean and efficient solution.  We'll be using standard CSS3; no frameworks like Tailwind are necessary.
+
 
 **Description of the Styling:**
 
-This technique leverages a `radial-gradient` to create a circle. A `mask-image` is then applied, using a similar `radial-gradient` but with a smaller size, to create the "progress" portion.  By animating the `transform: rotate()` property of the mask, we achieve the circular progress animation.
+This technique uses a circular SVG element as the base.  We then use the `clip-path` property applied to a background circle to reveal only a portion of it, representing the progress percentage.  The styling focuses on creating a visually appealing and easily customizable progress indicator.
+
 
 **Full Code:**
 
@@ -19,44 +21,60 @@ This technique leverages a `radial-gradient` to create a circle. A `mask-image` 
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background: conic-gradient(
-    #e74c3c 0%,
-    #e74c3c 70%,
-    #f1f1f1 70%,
-    #f1f1f1 100%
-  );
-  mask: radial-gradient(circle 50% at 50% 50%, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 70.5%);
-  mask-type:luminance;
-  animation: progress 2s linear infinite;
+  background-color: #f0f0f0; /* Light grey background */
+  position: relative;
 }
 
-@keyframes progress {
-  to {
-    transform: rotate(360deg);
-  }
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #4CAF50; /* Green progress */
+  clip-path: circle(50% at 50% 50%); /* Initial full circle */
+  transform: rotate(-90deg); /* Start at top */
 }
+
+.progress-ring.progress-75::before {
+  clip-path: circle(50% at 50% 50%) inset;
+  transform: rotate(270deg);
+}
+
 </style>
 </head>
 <body>
 
-<div class="progress-ring"></div>
+<h1>CSS Only Circular Progress Bar</h1>
+
+<div class="progress-ring progress-75"></div>  <!--Example with 75% progress-->
+<div class="progress-ring"></div>  <!--Example with 0% progress-->
+
 
 </body>
 </html>
 ```
 
+To adjust the percentage, simply modify the `clip-path` and `transform` properties within the `.progress-75` class. For example,  `.progress-50::before {clip-path: circle(50% at 50% 50%) inset; transform: rotate(180deg);}` would create a 50% progress bar.  You can easily adjust colors and sizes by modifying the CSS variables.
+
+
 **Explanation:**
 
-* **`conic-gradient`:** This creates the base circular background.  `#e74c3c` is the color of the progress and `#f1f1f1` is the background color. The percentages define the proportion of each color.
-* **`mask: radial-gradient(...)`:** This creates a circular mask that reveals only a portion of the underlying `conic-gradient`. The `rgba(0,0,0,1)` creates the opaque portion (covering the progress), and `rgba(0,0,0,0)` creates the transparent portion (revealing the background). The `70%` value controls the progress level (70% complete in this example).  `mask-type: luminance` ensures the mask works correctly.
-* **`animation: progress 2s linear infinite;`:** This applies a CSS animation named "progress" which rotates the mask over 2 seconds continuously.  Adjust the `2s` value to control the animation speed.
+1. **Base Circle:**  The `.progress-ring` creates the base circular container.
 
+2. **Progress Circle:** The `::before` pseudo-element creates the colored progress circle.
 
-**Links to Resources to Learn More:**
+3. **`clip-path`:** This is the core of the effect. `circle(50% at 50% 50%)` creates a full circle. `inset` reverses the clipping, so only the portion inside the circle is visible. The percentage in `circle()` adjusts the size of the clipped area (which we don't change here).
 
-* **MDN Web Docs - `conic-gradient`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
-* **MDN Web Docs - `mask-image`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/mask-image](https://developer.mozilla.org/en-US/docs/Web/CSS/mask-image)
-* **CSS-Tricks - Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/)
+4. **`transform: rotate()`:** This rotates the progress circle. A full circle is 360 degrees. We subtract 90 degrees to start at the top and then add the progress percentage multiplied by 3.6 (360/100).
+
+**Resources to Learn More:**
+
+* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **Understanding CSS Transforms:** [Search for "CSS Transforms tutorial" on your preferred search engine]
+* **CSS Pseudo-elements:** [Search for "CSS Pseudo-elements tutorial" on your preferred search engine]
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
