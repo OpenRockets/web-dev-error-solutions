@@ -1,1 +1,1 @@
-Resolving VideoJS Player Controls Not Appearing After Initialization
+Creating a CSS-Only Expanding Card
