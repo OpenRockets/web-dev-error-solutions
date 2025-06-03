@@ -1,1 +1,1 @@
-Resolving VideoJS Player Initialization Issues in a CanvasJS Chart Context
+Creating a CSS-Only Expanding Card with a Subtle Reveal
