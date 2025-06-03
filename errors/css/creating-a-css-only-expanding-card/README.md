@@ -1,3 +1,5 @@
+# 🐞 Creating a CSS-Only Expanding Card
+
 
 This document details how to create an expanding card effect using only CSS.  This effect is achieved using CSS transitions and transforms to smoothly animate the card's height and content when hovered over.  We'll utilize standard CSS, avoiding any pre-processors like Sass or Less, or frameworks like Tailwind CSS, for maximum clarity and broad applicability.
 
