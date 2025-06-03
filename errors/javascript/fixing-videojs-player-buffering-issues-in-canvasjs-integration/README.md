@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Player Buffering Issues in CanvasJS Integration
+
 
 ## Description of the Error
 
