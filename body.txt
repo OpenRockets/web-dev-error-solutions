@@ -1,73 +1,65 @@
 
-## Description of the Error
-
-A common issue encountered when integrating VideoJS into a web application, particularly on iOS Safari, is the failure to play videos due to Cross-Origin Resource Sharing (CORS) errors.  This happens when the video file's origin (the server where the video is hosted) differs from the origin of the webpage embedding the VideoJS player.  iOS Safari is particularly strict about enforcing CORS policies.  The error might not manifest as a clear error message in the browser console, but instead as a blank player or a video that simply won't start.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This example leverages CSS's `conic-gradient` function for a clean and efficient solution.
 
 
-## Fixing Steps
+**Description of the Styling:**
 
-This example assumes your video is hosted on a different domain than your website.  Let's say your website is at `https://www.mywebsite.com` and your video is at `https://video.externalsite.com/myvideo.mp4`.
+The styling relies on a combination of techniques:
 
-**Step 1: Configure CORS Headers on the Video Server**
+* **`conic-gradient`:** This function creates a gradient that radiates from the center, allowing us to easily represent a progress circle.  The percentage value controls the filled portion of the circle.
+* **`mask`:**  A circular mask is used to clip the gradient, ensuring the progress bar remains within a circular shape.
+* **`border-radius`:** This ensures that the container for our progress bar is perfectly circular.
 
-The most crucial step is to configure the server hosting your video files to send the correct CORS headers.  This tells the browser that your website is allowed to access the video. You need to add these headers to the response from the video server:
 
-```
-Access-Control-Allow-Origin: https://www.mywebsite.com  // Replace with your website's origin
-Access-Control-Allow-Methods: GET
-Access-Control-Max-Age: 3600 //Optional: Cache control for 1 hour
-```
-
-The `Access-Control-Allow-Origin` header specifies the origin(s) allowed to access the resource.  You can use `*` to allow all origins, but this is generally discouraged for security reasons. It's best to specify your website's origin precisely.
-
-**Step 2:  Verify Server Configuration**
-
-Use a tool like Browser developer tools (Network tab) or a dedicated CORS checker (see references below) to confirm that your server is indeed sending the necessary headers when requesting your video.
-
-**Step 3: VideoJS Player Code (Example)**
-
-Ensure your VideoJS player is correctly configured to point to your video file.  Here's a basic example:
-
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-  <title>VideoJS Example</title>
-  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
-  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  --progress: 75; /* Adjust this value to change the progress percentage */
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #007bff 0deg var(--progress)%,
+    #eee 0deg
+  );
+  mask: conic-gradient(#fff 0deg var(--progress)%, #000 0deg);
+  mask-type: mask;
+}
+</style>
 </head>
 <body>
 
-  <video id="my-video" class="video-js" controls preload="auto" width="640" height="360" poster="poster.jpg"
-         data-setup='{}'>
-    <source src="https://video.externalsite.com/myvideo.mp4" type="video/mp4">
-    <p class="vjs-no-js">
-      To view this video please enable JavaScript, and consider upgrading to a
-      web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
-    </p>
-  </video>
+<div class="progress-ring"></div>
 
-  <script>
-    var player = videojs('my-video');
-  </script>
 </body>
 </html>
 ```
 
-Remember to replace `"https://video.externalsite.com/myvideo.mp4"` and `"poster.jpg"` with your actual video and poster URLs.
+
+**Explanation:**
+
+1. **`--progress` Variable:** This custom CSS variable holds the percentage of progress (0-100).  Changing this value dynamically updates the progress bar.
+
+2. **`conic-gradient` (Background):** This creates the colored portion of the progress bar.  `#007bff` (blue in this case) is the color of the filled section, and `#eee` (light grey) is the background color. The `var(--progress)` determines the angle at which the color transition occurs.
+
+3. **`mask: conic-gradient`:** This creates a circular mask with the same gradient, but using white and black instead of colors.  The white portion allows the background gradient to show through, representing the progress, while the black portion hides it, creating the empty part of the circle.
+
+4. **`mask-type: mask;`:** This line is crucial. It specifies that we're using a mask to shape the background gradient.
+
+5. **`width`, `height`, `border-radius`:** These properties ensure that our progress bar is a perfect circle.
 
 
-## Explanation
+**Links to Resources to Learn More:**
 
-The CORS error arises because the browser, acting as a security measure, prevents the webpage from accessing resources from a different origin without explicit permission from the server hosting those resources.  By adding the appropriate CORS headers, the server grants the necessary permission, allowing the browser to load and play the video.
-
-
-## External References
-
-* **VideoJS Documentation:** [https://videojs.com/](https://videojs.com/)
-* **CORS Explained:** [https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
-* **Online CORS Header Checker:** [Search for "CORS header checker" on your preferred search engine; many online tools are available.]
+* **MDN Web Docs - `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **MDN Web Docs - `mask`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/mask](https://developer.mozilla.org/en-US/docs/Web/CSS/mask)
+* **CSS Tricks (general CSS resources):** [https://css-tricks.com/](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
