@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Playback Issues on iOS Safari Due to MIME Type Mismatch
+
 
 ## Description of the Error
 
