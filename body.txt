@@ -1,98 +1,77 @@
 
-This document details how to create an expanding card effect using only CSS.  This effect showcases a smooth expansion of the card content upon hover, revealing hidden details with a subtle animation.  The example uses plain CSS, but the principles can be easily adapted to frameworks like Tailwind CSS.
+## Description of the Error
 
-**Description of the Styling:**
+A common issue encountered when using CanvasJS charts in older browsers like Internet Explorer 11 (IE11) is a failure to render the chart correctly.  The chart might appear blank, display incompletely, or throw rendering errors in the browser's developer console. This is often due to IE11's limited support for certain HTML5 canvas features or discrepancies in how it interprets JavaScript code compared to modern browsers.
 
-The card consists of two main parts: a front face and a back face.  The front face displays a summary, while the back face reveals more detailed information.  The transition effect leverages CSS transforms and transitions to smoothly expand the card and rotate it, revealing the back face on hover. We use `transform-style: preserve-3d;` to keep the front and back faces in a 3D space, allowing the rotation to happen realistically.  The animation is subtle and user-friendly, making for a clean and interactive experience.
+## Step-by-Step Code Fix
 
+This solution focuses on using a polyfill to address potential compatibility gaps in IE11.  We'll use `excanvas` as an example, although other polyfills may also work.
 
-**Full Code:**
+**Step 1: Include the excanvas library**
+
+First, you need to include the excanvas library in your HTML file. You can download it from various sources online (search for "excanvas download").  Make sure to place the `excanvas.js` file in your project's JavaScript directory. Then, add the script tag to your HTML file *before* your CanvasJS script inclusion.
+
 
 ```html
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
 <head>
-<title>Expanding Card</title>
-<style>
-.card {
-  perspective: 1000px; /* Necessary for 3D transforms */
-  width: 300px;
-  height: 200px;
-  position: relative;
-  transition: transform 0.5s ease-in-out; /* Smooth transition */
-}
-
-.card-front, .card-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden; /* Hide the back face initially */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transform-style: preserve-3d; /* Keep faces in 3D space */
-}
-
-.card-front {
-  background-color: #4CAF50;
-  color: white;
-  border-radius: 5px;
-}
-
-.card-back {
-  background-color: #2196F3;
-  color: white;
-  border-radius: 5px;
-  transform: rotateY(180deg); /* Rotate to the back initially */
-}
-
-.card:hover {
-  transform: rotateY(180deg); /* Rotate on hover to reveal the back */
-}
-
-.card-content {
-  text-align: center;
-  padding: 20px;
-}
-</style>
+<script src="excanvas.js"></script>  <!-- Include excanvas before CanvasJS -->
+<script src="canvasjs.min.js"></script>  <!-- Your CanvasJS library -->
+<script type="text/javascript">
+  window.onload = function () {
+    var chart = new CanvasJS.Chart("chartContainer", {
+      // Your chart configuration here...
+      title:{
+        text: "My Chart"
+      },
+      data: [
+      {
+        type: "column",
+        dataPoints: [
+          { x: 10, y: 71 },
+          { x: 20, y: 55},
+          { x: 30, y: 50 },
+          { x: 40, y: 65 }
+        ]
+      }
+      ]
+    });
+    chart.render();
+  }
+</script>
 </head>
 <body>
-
-<div class="card">
-  <div class="card-front">
-    <div class="card-content">
-      <h2>Front</h2>
-      <p>Click or hover to reveal more!</p>
-    </div>
-  </div>
-  <div class="card-back">
-    <div class="card-content">
-      <h2>Back</h2>
-      <p>This is the detailed information revealed on hover.</p>
-    </div>
-  </div>
-</div>
-
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
 </body>
 </html>
 ```
 
-**Explanation:**
 
-1. **`perspective`:** This property sets the distance from the viewer to the 3D scene, creating the depth effect.
-2. **`backface-visibility: hidden;`:** This hides the back face when it's not visible, improving performance and preventing flickering.
-3. **`transform: rotateY(180deg);`:** This rotates the back face 180 degrees around the Y-axis, placing it on the back.
-4. **`transform-style: preserve-3d;`:** This keeps both the front and back faces in the 3D space so the rotation looks realistic.
-5. **`transition: transform 0.5s ease-in-out;`:** This creates a smooth transition for the `transform` property over 0.5 seconds.
-6. **`:hover`:** The hover state triggers the `transform: rotateY(180deg);` which flips the card.
+**Step 2:  (Optional) Conditional Loading:**
 
+For better performance in modern browsers that don't require `excanvas`, you can conditionally load it:
 
-**Links to Resources to Learn More:**
+```javascript
+if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.appVersion.indexOf('Trident/') > 0) {
+  document.write('<script src="excanvas.js"></script>');
+}
+```
 
-* [MDN Web Docs on CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* [MDN Web Docs on CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* [CSS-Tricks](https://css-tricks.com/) (A great resource for CSS techniques)
+This code snippet checks the user agent to see if it's IE and only includes `excanvas` if necessary. Place this code *before* including your CanvasJS script.
 
+**Step 3:  Ensure Correct Chart Configuration:**
+
+Double-check that your CanvasJS chart configuration is correct and doesn't contain any errors.  Refer to the CanvasJS documentation for proper syntax and usage.
+
+## Explanation
+
+IE11's limitations with the HTML5 canvas element can lead to rendering problems.  `excanvas` is a JavaScript library that provides a shim or polyfill, emulating the canvas API in older browsers that lack full support. By including `excanvas`, we essentially provide IE11 with a compatible version of the canvas functionality necessary for CanvasJS to function properly.  Conditional loading helps to avoid unnecessary overhead in modern browsers.
+
+## External References
+
+* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/)  (Refer to their documentation for chart configuration and troubleshooting)
+* **excanvas (search for download links):**  Many sources provide this library.  Be cautious and download from a reputable source.  Note that `excanvas` is no longer actively maintained.
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
