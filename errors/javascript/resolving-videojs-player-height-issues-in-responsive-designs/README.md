@@ -1,3 +1,5 @@
+# 🐞 Resolving VideoJS Player Height Issues in Responsive Designs
+
 
 ## Description of the Error
 

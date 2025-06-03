@@ -1,1 +1,1 @@
-Fixing VideoJS Player Initialization Errors on CanvasJ Integration
+Resolving VideoJS Player Height Issues in Responsive Designs
