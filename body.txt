@@ -1,76 +1,72 @@
 
-## Description of the Error
+This document addresses a common problem encountered when using CanvasJS charts in Internet Explorer 11 (IE11): failure to render charts correctly or rendering blank spaces.  This is often due to IE11's limited support for certain HTML5 canvas features used by CanvasJS.
 
-A common problem encountered when integrating CanvasJS charts into a responsive web application is the chart's failure to properly resize or render correctly when the browser window is resized or the viewport changes (e.g., on mobile devices). This often manifests as a chart that remains at its initial size, resulting in distortion, cropped elements, or parts of the chart being cut off.  The chart might render correctly initially, but fail to adapt to changes in the browser window size. This is particularly problematic in responsive designs where content reflows based on screen dimensions.
+**Description of the Error:**
 
-## Code: Step-by-Step Fix
+In IE11, you might encounter situations where a CanvasJS chart either doesn't render at all, displays a blank space where the chart should be, or renders incompletely with missing elements.  This is not a CanvasJS bug per se, but rather a compatibility issue with the older browser.  The browser's console may not always provide helpful error messages.
 
-This example demonstrates how to ensure a CanvasJS chart resizes correctly within a responsive layout using JavaScript. We'll focus on using the `window.addEventListener` to detect resize events and trigger the chart's `render()` method.  Assume you have already included the CanvasJS library and have created your chart object (`chart`).
+**Step-by-Step Code Fix:**
 
-**1.  Include CanvasJS:**
+The most reliable solution involves using a polyfill, specifically one that addresses the `excanvas` compatibility issue sometimes found in older IE versions.  While CanvasJS itself attempts some level of compatibility, a direct polyfill is often necessary.  We'll use the `excanvas` library here (though other compatibility libraries might also work).
+
+**1. Include the excanvas library:**
+
+First, download the `excanvas.js` file (easily found with a web search, look for reputable sources).  Place this file in your project's JavaScript directory.  Then, include it in your HTML file *before* including the CanvasJS script:
+
 
 ```html
-<script src="https://cdn.canvasjs.com/1.0.0/canvasjs.min.js"></script>
-```
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="excanvas.js"></script>  <!-- Include excanvas BEFORE CanvasJS -->
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script> </head>
+<body>
 
-**2. Create the Chart (Example):**
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
 
-```javascript
+<script>
 window.onload = function () {
     var chart = new CanvasJS.Chart("chartContainer", {
-        title: {
-            text: "Responsive Chart"
+        title:{
+            text: "Basic Column Chart"
         },
-        data: [{
+        data: [
+        {
             type: "column",
             dataPoints: [
-                { x: 10, y: 71 },
-                { x: 20, y: 55 },
-                { x: 30, y: 50 },
-                { x: 40, y: 65 },
-                { x: 50, y: 95 }
+                { label: "Apple",  y: 10  },
+                { label: "Orange", y: 15  },
+                { label: "Banana", y: 25  }
             ]
-        }]
+        }
+        ]
     });
     chart.render();
 }
-```
-
-**3. Add a Resize Listener and Rerender:**
-
-```javascript
-window.addEventListener('resize', function () {
-    chart.render(); // This line is crucial
-});
-```
-
-
-**4. Complete HTML Structure:**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Responsive CanvasJS Chart</title>
-<script src="https://cdn.canvasjs.com/1.0.0/canvasjs.min.js"></script>
-</head>
-<body>
-<div id="chartContainer" style="height: 300px; width: 100%;"></div>
-<script>
-// JavaScript from steps 2 and 3 goes here
 </script>
 </body>
 </html>
 ```
 
-## Explanation
+**2. Verify CanvasJS Inclusion:**
 
-The core of the solution lies in the `window.addEventListener('resize', ...)` function. This adds an event listener that triggers a function whenever the browser window is resized.  Inside this function, `chart.render()` is called. This instructs CanvasJS to redraw the chart using the new dimensions of its container (`#chartContainer` in this case).  Crucially, the `#chartContainer` div should have its width set to `100%` to ensure it always occupies the full available width, allowing the chart to resize responsively.  Setting a fixed height might be necessary to prevent vertical collapse, but it could still adapt to different screen heights.
+Make absolutely sure you've correctly included the CanvasJS library in your project. Double-check the path and the file name (`canvasjs.min.js` or the unminified version).
 
-## External References
+**3. Test in IE11:**
 
-* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/)  (Check their documentation for advanced features and further assistance)
+Open your webpage in IE11 and verify that the chart renders correctly.  If not, inspect the browser's developer tools console for any additional error messages that might offer further clues.
 
 
-## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Explanation:**
+
+`excanvas.js` provides a compatibility layer for older browsers that lack full support for the HTML5 canvas element.  By including it *before* the CanvasJS library, we ensure that CanvasJS has access to the necessary functionality to render the chart even in IE11's less-capable rendering engine.  The order of inclusion is critical.
+
+
+**External References:**
+
+* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/)  (Check their documentation for browser compatibility details, although it might not explicitly mention the need for excanvas in all cases)
+* **Excanvas (Search for this term):**  You will find several repositories and downloads for excanvas.js.  Choose a reliable source.  Note that this is an older library and might not be actively maintained.  Modern browsers generally don't require it.
+
+
+**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
 
