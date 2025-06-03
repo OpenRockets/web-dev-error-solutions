@@ -1,3 +1,5 @@
+# 🐞 Resolving CanvasJS Chart Rendering Issues in a Responsive Layout
+
 
 ## Description of the Error
 
