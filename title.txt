@@ -1,1 +1,1 @@
-Creating a CSS-Only Expanding Card with a Subtle Reveal
+Fixing CanvasJS Chart Responsiveness Issues on Window Resize

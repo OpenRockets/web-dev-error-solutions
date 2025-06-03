@@ -1,3 +1,5 @@
+# 🐞 Fixing CanvasJS Chart Responsiveness Issues on Window Resize
+
 
 ## Description of the Error
 
