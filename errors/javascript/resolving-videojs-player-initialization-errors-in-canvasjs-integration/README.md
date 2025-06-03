@@ -1,77 +1,63 @@
 # 🐞 Resolving VideoJS Player Initialization Errors in CanvasJS Integration
 
 
-## Description of the Error
+This document addresses a common issue encountered when integrating VideoJS with CanvasJS: failure to initialize the VideoJS player within a CanvasJS chart element. This often manifests as a blank space where the player should be, or error messages related to the VideoJS player not finding its container.  This problem arises because CanvasJS dynamically generates its chart elements, which can sometimes lead to timing conflicts with VideoJS's initialization.
 
-A common issue when integrating VideoJS with CanvasJS (specifically within a web application) involves the VideoJS player failing to initialize correctly, often manifesting as a blank space where the player should be or error messages in the browser's console. This usually stems from conflicts between the initialization timing of both libraries, improper DOM element referencing, or missing dependencies.  The error messages can vary, but often point towards a `null` or `undefined` object being used when VideoJS attempts to initialize on an element that hasn't been rendered or is not properly accessible by VideoJS.
+**Description of the Error:**
 
+The primary symptom is the absence of a VideoJS player within a CanvasJS chart. The player's container element (typically a `<div>`) exists in the DOM, but VideoJS fails to recognize or interact with it.  The browser's developer console may display errors relating to  `Player Error: Container not found` or similar messages indicating VideoJS initialization problems.  This usually occurs when VideoJS attempts to initialize before the CanvasJS chart has fully rendered its container element.
 
-## Step-by-Step Code Fix
+**Step-by-Step Code Fix:**
 
-This example assumes you are using a `div` element as the container for the VideoJS player within a CanvasJS chart's context (or similar scenario where asynchronous rendering is involved).
-
-**Incorrect (problematic) approach:**
+This fix uses a combination of CanvasJS's `afterSetOptions` event and a small delay to ensure the VideoJS player initializes only after the CanvasJS chart is fully rendered.
 
 ```javascript
-// Assuming canvasJSChart is your CanvasJS chart object.
-// This code is likely to fail because the video container might not exist yet when VideoJS is called.
-var videoContainer = document.getElementById("videoContainer");
-var myPlayer = videojs(videoContainer, {
-    sources: [{ src: "yourVideo.mp4", type: "video/mp4" }],
-    autoplay: false
+// Assuming you have a CanvasJS chart object named 'chart' and a VideoJS player initialization function named 'initVideoJS'
+
+// CanvasJS Chart setup
+var chart = new CanvasJS.Chart("chartContainer", {
+  //Your CanvasJS chart options here...
+  afterSetOptions: function() {
+    setTimeout(function() {
+        initVideoJS();
+    }, 100); //Slight delay to ensure element rendering
+  }
 });
-```
 
-**Correct (fixed) approach:**
+chart.render();
 
-```javascript
-// Ensure CanvasJS chart is fully rendered before initializing VideoJS
+//VideoJS Player Initialization Function
+function initVideoJS(){
+  var videoContainer = document.getElementById('videoContainer'); //ID of the div within CanvasJS chart area.
 
-window.onload = function() {
-  // Assuming you have correctly initialized your CanvasJS chart above
-  // and that 'canvasjsChartContainer' is the ID of the div element containing your CanvasJS chart
-
-  //This waits for the DOM to finish loading before executing the VideoJS code
-  setTimeout(function() {
-    var canvasjsChartContainer = document.getElementById('canvasjsChartContainer');
-    //Create the video container dynamically, appending it within canvasjsChartContainer
-    var videoContainer = document.createElement('div');
-    videoContainer.id = 'videoContainer';
-    videoContainer.style.width = '640px'; //Adjust size as needed
-    videoContainer.style.height = '360px'; //Adjust size as needed
-    canvasjsChartContainer.appendChild(videoContainer);
-
-    var myPlayer = videojs('videoContainer', {
-        sources: [{ src: "yourVideo.mp4", type: "video/mp4" }],
-        autoplay: false
+  //Check if the element exists before initializing VideoJS
+  if (videoContainer) {
+    var player = videojs('videoContainer', {
+      //Your VideoJS options here...
+      sources: [{ src: 'your_video.mp4', type: 'video/mp4' }]
     });
-  }, 500); // Adjust timeout value as needed to ensure DOM readiness
+
+    //Optionally handle VideoJS player events.
+    player.on('loadedmetadata', function() {
+      console.log("VideoJS player loaded metadata");
+    });
+  } else {
+    console.error("VideoJS container not found. Ensure the element with id 'videoContainer' exists within the CanvasJS chart area.");
+  }
 }
 ```
 
 **Explanation:**
 
-1. **`window.onload`:** This ensures that the code executes *after* the entire page, including the CanvasJS chart, has finished loading.  This prevents attempting to access elements that haven't been rendered yet.
+1. **`afterSetOptions` Event:** The `afterSetOptions` event in CanvasJS fires after the chart's options are set and the chart structure is mostly prepared. This ensures that the chart container is available before attempting to initialize the VideoJS player.
+2. **`setTimeout` Function:**  A small delay (100 milliseconds in this example) is added using `setTimeout`. This accounts for potential rendering lag and ensures that the container element is fully in the DOM and available for VideoJS.  Adjust the delay as needed based on your application's performance.
+3. **`initVideoJS` Function:** This function encapsulates the VideoJS player initialization, including error handling to check if the container element exists before proceeding.
+4. **Error Handling:** The `if (videoContainer)` check prevents the script from throwing errors if the container element is not found.  Logging an error message helps debugging in case of persistent issues.
 
-2. **`setTimeout`:**  The `setTimeout` function adds a small delay (500 milliseconds in this example) to provide extra time to ensure that the `canvasjsChartContainer` and its internal elements are completely ready.  Adjust the timeout value based on your application's rendering speed. If the issue persists, increase the timeout value.
+**External References:**
 
-3. **Dynamic Container Creation:** Instead of relying on a pre-existing `videoContainer`, we dynamically create it using `document.createElement`. This is safer because it guarantees the element exists before VideoJS tries to use it.  We then append it to the chart container.
-
-
-4. **VideoJS Initialization:** The VideoJS player is initialized only after the container has been successfully created and appended to the DOM.
-
-
-## External References
-
-* **VideoJS Documentation:** [https://videojs.com/](https://videojs.com/)  (Consult the official documentation for detailed information on VideoJS setup and options.)
-* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/) (Refer to the CanvasJS documentation for guidance on chart rendering and integration with other libraries.)
-
-
-## Explanation of the solution:
-
-
-The core of the solution is to ensure the VideoJS player's container element exists *before* VideoJS attempts to initialize itself. The asynchronous nature of Javascript and the potential rendering times of both CanvasJS and the webpage elements make direct initialization often problematic. By using `window.onload` and `setTimeout`, we prioritize correct timing.  Dynamic element creation makes the solution even more robust because it doesn't rely on assumptions about the pre-existence of the video container.
-
+* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/)  (Look for their API documentation on events)
+* **VideoJS Documentation:** [https://videojs.com/](https://videojs.com/) (Consult their documentation on player initialization and options)
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
