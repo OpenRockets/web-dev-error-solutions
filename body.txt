@@ -1,70 +1,91 @@
 
 ## Description of the Error
 
-A common issue encountered when using Video.js on mobile devices is the disappearance of the player controls after a short period of inactivity.  This frustrating user experience stems from the default behavior of many mobile browsers to hide UI elements to conserve screen real estate and improve battery life. While this is a desirable feature for general UI, it's problematic for video players where controls are essential for user interaction.  The controls might vanish completely, leaving users unable to pause, seek, or adjust the volume.
+A common problem encountered when using CanvasJS charts, particularly in older browsers like Internet Explorer (IE), is the failure of the chart to render correctly or at all. This often manifests as a blank space where the chart should be, or a partially rendered chart with missing elements. The underlying cause is usually incompatibility with older rendering engines or missing required libraries.  While CanvasJS officially doesn't support IE11 and below, some users still encounter this issue even in IE11 or Edge legacy.
 
 ## Step-by-Step Code Fix
 
-This solution focuses on preventing the automatic hiding of the Video.js controls on mobile devices. We'll achieve this by manipulating Video.js's options and potentially adding some CSS to ensure consistent visibility.
+This solution focuses on ensuring compatibility and providing fallbacks where necessary. It's crucial to remember that completely resolving issues in legacy browsers may require significant code restructuring or alternative charting libraries.
 
+**Step 1: Include Necessary Libraries and Polyfills**
 
-**1.  Include necessary CSS (optional but recommended):**
+Ensure you have included the CanvasJS library correctly in your HTML file.  If you're facing rendering problems, consider adding polyfills for features that might be missing in older IE versions.  These polyfills fill the gaps in functionality between modern browsers and older ones.  For example, you might need a `requestAnimationFrame` polyfill.
 
-This CSS prevents the browser's default touch-based control hiding behavior. Add this to your `<style>` tag or a separate CSS file linked to your HTML.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CanvasJS Chart</title>
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script> </head> <!--CanvasJS library-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raf/3.3.0/raf.min.js"></script> </head> <!--requestAnimationFrame polyfill-->
+<body>
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+<script>
+window.onload = function () {
 
-```css
-/* Prevent default mobile behavior of hiding controls */
-video::-webkit-media-controls-panel {
-    display: none !important;
+  var chart = new CanvasJS.Chart("chartContainer", {
+    //Your chart configuration here...  (See Step 2)
+  });
+  chart.render();
 }
-video::-webkit-media-controls-overlay-play-button {
-    display: none !important;
-}
-video::-webkit-media-controls-start-playback-button {
-    display: none !important;
-}
-video::-webkit-media-controls {
-    display: none !important;
-}
+</script>
+</body>
+</html>
 ```
 
+**Step 2:  Chart Configuration and Data**
 
-**2. Initialize Video.js with the `userActions` option:**
-
-This is the core of the solution. By setting `userActions` to `false` within the Video.js player options, we disable the automatic control hiding behavior provided by Video.js itself.
+Replace `//Your chart configuration here...` with your actual chart configuration. This includes setting up data points, axes, titles, and other chart properties.  A simple example:
 
 ```javascript
-// Assuming you've already included Video.js in your project
-
-const player = videojs('my-video', {
-  userActions: false, //Disable auto-hiding of controls
-  // ... other Video.js options ...
-});
-
-
-// Example with a simple video tag and basic VideoJS initiation
-<video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto" width="640" height="360" poster="my-poster.jpg"
-    data-setup='{ "sources": [{"src": "my-video.mp4", "type": "video/mp4"}] }'>
-</video>
-<script>
-  videojs('my-video');
-</script>
-
+  var chart = new CanvasJS.Chart("chartContainer", {
+    title: {
+      text: "Simple Chart"
+    },
+    data: [{
+      type: "column",
+      dataPoints: [
+        { x: 10, y: 71 },
+        { x: 20, y: 55 },
+        { x: 30, y: 50 },
+        { x: 40, y: 65 }
+      ]
+    }]
+  });
 ```
 
-**3. (Optional)  Enhancements for a better user experience:**
 
-While disabling automatic hiding solves the primary issue, you might want to add custom controls to maintain a consistent design.  Video.js allows for considerable customization. Consult their documentation for advanced control options.
+**Step 3:  Error Handling and Fallbacks**
 
+Implement error handling to gracefully degrade if the chart fails to render.  You could display an alternative message or use a different charting library as a fallback.
+
+```javascript
+window.onload = function () {
+  try {
+    var chart = new CanvasJS.Chart("chartContainer", { /* ... your chart config ... */ });
+    chart.render();
+  } catch (error) {
+    document.getElementById("chartContainer").innerHTML = "<p>Chart could not be rendered. Please try a different browser.</p>";
+    console.error("CanvasJS rendering error:", error);
+  }
+};
+
+```
 
 ## Explanation
 
-The solution works by overriding the default behaviors of both the browser and Video.js. The CSS prevents the browser from hiding controls altogether, while the `userActions: false` option in the Video.js player initialization prevents Video.js's own mechanism for automatically hiding the controls. Combining these two approaches ensures that the controls are always visible on mobile.
+The solution incorporates several strategies:
+
+* **Polyfills:** Addressing potential missing browser features with polyfills bridges the gap between modern and older browsers.
+* **Error Handling:** The `try...catch` block prevents a complete crash if the chart fails to render, offering a user-friendly alternative.
+* **Fallback Mechanism:** Displaying an alternative message provides a better user experience than a blank space.
+
+These steps improve the chances of successful rendering, particularly in older IE versions. However, complete compatibility may not always be achievable, and considering alternative solutions for older browsers might be necessary for optimal performance.
 
 ## External References
 
-* **Video.js Documentation:** [https://videojs.com/](https://videojs.com/)  (Check the documentation for the latest version and advanced customization options)
-* **CSS Specificity:** [Understanding CSS Specificity](https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity) (Helpful if you encounter issues with CSS overriding).
+* **CanvasJS Documentation:** [https://canvasjs.com/docs/](https://canvasjs.com/docs/)  (Check for browser compatibility notes)
+* **requestAnimationFrame Polyfill:** [https://github.com/paulirish/requestAnimationFrame](https://github.com/paulirish/requestAnimationFrame) (Or find one on a CDN)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
