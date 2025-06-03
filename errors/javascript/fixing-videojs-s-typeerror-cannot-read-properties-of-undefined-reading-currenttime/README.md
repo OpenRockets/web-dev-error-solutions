@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS's `TypeError: Cannot read properties of undefined (reading 'currentTime')`
+
 
 ## Description of the Error
 

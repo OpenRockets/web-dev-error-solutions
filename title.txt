@@ -1,1 +1,1 @@
-Creating a CSS-only Pulsating Circle
+Fixing VideoJS's `TypeError: Cannot read properties of undefined (reading 'currentTime')`
