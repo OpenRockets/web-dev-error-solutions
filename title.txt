@@ -1,1 +1,1 @@
-Fixing VideoJS Player Buffering Issues in CanvasJS Integration
+Creating a CSS-only Expanding Card with a Subtle Reveal
