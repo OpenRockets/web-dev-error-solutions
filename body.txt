@@ -1,88 +1,85 @@
 
-This document details the creation of a pulsating heart animation using only CSS. No JavaScript is required. This effect uses CSS animations and keyframes to achieve a smooth, rhythmic pulse.  The heart shape itself is created using a combination of pseudo-elements and border-radius.
+## Description of the Error
 
-**Description of the Styling:**
+A common issue developers encounter when integrating VideoJS into a CanvasJS chart visualization involves player initialization failures. This often manifests as a blank space where the VideoJS player should be, accompanied by no visible errors in the browser's developer console.  The underlying cause is frequently improper timing or conflicting JavaScript execution leading to the VideoJS player's `setup()` method failing silently. This typically happens when attempting to initialize the VideoJS player within a CanvasJS chart's event handler (e.g., `dataPointClick`), or before the CanvasJS chart has fully rendered.
 
-The heart is built using a single `div` element.  A before and after pseudo-element are used to create the two "lobes" of the heart.  We use `border-radius` to shape the elements, `transform` for positioning, and `animation` to create the pulsating effect. The animation involves scaling the heart up and down slightly over a period of time.  A `box-shadow` adds some depth.
 
-**Full Code:**
+## Code: Step-by-Step Fix
+
+This example demonstrates how to correctly initialize VideoJS within a CanvasJS chart's `afterSetOptions` event, ensuring the chart is fully rendered before attempting player setup:
+
+**1. Include Necessary Libraries:**
+
+Ensure both CanvasJS and VideoJS libraries are correctly included in your HTML `<head>`:
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Pulsating Heart</title>
-<style>
-.heart {
-  width: 100px;
-  height: 100px;
-  background-color: #FF69B4; /* Pink */
-  position: relative;
-  animation: pulse 1s infinite; /* Add the pulse animation */
-  margin: 50px auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.heart::before,
-.heart::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 50%;
-  height: 100%;
-  background-color: inherit;
-  border-radius: 50% 50% 0 0; /* Upper half is circular */
-  transform: skewX(-45deg) translateX(-50%);
-}
-
-.heart::after {
-  transform: skewX(45deg) translateX(50%);
-  left: 50%;
-}
-
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.7);
-  }
-  50% {
-    transform: scale(1.1);
-    box-shadow: 0 0 10px 5px rgba(255, 105, 180, 0.7);
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.7);
-  }
-}
-
-</style>
-</head>
-<body>
-
-<div class="heart"></div>
-
-</body>
-</html>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script src="https://vjs.zencdn.net/7.19.2/video.min.js"></script>
+<link href="https://vjs.zencdn.net/7.19.2/video-js.css" rel="stylesheet">
 ```
 
-**Explanation:**
+**2. CanvasJS Chart Setup:**
 
-* **`width` and `height`:**  Set the dimensions of the heart.
-* **`background-color`:** Sets the color of the heart.
-* **`position: relative`:** Allows absolute positioning of the pseudo-elements.
-* **`animation: pulse 1s infinite;`:** Applies the `pulse` animation repeatedly.
-* **`::before` and `::after`:** Create the two lobes.  `skewX` and `translateX` are used to shape them into a heart. `border-radius` creates the curved top.
-* **`@keyframes pulse`:** Defines the animation, scaling the heart up and down and adding a box-shadow effect for the pulsating look.
+```javascript
+window.onload = function () {
 
-**Links to Resources to Learn More:**
+  var chart = new CanvasJS.Chart("chartContainer", {
+    animationEnabled: true,
+    data: [{
+      type: "column",
+      dataPoints: [
+        { y: 10, label: "Apple" },
+        { y: 15, label: "Banana", videoURL: "path/to/banana_video.mp4" },
+        { y: 20, label: "Orange" }
+      ]
+    }]
+  });
 
-* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
-* **CSS Pseudo-elements:** [MDN Web Docs - CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+  chart.render();
+
+  chart.options.afterSetOptions = function() {
+    // Find all datapoints with videoURLs
+    for(let i=0; i< chart.options.data[0].dataPoints.length; i++){
+      let dataPoint = chart.options.data[0].dataPoints[i];
+      if(dataPoint.videoURL){
+          // Initialize Video.js player
+          var videoPlayer = videojs("myVideo_" + i); // Note Dynamic ID
+          if(videoPlayer){
+            videoPlayer.src({ src: dataPoint.videoURL, type: 'video/mp4' });
+            videoPlayer.on('loadedmetadata', function(){
+              videoPlayer.play();
+            });
+          }
+
+      }
+    }
+  }
+}
+```
+
+**3.  HTML Container:**
+
+Create a container for each video player. The IDs are dynamically generated to avoid conflicts.
+
+
+```html
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+
+<script>
+    //Video player initialization inside afterSetOptions function of CanvasJS Chart.
+</script>
+```
+
+
+## Explanation
+
+The key improvement is using the `afterSetOptions` event of the CanvasJS chart. This ensures the chart's DOM elements are completely rendered before attempting to initialize the VideoJS players.  Dynamically generating IDs for each VideoJS player (`myVideo_0`, `myVideo_1`, etc.) prevents conflicts when multiple data points have videos associated with them.  The `.on('loadedmetadata', function(){...})` event handler ensures that the video is loaded and ready before attempting to play it which helps with preventing further initialization errors.
+
+
+## External References
+
+* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/)  (Check their documentation for events and chart configuration)
+* **VideoJS Documentation:** [https://videojs.com/](https://videojs.com/) (Consult their documentation for player initialization and API details)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

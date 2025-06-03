@@ -1,1 +1,1 @@
-Creating a CSS-Only Pulsating Heart
+Resolving VideoJS Player Initialization Errors in CanvasJS Charts
