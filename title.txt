@@ -1,1 +1,1 @@
-Fixing CanvasJS Chart Responsiveness Issues on Window Resize
+Creating a Pure CSS3 Animated Loading Spinner
