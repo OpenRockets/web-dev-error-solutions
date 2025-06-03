@@ -1,1 +1,1 @@
-Resolving CanvasJS Chart Rendering Issues in Internet Explorer 11
+Fixing VideoJS Playback Issues on iOS Safari

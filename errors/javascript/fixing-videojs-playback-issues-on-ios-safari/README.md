@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Playback Issues on iOS Safari
+
 
 This document addresses a common problem developers encounter when using VideoJS on iOS Safari:  playback failing to initiate or exhibiting inconsistent behavior.  This often manifests as a blank screen, a spinning loading icon that never stops, or the video starting and then immediately pausing.  This is frequently caused by incompatibilities with specific video codecs or a lack of proper configuration within the VideoJS player.
 
