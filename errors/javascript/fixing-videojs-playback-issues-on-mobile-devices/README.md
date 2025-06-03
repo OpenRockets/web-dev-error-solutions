@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Playback Issues on Mobile Devices
+
 
 ## Description of the Error
 
