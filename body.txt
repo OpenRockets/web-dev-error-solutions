@@ -1,82 +1,74 @@
 
-## Description of the Error
+This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered over, revealing hidden content.  This example uses only CSS3 properties, avoiding any JavaScript.
 
-A common problem encountered when using Video.js is poor playback performance or outright failure on mobile devices, especially older or lower-powered ones.  This often manifests as:
+**Description of the Styling:**
 
-* **Video not playing at all:** The video player loads, but the video remains stubbornly blank.
-* **Stuttering or buffering:** The video plays intermittently, with frequent pauses and buffering indicators.
-* **Poor quality:** The video resolution is significantly lower than expected, even with a good internet connection.
+The styling relies primarily on the `height` property and transitions.  The card starts with a smaller height, only showing a title and a small portion of the content. On hover, the `height` transitions smoothly to a larger value, revealing the full content.  We also use `overflow: hidden` initially to hide the extra content and a subtle box-shadow to enhance the card's appearance.
 
-This is frequently caused by a combination of factors: insufficient browser resources, incompatibility with specific codecs, or improper configuration of the Video.js player.
-
-
-## Step-by-Step Code Fix
-
-This example focuses on improving performance by using adaptive streaming and specifying supported codecs.  We'll assume you're using a video source provided via a `video` tag and integrating Video.js using its CDN.
-
-**1. Include Video.js and necessary plugins:**
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<title>Video.js Example</title>
-<script src="https://cdn.jsdelivr.net/npm/video.js@7/dist/video.min.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/video.js@7/dist/video-js.css" rel="stylesheet">
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+  width: 300px;
+}
+
+.card:hover {
+  height: 250px; /* Expanded height on hover */
+}
+
+.card-content {
+  padding: 15px;
+}
+
+.card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card-text {
+  height: 100px; /* Initial height of the content; Adjust as needed */
+  overflow: auto; /* Allows scrolling if the content exceeds the height */
+}
+
+</style>
 </head>
 <body>
 
-<video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360" poster="poster.jpg">
-  <source src="myvideo.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
-  <source src="myvideo.webm" type='video/webm; codecs="vp8, vorbis"'>
-  <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
-</video>
-
-<script>
-  var player = videojs('my-video');
-</script>
+<div class="card" style="height: 100px;">
+  <div class="card-content">
+    <h2 class="card-title">Expanding Card</h2>
+    <p class="card-text">This is the content of the expanding card.  You can add as much text as you like here, and it will smoothly expand on hover. This demonstrates a simple but effective CSS-only animation.</p>
+  </div>
+</div>
 
 </body>
 </html>
 ```
 
-**2. Utilize Adaptive Streaming (HLS or DASH):**
+**Explanation:**
 
-Adaptive streaming technologies like HLS (HTTP Live Streaming) or DASH (Dynamic Adaptive Streaming over HTTP) dynamically adjust video quality based on network conditions. This significantly improves playback on mobile networks with fluctuating bandwidth.  Replace the single `source` elements with HLS or DASH manifests:
-
-
-```html
-<video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360" poster="poster.jpg">
-  <source src="myvideo.m3u8" type="application/x-mpegURL">  <!-- Example HLS -->
-  <source src="myvideo.mpd" type="application/dash+xml"> <!-- Example DASH -->
-  <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
-</video>
-```
-
-**3. Optimize Video Encoding:**
-
-Ensure your videos are encoded with codecs widely supported on mobile devices, such as H.264 (AVC) for MP4 and VP9 or VP8 for WebM. Use lower bitrates for lower resolutions to cater to slower connections. Tools like HandBrake can assist with this.
-
-**4.  Consider using a plugin for further improvements:**
+* **`transition: height 0.3s ease-in-out;`**: This line is crucial. It tells the browser to smoothly animate the change in the `height` property over 0.3 seconds, using an "ease-in-out" timing function for a natural feel.
+* **`overflow: hidden;`**: This prevents the content from overflowing the initial smaller height of the card.
+* **`height: 100px;` (in `.card` and `.card-text`)**:  Sets the initial height of the card and the content area. Adjust these values to control the starting size.
+* **`height: 250px;` (in `.card:hover`)**:  This sets the height of the card when the user hovers over it. Adjust this value to control the expanded size.
+* **`overflow: auto;` (in `.card-text`)**: This ensures that if the content exceeds the expanded height, a scrollbar will appear.
 
 
-Video.js has a vast plugin ecosystem. Plugins can help with things like:
+**Links to Resources to Learn More:**
 
-* **Advertising:**  If you are showing ads, make sure the ads are mobile friendly.
-* **Analytics:** Track the performance of your videos.
-
-
-## Explanation
-
-The original problem stems from the limitations of mobile devices and network conditions. By using adaptive streaming, you allow the player to seamlessly switch between different quality levels based on available bandwidth. Providing multiple codecs ensures compatibility with various devices.  Optimizing video encoding reduces the demands on mobile processors and improves playback smoothness.
-
-
-## External References
-
-* **Video.js Documentation:** [https://videojs.com/](https://videojs.com/)
-* **Adaptive Bitrate Streaming:** [https://en.wikipedia.org/wiki/Adaptive_bitrate_streaming](https://en.wikipedia.org/wiki/Adaptive_bitrate_streaming)
-* **HandBrake (Video Encoding Software):** [https://handbrake.fr/](https://handbrake.fr/)
-
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Transitions and Animations:** [W3Schools - CSS Transitions](https://www.w3schools.com/css/css3_transitions.asp)
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
