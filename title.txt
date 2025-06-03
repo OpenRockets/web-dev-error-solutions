@@ -1,1 +1,1 @@
-Resolving VideoJS Playback Issues on iOS Safari with Autoplay
+Resolving CanvasJS Chart Rendering Issues in IE11

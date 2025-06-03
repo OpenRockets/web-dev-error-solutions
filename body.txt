@@ -1,80 +1,107 @@
 
-This document addresses a common problem developers encounter when using Video.js on iOS Safari: the inability to autoplay videos.  While autoplay is generally restricted by browser policies for a better user experience, there are specific circumstances and techniques to make it work within these limitations.  This issue usually manifests as the video not starting automatically when the page loads.
-
 **Description of the Error:**
 
-When attempting to autoplay a video using Video.js on iOS Safari, the video simply remains paused.  The console might not show any explicit errors, making debugging challenging. This is because iOS Safari's autoplay policy is strict, requiring user interaction before a video can automatically play.
+Developers often encounter rendering problems with CanvasJS charts in Internet Explorer 11 (IE11).  IE11's older rendering engine may struggle with modern CanvasJS features or lack support for certain CSS properties used by the chart library. This can manifest as blank charts, incompletely rendered elements, or incorrect chart layout.  The error might not be explicitly reported as a JavaScript error, making debugging challenging.
+
+**Code Fix (Step-by-Step):**
+
+This example assumes you're using a basic column chart.  Adapt the code to fit your specific chart configuration.
+
+**1.  Ensure Compatibility Mode is Disabled (If Applicable):**
+
+IE11's compatibility modes can interfere with modern web technologies.  Ensure that your website isn't being rendered in compatibility mode. Check your browser settings or use the developer tools to verify the rendering mode.  The exact method varies slightly depending on the IE11 version.
 
 
-**Code (Step-by-Step Fix):**
+**2.  Include Necessary Polyfills:**
 
-This solution focuses on using a user interaction trigger to initiate playback.  We'll employ a combination of event listeners and a subtle visual cue to satisfy iOS's autoplay restrictions.
-
-**1. HTML Structure (index.html):**
+IE11 lacks support for some ECMAScript features used by CanvasJS.  Include polyfills to provide compatibility.  Consider using a library like `core-js` to add missing functionality.
 
 ```html
-<!DOCTYPE html>
+<!-- ... other head elements ... -->
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/client/core.js"></script>  <!-- Or a suitable CDN -->
+<!-- ... rest of your head elements ... -->
+```
+
+
+**3.  Check for CSS Conflicts:**
+
+Conflicts between your site's CSS and CanvasJS's default styles can lead to rendering issues.  Try these steps:
+
+* **Inspect the chart element:** Use your browser's developer tools to inspect the chart's container element. Look for unexpected styles that might be overriding CanvasJS's styles.
+* **Add a unique class:** Give your chart container a unique class and style it separately to isolate it from any potential conflicts.
+
+
+**4.  Simplify Chart Configuration:**
+
+Start with a minimal chart configuration to rule out complex data or options as the cause. If a simplified chart renders correctly, gradually add complexity to pinpoint the problematic configuration element.
+
+
+**5. Use CanvasJS's Excanvas for IE8 and below (if still needed):**
+
+While less likely with modern IE11, if you *must* support older browsers, CanvasJS might need Excanvas. This is generally not necessary for IE11, but if other issues persist and you support older browsers, consider this:
+
+**Note:** Excanvas is deprecated and support for IE8 and below is generally not recommended.
+
+```html
+<!-- Ideally, avoid using Excanvas for IE11 -->
+<!--[if lte IE 8]><script type="text/javascript" src="excanvas.js"></script><![endif]--> 
+```
+
+
+**6. Update CanvasJS:**
+
+Ensure you are using the latest version of the CanvasJS library. Newer versions often include bug fixes and compatibility improvements.  Check the CanvasJS official website for updates.
+
+
+
+**Example Code Snippet (with fixes):**
+
+```html
+<!DOCTYPE HTML>
 <html>
 <head>
-  <title>Video.js Autoplay Fix</title>
-  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/client/core.js"></script> 
+<script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<title>CanvasJS Chart</title>
 </head>
 <body>
-  <video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto" poster="poster.jpg" data-setup="{}">
-    <source src="myvideo.mp4" type="video/mp4">
-    <p class="vjs-no-js">
-      To view this video please enable JavaScript, and consider upgrading to a
-      web browser that supports HTML5 video
-    </p>
-  </video>
-  <script src="https://vjs.zencdn.net/7.20.3/video.js"></script>
-  <script src="script.js"></script>
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+<script>
+window.onload = function () {
+  var chart = new CanvasJS.Chart("chartContainer", {
+    title:{
+      text: "Simple Column Chart"
+    },
+    data: [
+    {
+      type: "column",
+      dataPoints: [
+        { label: "Apple",  y: 10  },
+        { label: "Orange", y: 15  },
+        { label: "Banana", y: 25  }
+      ]
+    }
+    ]
+  });
+  chart.render();
+}
+</script>
 </body>
 </html>
 ```
 
-**2. JavaScript (script.js):**
-
-```javascript
-document.addEventListener('DOMContentLoaded', function() {
-  var player = videojs('my-video');
-
-  // Add a small, visually unobtrusive element to trigger playback
-  var trigger = document.createElement('div');
-  trigger.style.width = '1px';
-  trigger.style.height = '1px';
-  trigger.style.opacity = '0';
-  document.body.appendChild(trigger);
-
-
-  trigger.addEventListener('click', function() {
-    player.play();
-    this.remove(); // Remove the trigger after playback starts
-  });
-
-  //Simulate a click after a small delay to initiate autoplay
-  setTimeout(() => {
-    trigger.click();
-  }, 100);
-
-
-});
-
-```
-
-**3. Explanation:**
-
-* We add a tiny, invisible `div` element to the page.
-* This `div` acts as a user interaction trigger. iOS Safari will allow autoplay if it's triggered by an actual user interaction.
-* A `setTimeout` function simulates a click on this element after a short delay (100 milliseconds) making it practically invisible to the user. This bypasses Safari's autoplay restrictions.
-* Once the video starts playing, the trigger element is removed to clean up the DOM.  This is crucial for a better user experience.
-
 
 **External References:**
 
-* [Video.js Documentation](https://videojs.com/):  The official Video.js website provides comprehensive documentation and guides.
-* [iOS Autoplay Restrictions](https://webkit.org/blog/6784/new-features-in-safari-14/):  Understanding Apple's autoplay policy is key to resolving these issues.
+* **CanvasJS Official Website:** [https://canvasjs.com/](https://canvasjs.com/)  (Check for documentation and support)
+* **Core-js (Polyfills):** [https://github.com/zloirock/core-js](https://github.com/zloirock/core-js)
+* **MDN Web Docs (IE11):** [https://developer.mozilla.org/en-US/docs/Web/API/Internet_Explorer](https://developer.mozilla.org/en-US/docs/Web/API/Internet_Explorer) (For browser compatibility information)
 
 
-**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+**Explanation:**
+
+The steps outlined above address common causes of CanvasJS rendering issues in IE11.  By addressing compatibility issues (polyfills, CSS conflicts), simplifying the chart configuration, and ensuring the latest version of the library is used, you significantly improve the chances of successful rendering.  Remember to always test thoroughly in IE11 using its developer tools to pinpoint and resolve any remaining problems.
+
+
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
