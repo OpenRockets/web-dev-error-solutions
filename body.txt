@@ -1,73 +1,84 @@
 
 ## Description of the Error
 
-A common problem encountered when using Video.js is the failure of the player to initialize correctly on page load. This often manifests as a blank space where the video player should be, or a partially rendered player with missing controls or video content.  The error might not always throw a JavaScript console error, making debugging challenging. This is frequently caused by timing issues (the Video.js script attempting to initialize before the video element is fully loaded into the DOM) or conflicts with other JavaScript libraries.
+A common problem encountered when using CanvasJS charts in older browsers, particularly Internet Explorer 11 (IE11), is the failure of charts to render correctly or at all. This often manifests as a blank space where the chart should appear, or as a partially rendered chart with missing elements. This is due to IE11's limited support for modern JavaScript features and Canvas rendering capabilities.  While CanvasJS generally aims for broad browser compatibility, IE11 often requires specific workarounds.
 
-## Step-by-Step Code Fix
+## Code to Fix the Problem (Step-by-Step)
 
-This example assumes you're using a basic Video.js setup with an HTML5 video element.  We'll address the common timing issue with a simple and robust solution: ensuring Video.js initialization happens only *after* the DOM is fully ready.
+This example assumes you're already including the CanvasJS library correctly in your HTML. The core issue is often inadequate polyfills for missing features.
 
-**1. HTML Structure:**
+**Step 1: Include necessary polyfills**
+
+IE11 lacks support for certain `Array` methods and other features.  We'll use a polyfill library like `core-js` to address this. Add the following `<script>` tag in your HTML's `<head>` section, *before* including the CanvasJS script:
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Video.js Example</title>
-<link href="https://cdn.jsdelivr.net/npm/video.js@7.20.3/dist/video-js.css" rel="stylesheet">
-</head>
-<body>
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.array.find.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.array.includes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.object.assign.js"></script>
+<!-- Add other necessary polyfills as needed -->
+```
 
-<video id="my-video" class="video-js" controls preload="auto" width="640" height="360" poster="poster.jpg">
-  <source src="my-video.mp4" type="video/mp4">
-  <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video</p>
-</video>
+These specific polyfills address `Array.find()`, `Array.includes()`, and `Object.assign()`, which are commonly used by CanvasJS internally.  You might need to include more depending on the specific error messages you encounter. Check the CanvasJS documentation (see below) and browser developer console for clues on missing features.
 
-<script src="https://cdn.jsdelivr.net/npm/video.js@7.20.3/dist/video.js"></script>
+**Step 2: Ensure Correct CanvasJS Inclusion**
+
+Make sure you have correctly included the CanvasJS library in your HTML, preferably after the polyfills:
+
+```html
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+```
+
+Replace this with the actual path to your CanvasJS library if you're not using a CDN.
+
+**Step 3:  Minimal Example and Chart Creation**
+
+Here's a minimal example demonstrating chart creation:
+
+```html
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+<title>CanvasJS IE11 Fix</title>
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.array.find.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.array.includes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.object.assign.js"></script>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+</HEAD>
+<BODY>
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
 <script>
-  // JavaScript initialization will go here
+window.onload = function () {
+    var chart = new CanvasJS.Chart("chartContainer", {
+        data: [{
+            type: "column",
+            dataPoints: [
+                { x: 10, y: 71 },
+                { x: 20, y: 55 },
+                { x: 30, y: 50 },
+                { x: 40, y: 65 }
+            ]
+        }]
+    });
+    chart.render();
+}
 </script>
-
-</body>
-</html>
+</BODY>
+</HTML>
 ```
 
-**2. JavaScript Initialization (Corrected):**
+This example creates a simple column chart.  Replace this data with your own.
 
-```javascript
-// Wait for the DOM to be fully loaded
-document.addEventListener("DOMContentLoaded", function() {
-  // Initialize Video.js player
-  const player = videojs('my-video');
 
-  // Add any additional player configurations here, e.g.:
-  // player.on('loadedmetadata', function() {
-  //    console.log('Video metadata loaded');
-  // });
+## Explanation
 
-  // Clean up player on page unload (important for memory management):
-  window.addEventListener('beforeunload', function(){
-    player.dispose();
-  });
-});
-
-```
-
-**Explanation:**
-
-The key change is wrapping the Video.js initialization code inside a `DOMContentLoaded` event listener.  This guarantees that the `videojs('my-video')` function is called only after the `<video>` element with the ID `my-video` exists in the DOM, preventing the common initialization failures.  The addition of `player.dispose()` ensures proper cleanup when the page unloads, which is a crucial step for preventing memory leaks.
+IE11's lack of native support for modern JavaScript features used by CanvasJS leads to rendering failures.  The polyfills provide backward compatibility, allowing CanvasJS to function correctly.  By including the appropriate polyfills *before* the CanvasJS script, we ensure that the necessary functions are available when CanvasJS attempts to use them.  The exact polyfills needed may vary depending on the specific CanvasJS version and your chart configuration.  Consult the browser's developer console for clues if you encounter further errors.
 
 
 ## External References
 
-* **Video.js Official Documentation:** [https://videojs.com/](https://videojs.com/)  (Check the documentation for the latest version and advanced configurations)
-* **DOMContentLoaded Event:** [https://developer.mozilla.org/en-US/docs/Web/API/Document/DOMContentLoaded_event](https://developer.mozilla.org/en-US/docs/Web/API/Document/DOMContentLoaded_event) (Learn more about this essential event for ensuring proper DOM interaction)
+* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/) (Check their documentation for browser compatibility information and potential workarounds)
+* **core-js Documentation:** [https://github.com/zloirock/core-js](https://github.com/zloirock/core-js) (For information on available polyfills)
 
-
-## Explanation of the solution
-
-
-Using `DOMContentLoaded` ensures that Video.js attempts to initialize the player only after the browser has fully parsed the HTML document and built the DOM tree. This eliminates the race condition where the Video.js script might run before the `<video>` element is ready, leading to initialization failures. The `player.dispose()` function is critical for resource management, preventing memory leaks that can occur when Video.js players are not properly deallocated when the page unloads.
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

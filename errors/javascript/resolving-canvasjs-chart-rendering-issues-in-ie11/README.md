@@ -1,87 +1,85 @@
 # 🐞 Resolving CanvasJS Chart Rendering Issues in IE11
 
 
-This document addresses a common problem encountered when using CanvasJS charts in Internet Explorer 11 (IE11):  charts failing to render correctly or not rendering at all. This is often due to IE11's limitations in handling certain Canvas features or its compatibility with modern JavaScript libraries.
+## Description of the Error
 
+A common problem encountered when using CanvasJS charts in older browsers, particularly Internet Explorer 11 (IE11), is the failure of charts to render correctly or at all. This often manifests as a blank space where the chart should appear, or as a partially rendered chart with missing elements. This is due to IE11's limited support for modern JavaScript features and Canvas rendering capabilities.  While CanvasJS generally aims for broad browser compatibility, IE11 often requires specific workarounds.
 
-**Description of the Error:**
+## Code to Fix the Problem (Step-by-Step)
 
-In IE11, you might observe the following:
+This example assumes you're already including the CanvasJS library correctly in your HTML. The core issue is often inadequate polyfills for missing features.
 
-* A blank space where the CanvasJS chart should be.
-* A partially rendered chart with missing elements.
-* Console errors related to Canvas or rendering contexts.
-* General instability or crashes related to the chart.
+**Step 1: Include necessary polyfills**
 
-
-**Step-by-Step Code Fix:**
-
-The most effective solution usually involves using a polyfill to provide missing Canvas functionality that IE11 lacks.  We'll use `excanvas` for this example.  Note that this is an older library;  modern solutions might involve a more recent alternative that supports IE11 and offers improved features.
-
-**Step 1: Include the `excanvas` library.**
-
-Add the following `<script>` tag in your HTML file, preferably *before* including the CanvasJS script:
+IE11 lacks support for certain `Array` methods and other features.  We'll use a polyfill library like `core-js` to address this. Add the following `<script>` tag in your HTML's `<head>` section, *before* including the CanvasJS script:
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/excanvas/r3/excanvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.array.find.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.array.includes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.object.assign.js"></script>
+<!-- Add other necessary polyfills as needed -->
 ```
 
-**Step 2: Ensure Correct CanvasJS Inclusion.**
+These specific polyfills address `Array.find()`, `Array.includes()`, and `Object.assign()`, which are commonly used by CanvasJS internally.  You might need to include more depending on the specific error messages you encounter. Check the CanvasJS documentation (see below) and browser developer console for clues on missing features.
 
-Make sure you have correctly included the CanvasJS library. This usually involves adding a `<script>` tag linking to your CanvasJS files (usually a `canvasjs.min.js` file).
+**Step 2: Ensure Correct CanvasJS Inclusion**
+
+Make sure you have correctly included the CanvasJS library in your HTML, preferably after the polyfills:
 
 ```html
-<script src="path/to/canvasjs.min.js"></script>  <!-- Replace with your actual path -->
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
 ```
 
-**Step 3:  Verify Chart Initialization.**
+Replace this with the actual path to your CanvasJS library if you're not using a CDN.
 
-Confirm your CanvasJS chart initialization code is correct.  A common example:
+**Step 3:  Minimal Example and Chart Creation**
 
-```javascript
+Here's a minimal example demonstrating chart creation:
+
+```html
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+<title>CanvasJS IE11 Fix</title>
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.array.find.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.array.includes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.object.assign.js"></script>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+</HEAD>
+<BODY>
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+<script>
 window.onload = function () {
     var chart = new CanvasJS.Chart("chartContainer", {
-        title:{
-            text: "My Chart"
-        },
-        data: [
-        {
+        data: [{
             type: "column",
             dataPoints: [
                 { x: 10, y: 71 },
-                { x: 20, y: 55},
+                { x: 20, y: 55 },
                 { x: 30, y: 50 },
                 { x: 40, y: 65 }
             ]
-        }
-        ]
+        }]
     });
     chart.render();
-};
+}
+</script>
+</BODY>
+</HTML>
 ```
 
-**Step 4:  Check for Container Element.**
-
-Make sure that the element with the ID "chartContainer" (or whatever ID you're using) exists in your HTML:
-
-```html
-<div id="chartContainer" style="height: 300px; width: 500px;"></div>
-```
+This example creates a simple column chart.  Replace this data with your own.
 
 
+## Explanation
 
-**Explanation:**
-
-`excanvas` is a shim that provides a basic implementation of the HTML5 Canvas API for older browsers that lack native support. By including it, you provide a fallback for IE11, allowing CanvasJS to function even without complete native Canvas support.
-
-
-**External References:**
-
-* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/)  (Check their documentation for browser compatibility information and potential alternative solutions.)
-* **excanvas (archive):**  Finding a reliable, current download link for excanvas might be difficult since it is no longer actively maintained.  Search for "excanvas" on a package manager like npm or look for archived versions on GitHub.  Consider modern alternatives for better support and security.
+IE11's lack of native support for modern JavaScript features used by CanvasJS leads to rendering failures.  The polyfills provide backward compatibility, allowing CanvasJS to function correctly.  By including the appropriate polyfills *before* the CanvasJS script, we ensure that the necessary functions are available when CanvasJS attempts to use them.  The exact polyfills needed may vary depending on the specific CanvasJS version and your chart configuration.  Consult the browser's developer console for clues if you encounter further errors.
 
 
-**Important Note:**  While `excanvas` might resolve rendering issues in IE11, it's crucial to remember that IE11 is a legacy browser.  Consider upgrading to a modern browser for optimal performance, security, and compatibility with current web technologies.  If supporting IE11 is unavoidable, thorough testing is essential.
+## External References
+
+* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/) (Check their documentation for browser compatibility information and potential workarounds)
+* **core-js Documentation:** [https://github.com/zloirock/core-js](https://github.com/zloirock/core-js) (For information on available polyfills)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

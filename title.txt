@@ -1,1 +1,1 @@
-Resolving VideoJS Player Initialization Issues on Page Load
+Resolving CanvasJS Chart Rendering Issues in IE11
