@@ -1,1 +1,1 @@
-Resolving CanvasJS Chart Rendering Issues in a React Application
+Creating a CSS-only Pulsating Circle

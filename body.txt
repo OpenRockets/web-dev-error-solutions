@@ -1,83 +1,66 @@
 
-This document addresses a common problem developers encounter when integrating CanvasJS charts into React applications: charts failing to render correctly or rendering blank spaces.  This often manifests as a completely blank area where the chart should be, or parts of the chart missing.  This issue typically stems from incorrect timing or lifecycle management within the React component.
+This document details how to create a pulsating circle effect using only CSS.  No JavaScript is required!  This example uses pure CSS3 animations.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The error isn't a specific CanvasJS error message, but rather a visual one.  The chart either doesn't appear at all, displays a blank space, or only partially renders.  This usually occurs because the CanvasJS library attempts to render before the DOM element it needs to target is fully mounted within the React component.
-
-
-**Code (Step-by-Step Fix):**
-
-Let's assume you're using a functional component with hooks. Here's how to fix the rendering issue, step by step:
-
-**Step 1: Import necessary libraries:**
-
-```javascript
-import React, { useEffect, useRef } from 'react';
-import CanvasJS from 'canvasjs.react'; // Assuming you're using canvasjs.react
-import CanvasJSChart from 'canvasjs.react';
-```
-
-**Step 2: Create the chart component:**
-
-```javascript
-const MyChartComponent = () => {
-  const chartContainer = useRef(null);
-
-  useEffect(() => {
-    const options = {
-      //Your CanvasJS chart options here. Example:
-      title: {
-        text: "My Chart"
-      },
-      data: [{
-        type: "column",
-        dataPoints: [
-          { x: 10, y: 71 },
-          { x: 20, y: 55},
-          { x: 30, y: 50 },
-          { x: 40, y: 65 }
-        ]
-      }]
-    };
-
-    if (chartContainer.current) {
-      const chart = new CanvasJS.Chart(chartContainer.current, options);
-      chart.render();
-    }
-
-    //Clean up the chart on unmount to prevent memory leaks
-    return () => {
-        if (chart) {
-            chart.destroy();
-        }
-    };
-  }, []); // The empty dependency array ensures this runs only once after mount
+This effect utilizes CSS animations to create the illusion of a circle expanding and contracting rhythmically.  We achieve this by animating the `transform: scale()` property. The `@keyframes` rule defines the animation's progression, smoothly changing the scale from 1 (its normal size) to 1.1 (slightly larger) and back again over a specified duration.  A subtle box-shadow enhances the pulsating effect by creating a slight glow that also expands and contracts.
 
 
-  return (
-    <div>
-      <div ref={chartContainer} style={{ width: '100%', height: '300px' }} />
-    </div>
-  );
-};
+**Full Code:**
 
-export default MyChartComponent;
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pulsating Circle</title>
+<style>
+.pulsating-circle {
+  width: 100px;
+  height: 100px;
+  background-color: #007bff; /* Blue color */
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.5); /* Initial shadow */
+  animation: pulse 1s infinite; /* Animation properties */
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 10px 5px rgba(0, 123, 255, 0.5);
+    transform: scale(1.1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.5);
+    transform: scale(1);
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="pulsating-circle"></div>
+
+</body>
+</html>
 ```
 
 **Explanation:**
 
-* **`useRef`:** We use `useRef` to create a reference to the div element where the chart will be rendered.  This allows us to access the DOM element directly.
-* **`useEffect`:**  The `useEffect` hook ensures the chart rendering happens *after* the component mounts.  The empty dependency array `[]` makes sure this effect runs only once after the initial render.  This is crucial to avoid rendering issues caused by trying to render the chart before the div element exists.
-* **Conditional Rendering:**  The `if (chartContainer.current)` check prevents errors if the ref is not yet available.
-* **Chart instantiation and rendering:**  Inside the `useEffect`, we create a new `CanvasJS.Chart` instance, passing the ref's current value as the container, and then call `chart.render()` to display the chart.
-* **Cleanup:**  The return function within the `useEffect` handles the cleanup of the chart instance when the component unmounts, preventing memory leaks.  This is good practice for all chart libraries.
-
-**External References:**
-
-* [CanvasJS Documentation](https://canvasjs.com/docs/): The official CanvasJS documentation.  Check for specific instructions on integrating with React.
-* [React Documentation - useEffect Hook](https://reactjs.org/docs/hooks-reference.html#useeffect): Understanding the `useEffect` hook is key to solving many React rendering problems.
+* **`.pulsating-circle`:** This class styles the div element that will represent our circle.  `width`, `height`, and `border-radius` create the circular shape. `background-color` sets the fill color.
+* **`box-shadow`:** This creates the glow effect, initially set to a size of 0.  The animation will change this size.  The `rgba` function allows for a semi-transparent shadow.
+* **`animation: pulse 1s infinite;`:** This line applies the `pulse` animation. `1s` sets the animation duration to 1 second, and `infinite` makes it repeat indefinitely.
+* **`@keyframes pulse`:** This block defines the animation's keyframes.  The `0%`, `50%`, and `100%` markers represent the animation's states at those percentages of completion.  We animate the `box-shadow` and `transform: scale()` properties.
 
 
-**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+**Links to Resources to Learn More:**
+
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Box Shadow:** [MDN Web Docs - CSS box-shadow](https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow)
+
+
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
