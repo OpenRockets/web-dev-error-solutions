@@ -1,1 +1,1 @@
-Resolving CanvasJS Chart Rendering Issues in Internet Explorer
+Fixing VideoJS Player Buffering Issues in CanvasJS Integration
