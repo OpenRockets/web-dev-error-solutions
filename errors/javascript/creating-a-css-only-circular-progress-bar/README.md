@@ -1,25 +1,32 @@
-# 🐞 Creating a CSS-only Circular Progress Bar
+# 🐞 Creating a CSS-Only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This example utilizes pure CSS and leverages the `conic-gradient` function for a smooth, visually appealing result.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This technique leverages the `clip-path` property and a pseudo-element to achieve a visually appealing and efficient progress indicator.
 
 **Description of the Styling:**
 
-This technique uses a combination of a circle created with `border-radius` and a `conic-gradient` to represent the progress. The `conic-gradient` allows us to create a gradient that starts at a specific angle and sweeps across a specified portion of the circle, representing the percentage of completion. We use a pseudo-element (`::before`) to create the progress indicator on top of the base circle.  Styling is kept concise for clarity, but could easily be customized with colors, fonts, and sizes.
+The circular progress bar is created using a single `div` element.  A pseudo-element (`::before`) is used to create the circular track.  The `clip-path` property is used to dynamically "clip" a portion of the circular track, representing the progress.  We'll use variables for easy customization of the progress bar's appearance (color, size, etc.).
 
 **Full Code:**
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
+<div class="progress-ring" data-progress="75">
+  <span class="progress-value">75%</span>
+</div>
+```
+
+```css
+:root {
+  --progress-ring-size: 150px;
+  --progress-ring-color: #4CAF50;
+  --progress-ring-track-color: #e0e0e0;
+  --progress-ring-width: 10px;
+}
+
 .progress-ring {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background-color: #f0f0f0; /* Light gray background */
+  width: var(--progress-ring-size);
+  height: var(--progress-ring-size);
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -28,51 +35,57 @@ This technique uses a combination of a circle created with `border-radius` and a
 .progress-ring::before {
   content: "";
   position: absolute;
-  width: 100%;
-  height: 100%;
+  width: var(--progress-ring-size);
+  height: var(--progress-ring-size);
+  background-color: var(--progress-ring-track-color);
   border-radius: 50%;
-  background: conic-gradient(#4CAF50 75%, #e0e0e0 75%); /* Green progress, gray background */
-  mask: conic-gradient(#fff 0%, #fff 75%, transparent 75%); /* Creates the circular cut-out */
-  mask-type:luminosity;
-  transform: rotate(calc(var(--progress) * 3.6deg));
 }
 
-/* Example usage with variable progress */
-.progress-ring--75 {
-  --progress: 75;
+.progress-ring::after {
+  content: "";
+  position: absolute;
+  width: var(--progress-ring-size);
+  height: var(--progress-ring-size);
+  background-color: var(--progress-ring-color);
+  border-radius: 50%;
+  clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 50%); /* Initial clip path */
+  transform: rotate(-90deg); /* Start at top */
+  transition: transform 0.5s ease; /* Smooth transition */
 }
-</style>
-</head>
-<body>
 
-<h1>Circular Progress: 75%</h1>
-<div class="progress-ring progress-ring--75">
-  <span>75%</span>
-</div>
+.progress-ring[data-progress]::after {
+  --progress: calc(var(--progress) * 3.6deg); /* Convert percentage to degrees */
+  transform: rotate(calc(var(--progress, 0deg) - 90deg)); /* Rotate based on progress */
+}
 
-<h1>Circular Progress: 25%</h1>
-<div class="progress-ring progress-ring--25">
-  <span>25%</span>
-</div>
+.progress-value {
+  position: absolute;
+  z-index: 1;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+}
 
-</body>
-</html>
 ```
 
 **Explanation:**
 
-* **`progress-ring`:** This class styles the base circle.  `border-radius: 50%` creates the circular shape.
-* **`::before` pseudo-element:** This creates the progress indicator.
-    * `conic-gradient`: This creates the circular gradient.  The first color is the progress color, and the second color is the background. The percentage value determines the extent of the progress.
-    * `mask` and `mask-type`: This is crucial for creating the clean cut-out effect, ensuring only the specified portion of the gradient shows. We use the same conic gradient for the mask to determine the progress arc; this will cut off the background.
-    * `transform: rotate`: This rotates the gradient based on the `--progress` custom property, effectively setting the progress visually.  3.6deg is 1% of 360 degrees.
-* **Custom Property `--progress`:** This CSS custom property allows easy adjustment of the progress percentage.
+1. **Variables:**  The `:root` selector defines CSS custom properties (variables) for easy customization of the progress bar's size, colors, and width.
+
+2. **`::before` Pseudo-element:** Creates the background circle (track).
+
+3. **`::after` Pseudo-element:** Creates the filled portion of the progress bar.  The `clip-path` initially defines a triangle. The `transform: rotate()` rotates this triangle to create the circular fill effect.
+
+4. **`data-progress` Attribute:** The HTML `data-progress` attribute is used to dynamically set the progress percentage.
+
+5. **Calculation of Rotation:**  The CSS calculates the rotation angle based on the `data-progress` attribute. 360 degrees represent 100%, so we use `calc(var(--progress) * 3.6deg)` to convert the percentage to degrees.
+
 
 **Links to Resources to Learn More:**
 
-* **MDN Web Docs on `conic-gradient`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
-* **CSS Tricks on gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/)
-* **Understanding CSS Custom Properties (Variables):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS Tricks on Pseudo-elements:** [https://css-tricks.com/pseudo-elements/](https://css-tricks.com/pseudo-elements/)
+* **Understanding CSS Variables (Custom Properties):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

@@ -1,66 +1,89 @@
 
-This document addresses a common problem encountered when working with Discord.js:  managing asynchronous operations and properly handling promises to prevent errors and ensure code execution flows correctly.  This is especially crucial when interacting with the Discord API, which is inherently asynchronous.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This technique leverages the `clip-path` property and a pseudo-element to achieve a visually appealing and efficient progress indicator.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-A frequent issue arises when developers attempt to access data from an asynchronous operation (like fetching a user or message) *before* the operation completes.  This results in `undefined` or `null` values, leading to errors such as `TypeError: Cannot read properties of undefined (reading '...')` or unexpected behavior in your bot.  This often manifests when working with `client.users.fetch()`, `client.channels.fetch()`, or similar methods.
+The circular progress bar is created using a single `div` element.  A pseudo-element (`::before`) is used to create the circular track.  The `clip-path` property is used to dynamically "clip" a portion of the circular track, representing the progress.  We'll use variables for easy customization of the progress bar's appearance (color, size, etc.).
 
-**Full Code of Fixing Step-by-Step:**
+**Full Code:**
 
-Let's say we want to fetch a user and display their username.  The incorrect (and problematic) approach would be:
-
-```javascript
-const userId = '123456789012345678';
-const user = client.users.fetch(userId);
-console.log(user.username); // This will likely throw an error!
+```html
+<div class="progress-ring" data-progress="75">
+  <span class="progress-value">75%</span>
+</div>
 ```
 
-The `client.users.fetch()` method returns a Promise. The `console.log` line executes *before* the Promise resolves, resulting in an error. The correct approach uses `.then()` to handle the resolved Promise:
-
-```javascript
-const userId = '123456789012345678';
-client.users.fetch(userId)
-  .then(user => {
-    console.log(user.username); // This will work correctly
-  })
-  .catch(error => {
-    console.error('Error fetching user:', error); // Handle potential errors
-  });
-```
-
-This improved code uses `.then()` to access the `user` object *after* the Promise resolves successfully.  The `.catch()` block handles any potential errors during the fetch operation, preventing unexpected crashes.
-
-**A more modern approach using `async/await`:**
-
-The `async/await` syntax offers a cleaner and more readable way to handle asynchronous operations:
-
-```javascript
-const userId = '123456789012345678';
-async function fetchAndLogUsername(userId) {
-  try {
-    const user = await client.users.fetch(userId);
-    console.log(user.username);
-  } catch (error) {
-    console.error('Error fetching user:', error);
-  }
+```css
+:root {
+  --progress-ring-size: 150px;
+  --progress-ring-color: #4CAF50;
+  --progress-ring-track-color: #e0e0e0;
+  --progress-ring-width: 10px;
 }
 
-fetchAndLogUsername(userId);
+.progress-ring {
+  width: var(--progress-ring-size);
+  height: var(--progress-ring-size);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  width: var(--progress-ring-size);
+  height: var(--progress-ring-size);
+  background-color: var(--progress-ring-track-color);
+  border-radius: 50%;
+}
+
+.progress-ring::after {
+  content: "";
+  position: absolute;
+  width: var(--progress-ring-size);
+  height: var(--progress-ring-size);
+  background-color: var(--progress-ring-color);
+  border-radius: 50%;
+  clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 50%); /* Initial clip path */
+  transform: rotate(-90deg); /* Start at top */
+  transition: transform 0.5s ease; /* Smooth transition */
+}
+
+.progress-ring[data-progress]::after {
+  --progress: calc(var(--progress) * 3.6deg); /* Convert percentage to degrees */
+  transform: rotate(calc(var(--progress, 0deg) - 90deg)); /* Rotate based on progress */
+}
+
+.progress-value {
+  position: absolute;
+  z-index: 1;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+}
+
 ```
-
-This version uses `async` to declare the function as asynchronous and `await` to pause execution until the Promise resolves.  The `try...catch` block handles errors gracefully.  This is generally preferred for its readability and ease of error handling.
-
 
 **Explanation:**
 
-Asynchronous operations in JavaScript don't block the main thread while waiting for a response.  Promises represent the eventual result of an asynchronous operation.  Using `.then()` or `async/await` ensures that you access the data only after the asynchronous operation has completed successfully, preventing errors caused by accessing data before it's available. Error handling with `.catch()` or `try...catch` is crucial for robust code that gracefully manages potential failures.
+1. **Variables:**  The `:root` selector defines CSS custom properties (variables) for easy customization of the progress bar's size, colors, and width.
+
+2. **`::before` Pseudo-element:** Creates the background circle (track).
+
+3. **`::after` Pseudo-element:** Creates the filled portion of the progress bar.  The `clip-path` initially defines a triangle. The `transform: rotate()` rotates this triangle to create the circular fill effect.
+
+4. **`data-progress` Attribute:** The HTML `data-progress` attribute is used to dynamically set the progress percentage.
+
+5. **Calculation of Rotation:**  The CSS calculates the rotation angle based on the `data-progress` attribute. 360 degrees represent 100%, so we use `calc(var(--progress) * 3.6deg)` to convert the percentage to degrees.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* **Discord.js Guide:** [https://discord.js.org/#/docs/main/stable/general/welcome](https://discord.js.org/#/docs/main/stable/general/welcome)  (Check the sections on Promises and Async/Await)
-* **MDN Web Docs - Promises:** [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
-* **MDN Web Docs - Async/Await:** [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
+* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS Tricks on Pseudo-elements:** [https://css-tricks.com/pseudo-elements/](https://css-tricks.com/pseudo-elements/)
+* **Understanding CSS Variables (Custom Properties):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
