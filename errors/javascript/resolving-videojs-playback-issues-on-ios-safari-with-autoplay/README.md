@@ -1,3 +1,5 @@
+# 🐞 Resolving VideoJS Playback Issues on iOS Safari with Autoplay
+
 
 This document addresses a common problem developers encounter when using Video.js on iOS Safari: the inability to autoplay videos.  While autoplay is generally restricted by browser policies for a better user experience, there are specific circumstances and techniques to make it work within these limitations.  This issue usually manifests as the video not starting automatically when the page loads.
 

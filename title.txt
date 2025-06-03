@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with a Subtle Reveal
+Resolving VideoJS Playback Issues on iOS Safari with Autoplay
