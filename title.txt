@@ -1,1 +1,1 @@
-Fixing VideoJS Player Controls Disappearing on Mobile
+Resolving CanvasJS Chart Rendering Issues in Internet Explorer 11

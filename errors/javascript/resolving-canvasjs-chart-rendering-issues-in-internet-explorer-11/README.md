@@ -1,3 +1,5 @@
+# 🐞 Resolving CanvasJS Chart Rendering Issues in Internet Explorer 11
+
 
 ## Description of the Error
 
