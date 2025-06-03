@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Player Initialization Errors within a CanvasJS Chart Overlay
+
 
 This document addresses a common problem developers encounter when integrating a VideoJS player within or overlapping a CanvasJS chart:  **failure to initialize the VideoJS player correctly, often resulting in a blank video area or playback errors.** This typically stems from conflicts between the two libraries' DOM manipulation or timing issues during page load.
 
