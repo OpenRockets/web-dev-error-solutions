@@ -3,101 +3,92 @@
 
 ## Description of the Error
 
-A common problem when integrating Video.js into a responsive web design is maintaining the correct aspect ratio of the video player.  Often, the player will either be stretched disproportionately or leave significant empty space around the video, ruining the visual appeal and user experience.  This is particularly noticeable when the browser window is resized or the device orientation changes. The problem usually stems from conflicting CSS rules or a lack of proper handling of the video container's dimensions.
+A common problem encountered when integrating Video.js into a responsive web design is the player's height not adjusting correctly to its container's dimensions.  This often results in the video player appearing stretched, squashed, or with significant letterboxing/pillarboxing, disrupting the user experience. The issue arises because the player's dimensions aren't dynamically updated to match the changes in the container's size as the browser window resizes or the page layout adjusts.
 
+## Fixing Step-by-Step
 
-## Fixing the Issue Step-by-Step
+This example demonstrates fixing the height issue using a combination of CSS and JavaScript.  We'll assume your Video.js player is initialized within a container with the ID "my-video-player".
 
-This example demonstrates fixing the issue by using CSS flexbox and JavaScript to dynamically adjust the player's height based on its width.  This ensures the aspect ratio is always maintained.
+**Step 1:  Ensure Proper Container Sizing**
 
-**Step 1: HTML Structure**
+Your container element (`#my-video-player`) needs to have its dimensions set correctly, ideally using percentages or flexible units like `vw` (viewport width) and `vh` (viewport height) to allow it to resize responsively.  Avoid fixed pixel values for height and width unless you want a non-responsive player.
 
-Ensure your HTML includes a container element for the Video.js player.  This container will be manipulated to maintain aspect ratio.
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Video.js Responsive Example</title>
-  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
-  <style>
-    .video-container {
-      position: relative; /* Necessary for absolute positioning of the video */
-      width: 100%;
-      height: 0; /* Initially set height to 0; aspect ratio will be determined later */
-      padding-bottom: 56.25%; /* 16:9 aspect ratio (adjust as needed) */
-    }
-    .video-js {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-  </style>
-</head>
-<body>
-  <div class="video-container">
-    <video id="my-video" class="video-js" controls preload="auto" width="640" height="360" poster="poster.jpg" data-setup="{}">
-      <source src="my-video.mp4" type="video/mp4">
-      <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video</p>
-    </video>
-  </div>
+<div id="my-video-player" style="width: 100%; height: 0; padding-bottom: 56.25%; position: relative;">  <!-- Aspect ratio 16:9 -->
+  <video id="my-video" class="video-js vjs-16-9" controls preload="auto" width="640" height="360" poster="poster.jpg">
+    <source src="myvideo.mp4" type="video/mp4">
+    <p class="vjs-no-js">
+      To view this video please enable JavaScript, and consider upgrading to a web browser that
+      <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+    </p>
+  </video>
+</div>
 
-  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-  <script>
-    // Your JavaScript code will go here (see Step 3)
-  </script>
-</body>
-</html>
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<script>
+  var player = videojs('my-video');
+</script>
 ```
 
-**Step 2: CSS for Aspect Ratio**
+**Explanation of Step 1:**
 
-The CSS uses padding-bottom to create the correct aspect ratio.  The value `56.25%` represents a 16:9 aspect ratio (360/640 = 0.5625).  Adjust this value to match your desired aspect ratio. The `position:relative` and `position:absolute` are crucial for positioning the video correctly within the container.
+* `width: 100%;`:  The container takes up the full width of its parent.
+* `height: 0;`:  We set the height to zero initially.  This is crucial for the aspect ratio calculation.
+* `padding-bottom: 56.25%;`: This is the key to maintaining aspect ratio.  `56.25%` (100%/16*9) ensures a 16:9 aspect ratio regardless of the container's width.  Adjust this percentage for different aspect ratios (e.g., 4:3 would be `75%`).
+* `position: relative;`:  This is needed for proper positioning of the video element within the container.
 
+**Step 2: (Optional but Recommended) Using a CSS Class for Aspect Ratio**
 
-**Step 3: JavaScript (Optional – for Dynamic Adjustments)**
+For better maintainability, define the aspect ratio in a CSS class:
 
-While the CSS above works well for most cases, adding a small amount of JavaScript provides robustness for situations where the video dimensions might change dynamically (e.g., different video sources).  This step is optional but recommended for a more polished experience.
-
-```javascript
-// Get the video container and player elements
-const videoContainer = document.querySelector('.video-container');
-const videoPlayer = document.getElementById('my-video');
-
-// Function to update the container height
-function updateAspectRatio() {
-  // Get the container width
-  const containerWidth = videoContainer.offsetWidth;
-
-  // Calculate the container height based on the aspect ratio (16:9 in this example)
-  const containerHeight = containerWidth * 0.5625; // 0.5625 is 9/16
-
-  // Update the container height
-  videoContainer.style.height = `${containerHeight}px`;
+```css
+.video-container {
+  width: 100%;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  position: relative;
 }
 
-// Call the function initially and whenever the window is resized
-updateAspectRatio();
-window.addEventListener('resize', updateAspectRatio);
-
-videojs("my-video"); // Initialize Video.js
+.video-js {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
 ```
 
-This JavaScript snippet ensures the aspect ratio remains correct even after the browser window is resized.
+And then apply the class to your div:
 
-## Explanation
+```html
+<div id="my-video-player" class="video-container">
+  <!-- ... Video.js player code ... -->
+</div>
+```
 
-The solution uses a combination of CSS and JavaScript to dynamically control the aspect ratio of the video player.  The CSS uses the `padding-bottom` trick to maintain the aspect ratio while `position: absolute` and `position: relative` ensure that the video fills the container perfectly. The JavaScript further enhances this by recalculating the height whenever the window is resized, providing a truly responsive experience.  This avoids the need for complex calculations or external libraries.
+
+**Step 3:  (Optional) JavaScript for Dynamic Resize (for complex scenarios)**
+
+While the CSS approach usually suffices, for very complex layouts or situations where you need more precise control, you might add JavaScript to handle resizing events:
+
+```javascript
+window.addEventListener('resize', function() {
+  player.width(player.el().parentElement.offsetWidth); // Update width based on container width
+  player.height(player.el().parentElement.offsetWidth * 9 / 16); // Maintain aspect ratio
+});
+```
 
 
 ## External References
 
-* **Video.js Documentation:** [https://videojs.com/](https://videojs.com/)  (Refer to their documentation for detailed information on Video.js features and integration)
-* **CSS Flexbox:** [https://css-tricks.com/snippets/css/a-guide-to-flexbox/](https://css-tricks.com/snippets/css/a-guide-to-flexbox/) (Learn more about CSS flexbox for responsive layouts)
-* **Responsive Web Design Best Practices:** [https://developers.google.com/web/fundamentals/design-and-ux/responsive/](https://developers.google.com/web/fundamentals/design-and-ux/responsive/) (General guidance on creating responsive websites)
+* **Video.js Documentation:** [https://videojs.com/](https://videojs.com/)  (Check for the latest version and API updates)
+* **Responsive Design Best Practices:** [https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Responsive_Design](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Responsive_Design)
 
+
+## Explanation
+
+The core solution uses the `padding-bottom` trick. By setting the height to `0` and using a percentage-based padding-bottom, we create a container that automatically maintains the desired aspect ratio. The video player, positioned absolutely within this container, then expands to fill the available space while preserving the aspect ratio.  The optional JavaScript resize listener provides additional control in dynamic environments but is often unnecessary with the CSS-only solution.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

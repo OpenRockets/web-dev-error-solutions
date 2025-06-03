@@ -1,93 +1,92 @@
 
-This document details the creation of an expanding card using only CSS.  The card reveals additional content smoothly on hover, employing a simple yet effective animation.  We'll be using plain CSS3 for this, making it easily adaptable to any project.
+## Description of the Error
 
+A common problem encountered when integrating Video.js into a responsive web design is the player's height not adjusting correctly to its container's dimensions.  This often results in the video player appearing stretched, squashed, or with significant letterboxing/pillarboxing, disrupting the user experience. The issue arises because the player's dimensions aren't dynamically updated to match the changes in the container's size as the browser window resizes or the page layout adjusts.
 
-**Description of the Styling:**
+## Fixing Step-by-Step
 
-The card consists of two main parts: a front and a back. The front displays a summary, and the back expands to reveal more detailed information when the user hovers over the card. We achieve the expansion and reveal using CSS transitions and transformations.  The styling emphasizes clean lines and a subtle, elegant animation.
+This example demonstrates fixing the height issue using a combination of CSS and JavaScript.  We'll assume your Video.js player is initialized within a container with the ID "my-video-player".
 
+**Step 1:  Ensure Proper Container Sizing**
 
-**Full Code:**
+Your container element (`#my-video-player`) needs to have its dimensions set correctly, ideally using percentages or flexible units like `vw` (viewport width) and `vh` (viewport height) to allow it to resize responsively.  Avoid fixed pixel values for height and width unless you want a non-responsive player.
+
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 300px;
-  height: 200px;
-  perspective: 1000px; /* Enables 3D transformations */
-  margin: 20px auto;
-  transition: transform 0.5s ease; /* Smooth transition for transform property */
-}
-
-.card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.5s ease; /* Smooth transition for transform property */
-}
-
-.card-front, .card-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden; /* Prevents the back from showing through */
-}
-
-.card-front {
-  background-color: #f0f0f0;
-  color: #333;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 24px;
-}
-
-.card-back {
-  background-color: #ddd;
-  color: #333;
-  padding: 20px;
-  transform: rotateY(180deg); /* Initially hidden on the back */
-}
-
-.card:hover .card-inner {
-  transform: rotateY(180deg); /* Rotate on hover to reveal back */
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-inner">
-    <div class="card-front">Summary</div>
-    <div class="card-back">
-      <h2>Detailed Information</h2>
-      <p>This is the back of the card, revealing more detailed information about the subject.  You can add as much content as you like here!</p>
-    </div>
-  </div>
+<div id="my-video-player" style="width: 100%; height: 0; padding-bottom: 56.25%; position: relative;">  <!-- Aspect ratio 16:9 -->
+  <video id="my-video" class="video-js vjs-16-9" controls preload="auto" width="640" height="360" poster="poster.jpg">
+    <source src="myvideo.mp4" type="video/mp4">
+    <p class="vjs-no-js">
+      To view this video please enable JavaScript, and consider upgrading to a web browser that
+      <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+    </p>
+  </video>
 </div>
 
-</body>
-</html>
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<script>
+  var player = videojs('my-video');
+</script>
+```
+
+**Explanation of Step 1:**
+
+* `width: 100%;`:  The container takes up the full width of its parent.
+* `height: 0;`:  We set the height to zero initially.  This is crucial for the aspect ratio calculation.
+* `padding-bottom: 56.25%;`: This is the key to maintaining aspect ratio.  `56.25%` (100%/16*9) ensures a 16:9 aspect ratio regardless of the container's width.  Adjust this percentage for different aspect ratios (e.g., 4:3 would be `75%`).
+* `position: relative;`:  This is needed for proper positioning of the video element within the container.
+
+**Step 2: (Optional but Recommended) Using a CSS Class for Aspect Ratio**
+
+For better maintainability, define the aspect ratio in a CSS class:
+
+```css
+.video-container {
+  width: 100%;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  position: relative;
+}
+
+.video-js {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+```
+
+And then apply the class to your div:
+
+```html
+<div id="my-video-player" class="video-container">
+  <!-- ... Video.js player code ... -->
+</div>
 ```
 
 
-**Explanation:**
+**Step 3:  (Optional) JavaScript for Dynamic Resize (for complex scenarios)**
 
-* **`perspective`:** This property on the `.card` element creates the 3D space necessary for the rotation.
-* **`transform` and `transition`:** These properties handle the animation of rotating the card. The `transition` provides a smooth effect.
-* **`backface-visibility: hidden;`:**  This prevents the back of the card from being visible before the flip.
-* **`rotateY(180deg)`:** This rotates the card around the Y-axis, flipping it over.  The initial rotation on the `.card-back` hides it and the hover effect reveals it.
-* **`card-front` and `card-back`:** These divs represent the front and back of the card, respectively.
+While the CSS approach usually suffices, for very complex layouts or situations where you need more precise control, you might add JavaScript to handle resizing events:
 
-**Links to Resources to Learn More:**
+```javascript
+window.addEventListener('resize', function() {
+  player.width(player.el().parentElement.offsetWidth); // Update width based on container width
+  player.height(player.el().parentElement.offsetWidth * 9 / 16); // Maintain aspect ratio
+});
+```
 
-* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **CSS-Tricks (general CSS learning resource):** [https://css-tricks.com/](https://css-tricks.com/)
+
+## External References
+
+* **Video.js Documentation:** [https://videojs.com/](https://videojs.com/)  (Check for the latest version and API updates)
+* **Responsive Design Best Practices:** [https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Responsive_Design](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Responsive_Design)
+
+
+## Explanation
+
+The core solution uses the `padding-bottom` trick. By setting the height to `0` and using a percentage-based padding-bottom, we create a container that automatically maintains the desired aspect ratio. The video player, positioned absolutely within this container, then expands to fill the available space while preserving the aspect ratio.  The optional JavaScript resize listener provides additional control in dynamic environments but is often unnecessary with the CSS-only solution.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

@@ -1,1 +1,1 @@
-Creating a CSS-Only Expanding Card with a Subtle Reveal
+Resolving VideoJS Player Height Issues in Responsive Designs
