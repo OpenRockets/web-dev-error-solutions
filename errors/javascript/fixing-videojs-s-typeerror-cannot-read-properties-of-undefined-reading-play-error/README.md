@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS's "TypeError: Cannot read properties of undefined (reading 'play')" Error
+
 
 ## Description of the Error
 
