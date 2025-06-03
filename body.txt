@@ -1,62 +1,76 @@
 
-This document details a CSS-only solution for creating an expanding card effect.  The card expands vertically to reveal hidden content when clicked. This example utilizes pure CSS3, avoiding the need for JavaScript.  No frameworks like Tailwind CSS are used to keep the principles clear and accessible.
+## Description of the Error
 
-**Description of the Styling:**
+A common problem encountered when integrating CanvasJS charts into a responsive web application is the chart's failure to properly resize or render correctly when the browser window is resized or the viewport changes (e.g., on mobile devices). This often manifests as a chart that remains at its initial size, resulting in distortion, cropped elements, or parts of the chart being cut off.  The chart might render correctly initially, but fail to adapt to changes in the browser window size. This is particularly problematic in responsive designs where content reflows based on screen dimensions.
 
-This effect relies on CSS transitions and the `max-height` property. Initially, the card has a limited `max-height`, hiding its content. On hover or click, the `max-height` is increased to allow the content to expand. The transition smoothly animates this change in height.
+## Code: Step-by-Step Fix
 
-**Full Code:**
+This example demonstrates how to ensure a CanvasJS chart resizes correctly within a responsive layout using JavaScript. We'll focus on using the `window.addEventListener` to detect resize events and trigger the chart's `render()` method.  Assume you have already included the CanvasJS library and have created your chart object (`chart`).
+
+**1.  Include CanvasJS:**
+
+```html
+<script src="https://cdn.canvasjs.com/1.0.0/canvasjs.min.js"></script>
+```
+
+**2. Create the Chart (Example):**
+
+```javascript
+window.onload = function () {
+    var chart = new CanvasJS.Chart("chartContainer", {
+        title: {
+            text: "Responsive Chart"
+        },
+        data: [{
+            type: "column",
+            dataPoints: [
+                { x: 10, y: 71 },
+                { x: 20, y: 55 },
+                { x: 30, y: 50 },
+                { x: 40, y: 65 },
+                { x: 50, y: 95 }
+            ]
+        }]
+    });
+    chart.render();
+}
+```
+
+**3. Add a Resize Listener and Rerender:**
+
+```javascript
+window.addEventListener('resize', function () {
+    chart.render(); // This line is crucial
+});
+```
+
+
+**4. Complete HTML Structure:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f0f0f0;
-  border-radius: 5px;
-  overflow: hidden; /* Hide content that overflows the max-height */
-  transition: max-height 0.3s ease-in-out; /* Smooth transition */
-  max-height: 100px; /* Initially, the card is collapsed */
-  cursor: pointer;
-}
-
-.card:hover,
-.card.expanded {
-  max-height: 500px; /* Expanded height */
-}
-
-.card-content {
-  padding: 10px;
-}
-
-</style>
+<title>Responsive CanvasJS Chart</title>
+<script src="https://cdn.canvasjs.com/1.0.0/canvasjs.min.js"></script>
 </head>
 <body>
-
-<div class="card" onclick="this.classList.toggle('expanded')">
-  <div class="card-content">
-    <h2>Card Title</h2>
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-  </div>
-</div>
-
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+<script>
+// JavaScript from steps 2 and 3 goes here
+</script>
 </body>
 </html>
 ```
 
-**Explanation:**
+## Explanation
 
-* **`.card`:** This class styles the card container.  `overflow: hidden` prevents content from spilling outside the `max-height` boundary. The `transition` property creates the smooth expansion effect. `max-height: 100px;` sets the initial collapsed height.
-* **`.card:hover, .card.expanded`:**  This selector targets the card when the mouse hovers over it, or when the `expanded` class is added (via the `onclick` event). The `max-height` is increased to `500px`, allowing the content to become visible.  The `onclick` event toggles the 'expanded' class, providing the expand/collapse functionality.
-* **`.card-content`:** This class styles the content within the card.
+The core of the solution lies in the `window.addEventListener('resize', ...)` function. This adds an event listener that triggers a function whenever the browser window is resized.  Inside this function, `chart.render()` is called. This instructs CanvasJS to redraw the chart using the new dimensions of its container (`#chartContainer` in this case).  Crucially, the `#chartContainer` div should have its width set to `100%` to ensure it always occupies the full available width, allowing the chart to resize responsively.  Setting a fixed height might be necessary to prevent vertical collapse, but it could still adapt to different screen heights.
 
-**Resources to Learn More:**
+## External References
 
-* **CSS Transitions:**  [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
-* **CSS `max-height` Property:** [MDN Web Docs - max-height](https://developer.mozilla.org/en-US/docs/Web/CSS/max-height)
-* **CSS Transitions and Transforms Tutorial:** [Many tutorials are available on YouTube and other coding platforms; search for "CSS transitions tutorial"]
+* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/)  (Check their documentation for advanced features and further assistance)
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+
+## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
