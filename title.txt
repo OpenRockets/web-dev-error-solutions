@@ -1,1 +1,1 @@
-Fixing VideoJS Playback Issues on iOS Safari with CORS
+Creating a CSS-only Expanding Card with a Reveal Effect
