@@ -1,61 +1,90 @@
 
-## Description of the Error
+This document details the creation of a loading spinner using only CSS.  No JavaScript is required.  This example uses CSS3 animations and transforms to achieve the effect.
 
-A common problem encountered when using VideoJS is persistent buffering, especially on connections with low bandwidth.  This manifests as frequent pauses in playback, a spinning buffering icon, and an overall frustrating viewing experience.  The issue often stems from the player's default behavior of requesting unnecessarily large chunks of video data, overwhelming the network connection.
+**Description of the Styling:**
 
-## Code Fix Step-by-Step
+The spinner is a square containing four circular elements. These elements rotate around their center point using CSS animations.  The key is utilizing the `@keyframes` rule to define the animation, and `animation` property to apply it to the elements.  We use `transform: rotate()` to control the rotation, and `animation-timing-function` for a smooth rotation.  We'll use border-radius to make them into circles.  The position absolute positioning allows for independent rotation of the elements within the parent container.
 
-This solution focuses on optimizing the player's buffering strategy using VideoJS's configuration options. We'll modify the player's `options` to control buffer size and related settings.
-
-**Step 1: Include VideoJS**
-
-Make sure you have included the VideoJS library in your HTML file.  If you haven't already, download it from the official website and include it via a `<script>` tag.
+**Full Code:**
 
 ```html
-<link href="https://cdn.jsdelivr.net/npm/video.js@7/dist/video-js.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/video.js@7/dist/video.js"></script>
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Loading Spinner</title>
+<style>
+.loader {
+  width: 80px;
+  height: 80px;
+  position: relative;
+}
+.loader div {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #007bff; /* Adjust color as needed */
+  animation: loader 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+.loader div:nth-child(1) {
+  top: 0;
+  left: 0;
+  animation-delay: -0.4s;
+}
+.loader div:nth-child(2) {
+  top: 0;
+  right: 0;
+  animation-delay: -0.3s;
+}
+.loader div:nth-child(3) {
+  bottom: 0;
+  right: 0;
+  animation-delay: -0.2s;
+}
+.loader div:nth-child(4) {
+  bottom: 0;
+  left: 0;
+  animation-delay: -0.1s;
+}
+@keyframes loader {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="loader">
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+
+</body>
+</html>
 ```
 
-**Step 2:  Initialize VideoJS with Optimized Options**
+**Explanation:**
 
-This is where the crucial changes occur. We'll adjust `bufferSize`, `playbackRate`, and potentially `preload` for improved performance on low-bandwidth connections.
+* **`.loader`:** This class sets the size and relative positioning for the spinner container.
+* **`.loader div`:** Styles the individual circular elements.  `position: absolute` allows each circle to be positioned independently within the container.
+* **`:nth-child` selectors:**  These select each of the four circles individually, allowing for staggered animation delays.
+* **`@keyframes loader`:** This defines the animation. The circles scale down and fade out over the animation duration.
+* **`animation` property:** This applies the animation to the div elements, setting the duration, timing function and iteration count (`infinite`).
+* **`animation-delay`:** This creates the staggered effect of the rotation.
 
-```html
-<video id="my-video" class="video-js" controls preload="auto" poster="poster.jpg" data-setup='{ "playbackRates": [0.5, 1, 1.5, 2], "sources": [{ "src": "myvideo.mp4", "type": "video/mp4" }], "controlBar": { "children": { "playToggle": {}, "volumePanel": {}, "progressControl": {}, "currentTimeDisplay": {}, "timeDivider": {}, "durationDisplay": {} } }, "techOrder":["html5"] }'>
-</video>
+**Links to Resources to Learn More:**
 
-<script>
-  var player = videojs('my-video');
-
-  //Adjust Buffering Settings
-  player.ready(function(){
-    this.bufferedPercent(); //check buffered percentage
-    this.options_.playbackRates = [0.5, 1, 1.5, 2]; //Allow user to change playback speeds
-    this.options_.preload = "auto"; //adjust auto-preload to "metadata" for only loading metadata and no video data
-    this.options_.bufferSize = 3; // Adjust buffer size (in seconds). Lower values reduce buffering time but may lead to more frequent pauses, depending on your connection and content.Experiment with values. Experiment to find the optimal balance.
-    //Setting a smaller buffer size generally leads to less buffering time at the cost of more frequent pauses. 
-  });
-
-</script>
-```
-
-**Step 3:  HTML5 Tech Order**
-
-Prioritize the HTML5 tech in the `techOrder` to leverage the browser's native video player capabilities which often handle low bandwidth situations better.
-
-
-## Explanation
-
-The core of this fix lies in reducing the `bufferSize`.  By default, VideoJS might buffer a large amount of video data upfront, which is inefficient on low-bandwidth connections.  Lowering this value forces the player to request smaller chunks more frequently, leading to faster initial playback and reduced buffering pauses.  The `playbackRates` helps users reduce data usage by allowing to play back at lower speeds. Changing `preload` to "metadata" only downloads metadata of video file.
-
-
-Experimentation is key. You might need to fine-tune the `bufferSize` value based on your specific video content and target bandwidth. Start with a small value (e.g., 2 or 3 seconds) and gradually increase it if you experience too many interruptions.  The `playbackRates` option gives users more control over the playback speed allowing them to mitigate slow playback issues by reducing the playback speed.
-
-
-## External References
-
-* [Video.js Documentation](https://videojs.com/): The official Video.js website, containing comprehensive documentation and API references.
-* [Video.js Options](https://videojs.com/docs/guides/options/): Documentation on the configurable options for Video.js players
+* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **MDN Web Docs on `transform` property:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks on Animations:** [https://css-tricks.com/almanac/properties/a/animation/](https://css-tricks.com/almanac/properties/a/animation/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

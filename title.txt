@@ -1,1 +1,1 @@
-Fixing VideoJS Player Buffering Issues on Low Bandwidth Connections
+Creating a Pure CSS Loading Spinner
