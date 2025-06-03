@@ -1,93 +1,98 @@
 
-## Description of the Error
+This document details how to create an expanding card effect using only CSS.  This effect showcases a smooth expansion of the card content upon hover, revealing hidden details with a subtle animation.  The example uses plain CSS, but the principles can be easily adapted to frameworks like Tailwind CSS.
 
-A common issue encountered when using Video.js on mobile devices is the disappearance of the player controls (play/pause button, volume slider, progress bar, etc.).  This often occurs despite the controls being correctly displayed on desktop browsers. The issue stems from a conflict between Video.js's default behavior and how some mobile browsers handle touch events or viewport meta tags.  The controls may initially appear briefly, then vanish as soon as the user interacts with the video.
+**Description of the Styling:**
 
-## Step-by-Step Code Fix
+The card consists of two main parts: a front face and a back face.  The front face displays a summary, while the back face reveals more detailed information.  The transition effect leverages CSS transforms and transitions to smoothly expand the card and rotate it, revealing the back face on hover. We use `transform-style: preserve-3d;` to keep the front and back faces in a 3D space, allowing the rotation to happen realistically.  The animation is subtle and user-friendly, making for a clean and interactive experience.
 
-This solution focuses on ensuring the controls remain visible by leveraging Video.js's options and potentially adjusting CSS.
 
-**Step 1:  Include necessary Video.js files and initialize the player**
-
-This assumes you've already included the Video.js library and any necessary plugins.
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<title>Video.js Mobile Controls Fix</title>
-<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
-<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<title>Expanding Card</title>
+<style>
+.card {
+  perspective: 1000px; /* Necessary for 3D transforms */
+  width: 300px;
+  height: 200px;
+  position: relative;
+  transition: transform 0.5s ease-in-out; /* Smooth transition */
+}
+
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* Hide the back face initially */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform-style: preserve-3d; /* Keep faces in 3D space */
+}
+
+.card-front {
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 5px;
+}
+
+.card-back {
+  background-color: #2196F3;
+  color: white;
+  border-radius: 5px;
+  transform: rotateY(180deg); /* Rotate to the back initially */
+}
+
+.card:hover {
+  transform: rotateY(180deg); /* Rotate on hover to reveal the back */
+}
+
+.card-content {
+  text-align: center;
+  padding: 20px;
+}
+</style>
 </head>
 <body>
 
-<video id="my-video" class="video-js" controls preload="auto" width="640" height="360" poster="poster.jpg"
-       data-setup='{"fluid": true}'>
-  <source src="myvideo.mp4" type="video/mp4">
-  <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video</p>
-</video>
-
-<script>
-  var player = videojs('my-video');
-</script>
+<div class="card">
+  <div class="card-front">
+    <div class="card-content">
+      <h2>Front</h2>
+      <p>Click or hover to reveal more!</p>
+    </div>
+  </div>
+  <div class="card-back">
+    <div class="card-content">
+      <h2>Back</h2>
+      <p>This is the detailed information revealed on hover.</p>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
 ```
 
-**Step 2:  Adjust CSS for Mobile Viewport**
+**Explanation:**
 
-Ensure your CSS doesn't inadvertently hide the controls on smaller screens.  This is crucial.  Add the following CSS or adjust your existing CSS to ensure the video and its controls are visible and appropriately sized for mobile devices.
-
-```css
-/*  Add this to your stylesheet or within a <style> tag in your HTML */
-.video-js .vjs-control-bar {
-  display: flex !important; /* Ensures control bar is always visible */
-}
-
-@media (max-width: 768px) { /* Adjust breakpoint as needed */
-  .video-js {
-    width: 100%; /* Make video responsive */
-    height: auto;
-  }
-}
-```
-
-**Step 3: (Optional) Using the `userActivity` event**
-
-Video.js provides a `userActivity` event. You can utilize this to ensure controls reappear after a period of inactivity. This is useful for managing battery life, but might not be strictly necessary if CSS adjustments work.  Example:
-
-```javascript
-player.on('userinactive', function() {
-    setTimeout(function() {
-      player.controls(true); // Show controls if hidden
-    }, 2000); // Show after 2 seconds
-});
-
-player.on('useractive', function() {
-  // You could optionally hide controls here after a delay if you desire more granular control
-});
-```
+1. **`perspective`:** This property sets the distance from the viewer to the 3D scene, creating the depth effect.
+2. **`backface-visibility: hidden;`:** This hides the back face when it's not visible, improving performance and preventing flickering.
+3. **`transform: rotateY(180deg);`:** This rotates the back face 180 degrees around the Y-axis, placing it on the back.
+4. **`transform-style: preserve-3d;`:** This keeps both the front and back faces in the 3D space so the rotation looks realistic.
+5. **`transition: transform 0.5s ease-in-out;`:** This creates a smooth transition for the `transform` property over 0.5 seconds.
+6. **`:hover`:** The hover state triggers the `transform: rotateY(180deg);` which flips the card.
 
 
-## Explanation
+**Links to Resources to Learn More:**
 
-The problem arises from a combination of factors:
+* [MDN Web Docs on CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* [MDN Web Docs on CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* [CSS-Tricks](https://css-tricks.com/) (A great resource for CSS techniques)
 
-* **Mobile Browser Optimization:** Mobile browsers often aggressively hide interface elements to save space and battery life.  They might interpret the Video.js controls as unnecessary elements and remove them.
-* **Touch Events:**  The way Video.js handles touch events might not always be perfectly compatible with all mobile browsers, leading to control hiding.
-* **CSS Conflicts:**  Your existing CSS might unintentionally override Video.js's default styling, leading to the control bar becoming hidden.
-
-The solution presented addresses these factors by:
-
-* **Ensuring responsive design:**  The CSS ensures the video player scales correctly on smaller screens and the controls remain visible.
-* **Forcing display of controls:** The `!important` flag in the CSS overrides any styles that might be hiding the control bar.
-* **User Activity Handling (Optional):**  The `userinactive` and `useractive` events provide finer control over when the controls are displayed, leading to a better user experience and potentially improved battery life.
-
-## External References
-
-* **Video.js Documentation:** [https://videojs.com/](https://videojs.com/) -  Refer to the official documentation for comprehensive information on Video.js usage and configuration.
-* **Responsive Web Design Best Practices:** [https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design](https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design) -  Understanding responsive web design principles is crucial for creating websites that work across various devices.
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

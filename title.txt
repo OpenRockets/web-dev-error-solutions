@@ -1,1 +1,1 @@
-Fixing VideoJS Player Controls Not Appearing on Mobile Devices
+Creating a CSS-only Expanding Card with a Subtle Reveal
