@@ -1,13 +1,11 @@
-# 🐞 Creating a CSS-only Circular Progress Bar
+# 🐞 Creating a CSS-Only Circular Progress Bar
 
 
-This document details how to create a circular progress bar using only CSS.  No JavaScript is required. This technique utilizes the `clip-path` property and some clever manipulation of pseudo-elements.
-
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This uses a combination of CSS `radial-gradient`, `mask-image`, and `transform` to achieve a smooth, animated effect.
 
 **Description of the Styling:**
 
-This approach creates a circular progress bar by masking a circle using the `clip-path` property.  A pseudo-element is rotated to reveal a portion of the underlying circle, representing the progress percentage. The styling involves setting the background color, stroke color, thickness, and animation for a smooth progress effect. We'll use Tailwind CSS for easier styling.
-
+This technique leverages a `radial-gradient` to create a circle. A `mask-image` is then applied, using a similar `radial-gradient` but with a smaller size, to create the "progress" portion.  By animating the `transform: rotate()` property of the mask, we achieve the circular progress animation.
 
 **Full Code:**
 
@@ -15,65 +13,50 @@ This approach creates a circular progress bar by masking a circle using the `cli
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CSS Circular Progress Bar</title>
-<script src="https://cdn.tailwindcss.com"></script>
 <style>
 .progress-ring {
-  --size: 100; /* Adjust size as needed */
-  --progress: 75; /* Adjust progress percentage (0-100) */
-  width: var(--size);
-  height: var(--size);
-  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #e74c3c 0%,
+    #e74c3c 70%,
+    #f1f1f1 70%,
+    #f1f1f1 100%
+  );
+  mask: radial-gradient(circle 50% at 50% 50%, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 70.5%);
+  mask-type:luminance;
+  animation: progress 2s linear infinite;
 }
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: var(--size);
-  height: var(--size);
-  border-radius: 50%;
-  background-color: #f0f0f0; /* Background color */
-  border: 10px solid #e0e0e0; /* Border color and thickness */
-}
-
-.progress-ring::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(calc(var(--progress) * 3.6deg)); /* Rotate based on progress */
-  width: var(--size);
-  height: var(--size);
-  border-radius: 50%;
-  border: 10px solid #4CAF50; /* Progress color */
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /* Mask to create the circular progress */
+@keyframes progress {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
 </head>
-<body class="bg-gray-100 p-8">
-  <div class="progress-ring"></div>
+<body>
+
+<div class="progress-ring"></div>
+
 </body>
 </html>
 ```
 
-
 **Explanation:**
 
-* **`--size` and `--progress`:**  These CSS custom properties allow for easy adjustment of the circle's size and progress percentage.
-* **`::before` pseudo-element:** Creates the base circle with a background and border.
-* **`::after` pseudo-element:** Creates the progress indicator.  The `rotate()` function calculates the rotation angle based on the `--progress` variable (360 degrees / 100% = 3.6 degrees per percent).  The `clip-path` property masks the rotated element to create the circular segment.
-* **Tailwind CSS:**  The example uses Tailwind CSS classes for basic page styling (`bg-gray-100`, `p-8`).  You can easily customize these classes to match your project's design.
+* **`conic-gradient`:** This creates the base circular background.  `#e74c3c` is the color of the progress and `#f1f1f1` is the background color. The percentages define the proportion of each color.
+* **`mask: radial-gradient(...)`:** This creates a circular mask that reveals only a portion of the underlying `conic-gradient`. The `rgba(0,0,0,1)` creates the opaque portion (covering the progress), and `rgba(0,0,0,0)` creates the transparent portion (revealing the background). The `70%` value controls the progress level (70% complete in this example).  `mask-type: luminance` ensures the mask works correctly.
+* **`animation: progress 2s linear infinite;`:** This applies a CSS animation named "progress" which rotates the mask over 2 seconds continuously.  Adjust the `2s` value to control the animation speed.
+
 
 **Links to Resources to Learn More:**
 
-* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **MDN Web Docs on CSS Variables:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
-* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
+* **MDN Web Docs - `conic-gradient`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **MDN Web Docs - `mask-image`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/mask-image](https://developer.mozilla.org/en-US/docs/Web/CSS/mask-image)
+* **CSS-Tricks - Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
