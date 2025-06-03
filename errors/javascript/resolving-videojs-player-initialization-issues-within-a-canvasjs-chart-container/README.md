@@ -1,3 +1,5 @@
+# 🐞 Resolving VideoJS Player Initialization Issues within a CanvasJS Chart Container
+
 
 ## Description of the Error
 
