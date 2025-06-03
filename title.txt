@@ -1,1 +1,1 @@
-Resolving VideoJS Playback Issues with CORS in a CanvasJS Environment
+Creating a CSS-only Expanding Card with a Subtle Reveal
