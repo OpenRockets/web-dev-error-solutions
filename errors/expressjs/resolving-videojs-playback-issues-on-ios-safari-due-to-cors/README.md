@@ -1,3 +1,5 @@
+# 🐞 Resolving VideoJS Playback Issues on iOS Safari due to CORS
+
 
 This document addresses a common problem encountered when using VideoJS to play videos within an iOS Safari environment: playback failures due to Cross-Origin Resource Sharing (CORS) errors.  These errors manifest as the video failing to load or playing only statically, often without any clear error message in the browser's console.
 
