@@ -1,82 +1,72 @@
 
-This document details the creation of an expanding card effect using only CSS. No JavaScript is required. The effect involves a card that expands on hover, revealing hidden content with a smooth, subtle animation. We'll utilize CSS transitions and transforms to achieve this.
+## Description of the Error
 
-**Description of the Styling:**
+A common problem when using CanvasJS charts within a responsive web application is the chart failing to render correctly or rendering at an incorrect size, especially when the browser window is resized. This often manifests as a blank space where the chart should be, a distorted chart, or a chart that doesn't scale proportionally with the containing element.  The issue stems from the chart's dimensions not dynamically adjusting to the changes in the browser window or container size. This is particularly noticeable when using percentage-based widths and heights for the chart container.
 
-The card is designed with a simple, clean aesthetic.  The hidden content is initially hidden using `max-height: 0; overflow: hidden;`. On hover, the `max-height` is set to a larger value, allowing the content to expand. The transition property smoothly animates this change.  A subtle box-shadow enhances the 3D effect. We also add a simple background color and some padding for better readability.  
+## Fixing the Issue Step-by-Step
 
-**Full Code:**
+This solution demonstrates how to properly integrate a CanvasJS chart into a responsive design using JavaScript. We'll assume you already have CanvasJS included in your project.
+
+**Step 1: Ensure Correct Container Sizing:**
+
+First, we need to ensure that the container element for the CanvasJS chart has correctly defined dimensions.  Avoid hardcoded pixel values; instead, use percentage-based widths or a flexible layout approach (like flexbox or grid) to enable responsiveness.
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f2f2f2;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  transition: box-shadow 0.3s ease, transform 0.3s ease; /*Added transform transition for smoother effect*/
-  overflow: hidden; /* Ensure content stays within the card boundaries even when expanding */
-  width: 300px; /* Added width for better visual effect */
-  
-}
+<div id="chartContainer" style="width: 100%; height: 300px;"></div>
+```
 
-.card:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  transform: translateY(-2px); /* Added a subtle lift on hover */
-}
+**Step 2:  Initialize CanvasJS Chart with `render()` inside a `resize` event listener:**
 
+This is the crucial step.  Instead of rendering the chart immediately, we'll render it *after* the page has loaded and subsequently whenever the window is resized. This ensures that the chart always adapts to its container's size.
 
-.card-content {
-  max-height: 0; /*Initially hidden*/
-  overflow: hidden;
-  transition: max-height 0.5s ease-out; /*Added ease-out for smoother transition*/
-}
+```javascript
+window.addEventListener('load', function () {
+    var chart = new CanvasJS.Chart("chartContainer", {
+        title: {
+            text: "Responsive Chart"
+        },
+        data: [{
+            type: "column",
+            dataPoints: [
+                { x: 10, y: 71 },
+                { x: 20, y: 55 },
+                { x: 30, y: 50 },
+                { x: 40, y: 65 },
+                { x: 50, y: 92 }
+            ]
+        }]
+    });
+    chart.render(); //Initial render
 
-.card:hover .card-content {
-  max-height: 200px; /*Adjust as needed*/
-}
+    window.addEventListener('resize', function() {
+        chart.render(); //Render on resize
+    });
+});
+```
 
-.card h2 {
-  margin-top: 0;
-}
-</style>
-</head>
-<body>
+**Step 3 (Optional): Use CanvasJS's `updateOptions()` method for more fine-grained control:**
 
-<div class="card">
-  <h2>Card Title</h2>
-  <div class="card-content">
-    <p>This is some hidden content that will reveal itself on hover.  You can add as much text as you need here.  Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
-  </div>
-</div>
+For complex scenarios, instead of calling `render()` directly, you can use `updateOptions()` to modify the chart's options (like `width` and `height`) before rendering. This allows for more precise control over the resizing process.  This is particularly useful when you want to recalculate the chart's dimensions based on dynamically changing container sizes.
 
-</body>
-</html>
+```javascript
+window.addEventListener('resize', function() {
+    let containerWidth = document.getElementById('chartContainer').offsetWidth;
+    let containerHeight = document.getElementById('chartContainer').offsetHeight;
+    chart.updateOptions({width: containerWidth, height: containerHeight}); 
+});
 ```
 
 
-**Explanation:**
 
-* **`transition: box-shadow 0.3s ease, transform 0.3s ease;`**: This line applies smooth transitions to the `box-shadow` and `transform` properties, making the hover effect more visually appealing.  The `ease` timing function provides a natural-feeling animation.
+## Explanation
 
-* **`max-height: 0; overflow: hidden;`**:  This hides the content initially.
-
-* **`transition: max-height 0.5s ease-out;`**: This smoothly animates the change in `max-height` when the card is hovered over. The `ease-out` timing function makes the animation slower at the end, giving it a more natural feel.
-
-* **`max-height: 200px;`**: This determines the maximum height the content can expand to. Adjust this value as needed.
-
-* **`transform: translateY(-2px);`**: This subtly lifts the card on hover, adding a further enhancement to the visual effect.
+The core issue is that CanvasJS, by default, doesn't automatically re-render when the container size changes.  By wrapping the `chart.render()` call within a `resize` event listener, we explicitly tell the chart to redraw itself whenever the browser window is resized.  This ensures that the chart always fits perfectly within its allocated space, maintaining its responsiveness. Using `updateOptions()` offers more precise control by enabling updates to chart properties, such as dimensions, alongside the rendering.
 
 
-**Links to Resources to Learn More:**
+## External References
 
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS-Tricks:** (Search for "CSS animations" or "CSS transitions" on their site for numerous tutorials)
+* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/)  (Look for their documentation on responsive design and chart options)
+* **Understanding Responsive Web Design:** [https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Responsive_Design](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Responsive_Design)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
