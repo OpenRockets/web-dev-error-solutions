@@ -1,1 +1,1 @@
-Resolving CanvasJS Chart Rendering Issues in a Dynamically Updated Environment
+Resolving VideoJS Player Initialization Failures in CanvasJS Integrations
