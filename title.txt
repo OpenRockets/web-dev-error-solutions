@@ -1,1 +1,1 @@
-Creating a Pure CSS3 Animated Loading Spinner
+Fixing VideoJS Player Initialization Errors on CanvasJ Integration
