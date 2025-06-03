@@ -1,12 +1,11 @@
 # 🐞 Creating a CSS-Only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS. No JavaScript is required.  We'll achieve this effect using the `clip-path` property and some clever calculations. This example uses plain CSS, but the concepts are easily adaptable to frameworks like Tailwind CSS.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This technique leverages CSS's `clip-path` property and animations to create a visually appealing and performant progress indicator.
 
 **Description of the Styling:**
 
-The progress bar is created using a circle (`border-radius: 50%`) with a background color.  A pseudo-element (`::before`) is used to create the progress indicator. This pseudo-element is also a circle, but its visible portion is controlled using the `clip-path` property.  We'll use a `circle()` shape for the `clip-path`, dynamically adjusting its radius to simulate the progress.  The percentage of completion is controlled via a custom property (`--progress`).
-
+This progress bar uses a circular SVG as a base.  The `clip-path` property is applied to a pseudo-element (`::before`) of the SVG to reveal only a portion of the circle, creating the progress effect.  The animation smoothly increases the revealed portion, simulating the progress.  We'll use CSS variables to make it easily customizable.
 
 **Full Code:**
 
@@ -16,33 +15,58 @@ The progress bar is created using a circle (`border-radius: 50%`) with a backgro
 <head>
 <title>CSS Circular Progress Bar</title>
 <style>
-.progress-ring {
-  --progress: 75; /* Adjust this value to change the progress (0-100) */
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background-color: #f0f0f0; /* Background color of the circle */
-  position: relative;
-}
+  .progress-ring {
+    width: 150px;
+    height: 150px;
+    position: relative;
+  }
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background-color: #4CAF50; /* Color of the progress indicator */
-  clip-path: circle(calc(var(--progress) / 100 * 100%) at 50% 50%);
-}
+  .progress-ring svg {
+    transform: rotate(-90deg); /* Start at top */
+  }
+
+  .progress-ring circle {
+    stroke-width: 10;
+    stroke: #eee; /* Track color */
+    fill: transparent;
+    --progress: 75; /* Customizable progress percentage */
+  }
+
+  .progress-ring circle::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    clip-path: polygon(50% 50%, 50% 0, 100% 0, 100% 50%);
+    background-color: #4CAF50; /* Progress color */
+    transform-origin: 50% 100%;
+    transform: rotate(calc(var(--progress) * 360deg / 100));
+    animation: progress-animation var(--animation-duration) linear forwards;
+  }
+
+  @keyframes progress-animation {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(calc(var(--progress) * 360deg / 100));
+    }
+  }
+  .progress-ring.animated{
+      --animation-duration: 2s;
+  }
 </style>
 </head>
 <body>
 
-<h1>Circular Progress Bar</h1>
-<div class="progress-ring"></div>
+<div class="progress-ring animated">
+  <svg viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="40" />
+  </svg>
+</div>
+
 
 </body>
 </html>
@@ -50,15 +74,19 @@ The progress bar is created using a circle (`border-radius: 50%`) with a backgro
 
 **Explanation:**
 
-* **`--progress` Variable:** This custom property sets the percentage of completion. Change its value (between 0 and 100) to alter the progress bar's fill.
-* **`clip-path: circle(calc(var(--progress) / 100 * 100%) at 50% 50%);`:** This is the core of the effect.  `circle()` creates a circular clip-path. `calc(var(--progress) / 100 * 100%)` calculates the radius of the circle based on the `--progress` variable.  When `--progress` is 75, the radius becomes 75%, revealing 75% of the background circle. `at 50% 50%` centers the circle.
-* **`translate(-50%, -50%)`:** This centers the pseudo-element within its parent.
+* **SVG Circle:** The base is an SVG circle acting as the track.
+* **CSS Variables:** `--progress` controls the percentage, and `--animation-duration` controls the animation speed.
+* **`clip-path`:** The `polygon` shape creates a half-circle. Rotating this creates the progress effect.
+* **`transform: rotate()`:** Rotates the clipped portion based on the `--progress` value.
+* **`animation`:** The `progress-animation` keyframes smoothly animate the rotation.  The `forwards` fill mode keeps the final state after the animation.
+* **Class `animated`**: Added to control animation duration. By default animation is not applied. Add `animated` class to activate animation.
 
 
-**Resources to Learn More:**
+**Links to Resources to Learn More:**
 
-* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **CSS Tricks - Clip Paths:** [https://css-tricks.com/clipping-masking-css/](https://css-tricks.com/clipping-masking-css/) (This offers a broader understanding of clipping and masking in CSS)
+* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS Tricks (general resource):** [https://css-tricks.com/](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
