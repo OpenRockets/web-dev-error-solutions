@@ -1,3 +1,5 @@
+# 🐞 Resolving CanvasJS Chart Rendering Issues in a Dynamically Updated Environment
+
 
 This document addresses a common problem developers encounter when integrating CanvasJS charts into applications with dynamically changing data:  charts failing to update correctly or displaying blank spaces after data updates. This often manifests as the chart not reflecting the latest data or showing only a portion of the updated data.
 
