@@ -1,3 +1,5 @@
+# 🐞 Creating a Pure CSS Triangle
+
 
 This document details how to create a triangle using only CSS.  This is a classic CSS trick that demonstrates the power of CSS borders to create shapes beyond simple rectangles and squares. We will achieve this using a single HTML element and some clever CSS styling.
 
