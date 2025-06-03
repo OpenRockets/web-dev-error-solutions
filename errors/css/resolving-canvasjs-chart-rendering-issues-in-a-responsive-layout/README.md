@@ -1,3 +1,5 @@
+# 🐞 Resolving CanvasJS Chart Rendering Issues in a Responsive Layout
+
 
 This document addresses a common problem encountered when integrating CanvasJS charts into responsive web designs: charts failing to resize correctly or rendering improperly after window resizing.  This often manifests as the chart being clipped, distorted, or failing to occupy the intended space within its container.
 
