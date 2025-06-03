@@ -1,1 +1,1 @@
-Creating a Pure CSS Loading Spinner
+Fixing VideoJS Player Controls Not Appearing on Mobile Devices

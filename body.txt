@@ -1,91 +1,93 @@
 
-This document details the creation of a loading spinner using only CSS.  No JavaScript is required.  This example uses CSS3 animations and transforms to achieve the effect.
+## Description of the Error
 
-**Description of the Styling:**
+A common issue encountered when using Video.js on mobile devices is the disappearance of the player controls (play/pause button, volume slider, progress bar, etc.).  This often occurs despite the controls being correctly displayed on desktop browsers. The issue stems from a conflict between Video.js's default behavior and how some mobile browsers handle touch events or viewport meta tags.  The controls may initially appear briefly, then vanish as soon as the user interacts with the video.
 
-The spinner is a square containing four circular elements. These elements rotate around their center point using CSS animations.  The key is utilizing the `@keyframes` rule to define the animation, and `animation` property to apply it to the elements.  We use `transform: rotate()` to control the rotation, and `animation-timing-function` for a smooth rotation.  We'll use border-radius to make them into circles.  The position absolute positioning allows for independent rotation of the elements within the parent container.
+## Step-by-Step Code Fix
 
-**Full Code:**
+This solution focuses on ensuring the controls remain visible by leveraging Video.js's options and potentially adjusting CSS.
+
+**Step 1:  Include necessary Video.js files and initialize the player**
+
+This assumes you've already included the Video.js library and any necessary plugins.
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<title>CSS Loading Spinner</title>
-<style>
-.loader {
-  width: 80px;
-  height: 80px;
-  position: relative;
-}
-.loader div {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #007bff; /* Adjust color as needed */
-  animation: loader 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-}
-.loader div:nth-child(1) {
-  top: 0;
-  left: 0;
-  animation-delay: -0.4s;
-}
-.loader div:nth-child(2) {
-  top: 0;
-  right: 0;
-  animation-delay: -0.3s;
-}
-.loader div:nth-child(3) {
-  bottom: 0;
-  right: 0;
-  animation-delay: -0.2s;
-}
-.loader div:nth-child(4) {
-  bottom: 0;
-  left: 0;
-  animation-delay: -0.1s;
-}
-@keyframes loader {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(0);
-    opacity: 0;
-  }
-}
-</style>
+<title>Video.js Mobile Controls Fix</title>
+<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
 </head>
 <body>
 
-<div class="loader">
-  <div></div>
-  <div></div>
-  <div></div>
-  <div></div>
-</div>
+<video id="my-video" class="video-js" controls preload="auto" width="640" height="360" poster="poster.jpg"
+       data-setup='{"fluid": true}'>
+  <source src="myvideo.mp4" type="video/mp4">
+  <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video</p>
+</video>
+
+<script>
+  var player = videojs('my-video');
+</script>
 
 </body>
 </html>
 ```
 
-**Explanation:**
+**Step 2:  Adjust CSS for Mobile Viewport**
 
-* **`.loader`:** This class sets the size and relative positioning for the spinner container.
-* **`.loader div`:** Styles the individual circular elements.  `position: absolute` allows each circle to be positioned independently within the container.
-* **`:nth-child` selectors:**  These select each of the four circles individually, allowing for staggered animation delays.
-* **`@keyframes loader`:** This defines the animation. The circles scale down and fade out over the animation duration.
-* **`animation` property:** This applies the animation to the div elements, setting the duration, timing function and iteration count (`infinite`).
-* **`animation-delay`:** This creates the staggered effect of the rotation.
+Ensure your CSS doesn't inadvertently hide the controls on smaller screens.  This is crucial.  Add the following CSS or adjust your existing CSS to ensure the video and its controls are visible and appropriately sized for mobile devices.
 
-**Links to Resources to Learn More:**
+```css
+/*  Add this to your stylesheet or within a <style> tag in your HTML */
+.video-js .vjs-control-bar {
+  display: flex !important; /* Ensures control bar is always visible */
+}
 
-* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
-* **MDN Web Docs on `transform` property:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS-Tricks on Animations:** [https://css-tricks.com/almanac/properties/a/animation/](https://css-tricks.com/almanac/properties/a/animation/)
+@media (max-width: 768px) { /* Adjust breakpoint as needed */
+  .video-js {
+    width: 100%; /* Make video responsive */
+    height: auto;
+  }
+}
+```
 
+**Step 3: (Optional) Using the `userActivity` event**
+
+Video.js provides a `userActivity` event. You can utilize this to ensure controls reappear after a period of inactivity. This is useful for managing battery life, but might not be strictly necessary if CSS adjustments work.  Example:
+
+```javascript
+player.on('userinactive', function() {
+    setTimeout(function() {
+      player.controls(true); // Show controls if hidden
+    }, 2000); // Show after 2 seconds
+});
+
+player.on('useractive', function() {
+  // You could optionally hide controls here after a delay if you desire more granular control
+});
+```
+
+
+## Explanation
+
+The problem arises from a combination of factors:
+
+* **Mobile Browser Optimization:** Mobile browsers often aggressively hide interface elements to save space and battery life.  They might interpret the Video.js controls as unnecessary elements and remove them.
+* **Touch Events:**  The way Video.js handles touch events might not always be perfectly compatible with all mobile browsers, leading to control hiding.
+* **CSS Conflicts:**  Your existing CSS might unintentionally override Video.js's default styling, leading to the control bar becoming hidden.
+
+The solution presented addresses these factors by:
+
+* **Ensuring responsive design:**  The CSS ensures the video player scales correctly on smaller screens and the controls remain visible.
+* **Forcing display of controls:** The `!important` flag in the CSS overrides any styles that might be hiding the control bar.
+* **User Activity Handling (Optional):**  The `userinactive` and `useractive` events provide finer control over when the controls are displayed, leading to a better user experience and potentially improved battery life.
+
+## External References
+
+* **Video.js Documentation:** [https://videojs.com/](https://videojs.com/) -  Refer to the official documentation for comprehensive information on Video.js usage and configuration.
+* **Responsive Web Design Best Practices:** [https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design](https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design) -  Understanding responsive web design principles is crucial for creating websites that work across various devices.
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
