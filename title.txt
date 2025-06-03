@@ -1,1 +1,1 @@
-Resolving VideoJS Playback Issues on iOS Safari due to CORS
+Resolving VideoJS's "TypeError: this.player_.currentTime is undefined" Error

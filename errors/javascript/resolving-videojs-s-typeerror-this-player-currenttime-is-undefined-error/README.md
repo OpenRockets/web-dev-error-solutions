@@ -1,3 +1,5 @@
+# 🐞 Resolving VideoJS's "TypeError: this.player_.currentTime is undefined" Error
+
 
 ## Description of the Error
 
