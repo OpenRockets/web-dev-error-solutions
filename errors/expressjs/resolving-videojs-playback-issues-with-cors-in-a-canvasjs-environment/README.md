@@ -1,3 +1,5 @@
+# 🐞 Resolving VideoJS Playback Issues with CORS in a CanvasJS Environment
+
 
 ## Description of the Error
 
