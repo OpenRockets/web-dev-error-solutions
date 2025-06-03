@@ -1,1 +1,1 @@
-Resolving VideoJS Player Initialization Issues within a CanvasJS Chart Overlay
+Creating a CSS-Only Expanding Card
