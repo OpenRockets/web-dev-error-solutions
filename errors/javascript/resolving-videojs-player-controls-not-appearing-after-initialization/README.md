@@ -1,3 +1,5 @@
+# 🐞 Resolving VideoJS Player Controls Not Appearing After Initialization
+
 
 ## Description of the Error
 
