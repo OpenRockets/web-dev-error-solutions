@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Player Controls Not Appearing on Mobile Devices
+
 
 ## Description of the Error
 
