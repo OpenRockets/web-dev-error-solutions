@@ -1,1 +1,1 @@
-Resolving VideoJS Player Initialization Failures in CanvasJS Integration
+Resolving CanvasJS Chart Rendering Issues in High-Density Displays

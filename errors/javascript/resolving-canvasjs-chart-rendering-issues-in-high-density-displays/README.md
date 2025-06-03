@@ -1,3 +1,5 @@
+# 🐞 Resolving CanvasJS Chart Rendering Issues in High-Density Displays
+
 
 ## Description of the Error
 
