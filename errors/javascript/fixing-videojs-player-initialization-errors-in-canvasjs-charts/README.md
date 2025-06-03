@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Player Initialization Errors in CanvasJS Charts
+
 
 ## Description of the Error
 
