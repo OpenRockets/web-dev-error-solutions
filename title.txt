@@ -1,1 +1,1 @@
-Creating a Pure CSS Triangle
+Resolving CanvasJS Chart Rendering Issues in IE11
