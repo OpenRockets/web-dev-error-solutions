@@ -3,71 +3,68 @@
 
 ## Description of the Error
 
-A common issue encountered when using Video.js on mobile devices is the disappearance of the player controls after a short period of inactivity.  This frustrating user experience stems from the default behavior of many mobile browsers to hide UI elements to conserve screen real estate and improve battery life. While this is a desirable feature for general UI, it's problematic for video players where controls are essential for user interaction.  The controls might vanish completely, leaving users unable to pause, seek, or adjust the volume.
-
-## Step-by-Step Code Fix
-
-This solution focuses on preventing the automatic hiding of the Video.js controls on mobile devices. We'll achieve this by manipulating Video.js's options and potentially adding some CSS to ensure consistent visibility.
+A common issue encountered when using Video.js on mobile devices is the disappearance of the player controls after a short period of inactivity.  This can severely impact user experience, as users may struggle to resume playback or adjust settings. The controls seem to auto-hide and never reappear. This problem isn't directly related to a specific error message but manifests as a missing UI element.
 
 
-**1.  Include necessary CSS (optional but recommended):**
+## Fixing Steps (Code Example)
 
-This CSS prevents the browser's default touch-based control hiding behavior. Add this to your `<style>` tag or a separate CSS file linked to your HTML.
+This issue often stems from conflicts between Video.js's default behavior and mobile browser's touch interactions.  The solution usually involves explicitly disabling or configuring the autohide feature.  Below are steps to fix this:
 
-```css
-/* Prevent default mobile behavior of hiding controls */
-video::-webkit-media-controls-panel {
-    display: none !important;
-}
-video::-webkit-media-controls-overlay-play-button {
-    display: none !important;
-}
-video::-webkit-media-controls-start-playback-button {
-    display: none !important;
-}
-video::-webkit-media-controls {
-    display: none !important;
-}
+
+**Step 1: Include the necessary CSS (if not already included):**
+
+```html
+<link href="https://cdn.jsdelivr.net/npm/video.js@7/dist/video-js.css" rel="stylesheet">
 ```
 
+**Step 2: Initialize the Video.js player with options to disable or control autohide:**
 
-**2. Initialize Video.js with the `userActions` option:**
-
-This is the core of the solution. By setting `userActions` to `false` within the Video.js player options, we disable the automatic control hiding behavior provided by Video.js itself.
-
-```javascript
-// Assuming you've already included Video.js in your project
-
-const player = videojs('my-video', {
-  userActions: false, //Disable auto-hiding of controls
-  // ... other Video.js options ...
-});
-
-
-// Example with a simple video tag and basic VideoJS initiation
-<video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto" width="640" height="360" poster="my-poster.jpg"
-    data-setup='{ "sources": [{"src": "my-video.mp4", "type": "video/mp4"}] }'>
+```html
+<video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto" width="640" height="360" poster="my-poster.jpg" data-setup="{}">
+  <source src="my-video.mp4" type="video/mp4">
+  <p class="vjs-no-js">
+    To view this video please enable JavaScript, and consider upgrading to a
+    web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+  </p>
 </video>
-<script>
-  videojs('my-video');
-</script>
 
+<script src="https://cdn.jsdelivr.net/npm/video.js@7/dist/video.js"></script>
+<script>
+  var player = videojs('my-video');
+
+  // Option 1: Completely disable autohide (Not recommended for best UX)
+  // player.on('ready', function() {
+  //   this.controlBar.removeChild(this.controlBar.children[0]); //remove the autohide element
+  // });
+
+  // Option 2:  Configure autohide using the `userActivity` plugin (Recommended)
+  player.ready(function() {
+    this.on('useractive', function() {
+      //console.log('user was active');
+      this.controls(true);
+    });
+    this.on('userinactive', function(){
+      //console.log('user was inactive');
+      setTimeout( () => {
+          this.controls(false);
+      }, 2000); //hide controls after 2 seconds of inactivity
+    });
+  });
+</script>
 ```
 
-**3. (Optional)  Enhancements for a better user experience:**
+**Explanation:**
 
-While disabling automatic hiding solves the primary issue, you might want to add custom controls to maintain a consistent design.  Video.js allows for considerable customization. Consult their documentation for advanced control options.
+* **Option 1 (Not Recommended):** Completely removing autohide functionality might result in permanently visible controls, cluttering the screen on smaller devices.
 
+* **Option 2 (Recommended):** This utilizes the `userActivity` plugin (implicitly included in recent Video.js versions). The `useractive` and `userinactive` events are triggered based on user interaction. This allows for a better balance between keeping the controls accessible and preventing them from constantly obstructing the video. The timeout ensures that the controls are hidden after a certain period of inactivity, optimizing the viewing experience.  Remember to adjust the 2000 (2 seconds) timeout value according to your preferences.
 
-## Explanation
-
-The solution works by overriding the default behaviors of both the browser and Video.js. The CSS prevents the browser from hiding controls altogether, while the `userActions: false` option in the Video.js player initialization prevents Video.js's own mechanism for automatically hiding the controls. Combining these two approaches ensures that the controls are always visible on mobile.
 
 ## External References
 
-* **Video.js Documentation:** [https://videojs.com/](https://videojs.com/)  (Check the documentation for the latest version and advanced customization options)
-* **CSS Specificity:** [Understanding CSS Specificity](https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity) (Helpful if you encounter issues with CSS overriding).
+* **Video.js Documentation:** [https://docs.videojs.com/](https://docs.videojs.com/)  (Check for the latest version's documentation as it can change)
+* **Video.js GitHub Repository:** [https://github.com/videojs/video.js](https://github.com/videojs/video.js) (For issues, community support, and potential fixes)
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

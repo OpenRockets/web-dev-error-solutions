@@ -1,66 +1,68 @@
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This example leverages CSS's `conic-gradient` function for a clean and efficient solution.
+## Description of the Error
+
+A common issue encountered when using Video.js on mobile devices is the disappearance of the player controls after a short period of inactivity.  This can severely impact user experience, as users may struggle to resume playback or adjust settings. The controls seem to auto-hide and never reappear. This problem isn't directly related to a specific error message but manifests as a missing UI element.
 
 
-**Description of the Styling:**
+## Fixing Steps (Code Example)
 
-The styling relies on a combination of techniques:
-
-* **`conic-gradient`:** This function creates a gradient that radiates from the center, allowing us to easily represent a progress circle.  The percentage value controls the filled portion of the circle.
-* **`mask`:**  A circular mask is used to clip the gradient, ensuring the progress bar remains within a circular shape.
-* **`border-radius`:** This ensures that the container for our progress bar is perfectly circular.
+This issue often stems from conflicts between Video.js's default behavior and mobile browser's touch interactions.  The solution usually involves explicitly disabling or configuring the autohide feature.  Below are steps to fix this:
 
 
-**Full Code:**
+**Step 1: Include the necessary CSS (if not already included):**
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
-.progress-ring {
-  --progress: 75; /* Adjust this value to change the progress percentage */
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background: conic-gradient(
-    #007bff 0deg var(--progress)%,
-    #eee 0deg
-  );
-  mask: conic-gradient(#fff 0deg var(--progress)%, #000 0deg);
-  mask-type: mask;
-}
-</style>
-</head>
-<body>
-
-<div class="progress-ring"></div>
-
-</body>
-</html>
+<link href="https://cdn.jsdelivr.net/npm/video.js@7/dist/video-js.css" rel="stylesheet">
 ```
 
+**Step 2: Initialize the Video.js player with options to disable or control autohide:**
+
+```html
+<video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto" width="640" height="360" poster="my-poster.jpg" data-setup="{}">
+  <source src="my-video.mp4" type="video/mp4">
+  <p class="vjs-no-js">
+    To view this video please enable JavaScript, and consider upgrading to a
+    web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
+  </p>
+</video>
+
+<script src="https://cdn.jsdelivr.net/npm/video.js@7/dist/video.js"></script>
+<script>
+  var player = videojs('my-video');
+
+  // Option 1: Completely disable autohide (Not recommended for best UX)
+  // player.on('ready', function() {
+  //   this.controlBar.removeChild(this.controlBar.children[0]); //remove the autohide element
+  // });
+
+  // Option 2:  Configure autohide using the `userActivity` plugin (Recommended)
+  player.ready(function() {
+    this.on('useractive', function() {
+      //console.log('user was active');
+      this.controls(true);
+    });
+    this.on('userinactive', function(){
+      //console.log('user was inactive');
+      setTimeout( () => {
+          this.controls(false);
+      }, 2000); //hide controls after 2 seconds of inactivity
+    });
+  });
+</script>
+```
 
 **Explanation:**
 
-1. **`--progress` Variable:** This custom CSS variable holds the percentage of progress (0-100).  Changing this value dynamically updates the progress bar.
+* **Option 1 (Not Recommended):** Completely removing autohide functionality might result in permanently visible controls, cluttering the screen on smaller devices.
 
-2. **`conic-gradient` (Background):** This creates the colored portion of the progress bar.  `#007bff` (blue in this case) is the color of the filled section, and `#eee` (light grey) is the background color. The `var(--progress)` determines the angle at which the color transition occurs.
-
-3. **`mask: conic-gradient`:** This creates a circular mask with the same gradient, but using white and black instead of colors.  The white portion allows the background gradient to show through, representing the progress, while the black portion hides it, creating the empty part of the circle.
-
-4. **`mask-type: mask;`:** This line is crucial. It specifies that we're using a mask to shape the background gradient.
-
-5. **`width`, `height`, `border-radius`:** These properties ensure that our progress bar is a perfect circle.
+* **Option 2 (Recommended):** This utilizes the `userActivity` plugin (implicitly included in recent Video.js versions). The `useractive` and `userinactive` events are triggered based on user interaction. This allows for a better balance between keeping the controls accessible and preventing them from constantly obstructing the video. The timeout ensures that the controls are hidden after a certain period of inactivity, optimizing the viewing experience.  Remember to adjust the 2000 (2 seconds) timeout value according to your preferences.
 
 
-**Links to Resources to Learn More:**
+## External References
 
-* **MDN Web Docs - `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
-* **MDN Web Docs - `mask`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/mask](https://developer.mozilla.org/en-US/docs/Web/CSS/mask)
-* **CSS Tricks (general CSS resources):** [https://css-tricks.com/](https://css-tricks.com/)
+* **Video.js Documentation:** [https://docs.videojs.com/](https://docs.videojs.com/)  (Check for the latest version's documentation as it can change)
+* **Video.js GitHub Repository:** [https://github.com/videojs/video.js](https://github.com/videojs/video.js) (For issues, community support, and potential fixes)
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
