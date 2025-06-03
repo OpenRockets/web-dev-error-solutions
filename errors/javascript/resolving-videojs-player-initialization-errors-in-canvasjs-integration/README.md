@@ -1,3 +1,5 @@
+# 🐞 Resolving VideoJS Player Initialization Errors in CanvasJS Integration
+
 
 ## Description of the Error
 
