@@ -1,1 +1,1 @@
-Fixing VideoJS's "TypeError: this.player is undefined" Error
+Creating a CSS-Only Expanding Card
