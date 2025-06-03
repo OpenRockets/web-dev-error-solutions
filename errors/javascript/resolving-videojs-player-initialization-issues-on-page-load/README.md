@@ -1,3 +1,5 @@
+# 🐞 Resolving VideoJS Player Initialization Issues on Page Load
+
 
 ## Description of the Error
 
