@@ -1,108 +1,69 @@
 
-This document addresses a common problem encountered when integrating CanvasJS charts into responsive web designs: the chart failing to correctly resize or render when the browser window is resized or the viewport changes size. This often manifests as a chart that remains at its initial size, leaving empty space or overlapping elements.
+This document details how to create an expanding card effect using only CSS.  This effect is achieved using CSS transitions and transforms to smoothly expand a card when it's hovered over.  No JavaScript is required.  We'll be using plain CSS3 for this example.
 
-**Description of the Error:**
 
-The chart may render correctly initially, but fails to dynamically adjust its dimensions to fit the available space when the browser window is resized. This is usually observed as a static chart element that does not respond to changes in the container's dimensions.  The chart might appear clipped, stretched, or simply not fill its intended space.  The browser's developer console may not always show explicit errors, making debugging challenging.
+## Description of the Styling
 
-**Code and Step-by-Step Fixing:**
+The card starts with minimal dimensions. On hover, the card expands to reveal more content, while maintaining a smooth animation. The expansion is achieved by increasing the width and height of the card and subtly changing its shadow.
 
-This example assumes you're using a basic HTML structure and including CanvasJS via a CDN.  The core issue lies in ensuring the chart's container is correctly sized and that the CanvasJS `render()` method is called after any size changes.
 
-**Incorrect Code (Example):**
+## Full Code
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<title>CanvasJS Responsive Issue</title>
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
-</head>
-<body>
-<div id="chartContainer" style="height: 300px; width: 500px;"></div>
-<script>
-    var chart = new CanvasJS.Chart("chartContainer", {
-        title:{
-            text: "My Chart"
-        },
-        data: [
-        {
-            type: "column",
-            dataPoints: [
-                { label: "Apple",  y: 10  },
-                { label: "Orange", y: 15  },
-                { label: "Banana", y: 25  }
-            ]
-        }
-        ]
-    });
-    chart.render();
-</script>
-</body>
-</html>
-```
-
-**Corrected Code (Responsive Implementation):**
-
-This version uses JavaScript to dynamically resize the chart container and trigger a re-render when the window is resized.
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CanvasJS Responsive Chart</title>
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<title>Expanding Card</title>
 <style>
-  #chartContainer {
-    width: 100%; /* Crucial for responsive behavior */
-    height: 300px;
-  }
+.card {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition on hover */
+  width: 200px;
+  height: 150px;
+  overflow: hidden; /* Prevent content overflow before expansion */
+}
+
+.card:hover {
+  transform: scale(1.1); /* Expand the card on hover */
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2); /* Increased shadow on hover */
+  cursor: pointer; /* Indicate interactivity */
+}
+
+.card-content {
+  /* Style the inner content as needed */
+}
 </style>
 </head>
 <body>
-<div id="chartContainer"></div>
-<script>
-    var chart = new CanvasJS.Chart("chartContainer", {
-        title:{
-            text: "My Responsive Chart"
-        },
-        data: [
-        {
-            type: "column",
-            dataPoints: [
-                { label: "Apple",  y: 10  },
-                { label: "Orange", y: 15  },
-                { label: "Banana", y: 25  }
-            ]
-        }
-        ]
-    });
-    chart.render();
 
-    window.addEventListener('resize', function() {
-        chart.render(); // Re-render on window resize
-    });
-</script>
+<div class="card">
+  <div class="card-content">
+    <h2>Expanding Card</h2>
+    <p>This is some sample text inside the expanding card.  You can add more content here as needed.</p>
+  </div>
+</div>
+
 </body>
 </html>
 ```
 
-**Explanation:**
 
-The key changes are:
+## Explanation
 
-1. **`width: 100%;`:**  This CSS rule makes the chart container occupy the full width of its parent element, enabling responsive scaling.
-2. **`window.addEventListener('resize', function() { chart.render(); });`:** This JavaScript code adds an event listener that triggers the `chart.render()` method whenever the browser window is resized. This forces CanvasJS to recalculate the chart's dimensions and redraw it to fit the new space.
-
-
-**External References:**
-
-* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/)  (Check their documentation for more advanced responsive techniques and API details.)
+* **`transition: transform 0.3s ease, box-shadow 0.3s ease;`**: This line applies a smooth transition to the `transform` and `box-shadow` properties over 0.3 seconds, using an ease timing function. This creates the smooth animation.
+* **`transform: scale(1.1);`**: This line scales the card up by 10% on hover, creating the expanding effect.
+* **`box-shadow`**: The box-shadow is adjusted on hover to further enhance the visual effect of expansion.
+* **`overflow: hidden;`**: This prevents content from spilling outside the card before expansion.  Without this, you might see content clipping.
 
 
-**Conclusion:**
+## Links to Resources to Learn More
 
-By applying these changes, you ensure your CanvasJS chart adapts seamlessly to different screen sizes and browser window dimensions, providing a much more user-friendly and responsive experience.  Remember to adjust the CSS styling to fit your specific layout requirements.
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Box-Shadow:** [MDN Web Docs - CSS box-shadow](https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
