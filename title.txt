@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card
+Resolving VideoJS Player Initialization Failure on Certain Browsers

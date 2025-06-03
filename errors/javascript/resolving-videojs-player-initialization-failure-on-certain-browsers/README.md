@@ -1,3 +1,5 @@
+# 🐞 Resolving VideoJS Player Initialization Failure on Certain Browsers
+
 
 ## Description of the Error
 
