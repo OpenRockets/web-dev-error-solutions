@@ -1,13 +1,11 @@
 # 🐞 Creating a CSS-Only Pulsating Heart
 
 
-This document details the creation of a pulsating heart animation using only CSS. No JavaScript is required.  This example utilizes standard CSS3 animations, making it widely compatible.
-
+This document details the creation of a pulsating heart animation using only CSS. No JavaScript is required. This effect uses CSS animations and keyframes to achieve a smooth, rhythmic pulse.  The heart shape itself is created using a combination of pseudo-elements and border-radius.
 
 **Description of the Styling:**
 
-This effect leverages the `animation` property in CSS to create a smooth, pulsating animation. We achieve the heart shape using a pseudo-element (`::before` and `::after`) and carefully positioned borders.  The animation subtly changes the scale and opacity of the heart, giving the impression of a heartbeat.
-
+The heart is built using a single `div` element.  A before and after pseudo-element are used to create the two "lobes" of the heart.  We use `border-radius` to shape the elements, `transform` for positioning, and `animation` to create the pulsating effect. The animation involves scaling the heart up and down slightly over a period of time.  A `box-shadow` adds some depth.
 
 **Full Code:**
 
@@ -15,80 +13,78 @@ This effect leverages the `animation` property in CSS to create a smooth, pulsat
 <!DOCTYPE html>
 <html>
 <head>
-<title>Pulsating Heart</title>
+<title>CSS Pulsating Heart</title>
 <style>
 .heart {
   width: 100px;
   height: 100px;
+  background-color: #FF69B4; /* Pink */
   position: relative;
+  animation: pulse 1s infinite; /* Add the pulse animation */
   margin: 50px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .heart::before,
 .heart::after {
-  position: absolute;
   content: "";
-  left: 50%;
+  position: absolute;
   top: 0;
-  transform: translateX(-50%);
-  background-color: red;
-  border-radius: 50%;
-}
-
-.heart::before {
-  width: 60px;
-  height: 60px;
-  transform-origin: 50% 100%;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background-color: inherit;
+  border-radius: 50% 50% 0 0; /* Upper half is circular */
+  transform: skewX(-45deg) translateX(-50%);
 }
 
 .heart::after {
-  width: 50px;
-  height: 50px;
-  top: 20px;
-  transform-origin: 50% 100%;
+  transform: skewX(45deg) translateX(50%);
+  left: 50%;
 }
 
-.heart {
-  animation: pulse 1s infinite;
-}
 
 @keyframes pulse {
   0% {
     transform: scale(1);
-    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.7);
   }
   50% {
     transform: scale(1.1);
-    opacity: 0.8;
+    box-shadow: 0 0 10px 5px rgba(255, 105, 180, 0.7);
   }
   100% {
     transform: scale(1);
-    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.7);
   }
 }
+
 </style>
 </head>
 <body>
+
 <div class="heart"></div>
+
 </body>
 </html>
 ```
 
-
 **Explanation:**
 
-1. **Heart Structure:** The heart is created using a `div` with two pseudo-elements (`::before` and `::after`). These pseudo-elements are shaped and positioned to form the heart shape using borders and transforms.
-
-2. **Animation:** The `@keyframes pulse` rule defines the animation.  It smoothly scales the heart up and down and slightly changes its opacity, creating the pulsating effect. The `animation` property on the `.heart` class applies this animation with a duration of 1 second, and repeats infinitely (`infinite`).
-
-3. **Transform-origin:** The `transform-origin` property is crucial for controlling the animation's pivot point. Setting it to `50% 100%` ensures the scaling happens from the bottom of each pseudo-element, contributing to the natural pulsating look.
-
+* **`width` and `height`:**  Set the dimensions of the heart.
+* **`background-color`:** Sets the color of the heart.
+* **`position: relative`:** Allows absolute positioning of the pseudo-elements.
+* **`animation: pulse 1s infinite;`:** Applies the `pulse` animation repeatedly.
+* **`::before` and `::after`:** Create the two lobes.  `skewX` and `translateX` are used to shape them into a heart. `border-radius` creates the curved top.
+* **`@keyframes pulse`:** Defines the animation, scaling the heart up and down and adding a box-shadow effect for the pulsating look.
 
 **Links to Resources to Learn More:**
 
-* **MDN Web Docs - CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
-* **CSS-Tricks - Pseudo-elements:** [https://css-tricks.com/pseudo-elements/](https://css-tricks.com/pseudo-elements/)
-* **Understanding `transform-origin`:** [Search for "CSS transform-origin" on your preferred search engine.]
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **CSS Pseudo-elements:** [MDN Web Docs - CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

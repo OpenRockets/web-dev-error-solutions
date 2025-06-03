@@ -1,95 +1,88 @@
 
-## Description of the Error
+This document details the creation of a pulsating heart animation using only CSS. No JavaScript is required. This effect uses CSS animations and keyframes to achieve a smooth, rhythmic pulse.  The heart shape itself is created using a combination of pseudo-elements and border-radius.
 
-A common issue encountered when integrating VideoJS with CanvasJS charts involves the VideoJS player failing to initialize correctly, often resulting in a blank space where the player should be, or throwing JavaScript errors related to undefined objects or methods. This typically occurs when the VideoJS initialization code is executed before the DOM element it targets is fully loaded, or when there's a conflict between VideoJS and other JavaScript libraries, particularly those affecting DOM manipulation.
+**Description of the Styling:**
 
-This problem is exacerbated if you're attempting to dynamically generate the VideoJS player within a CanvasJS chart's update or render cycle, where timing is critical.  The chart's rendering process might outpace the player's initialization.
+The heart is built using a single `div` element.  A before and after pseudo-element are used to create the two "lobes" of the heart.  We use `border-radius` to shape the elements, `transform` for positioning, and `animation` to create the pulsating effect. The animation involves scaling the heart up and down slightly over a period of time.  A `box-shadow` adds some depth.
 
-## Fixing Step by Step
+**Full Code:**
 
-This example demonstrates a fix assuming your VideoJS player is integrated within a chart's dataPoint.
-
-**Step 1: Ensure DOM Element Existence**
-
-The most common cause is attempting to initialize VideoJS before the `<video>` element exists in the DOM.  Use a `DOMContentLoaded` event listener to guarantee the DOM is fully ready.
-
-```javascript
-document.addEventListener("DOMContentLoaded", function() {
-  // Your VideoJS and CanvasJS initialization code here
-});
-```
-
-**Step 2:  Deferred Initialization within CanvasJS**
-
-If you're dynamically creating the VideoJS player within a CanvasJS chart's update function, use the `afterSetOptions` callback to ensure that the chart is fully rendered before initializing the player.
-
-```javascript
-var chart = new CanvasJS.Chart("chartContainer", {
-  // ... your chart options ...
-  afterSetOptions: function () {
-    // Find the video element (assuming it's linked to a dataPoint)
-    let videoElement = document.getElementById("myVideoElement"); 
-
-    if (videoElement) {
-      // Initialize VideoJS only if the element exists
-      videojs(videoElement).ready(function(){
-        var myPlayer = this;
-        // Access player properties
-        console.log(myPlayer.currentTime());
-      });
-    } else {
-      console.error("Video element not found!");
-    }
-
-  },
-  data: [
-    {
-      // ... your data points ...
-       // Example assuming you embed video info in dataPoint
-      type: "column",
-      dataPoints: [{ y: 10, videoId: "myVideoElement"}]
-    }
-  ]
-});
-chart.render();
-
-
-//Assuming video is added in the DOM like this:
-//Add the Video element into your DOM. Replace 'your-video-url' with your actual URL.
-
-const videoContainer = document.getElementById("myVideoElement");
-
-if(!videoContainer){
-    console.error("Video container not found!");
-    return;
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Pulsating Heart</title>
+<style>
+.heart {
+  width: 100px;
+  height: 100px;
+  background-color: #FF69B4; /* Pink */
+  position: relative;
+  animation: pulse 1s infinite; /* Add the pulse animation */
+  margin: 50px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-videoContainer.innerHTML = `<video id="myVideo" class="video-js" controls preload="auto" width="640" height="264" poster="my-poster.jpg" data-setup="{}">
-  <source src="your-video-url.mp4" type="video/mp4">
-  <source src="your-video-url.webm" type="video/webm">
-  <p class="vjs-no-js">
-    To view this video please enable JavaScript, and consider upgrading to a web browser that
-    <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
-  </p>
-</video>`;
+.heart::before,
+.heart::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background-color: inherit;
+  border-radius: 50% 50% 0 0; /* Upper half is circular */
+  transform: skewX(-45deg) translateX(-50%);
+}
+
+.heart::after {
+  transform: skewX(45deg) translateX(50%);
+  left: 50%;
+}
 
 
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.7);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px 5px rgba(255, 105, 180, 0.7);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.7);
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div class="heart"></div>
+
+</body>
+</html>
 ```
 
-**Step 3: Version Compatibility**
+**Explanation:**
 
-Ensure compatibility between your versions of VideoJS and other libraries. Check for known conflicts on the VideoJS issue tracker.
+* **`width` and `height`:**  Set the dimensions of the heart.
+* **`background-color`:** Sets the color of the heart.
+* **`position: relative`:** Allows absolute positioning of the pseudo-elements.
+* **`animation: pulse 1s infinite;`:** Applies the `pulse` animation repeatedly.
+* **`::before` and `::after`:** Create the two lobes.  `skewX` and `translateX` are used to shape them into a heart. `border-radius` creates the curved top.
+* **`@keyframes pulse`:** Defines the animation, scaling the heart up and down and adding a box-shadow effect for the pulsating look.
 
+**Links to Resources to Learn More:**
 
-## Explanation
-
-The core principle here is to prioritize DOM readiness.  Attempting to manipulate the DOM (by initializing VideoJS) before the relevant elements are fully loaded leads to errors.  The `DOMContentLoaded` event listener ensures the script runs only after the page's core HTML is parsed.  Using `afterSetOptions` in CanvasJS ensures that the chart has finished its rendering before attempting VideoJS initialization, preventing conflicts that might result from concurrent DOM manipulation.  The conditional check (`if (videoElement)`) adds an extra layer of robustness by only initializing VideoJS if the target element actually exists.
-
-
-## External References
-
-* **VideoJS Documentation:** [https://videojs.com/](https://videojs.com/)
-* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **CSS Pseudo-elements:** [MDN Web Docs - CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
