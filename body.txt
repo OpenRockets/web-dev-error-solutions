@@ -1,85 +1,74 @@
 
-This document addresses a common problem developers encounter when integrating a VideoJS player within or overlapping a CanvasJS chart:  **failure to initialize the VideoJS player correctly, often resulting in a blank video area or playback errors.** This typically stems from conflicts between the two libraries' DOM manipulation or timing issues during page load.
+## Description of the Error
 
-**Description of the Error:**
+A common problem encountered when using Video.js in responsive web designs is the player's height not adjusting correctly to maintain aspect ratio when the browser window is resized. This often results in a stretched or squashed video, ruining the viewing experience.  The issue stems from the default behavior of Video.js not inherently integrating with the fluidity of responsive layouts.  The player might maintain a fixed height, ignoring changes in the container's dimensions.
 
-The VideoJS player either doesn't appear at all, displays a broken placeholder, or throws JavaScript errors in the console related to player initialization (`TypeError`, `undefined` errors referencing VideoJS elements, etc.)  This usually occurs when the VideoJS player is initialized *before* the CanvasJS chart is fully rendered or when the elements are not properly positioned within the HTML structure.
+## Fixing Step-by-Step (Code)
 
-**Code for Fixing the Problem (Step-by-Step):**
-
-This solution uses a combination of ensuring proper element placement in HTML, using VideoJS's `ready` event and checking for element visibility before initialization.
-
+This example demonstrates fixing the height issue using CSS and a bit of JavaScript to ensure the player maintains its aspect ratio regardless of the container size.  We'll assume your Video.js player is initialized within a div with the ID "my-video".
 
 **1. HTML Structure:**
 
-Ensure your HTML properly nests the elements.  Place the `<video>` tag *after* the `<div>` where your CanvasJS chart will be rendered.  This ensures the CanvasJS chart's DOM manipulation doesn't interfere with VideoJS's player creation:
-
 ```html
-<div id="chartContainer"></div>
-<video id="myVideo" class="video-js vjs-big-play-centered" controls preload="auto" width="640" height="360" poster="poster.jpg">
-  <source src="myvideo.mp4" type="video/mp4">
-  <source src="myvideo.webm" type="video/webm">
-Your browser does not support the video tag.
-</video>
-
-<script src="https://cdn.jsdelivr.net/npm/video.js@7/dist/video.min.js"></script>
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<div id="my-video"></div>
+<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
 <script>
-// JavaScript code (see step 2)
+  // JavaScript will go here.
 </script>
 ```
 
+**2. CSS Styling:**
 
-**2. JavaScript Initialization:**
+This CSS is crucial for maintaining the aspect ratio. We'll use padding-bottom to dynamically adjust the height based on the width.  This method avoids using JavaScript to directly manipulate height.
 
-Use the VideoJS `ready` event to ensure the player is initialized *after* the DOM is fully ready and the CanvasJS chart has been rendered. Also, add a check to ensure the VideoJS element is visible before initialization, to avoid issues with elements being hidden initially.
+```css
+#my-video {
+  position: relative; /* Required for absolute positioning of the video */
+  width: 100%; /* Make the container take up full available width */
+  padding-bottom: 56.25%; /* 16:9 aspect ratio (adjust as needed) */
+  height: 0; /* Override default height to maintain aspect ratio */
+}
 
-
-```javascript
-window.onload = function() {
-    // CanvasJS Chart Initialization
-    var chart = new CanvasJS.Chart("chartContainer", {
-        // Your CanvasJS chart configuration here...
-    });
-    chart.render();
-
-    //Check if the video element is visible before initialization
-
-    let videoElement = document.getElementById("myVideo");
-    let isVideoVisible = function() {
-      const rect = videoElement.getBoundingClientRect();
-      return (rect.top <= window.innerHeight &&
-              rect.bottom >= 0 &&
-              rect.left <= window.innerWidth &&
-              rect.right >= 0);
-    }
-
-    let initializeVideo = function() {
-        if (isVideoVisible()) {
-          videojs('myVideo').ready(function() {
-            var myPlayer = this;
-            // Add any VideoJS customization here...  e.g.,
-            myPlayer.on('loadeddata', function() {
-                console.log('Video loaded');
-            });
-          });
-        } else {
-          setTimeout(initializeVideo, 250); // Retry after 250ms
-        }
-    };
-    initializeVideo();
-
-};
+#my-video video {
+  position: absolute; /* Ensures video fills the container */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
 ```
 
-**Explanation:**
+**3. JavaScript Initialization (Optional - for advanced controls):**
 
-The solution utilizes the `ready` event of VideoJS to guarantee that the player is fully initialized after the DOM is fully parsed and the chart rendering is complete. The visibility check handles scenarios where the video container might be hidden initially.  The `setTimeout` function ensures it retries a certain number of times before giving up if it still fails, adding resilience in case the chart or video player takes longer to load than anticipated. The `window.onload` function waits for the page to fully load before initiating chart and video rendering.
+While the CSS above solves the core problem, you might want to use JavaScript for additional Video.js functionality or more dynamic aspect ratio control if you're using different video aspect ratios.
 
-**External References:**
+```javascript
+var player = videojs('my-video', {
+    sources: [{
+        src: 'your-video.mp4',
+        type: 'video/mp4'
+    }],
+    controls: true,
+    fluid: true //Enables fluid responsiveness.  May be unnecessary with CSS alone.
+});
 
-* **CanvasJS Documentation:** [https://canvasjs.com/docs/](https://canvasjs.com/docs/)
-* **VideoJS Documentation:** [https://videojs.com/](https://videojs.com/)
+//Optional: Event Listener for further responsive adjustments.
+// window.addEventListener('resize', function() {
+//   // You could add additional logic here if necessary for very complex responsive scenarios.
+// });
+```
+
+Replace `'your-video.mp4'` with the actual path to your video file.
+
+## Explanation
+
+The core solution lies in the CSS.  By setting `padding-bottom` as a percentage of the width, we create a container whose height is always proportional to its width, maintaining the desired aspect ratio (16:9 in this case, adjust as needed for other ratios).  Setting the `height` to `0` ensures the padding-bottom effectively controls the height.  The absolute positioning of the `video` element within the container ensures it fills the entire space defined by the padding.  JavaScript is used only for the basic VideoJS player setup and optional event handling for very complex scenarios.  The `fluid: true` option can also be used directly in Video.js, though using CSS gives you more control and works even without using the `fluid` option.
+
+## External References
+
+* **Video.js Documentation:** [https://videojs.com/](https://videojs.com/)
+* **Responsive Design Techniques:** [https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Responsive_design](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Responsive_design)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

@@ -1,1 +1,1 @@
-Fixing VideoJS Player Initialization Errors within a CanvasJS Chart Overlay
+Fixing VideoJS Player Height Issues in Responsive Designs
