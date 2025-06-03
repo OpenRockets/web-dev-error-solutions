@@ -1,1 +1,1 @@
-Creating a Pure CSS Circular Progress Bar
+Fixing VideoJS Player Initialization Issues in CanvasJS Charts
