@@ -1,14 +1,19 @@
 # 🐞 Creating a Pure CSS Circular Progress Bar
 
 
-This document details how to create a circular progress bar using only CSS.  No JavaScript is required. This technique leverages CSS gradients and transforms to achieve a visually appealing and responsive progress indicator.
-
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This leverages CSS animations and transforms to achieve a visually appealing and performant progress indicator.  We'll utilize techniques applicable to both standard CSS and Tailwind CSS.
 
 **Description of the Styling:**
 
-This method creates a circular progress bar by using a circular `border` as the base and then overlays a semi-circular gradient to represent the progress. The gradient's position is controlled via a `transform: rotate()` function, dynamically changing based on the percentage value. This allows for a smooth animation effect without relying on JavaScript.
+The circular progress bar is created using a combination of techniques:
 
-**Full Code:**
+* **Two overlapping circles:** A base circle provides the track, and a smaller circle on top represents the progress.  The smaller circle's size and rotation are controlled dynamically using CSS variables and animations.
+* **`clip-path`:**  This property is used to create the circular shape and mask the progress circle, ensuring a clean circular appearance.
+* **CSS variables (custom properties):** These allow for easy customization of the bar's color, size, and percentage.
+* **CSS Animations:** A smooth animation is applied to rotate the progress circle, creating the progress effect.
+
+
+**Full Code (Standard CSS):**
 
 ```html
 <!DOCTYPE html>
@@ -16,69 +21,104 @@ This method creates a circular progress bar by using a circular `border` as the 
 <head>
 <title>CSS Circular Progress Bar</title>
 <style>
-.progress-ring {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background-color: #f2f2f2; /* Light gray background */
-  border: 10px solid #ddd; /* Light gray border */
-  position: relative; /* Needed for absolute positioning of the progress indicator */
-}
+  .progress-ring {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    position: relative;
+  }
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* Center the progress indicator */
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border-style: solid;
-  border-width: 10px;
-  border-color: transparent; /* Initially transparent */
-  border-left-color: #4CAF50; /* Green progress color */
-  z-index: 1;
-}
+  .progress-ring__circle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    --progress: 75; /* Customize the progress percentage here */
+    --color: #007bff; /* Customize the progress bar color here */
+    --track-color: #e0e0e0; /* Customize the track color here */
 
-.progress-ring.progress-75::before {
-  transform: translate(-50%, -50%) rotate(270deg); /* Rotate 270 degrees for 75% progress */
-}
+    clip-path: circle(50% at 50% 50%); /* Creates the circular shape */
+  }
 
-.progress-ring.progress-50::before {
-  transform: translate(-50%, -50%) rotate(180deg);
-}
+  .progress-ring__circle::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: var(--track-color);
+    z-index: -1; /* Place the track behind the progress circle */
+  }
 
-/*You can add more classes like progress-25, progress-10 etc. */
+  .progress-ring__circle:after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: var(--color);
+      transform: rotate(calc(var(--progress) * 3.6deg));
+      transform-origin: 50% 50%;
+      clip-path: polygon(
+        50% 0%,
+        100% 50%,
+        50% 100%,
+        0% 50%
+      );
+    }
 </style>
 </head>
 <body>
 
-<div class="progress-ring progress-75"></div>
-
-<div class="progress-ring progress-50"></div>
+<div class="progress-ring">
+  <div class="progress-ring__circle"></div>
+</div>
 
 </body>
 </html>
 ```
 
+**Full Code (Tailwind CSS):**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tailwind CSS Circular Progress Bar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Add custom styles for finer control if needed.  Tailwind classes often suffice. */
+  </style>
+</head>
+<body>
+  <div class="w-48 h-48 relative rounded-full">
+    <div class="absolute top-0 left-0 w-full h-full rounded-full bg-gray-300"></div>
+    <div class="absolute top-0 left-0 w-full h-full rounded-full bg-blue-500"
+         style="clip-path: circle(50% at 50% 50%);
+                 transform: rotate(calc(75% * 3.6deg));
+                 transform-origin: 50% 50%;"></div>
+  </div>
+</body>
+</html>
+```
+Remember to replace `75` with your desired percentage and adjust colors as needed.
+
+
 **Explanation:**
 
-1. **Base Ring:** The `.progress-ring` class creates the base circular shape using `border-radius: 50%`.
+The key is the `transform: rotate()` applied to the progress circle. We calculate the rotation angle based on the `--progress` variable (percentage) multiplied by 3.6 degrees (360 degrees / 100). The `clip-path: polygon` creates the circular segment. The `::before` pseudo-element creates the background track circle.  Tailwind simplifies the process with its pre-defined classes,  but you may need to use inline styles for more dynamic control.
 
-2. **Pseudo-element:** The `::before` pseudo-element creates the progress indicator.  `border-color: transparent;` makes the whole border transparent except for `border-left-color` which is set to the progress color (green in this example).
+**Resources to Learn More:**
 
-3. **Rotation:** The `transform: rotate()` property is key.  It rotates the semi-circular gradient. A full circle (360 degrees) represents 100% progress.  We calculate the rotation angle based on the percentage. For example, 75% progress corresponds to 270 degrees (75% * 360 degrees).
-
-4. **Classes for different progress:**  We use classes like `progress-75`, `progress-50` to easily switch progress value. You can dynamically add or remove these classes with Javascript if needed to change the progress in real-time.
-
-
-
-**External References:**
-
-* [MDN Web Docs on CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* [MDN Web Docs on CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* [Various CSS Progress Bar Tutorials](Search on Google for "CSS Circular Progress Bar")
+* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **MDN Web Docs on CSS Variables:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
