@@ -1,1 +1,1 @@
-Resolving CanvasJS Chart Rendering Issues in IE11
+Fixing VideoJS Playback Issues on iOS Safari with CORS

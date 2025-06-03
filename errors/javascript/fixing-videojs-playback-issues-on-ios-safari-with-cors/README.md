@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Playback Issues on iOS Safari with CORS
+
 
 ## Description of the Error
 
