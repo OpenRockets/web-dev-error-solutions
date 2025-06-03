@@ -1,16 +1,16 @@
-# 🐞 Creating a CSS-Only Circular Progress Bar
+# 🐞 Creating a CSS-only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This example leverages CSS's `conic-gradient` function for a clean and efficient solution.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This technique leverages CSS's `conic-gradient` function and transforms to achieve a visually appealing and responsive progress indicator.
 
 
 **Description of the Styling:**
 
-The styling relies on a combination of techniques:
+This circular progress bar uses a combination of techniques to create the visual effect:
 
-* **`conic-gradient`:** This function creates a gradient that radiates from the center, allowing us to easily represent a progress circle.  The percentage value controls the filled portion of the circle.
-* **`mask`:**  A circular mask is used to clip the gradient, ensuring the progress bar remains within a circular shape.
-* **`border-radius`:** This ensures that the container for our progress bar is perfectly circular.
+* **`conic-gradient`:** This CSS function is central to creating the circular progress. It allows us to define a gradient that sweeps around a circle.  We use this to create the colored progress segment.
+* **`transform: rotate()`:** We dynamically rotate the gradient based on the percentage of progress.  This makes the colored portion of the circle grow proportionally.
+* **`mask`:**  A circular mask is used to clip the gradient into a perfect circle, preventing it from overflowing.
 
 
 **Full Code:**
@@ -22,46 +22,71 @@ The styling relies on a combination of techniques:
 <title>CSS Circular Progress Bar</title>
 <style>
 .progress-ring {
-  --progress: 75; /* Adjust this value to change the progress percentage */
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background: conic-gradient(
-    #007bff 0deg var(--progress)%,
-    #eee 0deg
-  );
-  mask: conic-gradient(#fff 0deg var(--progress)%, #000 0deg);
-  mask-type: mask;
+  background-color: #f0f0f0; /* Light gray background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
+.progress-ring__circle {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #4CAF50 0deg, /* Green */
+    #4CAF50 var(--progress, 0deg), /* Variable progress percentage */
+    #f0f0f0 var(--progress, 0deg)
+  );
+  mask: url(#mask);
+  mask-size: 100%;
+}
+
+.progress-ring__text {
+    position: absolute;
+    font-size: 14px;
+}
+
 </style>
 </head>
 <body>
 
-<div class="progress-ring"></div>
+<svg width="0" height="0" style="display:none;">
+    <defs>
+        <mask id="mask">
+            <circle cx="50%" cy="50%" r="50%" fill="white"/>
+        </mask>
+    </defs>
+</svg>
+
+<div class="progress-ring">
+  <div class="progress-ring__circle" style="--progress: 75deg;"></div>
+    <span class="progress-ring__text">75%</span>
+</div>
 
 </body>
 </html>
 ```
 
-
 **Explanation:**
 
-1. **`--progress` Variable:** This custom CSS variable holds the percentage of progress (0-100).  Changing this value dynamically updates the progress bar.
+1.  **HTML Structure:**  The HTML sets up a simple `div` with class `progress-ring` to contain the progress bar. Inside, another `div` with class `progress-ring__circle` represents the circular progress itself. We also added a `svg` to define our mask to clip the circle, and a `span` to display the percentage.
 
-2. **`conic-gradient` (Background):** This creates the colored portion of the progress bar.  `#007bff` (blue in this case) is the color of the filled section, and `#eee` (light grey) is the background color. The `var(--progress)` determines the angle at which the color transition occurs.
+2.  **CSS Styling:**
+    *   The `.progress-ring` styles the outer container, giving it a circular shape and a light gray background.
+    *   The `.progress-ring__circle` is where the magic happens.  `conic-gradient` creates the circular gradient. `var(--progress)` is a CSS custom property that allows you to dynamically control the progress percentage by setting it in the `style` attribute.  The mask creates the clean circular cut.
+    *   The `mask` element using an `svg` defines a circle that masks our conic gradient.
 
-3. **`mask: conic-gradient`:** This creates a circular mask with the same gradient, but using white and black instead of colors.  The white portion allows the background gradient to show through, representing the progress, while the black portion hides it, creating the empty part of the circle.
-
-4. **`mask-type: mask;`:** This line is crucial. It specifies that we're using a mask to shape the background gradient.
-
-5. **`width`, `height`, `border-radius`:** These properties ensure that our progress bar is a perfect circle.
+3. **Dynamic Progress:**  The `style="--progress: 75deg;"` attribute in the `.progress-ring__circle` dynamically sets the progress.  To change the percentage, simply adjust the degrees (360 degrees is 100%).  To make it data-driven, you'd replace this `style` attribute with a dynamic value from your data source.
 
 
 **Links to Resources to Learn More:**
 
 * **MDN Web Docs - `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
 * **MDN Web Docs - `mask`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/mask](https://developer.mozilla.org/en-US/docs/Web/CSS/mask)
-* **CSS Tricks (general CSS resources):** [https://css-tricks.com/](https://css-tricks.com/)
+* **CSS Tricks (various articles on gradients and masking):** [https://css-tricks.com/](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
