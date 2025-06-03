@@ -1,3 +1,5 @@
+# 🐞 Resolving CanvasJS Chart Rendering Issues in Internet Explorer 11
+
 
 This document addresses a common problem developers encounter when using CanvasJS charts within Internet Explorer 11 (IE11):  charts failing to render correctly or not rendering at all.  IE11's older rendering engine often struggles with certain CanvasJS features or requires specific configuration.
 
