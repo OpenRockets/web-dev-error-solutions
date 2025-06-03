@@ -1,1 +1,1 @@
-Fixing Discord.js "Missing Permissions" Error
+Handling Asynchronous Operations and Promises in Discord.js
