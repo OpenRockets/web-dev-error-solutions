@@ -1,1 +1,1 @@
-Creating a CSS-only Circular Progress Bar
+Fixing VideoJS Player Controls Disappearing on Mobile
