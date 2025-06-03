@@ -1,72 +1,80 @@
 
-This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This utilizes CSS3 properties for advanced styling and animation.
+This document addresses a common problem encountered when integrating Video.js into responsive web designs: the player's height not adjusting correctly to maintain aspect ratio when the browser window is resized.  This leads to distorted video playback or unnecessary letterboxing/pillarboxing.
 
-## Description of the Styling
 
-This technique leverages the `clip-path` property to create a circular mask that reveals a portion of a full circle.  By animating the `clip-path` property, we simulate the progress bar filling up. We use a background color for the track and a different color for the progress fill.  The percentage of progress is controlled by a custom property (`--progress`).
+## Description of the Error
 
-## Full Code
+The Video.js player, by default, might not automatically resize its height to match the aspect ratio of the video when the browser window is resized. This often results in a stretched or squished video appearance, ruining the viewing experience.  The player might retain its initial height, ignoring changes in the container's dimensions.  This is particularly problematic on smaller screens or when using responsive design techniques.
+
+
+## Step-by-Step Code Fix
+
+This solution uses CSS and JavaScript to ensure the Video.js player maintains its aspect ratio dynamically.
+
+**1. HTML Structure:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<title>CSS Circular Progress Bar</title>
+<title>Responsive Video.js Player</title>
+<link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet">
 <style>
-.circular-progress {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background-color: #f0f0f0; /* Track color */
-  position: relative;
-}
-
-.circular-progress::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  background-color: #4CAF50; /* Progress color */
-  border-radius: 50%;
-  clip-path: circle(50% at 50% 50%); /* Initial clip path */
-  animation: progress 2s linear forwards; /* Animation */
-  --progress: 75; /* Adjust this value (0-100) to change progress */
-}
-
-@keyframes progress {
-  to {
-    clip-path: circle(50% at 50% calc(90deg + (var(--progress) * 3.6deg)));
+  .video-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
   }
-}
+  .video-js {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
 </style>
 </head>
 <body>
 
-<h1>CSS Circular Progress Bar</h1>
+<div class="video-container">
+  <video id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360" poster="poster.jpg" data-setup="{}">
+    <source src="myvideo.mp4" type="video/mp4">
+    <source src="myvideo.webm" type="video/webm">
+    <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+  </video>
+</div>
 
-<div class="circular-progress"></div>
+<script src="https://unpkg.com/video.js/dist/video.js"></script>
+<script>
+  //Optional: Initialize Video.js (if needed)
+  var player = videojs('my-video');
+</script>
 
 </body>
 </html>
 ```
 
+**Explanation of HTML:**
+
+*   The `.video-container` div uses padding-bottom to create the aspect ratio. The percentage (56.25% in this example, for a 16:9 aspect ratio) is calculated as `(height / width) * 100%`. Adjust this value if you have a different aspect ratio.  This is crucial for maintaining aspect ratio on resize.
+*   The `video` element is placed within the container, and the CSS positions it absolutely to fill the container.
+
+
+**2.  JavaScript (Optional but recommended for advanced features):**
+
+While the CSS solution above is often sufficient, you might need JavaScript for more complex scenarios, especially if you're dynamically changing the video source or other player options.  Video.js itself handles responsive resizing fairly well if the container is correctly structured.
+
+
+## External References
+
+*   **Video.js Documentation:** [https://docs.videojs.com/](https://docs.videojs.com/)  (Check their responsive design guides)
+*   **Responsive Design Techniques:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_auto](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_auto) (Understanding `padding-bottom` and aspect ratio calculations)
+
+
 ## Explanation
 
-* **`.circular-progress`**: This class sets up the base circle with a background color (the track).
-* **`.circular-progress::before`**: This pseudo-element creates the progress fill.  `translate(-50%, -50%)` centers it within the parent.
-* **`clip-path: circle(50% at 50% 50%);`**: This initially creates a full circle.  The animation changes the `50%` part.
-* **`animation: progress 2s linear forwards;`**: This applies the `progress` animation, which takes 2 seconds, is linear, and runs forwards (doesn't reverse).
-* **`@keyframes progress`**:  This defines the animation. The `clip-path` is dynamically calculated based on `var(--progress)`.  The formula `calc(90deg + (var(--progress) * 3.6deg))` ensures the progress starts from the top and moves clockwise.  3.6deg is used because 360deg / 100 = 3.6deg (for 0-100% progress).  Adding 90deg offsets the starting point to the top.
-* **`--progress`**: This custom property controls the percentage of progress.  Change its value to adjust the progress.
-
-## Resources to Learn More
-
-* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **MDN Web Docs on `@keyframes`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes](https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes)
-* **CSS Tricks (search for "clip-path"):** [https://css-tricks.com/](https://css-tricks.com/) (Search for relevant articles on clip-path and animations)
+The key to solving this problem is to use CSS to maintain the aspect ratio of the video container.  By setting the `padding-bottom` percentage on the container, we create a fixed aspect ratio, regardless of the container's width.  When the browser window is resized, the container's width adjusts, and the `padding-bottom` ensures that the height is adjusted proportionally, preventing distortion. This method effectively couples the height to the width, keeping the aspect ratio constant. The Video.js player, being positioned absolutely within this container, then automatically adapts to its size.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
