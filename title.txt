@@ -1,1 +1,1 @@
-Resolving VideoJS Player Initialization Errors in CanvasJS Integration
+Resolving VideoJS Player Initialization Failures in CanvasJS Charts
