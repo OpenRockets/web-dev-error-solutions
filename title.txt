@@ -1,1 +1,1 @@
-Fixing VideoJS's `TypeError: Cannot read properties of undefined (reading 'currentTime')`
+Resolving CanvasJS Chart Rendering Issues in IE11

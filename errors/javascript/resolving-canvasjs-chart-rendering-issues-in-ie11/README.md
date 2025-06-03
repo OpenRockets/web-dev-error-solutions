@@ -3,83 +3,84 @@
 
 ## Description of the Error
 
-A common problem encountered when using CanvasJS charts in older browsers, particularly Internet Explorer 11 (IE11), is the failure of charts to render correctly or at all. This often manifests as a blank space where the chart should appear, or as a partially rendered chart with missing elements. This is due to IE11's limited support for modern JavaScript features and Canvas rendering capabilities.  While CanvasJS generally aims for broad browser compatibility, IE11 often requires specific workarounds.
+A common problem encountered when using CanvasJS charts in Internet Explorer 11 (IE11) is the failure of the chart to render correctly, often resulting in a blank space where the chart should appear or displaying only a partially rendered chart. This is primarily due to IE11's limited support for modern JavaScript features and its older rendering engine compared to other modern browsers.  The error messages might not be very explicit, often manifesting as a blank space or an incomplete chart, with no obvious console errors.
 
-## Code to Fix the Problem (Step-by-Step)
 
-This example assumes you're already including the CanvasJS library correctly in your HTML. The core issue is often inadequate polyfills for missing features.
+## Step-by-Step Code Fix
 
-**Step 1: Include necessary polyfills**
+This example focuses on ensuring compatibility with IE11 by incorporating polyfills for missing features.  We'll assume you are already including the CanvasJS library correctly.
 
-IE11 lacks support for certain `Array` methods and other features.  We'll use a polyfill library like `core-js` to address this. Add the following `<script>` tag in your HTML's `<head>` section, *before* including the CanvasJS script:
+**Step 1: Include necessary polyfills.**
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.array.find.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.array.includes.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.object.assign.js"></script>
-<!-- Add other necessary polyfills as needed -->
+IE11 lacks support for some `Array` methods and other features used by CanvasJS.  We'll use a polyfill library like `core-js`. You can install it using a package manager like npm:
+
+```bash
+npm install core-js
 ```
 
-These specific polyfills address `Array.find()`, `Array.includes()`, and `Object.assign()`, which are commonly used by CanvasJS internally.  You might need to include more depending on the specific error messages you encounter. Check the CanvasJS documentation (see below) and browser developer console for clues on missing features.
-
-**Step 2: Ensure Correct CanvasJS Inclusion**
-
-Make sure you have correctly included the CanvasJS library in your HTML, preferably after the polyfills:
+Then, include it in your HTML file:
 
 ```html
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script src="node_modules/core-js/client/shim.min.js"></script>
 ```
 
-Replace this with the actual path to your CanvasJS library if you're not using a CDN.
+**Step 2:  Include CanvasJS Library**
 
-**Step 3:  Minimal Example and Chart Creation**
+Ensure you have included the CanvasJS library correctly.  Replace `"path/to/canvasjs.min.js"` with the actual path to your CanvasJS library file.
 
-Here's a minimal example demonstrating chart creation:
+```html
+<script src="path/to/canvasjs.min.js"></script>
+```
+
+**Step 3:  Create and Render your Chart (Example)**
+
+This example creates a simple chart. Adapt it to your specific data and chart type.
 
 ```html
 <!DOCTYPE HTML>
 <HTML>
 <HEAD>
 <title>CanvasJS IE11 Fix</title>
-<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.array.find.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.array.includes.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/core-js@3/modules/es.object.assign.js"></script>
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script src="node_modules/core-js/client/shim.min.js"></script>
+<script src="path/to/canvasjs.min.js"></script>
 </HEAD>
 <BODY>
 <div id="chartContainer" style="height: 300px; width: 100%;"></div>
 <script>
 window.onload = function () {
-    var chart = new CanvasJS.Chart("chartContainer", {
-        data: [{
-            type: "column",
-            dataPoints: [
-                { x: 10, y: 71 },
-                { x: 20, y: 55 },
-                { x: 30, y: 50 },
-                { x: 40, y: 65 }
-            ]
-        }]
-    });
-    chart.render();
+
+var chart = new CanvasJS.Chart("chartContainer", {
+	animationEnabled: true,
+	title:{
+		text: "IE11 Compatible Chart"
+	},
+	data: [{
+		type: "column",
+		dataPoints: [
+			{ label: "Apple",  y: 10  },
+			{ label: "Orange", y: 15  },
+			{ label: "Banana", y: 25  }
+		]
+	}]
+});
+chart.render();
+
 }
 </script>
 </BODY>
 </HTML>
+
 ```
-
-This example creates a simple column chart.  Replace this data with your own.
-
 
 ## Explanation
 
-IE11's lack of native support for modern JavaScript features used by CanvasJS leads to rendering failures.  The polyfills provide backward compatibility, allowing CanvasJS to function correctly.  By including the appropriate polyfills *before* the CanvasJS script, we ensure that the necessary functions are available when CanvasJS attempts to use them.  The exact polyfills needed may vary depending on the specific CanvasJS version and your chart configuration.  Consult the browser's developer console for clues if you encounter further errors.
+The core issue is that IE11 lacks support for certain ES6+ features and modern JavaScript functionalities that CanvasJS relies upon. The `core-js` library provides polyfills, which are essentially code snippets that simulate the missing functionality, making it appear as though IE11 supports those features.  By including `core-js`, we bridge the compatibility gap between CanvasJS's expectations and IE11's capabilities.  Without this, CanvasJS might fail to initialize or render properly.
 
 
 ## External References
 
-* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/) (Check their documentation for browser compatibility information and potential workarounds)
-* **core-js Documentation:** [https://github.com/zloirock/core-js](https://github.com/zloirock/core-js) (For information on available polyfills)
+* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/)  (Check their documentation for specific browser compatibility notes)
+* **core-js Documentation:** [https://github.com/zloirock/core-js](https://github.com/zloirock/core-js)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
