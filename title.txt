@@ -1,1 +1,1 @@
-Creating a CSS-Only Expanding Card
+Fixing VideoJS's "TypeError: this.options is undefined" Error
