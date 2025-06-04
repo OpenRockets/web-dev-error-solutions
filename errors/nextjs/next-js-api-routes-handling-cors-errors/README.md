@@ -1,3 +1,5 @@
+# 🐞 Next.js API Routes: Handling CORS Errors
+
 
 This document addresses a common problem developers encounter when working with Next.js API routes: **CORS (Cross-Origin Resource Sharing) errors**.  These errors occur when a frontend application (e.g., a Next.js application running on a different port or domain) attempts to make requests to an API route hosted on the same Next.js application but in a different context. Browsers, for security reasons, will block these requests unless the API route is correctly configured to handle CORS.
 
