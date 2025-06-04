@@ -1,1 +1,1 @@
-Fixing VideoJS Playback Issues on iOS Safari
+Creating a Pure CSS Loading Spinner
