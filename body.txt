@@ -1,69 +1,89 @@
 
-This document addresses a common issue developers encounter when using Next.js Middleware: unintended header modifications due to multiple `headers.set()` calls within the same middleware function, often leading to unexpected behavior or errors in the client.
-
-**Description of the Error:**
-
-Next.js Middleware allows modifying HTTP headers before a request reaches the page or API route. However, multiple calls to `headers.set()` with the same header name within a single middleware function can lead to unpredictable results.  Only the *last* `headers.set()` call for a given header will be effective, potentially overriding important headers set earlier in the middleware or even by the application itself. This can cause issues like incorrect caching, authentication failures, or unexpected content-type interpretations by the browser.
-
-**Code Example: Problem & Solution**
-
-Let's assume we have a middleware function intended to set both `Cache-Control` and `Access-Control-Allow-Origin` headers:
+This document details the creation of an expanding card using only CSS.  The effect involves a subtle reveal of card content upon hover, utilizing CSS transitions and transforms.  No JavaScript is required.  This example uses plain CSS3; adapting it to Tailwind would simply involve replacing the CSS class names with their Tailwind equivalents.
 
 
-**Problematic Code:**
+## Description of the Styling
 
-```javascript
-// middleware.js
-export function middleware(req, res) {
-  if (req.nextUrl.pathname.startsWith('/api')) {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate'); //Overwritten
-    res.setHeader('Access-Control-Allow-Origin', '*'); //Overwritten, this one will work 
-    res.setHeader('Cache-Control', 'public, max-age=31536000'); //Only this one will be effective
-  }
+The card starts in a collapsed state. On hover, the card expands horizontally, and a hidden content area slides into view.  The expansion uses a smooth transition for a polished user experience. A subtle box-shadow is added to enhance the three-dimensional effect.
+
+
+## Full Code
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 200px;
+  height: 150px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide overflowing content initially */
+  transition: width 0.3s ease-in-out, height 0.3s ease-in-out; /* Smooth transition */
 }
 
-export const config = {
-  matcher: ['/api/:path*']
-};
-```
-
-In this code, the `Cache-Control` header is set twice. The second `res.setHeader('Cache-Control', 'public, max-age=31536000');` call overwrites the first one. Only the final `Cache-Control` setting will take effect.
-
-
-**Solution:**
-
-To avoid these conflicts, use the `next/server`'s `headers` object's `append()` method instead of `set()` when you want to add multiple values for the same header or need to ensure that previous settings are not overwritten.  Alternatively, you can concatenate the desired header values before setting them.
-
-
-```javascript
-// middleware.js
-export function middleware(req, res) {
-  if (req.nextUrl.pathname.startsWith('/api')) {
-    const cacheControl = 'public, max-age=31536000'; // set max-age as 1 year
-    res.headers.set('Cache-Control', cacheControl);
-    res.headers.append('Access-Control-Allow-Origin', '*');
-
-    //Or using res.setHeader
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
+.card:hover {
+  width: 400px;
+  height: 250px;
 }
 
-export const config = {
-  matcher: ['/api/:path*']
-};
+.card-content {
+  padding: 10px;
+  height: 100%; /* Occupies the full height of the card */
+  display: flex;
+  flex-direction: column; /* Align content vertically */
+  justify-content: space-between; /* Distribute space between items */
+}
+
+.card-title {
+  font-weight: bold;
+}
+
+.card-text {
+  font-size: 14px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  max-height: 0; /* Initially hidden */
+}
+
+
+.card:hover .card-text {
+  max-height: 100px; /* Reveal text on hover */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Card Title</h2>
+    <p class="card-text">This is some example text that will expand on hover.  Lorem ipsum dolor sit amet, consectetur adipiscing elit. </p>
+    <button>Learn More</button>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-This revised code uses `headers.set()` for headers only needing a single value and append only when you really need to append. This ensures that both headers are set correctly, avoiding the overwriting issue.
 
-**Explanation:**
+## Explanation
 
-The core difference lies in how `headers.set()` and `headers.append()` modify headers. `headers.set()` replaces any existing header with the same name, while `headers.append()` adds the new value to the existing header, creating a comma-separated list if necessary.  Using `append` for headers that might be set multiple times avoids unintended consequences.
-
-**External References:**
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/api-routes/middleware)
-* [Next.js Headers Object](https://nextjs.org/docs/app/api-routes/headers)
+* **`overflow: hidden;`:** This is crucial for hiding the extra content initially.
+* **`transition: width 0.3s ease-in-out, height 0.3s ease-in-out;`:** This line creates the smooth transition effect for width and height changes on hover.
+* **`max-height: 0;` and `max-height: 100px;`:** These control the height of the text content, revealing it on hover.  Adjust `100px` as needed.
+* **`display: flex;`, `flex-direction: column;`, `justify-content: space-between;`:** These flexbox properties are used to neatly arrange the content within the card.
 
 
-**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+## Resources to Learn More
+
+* **CSS Transitions:**  [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **Flexbox Layout:** [CSS-Tricks - A Complete Guide to Flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
+
+
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

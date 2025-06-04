@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers.set()` Conflicts and Unexpected Behavior
+Creating a CSS-only Expanding Card with a Subtle Reveal
