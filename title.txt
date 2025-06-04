@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers` object manipulation for redirects
+Next.js Middleware: Handling `404 Not Found` Errors Efficiently

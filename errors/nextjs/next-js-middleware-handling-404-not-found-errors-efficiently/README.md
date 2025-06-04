@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `404 Not Found` Errors Efficiently
+
 
 This document addresses a common issue developers encounter when using Next.js Middleware: properly handling 404 (Not Found) errors and preventing them from crashing the application or leading to unexpected behavior.  Middleware runs before a request is handled by a page or API route, making it a critical point for error handling.  Improperly handling a 404 in middleware can lead to the entire application failing to respond gracefully.
 
