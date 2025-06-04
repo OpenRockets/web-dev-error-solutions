@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `getHeader` Errors in API Routes
+
 
 This document addresses a common error developers encounter when attempting to access headers within Next.js API routes using the `getHeader` method within middleware.  The error often manifests as an undefined value or a runtime error. This typically occurs because the `getHeader` method is not consistently available across all request contexts in middleware.
 
