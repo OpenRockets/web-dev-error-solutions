@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers` to prevent caching in development
+
 
 This document addresses a common issue encountered when using Next.js Middleware:  preventing aggressive caching during development, leading to stale content being displayed despite code changes.  The problem often stems from browsers or CDNs caching responses even when the `revalidate` setting is used in `middleware.js`.  While `revalidate` controls the cache in production, it doesn't fully address development quirks.  This forces developers to manually control cache headers.
 
