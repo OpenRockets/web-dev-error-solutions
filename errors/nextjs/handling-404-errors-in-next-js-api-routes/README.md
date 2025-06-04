@@ -1,82 +1,74 @@
 # 🐞 Handling 404 Errors in Next.js API Routes
 
 
-This document addresses a common issue developers encounter when building APIs within Next.js: handling 404 (Not Found) errors gracefully in API routes.  Failing to handle these errors properly can lead to unexpected behavior in your application, potentially exposing internal server errors to the client.
+This document describes a common problem encountered when working with Next.js API routes: handling 404 (Not Found) errors gracefully.  Improperly handling these errors can lead to unexpected behavior and poor user experience.
 
 **Description of the Error:**
 
-When a request is made to an API route that doesn't exist or isn't correctly configured, the default behavior is to return a generic 500 (Internal Server Error) or a confusing error message.  This is unhelpful for both the client and the developer trying to debug issues.  A better approach is to explicitly return a 404 Not Found error with a clear, user-friendly message.
+When a request is made to an API route that doesn't exist, Next.js by default returns a generic 500 (Internal Server Error). This isn't user-friendly, and doesn't provide helpful debugging information.  Furthermore, if you're trying to handle the absence of data in a more nuanced manner (e.g., returning an empty array instead of a 404), the default behavior falls short.
 
 **Step-by-Step Code Fix:**
 
-Let's assume you have an API route at `/api/users/[id].js` that fetches user data based on their ID.  If an invalid ID is provided, the route might throw an error or simply fail silently. Here's how to improve this:
+Let's assume we have an API route at `/api/data/[id]`. This route fetches data based on the provided `id`. If the `id` doesn't correspond to any existing data, we want to return a 404 with a clear message instead of a 500 error.
 
-**1. Basic API Route (Incorrect):**
+**1. Initial (Problematic) Code:**
 
 ```javascript
-// pages/api/users/[id].js
-export default async function handler(req, res) {
-  const id = req.query.id;
-  try {
-    const user = await fetchUserData(id); // Hypothetical function
-    res.status(200).json(user);
-  } catch (error) {
-    console.error(error); // Logs the error, but doesn't handle it for the client
-    res.status(500).json({ error: 'Something went wrong' });
-  }
-}
+// pages/api/data/[id].js
+import { PrismaClient } from '@prisma/client';
 
-// Hypothetical fetchUserData function
-async function fetchUserData(id) {
-    //Simulate a failed fetch
-    if (id === 'invalid'){
-        throw new Error('User not found');
-    }
-    // Simulate fetching user data. Replace with your actual logic.
-    return { id: id, name: `User ${id}` };
+const prisma = new PrismaClient();
+
+export default async function handler(req, res) {
+  const { id } = req.query;
+
+  try {
+    const data = await prisma.data.findUnique({ where: { id: id } });
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({ error: 'Internal Server Error' }); // This is what we want to improve.
+  }
 }
 ```
 
-**2. Improved API Route (Correct):**
+**2. Improved Code with 404 Handling:**
+
 
 ```javascript
-// pages/api/users/[id].js
+// pages/api/data/[id].js
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
 export default async function handler(req, res) {
-  const id = req.query.id;
+  const { id } = req.query;
+
   try {
-    const user = await fetchUserData(id);
-    res.status(200).json(user);
-  } catch (error) {
-    if (error.message === 'User not found'){
-        res.status(404).json({ error: 'User not found' });
-    } else {
-        console.error(error);
-        res.status(500).json({ error: 'Something went wrong' });
+    const data = await prisma.data.findUnique({ where: { id: id } });
+    if (!data) {
+      return res.status(404).json({ message: 'Data not found' });
     }
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    //  Handle other potential errors (e.g., database connection errors) differently
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 }
-
-async function fetchUserData(id) {
-    //Simulate a failed fetch
-    if (id === 'invalid'){
-        throw new Error('User not found');
-    }
-    // Simulate fetching user data. Replace with your actual logic.
-    return { id: id, name: `User ${id}` };
-}
 ```
-
 
 **Explanation:**
 
-The improved code explicitly checks for a "User not found" error.  If this specific error occurs, it returns a 404 status code with a descriptive JSON message.  Other errors are still logged to the console and return a 500 status code, preserving error handling for unexpected situations while providing a better user experience for the 404 scenario.  This approach ensures that the client receives informative error responses, improving the overall robustness of your API.
+The improved code explicitly checks if the fetched `data` is null or undefined. If it is, we return a 404 status code along with a user-friendly message.  This provides a much better response for clients that cannot find the requested resource.  We also maintain the `try...catch` block to handle other potential errors (like database connection problems) separately.
+
 
 **External References:**
 
 * [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [HTTP Status Codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
-* [Error Handling in Node.js](https://nodejs.org/api/errors.html)
+* [Handling Errors in Node.js](https://nodejs.org/api/errors.html)  (General Node.js error handling concepts apply)
+* [Prisma Client](https://www.prisma.io/docs/reference/api-reference/prisma-client-reference) (If using Prisma as an ORM)
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
 
