@@ -1,3 +1,5 @@
+# 🐞 Debugging "Error: Route is not found" in Next.js API Routes
+
 
 This document addresses a common error encountered when working with Next.js API routes: the `Error: Route is not found` error.  This typically occurs when Next.js cannot locate the requested API route.  This can stem from various issues, including incorrect file naming, path mismatches, or configuration problems.
 
