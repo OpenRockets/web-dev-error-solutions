@@ -1,3 +1,5 @@
+# 🐞 Handling `NextApiRequest` Errors in Next.js API Routes
+
 
 This document addresses a common problem developers encounter when handling errors within Next.js API routes: effectively catching and responding to errors originating from `NextApiRequest` objects.  Specifically, we'll focus on scenarios where a database query or external API call throws an error, and how to gracefully handle this to prevent unexpected behavior or server crashes.
 
