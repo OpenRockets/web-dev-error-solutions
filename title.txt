@@ -1,1 +1,1 @@
-Fixing VideoJS Player Height Issues on CanvasJS Integration
+Resolving VideoJS Playback Issues on Mobile Devices with Autoplay
