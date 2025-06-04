@@ -1,1 +1,1 @@
-Creating a CSS-only Circular Progress Bar
+Next.js Middleware: Handling `getServerSideProps` and `redirect` Conflicts

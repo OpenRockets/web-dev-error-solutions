@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `getServerSideProps` and `redirect` Conflicts
+
 
 This document addresses a common conflict developers encounter when using Next.js Middleware alongside `getServerSideProps` in pages.  The conflict arises when middleware attempts a redirect, and `getServerSideProps` attempts to render content after the redirect, leading to unexpected behavior or errors.
 
