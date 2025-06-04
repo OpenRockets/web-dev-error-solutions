@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Player Height Issues on CanvasJS Integration
+
 
 ## Description of the Error
 
