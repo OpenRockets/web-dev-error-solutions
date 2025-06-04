@@ -1,85 +1,61 @@
 # 🐞 Resolving CanvasJS Chart Rendering Issues in Internet Explorer
 
 
-## Description of the Error
+This document addresses a common problem encountered when using CanvasJS charts within Internet Explorer (IE) 11 and older versions: failure to render the chart correctly, often resulting in a blank space where the chart should appear.  This issue stems from limitations in IE's support for modern JavaScript features and Canvas rendering optimizations used by CanvasJS.
 
-A common issue faced by developers using CanvasJS in older browsers, specifically Internet Explorer (IE), is the failure of charts to render correctly or at all. This often manifests as a blank space where the chart should be, or as a partially rendered chart with missing elements.  This is primarily due to IE's limited support for modern JavaScript features and Canvas rendering capabilities. While CanvasJS officially supports only IE 11 and above, even in supported versions, compatibility issues can arise.  This problem is exacerbated if you're using older versions of CanvasJS itself or if there are conflicts with other libraries on the page.
+**Description of the Error:**
 
-## Fixing the Problem Step-by-Step
+The primary symptom is a blank area on the page where your CanvasJS chart is supposed to be displayed.  The browser's developer console might show no errors, or it might display vague errors related to script execution or rendering.  The chart works correctly in modern browsers like Chrome, Firefox, and Edge.
 
-This example focuses on resolving rendering issues by ensuring compatibility and properly including the CanvasJS library.
+**Step-by-Step Code Fix:**
 
-**Step 1: Verify CanvasJS Inclusion and Version**
+The solution involves several approaches, prioritizing the most effective one first:
 
-Ensure you've correctly included the CanvasJS library in your HTML file.  Using a CDN is generally recommended for simplicity:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CanvasJS Chart</title>
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script> </head>
-<body>
-  <div id="chartContainer" style="height: 300px; width: 100%;"></div>
-  <script>
-    // Chart code will go here (see Step 2)
-  </script>
-</body>
-</html>
-```
-
-**Always use the latest stable version of CanvasJS.** Check the official website for updates.  Outdated versions may have unresolved IE compatibility bugs.
-
-
-**Step 2:  Minimal Chart Code and Error Handling**
-
-Start with the simplest possible chart configuration to isolate the problem.  Include basic error handling to catch potential issues during chart creation:
+1. **Using a Polyfill for `requestAnimationFrame`:** IE's implementation of `requestAnimationFrame` can be problematic. Including a polyfill ensures consistent behavior across browsers.
 
 ```javascript
-window.onload = function () {
-  var chart = new CanvasJS.Chart("chartContainer", {
-    animationEnabled: true,
-    title:{
-      text: "Simple Chart"
-    },
-    data: [{
-      type: "column",
-      dataPoints: [
-        { label: "Apple",  y: 10  },
-        { label: "Orange", y: 15  }
-      ]
-    }]
-  });
-  chart.render();
+// Include this at the beginning of your HTML file, preferably within the `<head>` section, or in a separate JS file loaded before your CanvasJS code
+if (!window.requestAnimationFrame) {
+    window.requestAnimationFrame = (function() {
+        return window.webkitRequestAnimationFrame ||
+               window.mozRequestAnimationFrame ||
+               window.oRequestAnimationFrame ||
+               window.msRequestAnimationFrame ||
+               function(callback) {
+                   return window.setTimeout(callback, 1000 / 60);
+               };
+    })();
+}
 
-  //Basic error handling: check if chart rendered successfully.  
-  if(chart.render){
-    console.log("Chart rendered successfully!");
-  } else{
-    console.error("Chart rendering failed. Check browser compatibility and CanvasJS inclusion.");
-  }
-};
+// ... rest of your CanvasJS code ...
 ```
 
-**Step 3:  Address potential CSS Conflicts**
+2. **Ensuring Proper CanvasJS Inclusion:** Double-check that you've correctly included the CanvasJS library in your HTML file.  The `<script>` tag should be placed before the part of your code that creates the chart.
 
-Ensure there are no CSS rules that might interfere with the chart's container (`#chartContainer` in this example).  Conflicts can cause rendering issues.  Check for conflicting styles affecting the `width`, `height`, `position`, or `display` properties of the container.
+```html
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>  <!-- Replace with your actual path -->
+```
+
+3. **Conditional Loading for IE (less preferred):** If the above doesn't work and you absolutely must support very old IE versions, you might consider conditionally loading a different charting library (such as Highcharts, which has better IE support) or displaying an alternative message for IE users.  This is less elegant but might be necessary in some situations.
+
+```javascript
+if (/*@cc_on!@*/false || !!document.documentMode) { // Detect IE
+    // Display an alternative message or load a different charting library
+    document.getElementById("chartContainer").innerHTML = "CanvasJS is not fully supported in your browser. Please upgrade.";
+} else {
+    // Your existing CanvasJS code here
+}
+```
 
 
-**Step 4:  Consider using a Polyfill (if absolutely necessary)**
+**Explanation:**
 
-For extremely old IE versions (below IE11), consider using a polyfill to add support for missing features required by CanvasJS.  This is generally a last resort as it adds complexity and might not guarantee compatibility. Research polyfills specific to CanvasJS requirements or features that are failing.  However, supporting older browsers than IE11 is not recommended due to security vulnerabilities and lack of support from most modern frameworks.
+The `requestAnimationFrame` polyfill addresses the most likely cause—inconsistencies in how IE handles animation requests. By providing a fallback implementation, you ensure smoother and more reliable chart rendering.  The conditional loading strategy is a workaround that sacrifices elegance for compatibility, but should be used cautiously.  Always prioritize fixing the underlying issue whenever possible.
 
+**External References:**
 
-## Explanation
-
-The core reason for rendering failures in IE is the browser's limitations in handling modern web technologies. CanvasJS relies on relatively modern JavaScript and rendering techniques.  Older IE versions may lack the necessary support for these features.  By using a current CanvasJS version, error handling, and checking for CSS conflicts you can isolate and often resolve the problem. Using a polyfill should be viewed as a solution of last resort.
-
-
-## External References
-
-* **CanvasJS Official Website:** [https://canvasjs.com/](https://canvasjs.com/)  (Check for documentation, support, and updates)
-* **MDN Web Docs (for browser compatibility):** [https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
+* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/) (Check for specific IE support information within their documentation)
+* **MDN Web Docs on `requestAnimationFrame`:** [https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

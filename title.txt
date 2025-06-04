@@ -1,1 +1,1 @@
-Creating a Pure CSS Circular Progress Bar
+Resolving CanvasJS Chart Rendering Issues in Internet Explorer
