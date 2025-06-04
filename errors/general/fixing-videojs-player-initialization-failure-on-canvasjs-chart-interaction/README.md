@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Player Initialization Failure on CanvasJS Chart Interaction
+
 
 This document addresses a common issue where a VideoJS player fails to initialize or plays erratically when integrated with a CanvasJS chart.  This often occurs because both libraries might be vying for the same DOM elements or conflicting event listeners.  This scenario is particularly problematic if the VideoJS player is embedded within or near the CanvasJS chart's container.
 
