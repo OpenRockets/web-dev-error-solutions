@@ -1,3 +1,5 @@
+# 🐞 Handling 404 Errors in Next.js API Routes
+
 
 This document addresses a common issue developers encounter when building APIs within Next.js: handling 404 (Not Found) errors gracefully in API routes.  Failing to handle these errors properly can lead to unexpected behavior in your application, potentially exposing internal server errors to the client.
 

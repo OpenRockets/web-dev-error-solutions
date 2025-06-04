@@ -1,1 +1,1 @@
-Handling `ReferenceError: regeneratorRuntime is not defined` in Next.js API Routes
+Handling 404 Errors in Next.js API Routes
