@@ -1,77 +1,79 @@
 
-## Description of the Error
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This example utilizes CSS3 properties for its functionality.
 
-A common issue developers encounter when integrating VideoJS within a CanvasJS chart visualization involves player initialization failures.  This often manifests as a blank space where the VideoJS player should be, or JavaScript console errors related to `VideoJS` being undefined or failing to find the target element.  This is usually caused by conflicts in the order of loading JavaScript libraries or issues with element visibility and timing when the VideoJS player attempts to initialize within a dynamically-generated or hidden CanvasJS chart container.
+**Description of the Styling:**
 
-## Step-by-Step Code Fix
+This technique leverages the `clip-path` property to create a circular mask that reveals a portion of an underlying circle.  By manipulating the `rotate` transform and the `clip-path`'s arc, we control the visible portion of the circle, simulating progress.  We'll also use some basic styling for aesthetics.
 
-This example demonstrates integrating a VideoJS player within a CanvasJS chart. We'll address the common initialization problem by ensuring the chart is fully rendered before attempting to initialize the VideoJS player.
-
-**1. Include necessary libraries:**
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<title>VideoJS in CanvasJS</title>
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>  <!-- CanvasJS -->
-<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>      <!-- VideoJS -->
-<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet"> <!-- VideoJS CSS -->
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #f0f0f0; /* Light gray background */
+  position: relative;
+}
+
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #4CAF50; /* Green progress color */
+  clip-path: circle(50% at 50% 50%); /*initial clip-path */
+  animation: progress-animation 3s linear forwards;
+}
+
+@keyframes progress-animation {
+  0% {
+    clip-path: circle(0% at 50% 50%);
+  }
+  100% {
+    clip-path: circle(50% at 50% 50%);  /* adjust 50% to change progress percentage */
+    clip-path: circle(75% at 50% 50%); /* 75% progress */
+  }
+}
+</style>
 </head>
 <body>
-<div id="chartContainer" style="height: 300px; width: 100%;"></div>
-<script>
-//CanvasJS Chart Code
-window.onload = function () {
-  var chart = new CanvasJS.Chart("chartContainer", {
-    animationEnabled: true,
-    title:{
-      text: "Chart with VideoJS"
-    },
-    data: [{
-      type: "column",
-      dataPoints: [
-        { label: "Apple",  y: 10  },
-        { label: "Orange", y: 15  },
-        { label: "Banana", y: 25  }
-      ]
-    }]
-  });
-  chart.render();
 
+<h1>CSS Circular Progress Bar</h1>
 
-  // Wait for chart to render before initializing VideoJS
-  setTimeout(function() {
-    var video = videojs('my-video');
-  }, 500); // Adjust timeout as needed depending on chart rendering time
+<div class="progress-ring"></div>
 
-};
-
-
-</script>
-
-<video id="my-video" class="video-js" controls preload="auto" width="640" height="264" poster="https://vjs.zencdn.net/v/oceans.png" data-setup="{}">
-  <source src="https://vjs.zencdn.net/v/oceans.mp4" type="video/mp4">
-  <p class="vjs-no-js">
-    To view this video please enable JavaScript, and consider upgrading to a web browser that
-    <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a>
-  </p>
-</video>
 </body>
 </html>
-
 ```
 
-**2. Explanation:**
+**Explanation:**
 
-The crucial part is the `setTimeout` function. This ensures that the VideoJS player (`videojs('my-video')`) is initialized *after* the CanvasJS chart has completed rendering.  Without this delay, the `#my-video` element may not be available or fully rendered in the DOM when VideoJS attempts to find and initialize it, leading to the initialization error. The 500ms delay is arbitrary; you might need to adjust it based on the complexity of your chart and the performance of the browser. Consider using a more robust approach like listening to a render complete event if available in the Chart library.
+1. **`progress-ring`:** This is the container for the progress bar. It's a square div given a circular shape using `border-radius`.
+
+2. **`progress-ring::before`:** This pseudo-element creates the circular progress indicator.  It's positioned absolutely within the container and uses `transform: translate(-50%, -50%)` to center itself.
+
+3. **`clip-path: circle(50% at 50% 50%);`:** This is the core of the effect.  `circle()` creates a circular clipping region. The first value (50%) defines the radius (50% of the element's width/height), and the `at` keyword specifies the center of the circle.  The animation changes this radius.
+
+4. **`animation: progress-animation 3s linear forwards;`:** This applies a CSS animation named `progress-animation` that takes 3 seconds, uses linear timing, and runs once (`forwards` keeps the final state).
+
+5. **`@keyframes progress-animation`:** This defines the animation.  The `clip-path`'s radius changes from 0% to 75% (adjust this value to change the progress percentage) over the 3-second duration.
 
 
-## External References
+**Links to Resources to Learn More:**
 
-* **CanvasJS Documentation:** [https://canvasjs.com/docs/](https://canvasjs.com/docs/)
-* **VideoJS Documentation:** [https://videojs.com/](https://videojs.com/)
+* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS-Tricks - `clip-path` examples:** [https://css-tricks.com/almanac/properties/c/clip-path/](https://css-tricks.com/almanac/properties/c/clip-path/)
 
 
-## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
