@@ -1,1 +1,1 @@
-Fixing VideoJS Player Initialization Failure on CanvasJS Chart Interaction
+Fixing VideoJS Player Buffering Issues on Slow Connections

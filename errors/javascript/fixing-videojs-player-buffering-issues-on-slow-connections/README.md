@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Player Buffering Issues on Slow Connections
+
 
 ## Description of the Error
 
