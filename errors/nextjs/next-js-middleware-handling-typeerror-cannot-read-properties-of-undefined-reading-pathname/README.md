@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `TypeError: Cannot read properties of undefined (reading 'pathname')`
+
 
 This document addresses a common `TypeError` encountered when working with Next.js Middleware, specifically the error: `TypeError: Cannot read properties of undefined (reading 'pathname')`. This error typically arises when accessing the `req.nextUrl.pathname` property within middleware before it's properly defined.  This often happens due to incorrect usage or timing of accessing request properties.
 
