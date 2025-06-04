@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `NextResponse.redirect` with Query Parameters
+
 
 This document addresses a common issue encountered when using `NextResponse.redirect` within Next.js Middleware: preserving query parameters during redirection.  Incorrect handling can lead to data loss and broken user experiences.
 
