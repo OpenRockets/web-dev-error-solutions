@@ -1,3 +1,5 @@
+# 🐞 Handling `ReferenceError: process is not defined` in Next.js API Routes
+
 
 This document addresses a common error encountered when working with Next.js API routes: `ReferenceError: process is not defined`. This error arises because API routes run in a Node.js environment, but certain libraries or code snippets assume a browser environment where the global `process` object is not available.
 
