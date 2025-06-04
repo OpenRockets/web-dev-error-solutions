@@ -1,1 +1,1 @@
-Fixing VideoJS Player Initialization Issues in CanvasJ Integration
+Resolving VideoJS Player Initialization Failure on Certain Browsers
