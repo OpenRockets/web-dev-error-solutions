@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Response already sent` Error
+Creating a CSS-only Expanding Card
