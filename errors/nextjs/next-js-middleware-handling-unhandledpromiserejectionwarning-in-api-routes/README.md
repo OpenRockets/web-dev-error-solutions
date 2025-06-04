@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `UnhandledPromiseRejectionWarning` in API Routes
+
 
 ## Description of the Error
 
