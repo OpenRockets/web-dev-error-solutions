@@ -1,78 +1,77 @@
 # 🐞 Resolving VideoJS Player Initialization Issues within a CanvasJS Chart Container
 
 
+This document addresses a common problem encountered when attempting to embed a VideoJS player within a CanvasJS chart's container.  The issue often manifests as the VideoJS player failing to initialize or render correctly, leaving a blank space where the video should be. This usually happens because VideoJS requires a properly sized and rendered DOM element to function correctly, and CanvasJS might not provide this immediately or in the way VideoJS expects, especially if there are asynchronous rendering operations.
+
 ## Description of the Error
 
-A common problem developers encounter is the failure of a VideoJS player to initialize correctly when embedded within a CanvasJS chart container. This typically manifests as a blank space where the video player should be, or error messages in the browser's console related to player initialization or element finding. The root cause is often a conflict between the two libraries' DOM manipulation or timing of element rendering. CanvasJS might render its chart elements before VideoJS has a chance to fully initialize and attach its player to the designated HTML element.
-
+The error isn't a specific JavaScript error message, but rather a visual one: the VideoJS player either doesn't appear at all or shows a broken/empty placeholder within the designated CanvasJS chart container.  The browser's developer console may be silent, or may show unrelated warnings unrelated to the core issue. This is often due to a race condition where VideoJS attempts initialization before the CanvasJS chart has fully rendered the container element.
 
 ## Step-by-Step Code Fix
 
-This example assumes you're using a basic HTML structure with a `<div>` element intended to hold the VideoJS player, embedded within a `<div>` designated for the CanvasJS chart.
-
-**1. HTML Structure:**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>VideoJS in CanvasJS</title>
-  <script src="https://cdn.canvasjs.com/4.3.3/canvasjs.min.js"></script> <!-- Replace with your CanvasJS version -->
-  <script src="https://cdn.jsdelivr.net/npm/video.js@7/dist/video.min.js"></script>  <!-- Replace with your VideoJS version -->
-  <link href="https://cdn.jsdelivr.net/npm/video.js@7/dist/video-js.css" rel="stylesheet">
-</head>
-<body>
-  <div id="chartContainer" style="height: 300px; width: 100%;"></div>
-  <div id="myVideo" style="width:640px;height:360px;"></div>
-  <script src="script.js"></script> </body>
-</html>
-```
-
-**2. JavaScript (script.js):**
+This solution uses a technique to ensure the CanvasJS chart is fully rendered before initializing the VideoJS player. We leverage the `afterSetOptions` event provided by CanvasJS.
 
 ```javascript
+// Include necessary libraries (ensure correct paths)
+// <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+// <script src="https://vjs.zencdn.net/7.19.2/video.min.js"></script>
+
 window.onload = function () {
-  // CanvasJS chart initialization (replace with your chart data)
+
+  // CanvasJS Chart setup
   var chart = new CanvasJS.Chart("chartContainer", {
+    // ... your CanvasJS chart options ...
     animationEnabled: true,
     title: {
-      text: "Chart Title"
+      text: "My Chart"
     },
-    data: [{
-      type: "column",
-      dataPoints: [
-        { y: 10, label: "Apple" },
-        { y: 15, label: "Orange" },
-        { y: 25, label: "Banana" }
-      ]
-    }]
+    data: [
+      // ... your data points ...
+    ],
+    afterSetOptions: function(){
+      initializeVideoJS();
+    }
   });
   chart.render();
 
-
-  //Ensure CanvasJS is fully rendered before initializing VideoJS
-  setTimeout(() => {
-    // VideoJS player initialization
-      videojs('myVideo', {
-        sources: [{ src: "your_video.mp4", type: "video/mp4" }], //replace with your video source
-        autoplay: false,
-      }, function() {
-        console.log("Video.js player is ready");
-      });
-  }, 500); // Adjust timeout as needed, depends on chart rendering time
-
+  function initializeVideoJS() {
+    // VideoJS Player setup
+    var player = videojs('myVideo', {
+      sources: [{
+        src: 'your_video.mp4',
+        type: 'video/mp4'
+      }],
+      autoplay: false,
+      controls: true
+    });
+    //Optional: Handle potential errors gracefully
+    player.on('error', function(error){
+      console.error("VideoJS Error:", error);
+      //Add any desired error handling logic.  For example, display an alternative message to the user.
+    });
+  }
 };
+
+
 ```
 
-**Explanation:**
+**HTML Structure (Important):** Make sure you have a `<div>` with the ID `chartContainer` and another nested `<video>` element with the ID `myVideo` within the `chartContainer`.
 
-The key change is the use of `setTimeout`. This function delays the initialization of the VideoJS player for 500 milliseconds (0.5 seconds).  This gives CanvasJS sufficient time to render its chart and ensure the DOM element (`#myVideo`) exists and is ready for VideoJS to attach to. You may need to adjust the timeout value depending on the complexity of your chart and the speed of your user's machine.  Experiment to find a suitable delay.
+```html
+<div id="chartContainer">
+    <video id="myVideo" class="video-js vjs-default-skin" width="640" height="360"></video>
+</div>
+```
+
+## Explanation
+
+The key to the solution is using the `afterSetOptions` callback within the CanvasJS chart configuration.  This callback function executes *after* CanvasJS has finished setting up its internal elements and rendered the chart to the DOM. This guarantees that the `chartContainer` div exists and is properly sized before the VideoJS player initialization (`initializeVideoJS` function) is called.  This avoids the race condition and ensures the player can access a valid container element.  The use of  `window.onload` ensures the DOM is fully loaded before trying to access and modify elements.
 
 
 ## External References
 
-* **CanvasJS Documentation:** [https://canvasjs.com/docs/](https://canvasjs.com/docs/)
-* **VideoJS Documentation:** [https://videojs.com/docs/](https://videojs.com/)
+* **CanvasJS Documentation:** [https://canvasjs.com/docs/](https://canvasjs.com/docs/) (Check for documentation on events and rendering lifecycle)
+* **VideoJS Documentation:** [https://videojs.com/](https://videojs.com/) (Check for troubleshooting and API references)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

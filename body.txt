@@ -1,59 +1,75 @@
 
-This document addresses a common problem encountered when using CanvasJS charts within Internet Explorer (IE) 11 and older versions: failure to render the chart correctly, often resulting in a blank space where the chart should appear.  This issue stems from limitations in IE's support for modern JavaScript features and Canvas rendering optimizations used by CanvasJS.
+This document addresses a common problem encountered when attempting to embed a VideoJS player within a CanvasJS chart's container.  The issue often manifests as the VideoJS player failing to initialize or render correctly, leaving a blank space where the video should be. This usually happens because VideoJS requires a properly sized and rendered DOM element to function correctly, and CanvasJS might not provide this immediately or in the way VideoJS expects, especially if there are asynchronous rendering operations.
 
-**Description of the Error:**
+## Description of the Error
 
-The primary symptom is a blank area on the page where your CanvasJS chart is supposed to be displayed.  The browser's developer console might show no errors, or it might display vague errors related to script execution or rendering.  The chart works correctly in modern browsers like Chrome, Firefox, and Edge.
+The error isn't a specific JavaScript error message, but rather a visual one: the VideoJS player either doesn't appear at all or shows a broken/empty placeholder within the designated CanvasJS chart container.  The browser's developer console may be silent, or may show unrelated warnings unrelated to the core issue. This is often due to a race condition where VideoJS attempts initialization before the CanvasJS chart has fully rendered the container element.
 
-**Step-by-Step Code Fix:**
+## Step-by-Step Code Fix
 
-The solution involves several approaches, prioritizing the most effective one first:
-
-1. **Using a Polyfill for `requestAnimationFrame`:** IE's implementation of `requestAnimationFrame` can be problematic. Including a polyfill ensures consistent behavior across browsers.
+This solution uses a technique to ensure the CanvasJS chart is fully rendered before initializing the VideoJS player. We leverage the `afterSetOptions` event provided by CanvasJS.
 
 ```javascript
-// Include this at the beginning of your HTML file, preferably within the `<head>` section, or in a separate JS file loaded before your CanvasJS code
-if (!window.requestAnimationFrame) {
-    window.requestAnimationFrame = (function() {
-        return window.webkitRequestAnimationFrame ||
-               window.mozRequestAnimationFrame ||
-               window.oRequestAnimationFrame ||
-               window.msRequestAnimationFrame ||
-               function(callback) {
-                   return window.setTimeout(callback, 1000 / 60);
-               };
-    })();
-}
+// Include necessary libraries (ensure correct paths)
+// <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+// <script src="https://vjs.zencdn.net/7.19.2/video.min.js"></script>
 
-// ... rest of your CanvasJS code ...
+window.onload = function () {
+
+  // CanvasJS Chart setup
+  var chart = new CanvasJS.Chart("chartContainer", {
+    // ... your CanvasJS chart options ...
+    animationEnabled: true,
+    title: {
+      text: "My Chart"
+    },
+    data: [
+      // ... your data points ...
+    ],
+    afterSetOptions: function(){
+      initializeVideoJS();
+    }
+  });
+  chart.render();
+
+  function initializeVideoJS() {
+    // VideoJS Player setup
+    var player = videojs('myVideo', {
+      sources: [{
+        src: 'your_video.mp4',
+        type: 'video/mp4'
+      }],
+      autoplay: false,
+      controls: true
+    });
+    //Optional: Handle potential errors gracefully
+    player.on('error', function(error){
+      console.error("VideoJS Error:", error);
+      //Add any desired error handling logic.  For example, display an alternative message to the user.
+    });
+  }
+};
+
+
 ```
 
-2. **Ensuring Proper CanvasJS Inclusion:** Double-check that you've correctly included the CanvasJS library in your HTML file.  The `<script>` tag should be placed before the part of your code that creates the chart.
+**HTML Structure (Important):** Make sure you have a `<div>` with the ID `chartContainer` and another nested `<video>` element with the ID `myVideo` within the `chartContainer`.
 
 ```html
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>  <!-- Replace with your actual path -->
+<div id="chartContainer">
+    <video id="myVideo" class="video-js vjs-default-skin" width="640" height="360"></video>
+</div>
 ```
 
-3. **Conditional Loading for IE (less preferred):** If the above doesn't work and you absolutely must support very old IE versions, you might consider conditionally loading a different charting library (such as Highcharts, which has better IE support) or displaying an alternative message for IE users.  This is less elegant but might be necessary in some situations.
+## Explanation
 
-```javascript
-if (/*@cc_on!@*/false || !!document.documentMode) { // Detect IE
-    // Display an alternative message or load a different charting library
-    document.getElementById("chartContainer").innerHTML = "CanvasJS is not fully supported in your browser. Please upgrade.";
-} else {
-    // Your existing CanvasJS code here
-}
-```
+The key to the solution is using the `afterSetOptions` callback within the CanvasJS chart configuration.  This callback function executes *after* CanvasJS has finished setting up its internal elements and rendered the chart to the DOM. This guarantees that the `chartContainer` div exists and is properly sized before the VideoJS player initialization (`initializeVideoJS` function) is called.  This avoids the race condition and ensures the player can access a valid container element.  The use of  `window.onload` ensures the DOM is fully loaded before trying to access and modify elements.
 
 
-**Explanation:**
+## External References
 
-The `requestAnimationFrame` polyfill addresses the most likely cause—inconsistencies in how IE handles animation requests. By providing a fallback implementation, you ensure smoother and more reliable chart rendering.  The conditional loading strategy is a workaround that sacrifices elegance for compatibility, but should be used cautiously.  Always prioritize fixing the underlying issue whenever possible.
-
-**External References:**
-
-* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/) (Check for specific IE support information within their documentation)
-* **MDN Web Docs on `requestAnimationFrame`:** [https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame)
+* **CanvasJS Documentation:** [https://canvasjs.com/docs/](https://canvasjs.com/docs/) (Check for documentation on events and rendering lifecycle)
+* **VideoJS Documentation:** [https://videojs.com/](https://videojs.com/) (Check for troubleshooting and API references)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
