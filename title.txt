@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with a subtle animation
+Dealing with `TypeError: next.json.rewrite is not a function` in Next.js Middleware

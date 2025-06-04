@@ -1,3 +1,5 @@
+# 🐞 Dealing with `TypeError: next.json.rewrite is not a function` in Next.js Middleware
+
 
 This document addresses a common error encountered when using Next.js Middleware: `TypeError: next.json.rewrite is not a function`. This error typically arises when attempting to use the `rewrite` method within middleware incorrectly, often due to misunderstanding its usage within the context of the `next` object.  The `rewrite` method is specifically designed for manipulating the incoming request's path and is not available in all middleware contexts or configurations.
 
