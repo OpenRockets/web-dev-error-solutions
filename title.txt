@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `TypeError: Cannot read properties of undefined (reading 'pathname')`
+Next.js Middleware: Handling `headers.set()` Conflicts and Unexpected Behavior

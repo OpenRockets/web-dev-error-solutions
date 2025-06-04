@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers.set()` Conflicts and Unexpected Behavior
+
 
 This document addresses a common issue developers encounter when using Next.js Middleware: unintended header modifications due to multiple `headers.set()` calls within the same middleware function, often leading to unexpected behavior or errors in the client.
 
