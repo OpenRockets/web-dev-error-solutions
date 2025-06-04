@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers already sent` Error
+Handling `Error: Next.js middleware response must not contain a 'Set-Cookie' header`
