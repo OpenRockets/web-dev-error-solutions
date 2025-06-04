@@ -1,11 +1,11 @@
-# 🐞 Creating a CSS-only 3D Cube
+# 🐞 Creating a CSS-Only 3D Cube
 
 
-This document details how to create a three-dimensional cube using only CSS.  No JavaScript is required. This effect leverages CSS transforms (`rotateX`, `rotateY`) and multiple pseudo-elements to build the illusion of depth.
+This document details the creation of a 3D cube using only CSS. No JavaScript is required.  We'll utilize CSS transforms and pseudo-elements to achieve this effect.
 
 **Description of the Styling:**
 
-The cube is constructed using a single `div` element as the base, and six pseudo-elements (`::before` and `::after` nested to create a total of six faces). Each face is styled individually with a different background color to distinguish them.  CSS transforms are then applied to rotate these faces into a three-dimensional arrangement.  The perspective property is crucial in creating the sense of depth.
+This example creates a cube using six divs representing the faces.  Absolute positioning and `transform: rotateX` and `rotateY` are used to create the 3D effect.  Perspective is applied to the parent container to give the illusion of depth. Shadows are added for visual enhancement.
 
 
 **Full Code:**
@@ -16,79 +16,84 @@ The cube is constructed using a single `div` element as the base, and six pseudo
 <head>
 <title>CSS 3D Cube</title>
 <style>
+.container {
+  width: 200px;
+  height: 200px;
+  perspective: 800px; /* Adjust for perspective strength */
+  margin: 50px auto;
+}
+
 .cube {
   width: 100px;
   height: 100px;
   position: relative;
-  perspective: 150px; /* Adjust for perspective strength */
-  margin: 50px auto;
+  transform-style: preserve-3d; /* Essential for 3D transformations */
+  animation: rotate 10s linear infinite; /* Optional animation */
 }
 
-.cube, .cube::before, .cube::after {
-  background-color: #ddd; /* Base color */
-  display: block;
-}
-
-.cube::before, .cube::after {
+.cube div {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
+  width: 100px;
+  height: 100px;
+  background-color: #f00; /* Change colors as desired */
+  opacity: 0.8; /* Adjust opacity for visual effect */
+  border: 2px solid black; /* Add border for definition */
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5); /* Add shadows for depth */
 }
 
-.cube::before {
-  transform: translateZ(-50px) rotateX(90deg);
-  background-color: lightblue; /* Top Face */
+.front {
+  background-color: #f00;
+  transform: translateZ(50px);
 }
 
-.cube::after {
-  transform: translateZ(50px) rotateX(180deg) rotateY(180deg);
-  background-color: lightgreen; /* Bottom Face */
+.back {
+  background-color: #0f0;
+  transform: translateZ(-50px) rotateY(180deg);
 }
 
-.cube:before::before, .cube:before::after, .cube:after::before, .cube:after::after {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    transform-style: preserve-3d;
-    background-color: #ddd;
+.top {
+  background-color: #00f;
+  transform: translateY(-50px) rotateX(90deg);
 }
 
-
-/*Side Faces*/
-
-.cube::before::before {
-  transform: translateZ(-50px) rotateY(90deg);
-  background-color: lightcoral; /* Right Face */
+.bottom {
+  background-color: #ff0;
+  transform: translateY(50px) rotateX(-90deg);
 }
 
-.cube::before::after {
-  transform: translateZ(-50px) rotateY(-90deg);
-  background-color: lightyellow; /* Left Face */
+.left {
+  background-color: #0ff;
+  transform: translateX(-50px) rotateY(-90deg);
 }
 
-.cube::after::before {
-  transform: translateZ(50px) rotateY(90deg);
-  background-color: lightpink; /* Right Face Bottom */
-}
-
-.cube::after::after {
-  transform: translateZ(50px) rotateY(-90deg);
-  background-color: lightcyan; /* Left Face Bottom */
+.right {
+  background-color: #f0f;
+  transform: translateX(50px) rotateY(90deg);
 }
 
 
-
-.cube::before::before, .cube::before::after, .cube::after::before, .cube::after::after {
-    background-size: 100% 100%;
+@keyframes rotate {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
 }
 </style>
 </head>
 <body>
 
-<div class="cube"></div>
+<div class="container">
+  <div class="cube">
+    <div class="front"></div>
+    <div class="back"></div>
+    <div class="top"></div>
+    <div class="bottom"></div>
+    <div class="left"></div>
+    <div class="right"></div>
+  </div>
+</div>
 
 </body>
 </html>
@@ -96,21 +101,17 @@ The cube is constructed using a single `div` element as the base, and six pseudo
 
 **Explanation:**
 
-1. **`perspective`:** This property on the main `.cube` element creates the 3D viewing space.  Adjust the value (in pixels) to change the perspective strength.
-
-2. **`transform-style: preserve-3d;`:** This crucial property ensures that the transformations on child elements are applied in 3D space.
-
-3. **`translateZ()`:** This moves the pseudo-elements along the z-axis (into and out of the screen), creating the depth.
-
-4. **`rotateX()` and `rotateY()`:** These rotate the elements around the x and y axes, creating the cube's faces.
-
-5. **Nested Pseudo-elements:** We use nested pseudo-elements to efficiently create the cube's six faces. The careful arrangement of rotations and translations is key to achieve the desired effect.
-
+* **`perspective`:** This property on the container creates the 3D space.  Adjust the value to change the perspective.
+* **`transform-style: preserve-3d;`:** This is crucial. It tells the browser to render the child elements in 3D space.
+* **`translateZ()`:** This moves elements along the z-axis (depth).
+* **`rotateX()` and `rotateY()`:** These rotate elements around the x and y axes.
+* **Pseudo-elements (not used here, but could be):** Could be used to create more complex shapes or effects within the cube faces.  This example uses separate divs for simplicity.
+* **Animation (optional):** The `@keyframes` rule creates a simple rotation animation.
 
 **Links to Resources to Learn More:**
 
 * **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Tricks on 3D Transforms:** (Search for "CSS 3D Transforms" on CSS Tricks website)
+* **CSS-Tricks on 3D Transforms:** [https://css-tricks.com/almanac/properties/t/transform/](https://css-tricks.com/almanac/properties/t/transform/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
