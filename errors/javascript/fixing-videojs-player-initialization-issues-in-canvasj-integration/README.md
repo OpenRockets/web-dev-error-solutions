@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Player Initialization Issues in CanvasJ Integration
+
 
 This document addresses a common problem developers encounter when integrating VideoJS within a CanvasJS chart visualization:  failure of the VideoJS player to initialize correctly, often manifesting as a blank space where the player should be. This typically occurs when the VideoJS player's initialization depends on elements that haven't yet rendered within the CanvasJS chart's container or when there's a conflict between their JavaScript libraries.
 

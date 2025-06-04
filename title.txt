@@ -1,1 +1,1 @@
-Creating a CSS-Only Expanding Card
+Fixing VideoJS Player Initialization Issues in CanvasJ Integration
