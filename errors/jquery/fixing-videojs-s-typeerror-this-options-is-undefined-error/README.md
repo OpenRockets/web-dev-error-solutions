@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS's "TypeError: this.options is undefined" Error
+
 
 ## Description of the Error
 
