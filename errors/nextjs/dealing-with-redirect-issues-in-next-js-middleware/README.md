@@ -1,3 +1,5 @@
+# 🐞 Dealing with `Redirect` Issues in Next.js Middleware
+
 
 Next.js Middleware offers powerful capabilities for manipulating requests before they reach your pages, but improper use of redirects can lead to unexpected behavior. This document addresses a common issue: infinite redirect loops caused by incorrectly configuring middleware redirects.
 
