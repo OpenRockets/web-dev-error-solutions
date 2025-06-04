@@ -1,1 +1,1 @@
-Debugging "Error: Route is not found" in Next.js API Routes
+Creating a CSS-Only Expanding Card

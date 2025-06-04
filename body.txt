@@ -1,62 +1,64 @@
 
-This document addresses a common error encountered when working with Next.js API routes: the `Error: Route is not found` error.  This typically occurs when Next.js cannot locate the requested API route.  This can stem from various issues, including incorrect file naming, path mismatches, or configuration problems.
+This document details the creation of an expanding card using only CSS.  This effect is achieved without any JavaScript, relying solely on CSS transitions and pseudo-elements. The card expands vertically when hovered over, revealing hidden content.  This example utilizes plain CSS, but could easily be adapted for frameworks like Tailwind CSS.
 
+**Description of the Styling:**
 
-**Description of the Error:**
+The core of this effect involves using the `:hover` pseudo-class to trigger a transition on the card's height.  The hidden content is initially set to `height: 0;` and `overflow: hidden;`.  On hover, the height is changed to `auto`, revealing the hidden content smoothly thanks to the CSS transition. A subtle background color change and border radius modification enhance the visual appeal.
 
-The `Error: Route is not found` error in Next.js API routes manifests as a 404 error in the browser's developer console or in your application logs.  It indicates that the client's request to a specific API endpoint failed because Next.js couldn't find the corresponding API route handler file.
+**Full Code:**
 
-**Example Scenario:**
-
-Let's say you're building an API route to fetch data from a database. You might create a file named `pages/api/data.js`, expecting it to handle requests to `/api/data`. However, if you misspell the filename (e.g., `pages/api/datas.js`) or place it in the wrong directory, you will encounter this error.
-
-
-**Step-by-Step Code Fix:**
-
-Let's assume you're trying to create an API route at `/api/hello` that returns a JSON response.
-
-**Incorrect Code (Illustrative):**
-
-```javascript
-// pages/api/hello.ts  (Incorrect filename: should be hello.js)
-export default function handler(req, res) {
-  res.status(200).json({ message: 'Hello from API Route!' });
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  padding: 20px;
+  transition: background-color 0.3s ease, height 0.3s ease, border-radius 0.3s ease; /* Smooth transitions */
+  overflow: hidden; /* Hide content that overflows */
+  height: 100px; /* Initial height */
 }
+
+.card:hover {
+  background-color: #ddd;
+  border-radius: 10px;
+  height: auto; /* Expand to full height on hover */
+}
+
+.card-content {
+  /* initially hidden content */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <p>This is the visible content of the card.</p>
+  <div class="card-content">
+    <p>This is the hidden content that appears on hover.  This could be a longer description, additional images, or any other information you want to reveal.</p>
+    <p>Expanding cards are a great way to add interactive elements to your website without resorting to JavaScript.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**Correct Code:**
+**Explanation:**
 
-```javascript
-// pages/api/hello.js
-export default function handler(req, res) {
-  res.status(200).json({ message: 'Hello from API Route!' });
-}
-```
-
-**Explanation of Changes:**
-
-1. **File Extension:** The original example used `.ts` (TypeScript).  Next.js API routes generally work best with `.js` files unless you have specifically configured TypeScript support.  While TypeScript is possible, sticking to `.js` for simplicity often avoids unexpected issues.
+* **`.card`:**  This class styles the card itself, setting the background color, padding, initial height, and the transitions for background color, height, and border radius. `overflow: hidden` ensures that the hidden content doesn't initially bleed out.
+* **`.card:hover`:** This targets the card when the mouse hovers over it.  It changes the background color, increases the border radius, and crucially, sets the `height` to `auto`, allowing the content to expand to its natural height.
+* **`.card-content`:** This class (though not explicitly styled here) contains the hidden content, which is revealed on hover due to the height transition.  You could add more specific styling to this class as needed.
 
 
-2. **File Path:** The `pages/api` directory is crucial.  All API routes must reside within this directory.  Any deviations will result in a 404.
+**Links to Resources to Learn More:**
 
-
-**Verification:**
-
-After making the correction, restart your Next.js development server.  Access the API route in your browser (or using a tool like Postman) via:  `http://localhost:3000/api/hello`. You should now receive the JSON response: `{"message": "Hello from API Route!"}`.
-
-
-**External References:**
-
-* **Next.js API Routes Documentation:** [https://nextjs.org/docs/api-routes/introduction](https://nextjs.org/docs/api-routes/introduction)  (Official documentation for Next.js API routes)
-* **Troubleshooting Next.js:** [https://nextjs.org/docs/troubleshooting](https://nextjs.org/docs/troubleshooting) (General troubleshooting guide for Next.js)
-
-
-**Further Troubleshooting Tips:**
-
-* **Check your `next.config.js`:** Ensure you haven't made any configurations that might interfere with API routes.
-* **Inspect Network Tab:** Use your browser's developer tools (Network tab) to see the exact request and response details.  This helps pinpoint the source of the problem.
-* **Use a REST client:** Tools like Postman provide more detailed error messages than a simple browser request.
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
+* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+* **Understanding `overflow` property:** [MDN Web Docs - overflow property](https://developer.mozilla.org/en-US/docs/Web/CSS/overflow)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
