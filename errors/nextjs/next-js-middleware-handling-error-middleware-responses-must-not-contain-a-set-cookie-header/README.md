@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: Middleware responses must not contain a `set-cookie` header`
+
 
 This document addresses a common error encountered when using Next.js Middleware: `Error: Middleware responses must not contain a 'set-cookie' header`.  This error arises because Middleware is designed for modifying requests *before* they reach the page or API route, not for directly setting cookies.  Cookies should be set within the API routes themselves.
 
