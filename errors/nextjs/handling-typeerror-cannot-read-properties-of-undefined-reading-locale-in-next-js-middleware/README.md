@@ -1,3 +1,5 @@
+# 🐞 Handling "TypeError: Cannot read properties of undefined (reading 'locale')" in Next.js Middleware
+
 
 This document addresses a common error encountered when using Next.js's middleware functionality: `TypeError: Cannot read properties of undefined (reading 'locale')`. This typically arises when attempting to access request locale data before it's properly available within the middleware function.
 
