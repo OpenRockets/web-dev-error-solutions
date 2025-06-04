@@ -1,1 +1,1 @@
-Fixing VideoJS Player Autoplay Issues on Mobile Devices
+Fixing VideoJS Player Initialization Issues in CanvasJS Charts

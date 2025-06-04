@@ -1,70 +1,70 @@
 
-## Description of the Error
+This document addresses a common problem developers encounter when integrating a VideoJS player within a CanvasJS chart visualization: the VideoJS player failing to initialize correctly, often resulting in a blank space where the player should be.  This usually happens when the VideoJS player's initialization code attempts to interact with the DOM element before the CanvasJS chart has fully rendered the element it's intended for.
 
-A common problem encountered when using Video.js is the failure of autoplay to function correctly on mobile devices (iOS and Android).  While autoplay might work fine on desktop browsers, mobile browsers often block autoplay due to user preference settings and power consumption considerations.  This results in a silent video player, with no video playing automatically upon page load.  The user is then required to manually initiate playback.  This is frustrating for the user experience and might lead to lower engagement.
+**Description of the Error:**
 
-## Fixing Step-by-Step
+The error manifests as a blank area where your VideoJS player should be displayed.  The browser's developer console might not show any specific errors, making debugging more challenging.  The underlying cause is a race condition: VideoJS tries to initialize before the CanvasJS chart has created the div element the player is targeted at.
 
-The solution involves utilizing the `autoplay` attribute correctly in conjunction with user interaction.  Mobile browsers generally allow autoplay if the user has already interacted with the page. We'll achieve this by triggering the `play()` method after a user event, like a click.
+**Code (Step-by-Step Fix):**
 
-**Code:**
+This solution uses a combination of CanvasJS's `afterSetOptions` event and a promise to ensure proper sequencing.  We'll assume your VideoJS setup is already in place (including including the VideoJS library).
+
+```javascript
+// CanvasJS chart setup
+var chart = new CanvasJS.Chart("chartContainer", {
+    // ... your chart options ...
+    afterSetOptions: function() {
+        // Check if the element exists before initializing VideoJS
+        const videoContainer = document.getElementById("video-container");
+        if (videoContainer) {
+            return new Promise((resolve) => {
+                //Check if videoContainer is ready 
+                const checkInterval = setInterval(() => {
+                    if(videoContainer.offsetWidth > 0){
+                        clearInterval(checkInterval);
+                        // Initialize VideoJS player. This is where your current VideoJS initialization code goes.
+                        var player = videojs('video-container', {
+                          // Your VideoJS options here, like sources, controls etc.
+                          sources: [{ src: 'your_video.mp4', type: 'video/mp4' }],
+                        });
+                        resolve();
+                    }
+                }, 100); //Check every 100ms. Adjust as needed.
+            });
+        }else {
+            console.error("Video Container element not found.")
+        }
+    }
+});
+chart.render();
+```
+
+**HTML Structure:**
+
+Make sure your HTML includes a `<div>` element with the ID "chartContainer" for your CanvasJS chart and a nested `<div>` with the ID "video-container" where your VideoJS player will be embedded.  This structure allows the CanvasJS chart to render the `video-container` before VideoJS attempts to use it.
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Video.js Autoplay Fix</title>
-  <script src="https://vjs.zencdn.net/7.20.3/video.js"></script>
-  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
-</head>
-<body>
-
-  <video id="my-video" class="video-js" controls preload="auto" poster="poster.jpg" data-setup='{ "autoplay": true }'>
-    <source src="myvideo.mp4" type="video/mp4">
-    <p class="vjs-no-js">
-      To view this video please enable JavaScript, and consider upgrading to a
-      web browser that <a href="https://videojs.com/html5-video-support/">supports HTML5 video</a>
-    </p>
-  </video>
-
-  <button id="playButton">Play Video</button>
-
-  <script>
-    const player = videojs('my-video');
-    const playButton = document.getElementById('playButton');
-
-    playButton.addEventListener('click', () => {
-      player.play();
-    });
-
-    //Optional:  Handle potential play() errors (e.g., permission denied)
-    player.on('error', (error) => {
-      console.error("Video.js error:", error);
-      //Add your error handling logic here, like displaying a message to the user
-    });
-  </script>
-</body>
-</html>
+<div id="chartContainer">
+    <div id="video-container"></div>
+</div>
 ```
 
 **Explanation:**
 
-1. **Include Video.js:** We include the Video.js library via CDN links in the `<head>`. Remember to replace `"myvideo.mp4"` and `"poster.jpg"` with your actual video and poster image URLs.
+1. **`afterSetOptions`:** This CanvasJS event fires after the chart's options are set and the chart begins rendering. This ensures the chart's DOM elements are created before proceeding.
 
-2. **`data-setup` Attribute:**  The `data-setup` attribute allows us to initialize Video.js options. While `autoplay: true` is set,  mobile browsers will likely ignore it initially.
+2. **Promise and `setInterval`:** The promise and `setInterval` function work together to asynchronously wait until the `video-container` element is actually rendered and has a width (meaning it's visible and ready). The `setInterval` keeps checking every 100ms until the element has a width greater than 0.  If the element is not found then an error is reported to the console. Adjust the interval time as needed based on your chart rendering speed.
 
-3. **Play Button:** A button is added to provide a user interaction trigger.
+3. **Conditional Initialization:**  The code only initializes the VideoJS player if the `video-container` element exists. This adds an extra layer of safety.
 
-4. **Event Listener:**  An event listener on the button's `click` event calls the `player.play()` method, initiating playback after user interaction.  This bypasses the mobile browser's autoplay restrictions.
-
-5. **Error Handling:** The `player.on('error', ...)` section demonstrates how to add basic error handling.  This is crucial for a robust implementation.
+4. **VideoJS Initialization:** Replace `'your_video.mp4'` and other placeholder values with your actual video source and VideoJS options.
 
 
-## External References
+**External References:**
 
-* **Video.js Documentation:** [https://docs.videojs.com/](https://docs.videojs.com/) - The official Video.js documentation is your primary resource for troubleshooting and learning more about its features.
-* **Autoplay Policies:**  Search for "HTML5 video autoplay policies" to find up-to-date information on how various browsers handle autoplay.  The specifics can change over time.
+* [CanvasJS Documentation](https://canvasjs.com/docs/): Official CanvasJS documentation.  Look for sections on events and chart rendering.
+* [Video.js Documentation](https://videojs.com/): Official Video.js documentation.  Consult this for details on player setup and options.
 
 
-## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
