@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card
+Resolving CanvasJS Chart Rendering Issues in a React Application
