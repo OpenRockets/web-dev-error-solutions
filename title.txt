@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card
+Next.js API Routes: Handling CORS Errors
