@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Player Size Issues in Responsive Designs
+
 
 This document addresses a common problem encountered when integrating the Video.js HTML5 video player into responsive web designs: the player's size not adapting correctly to different screen sizes or window resizes.  The player may appear stretched, cropped, or too small. This often manifests as a mismatch between the player's aspect ratio and the container's aspect ratio.
 

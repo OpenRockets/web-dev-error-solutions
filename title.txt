@@ -1,1 +1,1 @@
-Creating a CSS-only Pulsating Heart
+Fixing VideoJS Player Size Issues in Responsive Designs
