@@ -1,3 +1,5 @@
+# 🐞 Handling `next/image` Errors in Next.js API Routes
+
 
 ## Description of the Error
 
