@@ -1,83 +1,55 @@
 
-This document details a CSS-only solution for creating an expanding card effect.  No JavaScript is needed! This effect uses CSS transitions and transforms to smoothly expand a card when it's hovered over.
+## Description of the Error
 
-## Description of the Styling
+A common issue in VideoJS, especially on mobile devices, is the disappearance of the player controls after a short period of inactivity.  The controls simply vanish, leaving the user unable to pause, adjust volume, or interact with the video. This frustrating experience significantly impacts user engagement and satisfaction.  The problem often stems from a conflict between VideoJS's default behavior and mobile browser optimizations designed to save battery power and screen space.
 
-This technique utilizes the `:hover` pseudo-class to trigger a transformation on the card.  When the mouse hovers over the card, it expands in size and optionally reveals hidden content.  The key is leveraging CSS transitions to create a smooth animation.  We'll also employ some basic box-shadow styling for visual appeal.
 
-## Full Code
+## Step-by-Step Code Fix
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Added transition for smoother effect */
-  overflow: hidden; /* Hide content that extends beyond card initially */
-  width: 300px;
-}
+This solution focuses on modifying the `userActivity` property within VideoJS's options to prevent the automatic hiding of controls.
 
-.card:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-}
+**Before:**
 
-.card-content {
-  height: 100px; /* Initial height */
-  overflow: hidden; /* Hide content beyond initial height */
-  transition: height 0.3s ease-in-out; /* Added transition for smoother effect */
-}
+Let's assume your basic VideoJS initialization looks something like this:
 
-.card:hover .card-content {
-  height: 200px; /* Height on hover */
-}
-
-.card h2 {
-  margin-top: 0;
-}
-
-.card p{
-  margin-bottom: 0;
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <h2>Card Title</h2>
-  <div class="card-content">
-    <p>This is some example text that will expand when you hover over the card.</p>
-    <p>More text here to demonstrate the expansion.</p>
-  </div>
-</div>
-
-</body>
-</html>
+```javascript
+videojs('my-video', {
+  sources: [{
+    src: 'myvideo.mp4',
+    type: 'video/mp4'
+  }],
+  poster: 'myposter.jpg'
+});
 ```
+
+**After:**
+
+We will add the `userActivity` option to explicitly control the behavior of the controls. The `userActivity` option takes a boolean value. Setting it to `true` disables the automatic hiding.
+
+```javascript
+videojs('my-video', {
+  sources: [{
+    src: 'myvideo.mp4',
+    type: 'video/mp4'
+  }],
+  poster: 'myposter.jpg',
+  userActivity: true // <-- This line fixes the issue
+});
+```
+
+This simple addition tells VideoJS to keep the controls visible at all times, regardless of user inactivity.
+
 
 ## Explanation
 
-* **`transition` property:** This is crucial for the smooth animation.  We're transitioning the `transform` (for scaling) and `box-shadow` properties over 0.3 seconds with an ease-in-out timing function. We also transition the height of the `card-content` div.
-* **`transform: scale(1.1)`:** This increases the size of the card on hover by 10%.
-* **`box-shadow`:**  This adds a more pronounced shadow on hover to enhance the visual effect.
-* **`:hover` pseudo-class:** This selector targets the element when the mouse cursor is over it.
-* **`overflow: hidden`:** This ensures that content exceeding the initial height of the card is hidden before the hover effect.
-* The `card-content` div's height transition allows for a smooth expansion of the content upon hover.
+The `userActivity` option in VideoJS manages the automatic hiding and showing of player controls based on user interaction. By default, VideoJS utilizes this feature to optimize the user experience, especially on mobile where battery life is a major concern.  However, this automatic hiding can be problematic, leading to the issue described above. Setting `userActivity` to `true` disables this automatic behavior, guaranteeing that the controls remain permanently visible on screen.
 
 
-## Links to Resources to Learn More
+## External References
 
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS-Tricks (various articles on CSS animations and effects):** [https://css-tricks.com/](https://css-tricks.com/)
+* **Video.js Documentation:** [https://docs.videojs.com/](https://docs.videojs.com/)  (While the exact documentation for `userActivity` might require searching within the site,  the official documentation is your best source for the most up-to-date information about VideoJS options and functionality.)
+* **Stack Overflow (search for "VideoJS controls disappearing mobile"):**  Searching relevant keywords on Stack Overflow can often provide alternative solutions or workarounds for this common problem.
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
