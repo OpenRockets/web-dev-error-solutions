@@ -29,12 +29,11 @@ jobs:
           echo "Calling Gemini 1.5 Flash to fetch one active GitHub user..."
 
           API_KEY="${{ secrets.GEMINI_API_KEY }}"
-          PROMPT="Give me only one active GitHub username (just the username, no @ symbol or explanation). Make sure it's a real, active developer who contributes to open-source or commits recently."
+          PROMPT="Return only one active GitHub username (just the username, no @, no quotes, no explanation). This user must have recent public GitHub activity and be known to contribute to open-source regularly."
 
           RESPONSE=$(curl -s -X POST \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer $API_KEY" \
-            https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$API_KEY \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$API_KEY" \
             -d "{
               \"contents\": [{
                 \"role\": \"user\",
@@ -42,7 +41,9 @@ jobs:
               }]
             }")
 
-          USERNAME=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text' | sed 's/@//g' | xargs)
+          echo "Raw Gemini response: $RESPONSE"
+
+          USERNAME=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text' | grep -oE '^[a-zA-Z0-9-]{1,39}' | sed 's/@//g' | xargs)
 
           if [[ "$USERNAME" == "null" || -z "$USERNAME" ]]; then
             echo "Gemini failed to return a valid username."
@@ -57,7 +58,7 @@ jobs:
           FILE="invited_users.json"
           USERNAME="${{ env.USERNAME }}"
 
-          # Create file if doesn't exist
+          # Create file if it doesn't exist
           if [ ! -f "$FILE" ]; then
             echo "[]" > "$FILE"
           fi
@@ -82,7 +83,7 @@ jobs:
 
       - name: Invite user to organization
         run: |
-          ORG_NAME="your-org-name"  # <- Replace with your actual org name
+          ORG_NAME="your-org-name"  # <- Replace with your GitHub org name
 
           curl -X POST \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
