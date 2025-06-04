@@ -1,1 +1,1 @@
-Fixing VideoJS Player Size Issues in Responsive Designs
+Creating a CSS-only Circular Progress Bar
