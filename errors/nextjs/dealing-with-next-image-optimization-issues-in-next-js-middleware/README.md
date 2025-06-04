@@ -1,3 +1,5 @@
+# 🐞 Dealing with `next/image` Optimization Issues in Next.js Middleware
+
 
 This document addresses a common problem encountered when using the `next/image` component within Next.js Middleware, API Routes, or other contexts where the standard image optimization features don't behave as expected.  The core issue often stems from attempting to access or manipulate images in environments where the image optimization pipeline isn't fully available.
 

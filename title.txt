@@ -1,1 +1,1 @@
-Dealing with `Redirect` Issues in Next.js Middleware
+Dealing with `next/image` Optimization Issues in Next.js Middleware
