@@ -32,7 +32,8 @@ jobs:
           echo "Calling Gemini 1.5 Flash to fetch one active GitHub user..."
 
           API_KEY="${{ secrets.GEMINI_API_KEY }}"
-          PROMPT="Randomly return only one random GitHub username (just the username, no @, no quotes, no explanation). This user should be randomly chosen from the GitHub community."
+          PROMPT="Return a GitHub username of an open-source contributor with recent activity, who hasn't been mentioned by you recently. Only return the username. No @ symbol, no quotes, no explanations.
+"
 
           RESPONSE=$(curl -s -X POST \
             -H "Content-Type: application/json" \
