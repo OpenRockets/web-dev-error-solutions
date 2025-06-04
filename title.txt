@@ -1,1 +1,1 @@
-Creating a CSS-Only Expanding Card with a Smooth Transition
+Resolving VideoJS Player Size Issues in Responsive Layouts
