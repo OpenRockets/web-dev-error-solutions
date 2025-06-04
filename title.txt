@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `TypeError: data.map is not a function` in API Routes
+Creating a CSS-Only Expanding Card
