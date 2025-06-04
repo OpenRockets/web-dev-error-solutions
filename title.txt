@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers` to prevent caching in development
+Creating a CSS-Only Expanding Card
