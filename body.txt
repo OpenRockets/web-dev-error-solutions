@@ -1,79 +1,85 @@
 
-This document addresses a common issue encountered when using Next.js Middleware: the inability to import modules from `next/server` within regular page components.  Attempting to do so results in runtime errors because Middleware runs on the server, while page components run on both the server (during Server-Side Rendering) and the client (during hydration).
-
-**Description of the Error:**
-
-You'll encounter a runtime error, typically a `ReferenceError` or an error indicating that a `next/server` module is not defined, when you try to use a function or component imported from `next/server` (e.g., `NextResponse`) within a page component's `page.js` file (or any other client-side rendered component).  This is because `next/server` modules are specifically designed for the server-side execution environment provided by Next.js Middleware or API routes.
+This document details how to create an expanding card effect using only CSS.  No JavaScript is required! This effect involves a card that expands vertically when hovered over, revealing more content. We'll be using plain CSS for this example, showcasing the power of CSS transitions and transforms.
 
 
-**Code and Step-by-Step Fix:**
+**Description of the Styling:**
 
-Let's say you have a function `redirectUser` in a file named `utils/redirect.js` that utilizes `NextResponse` from `next/server`:
+The card uses a simple layout with a main container that holds the visible content and a hidden section that expands on hover.  We leverage CSS transitions for smooth animation and transforms for the expansion effect.  The key is using `max-height` and `overflow: hidden` to initially conceal the expandable content.  On hover, `max-height` is changed to allow the content to expand, creating the animation.
 
-```javascript
-// utils/redirect.js (INCORRECT - will cause errors in page.js)
-import { NextResponse } from 'next/server';
+**Full Code:**
 
-export function redirectUser(req, res, destination) {
-  return NextResponse.redirect(new URL(destination, req.url));
-}
-```
-
-And you attempt to use this function in your `page.js` file:
-
-```javascript
-// pages/my-page.js (INCORRECT - will cause errors)
-import { redirectUser } from '../utils/redirect';
-
-export default function MyPage() {
-  // ... other code ...
-  redirectUser(req, res, '/login'); // Error! req and res are undefined in the browser
-  // ... other code ...
-}
-```
-
-This will fail because `req` and `res` objects are only available on the server.  The `NextResponse` object itself is also server-side only.
-
-**Correct Implementation:**
-
-To solve this, separate server-side logic (using `next/server`) from client-side logic.  You can achieve this by creating an API route:
-
-1. **Create an API Route:** Create a file at `pages/api/redirect.js`:
-
-```javascript
-// pages/api/redirect.js
-import { NextResponse } from 'next/server';
-
-export default function handler(req, res) {
-  const destination = req.query.destination;
-  return NextResponse.redirect(new URL(destination || '/', req.url));
-}
-```
-
-2. **Call the API Route from your Page Component:**  Use `fetch` or a similar method to call the API route from your page component:
-
-```javascript
-// pages/my-page.js (CORRECT)
-export default async function MyPage() {
-  // ... other code ...
-  const res = await fetch('/api/redirect?destination=/login');
-  if (!res.ok) {
-    // Handle error
-  }
-  // ... other code ...
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f2f2f2;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: 0.3s ease-in-out; /* Smooth transition */
+  width: 300px;
 }
 
+.card-content {
+  padding: 20px;
+}
+
+.card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card-description {
+  line-height: 1.6;
+}
+
+.card-expand {
+  max-height: 0; /* Initially hidden */
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out; /* Transition for expansion */
+}
+
+.card:hover .card-expand {
+  max-height: 200px; /* Expand on hover */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Expanding Card</h2>
+    <p class="card-description">This is a simple card that expands on hover to reveal more content.  No JavaScript required!</p>
+  </div>
+  <div class="card-expand">
+    <p>This is the extra content that will be revealed when you hover over the card.  You can add as much content as you need here.</p>
+    <p>This demonstrates a simple but effective CSS-only animation.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
+
 
 **Explanation:**
 
-By separating the redirect logic into an API route, the `next/server` imports and server-side functionalities are confined to the server-side code. The client-side component interacts with the server using standard `fetch` calls. This approach ensures that the code runs correctly in both the server and client environments, avoiding runtime errors.
+* **`card` class:** Styles the overall card with background, border radius, shadow, and a transition for smooth animation.
+* **`card-content` class:** Styles the content visible by default.
+* **`card-title` and `card-description` classes:** Style the title and description.
+* **`card-expand` class:**  Crucially, this class uses `max-height: 0;` and `overflow: hidden;` to initially hide the expandable content. The `transition` property ensures a smooth animation.
+* **`.card:hover .card-expand`:** This selector targets the `.card-expand` element *only when* its parent `.card` is hovered. It sets `max-height: 200px;`, allowing the content to expand.  Adjust `200px` to control the expansion height.
 
-**External References:**
 
-* [Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)
-* [Next.js Middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js Server Components](https://nextjs.org/docs/app/building-your-application/data-fetching/server-components)
+**Links to Resources to Learn More:**
+
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Selectors:** [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
