@@ -1,3 +1,5 @@
+# 🐞 Next.js API Routes: Handling Large Responses and Avoiding `ERR_TOO_LARGE`
+
 
 ## Description of the Error
 
