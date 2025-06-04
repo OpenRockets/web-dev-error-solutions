@@ -1,1 +1,1 @@
-Resolving CanvasJS Chart Rendering Issues in a Responsive Layout
+Creating a CSS-only Expanding Card

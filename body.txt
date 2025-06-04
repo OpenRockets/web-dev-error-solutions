@@ -1,95 +1,76 @@
 
-This document addresses a common problem encountered when integrating CanvasJS charts into responsive web designs: the chart failing to render correctly or resizing properly when the browser window is resized.  This often manifests as a chart that either doesn't appear at all, displays incorrectly (e.g., cut off or distorted), or doesn't adjust its size dynamically to fit the available space.
+This document details the creation of an expanding card effect using only CSS.  This effect provides a visually appealing way to reveal more information upon hovering over a card element. We'll use plain CSS, avoiding JavaScript for a lightweight and performant solution.
 
-## Description of the Error
+**Description of the Styling:**
 
-The error typically arises from a mismatch between the chart's container dimensions and the space allocated to it by the CSS.  This can be caused by:
+The card will initially display a concise title and a small image. On hover, the card expands vertically, revealing a longer description and potentially more content.  This is achieved using CSS transitions and the `max-height` property, dynamically controlled by the `:hover` pseudo-class.
 
-* **Incorrect or missing container dimensions:**  The `<div>` or other element containing the CanvasJS chart might not have explicitly defined width and height, leading to unpredictable rendering.
-* **CSS conflicts:**  Other CSS rules might be overriding the chart's container dimensions or causing layout issues.
-* **Asynchronous loading:** The chart might be initialized before the container element has its final dimensions calculated, leading to incorrect rendering.
-* **Responsive design issues:**  The chart might not properly adapt to different screen sizes or orientations.
-
-## Step-by-Step Code Fix
-
-Let's assume we have a basic HTML structure and want to ensure our CanvasJS chart renders correctly and responsively.
-
-**1. HTML Structure:**
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-  <title>CanvasJS Responsive Chart</title>
-  <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script> </head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f2f2f2;
+  border-radius: 5px;
+  overflow: hidden; /* Hide content that overflows */
+  transition: max-height 0.3s ease-in-out; /* Smooth transition */
+  max-height: 100px; /* Initial height */
+}
+
+.card:hover {
+  max-height: 300px; /* Height when hovering */
+}
+
+.card-image {
+  width: 100%;
+  height: auto;
+}
+
+.card-content {
+  padding: 10px;
+}
+
+.card-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.card-description {
+  font-size: 0.9em;
+}
+</style>
+</head>
 <body>
-  <div id="chartContainer" style="height: 300px; width: 100%;"></div>
-  <script>
-    window.onload = function () {
-      var chart = new CanvasJS.Chart("chartContainer", {
-        // ... your chart configuration ...
-        data: [
-          {
-            type: "column",
-            dataPoints: [
-              { x: 10, y: 71 },
-              { x: 20, y: 55 },
-              // ... more data points ...
-            ]
-          }
-        ]
-      });
-      chart.render();
-    };
-  </script>
+
+<div class="card">
+  <img src="https://via.placeholder.com/350x150" alt="Card Image" class="card-image">
+  <div class="card-content">
+    <h3 class="card-title">Card Title</h3>
+    <p class="card-description">This is a short description of the card content.  On hover, more details will appear.</p>
+    <p class="card-description">This is additional text revealed on hover.</p>
+  </div>
+</div>
+
 </body>
 </html>
 ```
 
-**2. CSS for Responsiveness (Optional but Recommended):**
+**Explanation:**
 
-Add this CSS to ensure the chart container adapts to the available width:
-
-```css
-#chartContainer {
-  width: 100%; /* Occupy full width */
-  height: 300px; /* Set a minimum height */
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
-}
-```
+* **`max-height`:**  This property initially limits the card's height.  The `:hover` pseudo-class increases this height, revealing hidden content.
+* **`transition`:** This property ensures a smooth animation when the `max-height` changes.  It specifies the property to transition (`max-height`), the duration (`0.3s`), and the easing function (`ease-in-out`).
+* **`overflow: hidden;`:**  This is crucial to prevent the content from overflowing the card before expansion.
+* **Card Structure:**  The HTML is structured logically with a container (`card`), an image (`card-image`), and content (`card-content`).
 
 
-**3. Ensuring Asynchronous Loading (If needed):**
+**Links to Resources to Learn More:**
 
-If the chart isn't rendering, especially in complex layouts, use `window.onload` or a promise to ensure the DOM is fully loaded before initializing the chart:
-
-```javascript
-window.addEventListener('DOMContentLoaded', function() {
-    var chart = new CanvasJS.Chart("chartContainer", {
-      // ... your chart configuration ...
-    });
-    chart.render();
-});
-
-```
-
-**4. Debugging:**
-
-* **Inspect the chart container's dimensions:** Use your browser's developer tools to check the actual width and height of the `#chartContainer` element.  If they are zero or unexpectedly small, investigate CSS conflicts or asynchronous loading issues.
-* **Simplify your CSS:** Temporarily remove or comment out CSS rules that might affect the chart container to isolate the problem.
-* **Check the CanvasJS documentation:**  Consult the official CanvasJS documentation for best practices and troubleshooting tips.
-
-
-## Explanation
-
-The solution focuses on providing a well-defined container for the CanvasJS chart and ensuring the chart is initialized only after the container's dimensions are finalized.  Using `width: 100%;` makes the chart responsive to the parent container's width.  The `height` provides a minimum height, preventing the chart from collapsing.  `box-sizing: border-box;` prevents unexpected behavior from padding and borders affecting the dimensions. The `window.onload` or `DOMContentLoaded` event listeners help handle asynchronous loading.
-
-
-## External References
-
-* **CanvasJS Official Website:** [https://canvasjs.com/](https://canvasjs.com/)  (Check their documentation and examples)
-* **MDN Web Docs on `window.onload`:** [https://developer.mozilla.org/en-US/docs/Web/API/Window/load_event](https://developer.mozilla.org/en-US/docs/Web/API/Window/load_event)
-* **MDN Web Docs on `DOMContentLoaded`:** [https://developer.mozilla.org/en-US/docs/Web/API/Document/DOMContentLoaded_event](https://developer.mozilla.org/en-US/docs/Web/API/Document/DOMContentLoaded_event)
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS-Tricks - Understanding CSS Transitions:** [https://css-tricks.com/almanac/properties/t/transition/](https://css-tricks.com/almanac/properties/t/transition/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
