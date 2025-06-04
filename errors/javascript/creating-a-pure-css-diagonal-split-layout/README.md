@@ -1,3 +1,5 @@
+# 🐞 Creating a Pure CSS Diagonal Split Layout
+
 
 This document details how to create a visually appealing diagonal split layout using only CSS.  We'll achieve this effect without relying on images or JavaScript, showcasing the power and flexibility of CSS. This example uses plain CSS; adapting it to Tailwind CSS is straightforward by replacing the inline styles with corresponding Tailwind classes.
 
