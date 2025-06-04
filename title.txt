@@ -1,1 +1,1 @@
-Resolving VideoJS Playback Issues on Mobile Devices with Autoplay
+Fixing VideoJS Player Autoplay Issues on Mobile Devices

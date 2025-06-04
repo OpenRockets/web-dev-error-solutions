@@ -1,3 +1,5 @@
+# 🐞 Fixing VideoJS Player Autoplay Issues on Mobile Devices
+
 
 ## Description of the Error
 
