@@ -1,100 +1,88 @@
 
-This document addresses a common problem encountered when integrating CanvasJS charts into responsive web designs: the chart failing to resize or render correctly when the browser window is resized or the viewport changes (e.g., on mobile devices). This often manifests as a chart that remains at its initial size, overlaps other elements, or displays incorrectly.
-
 ## Description of the Error
 
-The primary issue stems from CanvasJS's reliance on its initial rendering dimensions.  If these dimensions aren't dynamically updated to match the available space, the chart will not adapt to changes in the browser window size.  You might see the chart rendered incorrectly, with parts cut off, or completely failing to redraw itself.  The browser's developer console may or may not show specific errors, depending on the severity of the problem.  Often, it's simply a visual misalignment or an incomplete rendering.
-
+A common problem encountered when using VideoJS on iOS Safari is the failure to play videos, often manifesting as a black screen or a "video not playing" error message. This is frequently linked to issues with autoplay, muted video requirements, and the lack of user interaction prior to playback initiation.  iOS Safari, for security and power-saving reasons, places strict limitations on automatic video playback.
 
 ## Step-by-Step Code Fix
 
-This example uses jQuery for simplicity, but the core concept applies regardless of your chosen JavaScript framework.  The key is to trigger a redraw of the CanvasJS chart whenever the window is resized.
+This solution addresses the autoplay restrictions by allowing the video to play only after a user interaction (like a click or tap).
 
-**1. Include necessary libraries:**
-
-```html
-<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Or your preferred JS library -->
-```
-
-**2. Create your CanvasJS chart:**
-
-```javascript
-var chart = new CanvasJS.Chart("chartContainer", {
-    theme: "light2", // Or your preferred theme
-    animationEnabled: true,
-    title: {
-        text: "Responsive Chart"
-    },
-    data: [{
-        type: "column",
-        dataPoints: [
-            { x: 10, y: 71 },
-            { x: 20, y: 55 },
-            { x: 30, y: 50 },
-            { x: 40, y: 65 },
-            { x: 50, y: 92 }
-        ]
-    }]
-});
-chart.render();
-```
-
-**3. Add a resize handler:**
-
-```javascript
-$(window).resize(function() {
-  chart.render(); //This line is crucial.  It forces a redraw.
-});
-```
-
-**4. Ensure proper container sizing:**
-
-Make sure the div with the id "chartContainer" is sized appropriately using CSS.  For responsive design, use percentages or viewport units (`vw`, `vh`) instead of fixed pixels.
-
-```css
-#chartContainer {
-  width: 100%; /* Or a percentage */
-  height: 400px; /* Or a percentage or vh */
-}
-```
-
-**5. Complete HTML structure:**
+**Original (Problematic) Code:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Responsive CanvasJS Chart</title>
-  <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <style>
-    #chartContainer {
-      width: 100%;
-      height: 400px;
-    }
-  </style>
+  <title>VideoJS Example</title>
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
+  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
 </head>
 <body>
-  <div id="chartContainer"></div>
+
+  <video id="my-video" class="video-js" controls preload="auto" width="640" height="360" poster="poster.png">
+    <source src="my-video.mp4" type="video/mp4">
+    <p class="vjs-no-js">
+      To view this video please enable JavaScript, and consider upgrading to a
+      web browser that <a href="https://videojs.com/html5-video-support/">supports HTML5 video</a>
+    </p>
+  </video>
+
   <script>
-    // JavaScript code from steps 2 and 3 goes here
+    var player = videojs('my-video');
   </script>
+
 </body>
 </html>
-
 ```
 
+**Corrected Code:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VideoJS Example</title>
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
+  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+</head>
+<body>
+
+  <video id="my-video" class="video-js vjs-big-play-centered" controls preload="metadata" width="640" height="360" poster="poster.png" data-setup='{ "playbackRates": [0.5, 1, 1.5, 2] }'>
+    <source src="my-video.mp4" type="video/mp4">
+    <p class="vjs-no-js">
+      To view this video please enable JavaScript, and consider upgrading to a
+      web browser that <a href="https://videojs.com/html5-video-support/">supports HTML5 video</a>
+    </p>
+  </video>
+
+  <button id="playButton">Play Video</button>
+
+  <script>
+    var player = videojs('my-video');
+    document.getElementById('playButton').addEventListener('click', function() {
+      player.play();
+    });
+  </script>
+
+</body>
+</html>
+```
 
 ## Explanation
 
-The core solution lies in the `$(window).resize()` function and the `chart.render()` call within it.  The resize event listener detects changes in the browser window's dimensions.  When a resize occurs, `chart.render()` forces CanvasJS to recalculate the chart's layout and redraw it using the new available space. Without this, the chart retains its original size and position, leading to the rendering issues.  Using percentage-based or viewport-relative sizing in your CSS ensures that the container adapts to the available screen space, allowing the chart to resize correctly.
+The key changes are:
+
+1. **`preload="metadata"`:** This attribute tells the browser to only load metadata (like duration and dimensions) instead of the entire video file initially. This reduces initial loading time and improves performance.
+
+2. **User Interaction:**  We've added a button (`<button id="playButton">Play Video</button>`).  The JavaScript code now only initiates playback (`player.play();`) when the user clicks this button. This satisfies iOS Safari's requirement for explicit user interaction before autoplay.
+
+3. **`vjs-big-play-centered` class:** This class adds a prominent "play" button that can be tapped before any other interaction is required.
 
 
 ## External References
 
-* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/) (Check their documentation for API details and examples)
-* **jQuery Documentation:** [https://jquery.com/](https://jquery.com/) (If using jQuery)
+* **Video.js Documentation:** [https://videojs.com/](https://videojs.com/) -  The official Video.js website with comprehensive documentation and support.
+* **iOS Autoplay Restrictions:**  While there isn't one single definitive page, searching for "iOS autoplay restrictions" on Google will yield many articles detailing Apple's policies on autoplaying videos.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
