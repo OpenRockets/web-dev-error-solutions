@@ -1,0 +1,105 @@
+name: Invite Random GitHub User via Gemini
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"  # Every 10 minutes
+  workflow_dispatch:
+
+jobs:
+  invite:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python & jq
+        run: sudo apt-get update && sudo apt-get install -y jq python3
+
+      - name: Install git config for commit
+        run: |
+          git config --global user.email "github-actions@users.noreply.github.com"
+          git config --global user.name "GitHub Actions Bot"
+
+      - name: Generate GitHub username from Gemini
+        id: gemini
+        run: |
+          echo "Calling Gemini 1.5 Flash to fetch one active GitHub user..."
+
+          API_KEY="${{ secrets.GEMINI_API_KEY }}"
+          PROMPT="Give me only one active GitHub username (just the username, no @ symbol or explanation). Make sure it's a real, active developer who contributes to open-source or commits recently."
+
+          RESPONSE=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $API_KEY" \
+            https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$API_KEY \
+            -d "{
+              \"contents\": [{
+                \"role\": \"user\",
+                \"parts\": [{\"text\": \"$PROMPT\"}]
+              }]
+            }")
+
+          USERNAME=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text' | sed 's/@//g' | xargs)
+
+          if [[ "$USERNAME" == "null" || -z "$USERNAME" ]]; then
+            echo "Gemini failed to return a valid username."
+            exit 1
+          fi
+
+          echo "USERNAME=$USERNAME" >> $GITHUB_ENV
+
+      - name: Skip if username already invited
+        id: check_user
+        run: |
+          FILE="invited_users.json"
+          USERNAME="${{ env.USERNAME }}"
+
+          # Create file if doesn't exist
+          if [ ! -f "$FILE" ]; then
+            echo "[]" > "$FILE"
+          fi
+
+          if grep -q "\"$USERNAME\"" "$FILE"; then
+            echo "User $USERNAME already invited. Skipping."
+            exit 0
+          fi
+
+      - name: Get GitHub User ID
+        id: get_user
+        run: |
+          USER_API_RESPONSE=$(curl -s https://api.github.com/users/${{ env.USERNAME }})
+          USER_ID=$(echo "$USER_API_RESPONSE" | jq -r '.id')
+
+          if [ "$USER_ID" == "null" ] || [ -z "$USER_ID" ]; then
+            echo "Could not fetch user ID for ${{ env.USERNAME }}"
+            exit 1
+          fi
+
+          echo "USER_ID=$USER_ID" >> $GITHUB_ENV
+
+      - name: Invite user to organization
+        run: |
+          ORG_NAME="your-org-name"  # <- Replace with your actual org name
+
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/orgs/$ORG_NAME/invitations \
+            -d "{\"invitee_id\": \"${{ env.USER_ID }}\"}"
+
+      - name: Append to invited_users.json
+        run: |
+          echo "Adding ${{ env.USERNAME }} to invited_users.json"
+          FILE="invited_users.json"
+
+          tmp=$(mktemp)
+          jq ". + [\"${{ env.USERNAME }}\"]" "$FILE" > "$tmp" && mv "$tmp" "$FILE"
+
+      - name: Commit and push updated invited_users.json
+        run: |
+          git add invited_users.json
+          git commit -m "Add ${{ env.USERNAME }} to invited list" || echo "No changes to commit."
+          git push origin main
