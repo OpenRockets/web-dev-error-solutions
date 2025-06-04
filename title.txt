@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with a Subtle Animation
+Next.js Middleware: Handling `headers already sent` Error

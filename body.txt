@@ -1,70 +1,76 @@
 
-This document details the creation of an expanding card effect using only CSS.  No JavaScript is required. We'll achieve this using CSS transitions and transforms, resulting in a smooth and visually appealing animation.  This example uses plain CSS; adapting it to Tailwind CSS is straightforward by replacing class names with their Tailwind equivalents.
+This document addresses a common error encountered when working with Next.js Middleware: the "headers already sent" error. This typically occurs when you attempt to send a response from your middleware more than once or try to send headers after data has already been sent to the client.  This is especially prevalent when you're interacting with external APIs or making multiple calls within your middleware.
+
+**Description of the Error:**
+
+The `headers already sent` error in Next.js Middleware manifests as a server-side error preventing the application from responding correctly to client requests.  It indicates that your middleware function has already committed a response to the client (by sending headers and/or body data), and then attempts to modify or send more headers or body data. This violates the HTTP protocol's single-response rule.
 
 
-**Description of the Styling:**
+**Code Example & Step-by-Step Fix:**
 
-The card starts with minimal dimensions. On hover, the card smoothly expands to a larger size, accompanied by a subtle shadow effect that adds depth. The transition is implemented using CSS transitions, ensuring a smooth animation.
+Let's imagine a scenario where we're using middleware to authenticate users based on a JWT (JSON Web Token) stored in a cookie.  The faulty code attempts to redirect the user if the token is invalid *and* then logs an error. This double write attempts to send headers multiple times leading to the error.
 
-**Full Code:**
+**Faulty Code:**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  transition: all 0.3s ease-in-out; /* Smooth transition for all properties */
-  width: 200px; /* Initial width */
-  height: 150px; /* Initial height */
-  overflow: hidden; /* Prevents content from overflowing during expansion */
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const token = req.cookies.get('token');
+
+  if (!token) {
+    console.log('Unauthorized access. Redirecting...');
+    return NextResponse.redirect(new URL('/login', req.url)) //First Header Send
+  }
+
+  console.error("An error occured"); //Second Header send attempt after redirect attempt
+
+  return NextResponse.next();
 }
 
-.card:hover {
-  width: 300px; /* Expanded width */
-  height: 250px; /* Expanded height */
-  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
-  transform: translateY(-5px); /* Slight lift on hover */
+
+export const config = {
+  matcher: ['/protected/:path*'],
 }
-
-.card-content {
-  text-align: center;
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-content">
-    <h2>Expanding Card</h2>
-    <p>Hover over me!</p>
-  </div>
-</div>
-
-</body>
-</html>
 ```
+
+**Fixed Code (Step-by-Step):**
+
+1. **Consolidate Responses:** Instead of multiple `NextResponse` calls, use conditional logic to determine the appropriate response *before* sending anything to the client.
+
+2. **Early Exit:** If a response is determined (e.g., redirect), exit the function immediately using `return`.
+
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const token = req.cookies.get('token');
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/protected/:path*'],
+}
+```
+
 
 **Explanation:**
 
-* **`transition: all 0.3s ease-in-out;`:** This line is crucial. It applies a transition to all CSS properties that change, making the animation smooth.  `0.3s` is the duration, and `ease-in-out` defines the timing function (how the speed changes during the transition).
+The corrected code avoids the error by ensuring that only one `NextResponse` object is returned.  The `if` statement handles the unauthorized access scenario, and the `return` statement ensures that no further code execution attempts to send another response after a redirect has already been sent.
 
-* **`:hover` Selector:**  This selector targets the element when the mouse hovers over it.
 
-* **`width`, `height`, `box-shadow`, `transform`:** These properties change on hover, creating the expansion and shadow effects. The `transform: translateY(-5px);` subtly lifts the card on hover, adding a nice visual touch.
+**External References:**
 
-* **`overflow: hidden;`:** This is important to prevent the content inside the card from overflowing during the expansion animation.
-
-**Resources to Learn More:**
-
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS-Tricks:** (Search for "CSS animations" or "CSS transitions" on their website for numerous tutorials and examples)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/api-routes/middleware):  The official Next.js documentation on middleware.
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction):  Helpful for understanding the context of middleware within the Next.js ecosystem.
+* [HTTP Headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers):  Understanding HTTP headers can help clarify why multiple responses are problematic.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
