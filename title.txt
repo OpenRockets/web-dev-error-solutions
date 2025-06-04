@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `redirect()` within `async` functions
+Handling 404 Errors in Next.js API Routes
