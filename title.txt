@@ -1,1 +1,1 @@
-Fixing CanvasJS Chart Rendering Issues in IE11
+Creating a CSS-only Expanding Card

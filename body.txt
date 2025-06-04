@@ -1,72 +1,82 @@
 
-## Description of the Error
+This document details a CSS-only solution for creating an expanding card effect.  No JavaScript is needed! This effect uses CSS transitions and transforms to smoothly expand a card when it's hovered over.
 
-A common problem encountered when using CanvasJS charts in older browsers like Internet Explorer 11 (IE11) is the failure of charts to render correctly or at all.  This often manifests as a blank space where the chart should be, or a partially rendered chart with missing elements.  The root cause is typically IE11's limited support for certain Canvas features or inconsistencies in its JavaScript engine compared to modern browsers.
+## Description of the Styling
 
-## Step-by-Step Code Fix
+This technique utilizes the `:hover` pseudo-class to trigger a transformation on the card.  When the mouse hovers over the card, it expands in size and optionally reveals hidden content.  The key is leveraging CSS transitions to create a smooth animation.  We'll also employ some basic box-shadow styling for visual appeal.
 
-This example focuses on ensuring compatibility with IE11 using a polyfill for `requestAnimationFrame`, a function often used within CanvasJS's rendering process.  While this might not solve *all* IE11 related CanvasJS issues, it's a frequently effective first step.
-
-**1. Include the `requestAnimationFrame` polyfill:**
-
-You need to include a polyfill for `requestAnimationFrame` if it's not already present in your project.  A simple and widely used one is available via CDN.  Add this `<script>` tag within the `<head>` of your HTML file, *before* including the CanvasJS script:
+## Full Code
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/raf/3.4.0/raf.min.js"></script>
-```
-
-**2.  Include the CanvasJS library:**
-
-Next, include the CanvasJS library.  Make sure to use a CDN or a correctly downloaded version.
-
-```html
-<script src="https://cdn.canvasjs.com/latest/canvasjs.min.js"></script>
-```
-
-**3. Your CanvasJS chart code:**
-
-This is a basic example. Replace this with your actual chart creation code:
-
-```javascript
-window.onload = function () {
-    var chart = new CanvasJS.Chart("chartContainer", {
-        animationEnabled: true,
-        title: {
-            text: "IE11 Compatibility Test"
-        },
-        data: [{
-            type: "column",
-            dataPoints: [
-                { x: 10, y: 71 },
-                { x: 20, y: 55 },
-                { x: 30, y: 50 },
-                { x: 40, y: 65 }
-            ]
-        }]
-    });
-    chart.render();
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Added transition for smoother effect */
+  overflow: hidden; /* Hide content that extends beyond card initially */
+  width: 300px;
 }
+
+.card:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.card-content {
+  height: 100px; /* Initial height */
+  overflow: hidden; /* Hide content beyond initial height */
+  transition: height 0.3s ease-in-out; /* Added transition for smoother effect */
+}
+
+.card:hover .card-content {
+  height: 200px; /* Height on hover */
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+.card p{
+  margin-bottom: 0;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Card Title</h2>
+  <div class="card-content">
+    <p>This is some example text that will expand when you hover over the card.</p>
+    <p>More text here to demonstrate the expansion.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
-
-**4.  HTML Container:**
-
-Finally, ensure you have a container element with the ID "chartContainer" in your HTML:
-
-
-```html
-<div id="chartContainer" style="height: 300px; width: 500px;"></div>
-```
-
 
 ## Explanation
 
-The `requestAnimationFrame` polyfill ensures consistent behavior across different browsers, including IE11.  This function is crucial for smooth animations and rendering within CanvasJS. By adding the polyfill *before* the CanvasJS script, you ensure that CanvasJS uses the consistent polyfill implementation even if the native `requestAnimationFrame` in IE11 behaves differently. This addresses a significant source of rendering issues in older browsers.  Other issues might require additional debugging or specific workarounds depending on the nature of the error and the chart configuration.
+* **`transition` property:** This is crucial for the smooth animation.  We're transitioning the `transform` (for scaling) and `box-shadow` properties over 0.3 seconds with an ease-in-out timing function. We also transition the height of the `card-content` div.
+* **`transform: scale(1.1)`:** This increases the size of the card on hover by 10%.
+* **`box-shadow`:**  This adds a more pronounced shadow on hover to enhance the visual effect.
+* **`:hover` pseudo-class:** This selector targets the element when the mouse cursor is over it.
+* **`overflow: hidden`:** This ensures that content exceeding the initial height of the card is hidden before the hover effect.
+* The `card-content` div's height transition allows for a smooth expansion of the content upon hover.
 
-## External References
 
-* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/) (Check their documentation for browser compatibility and troubleshooting)
-* **`requestAnimationFrame` Polyfill (raf.js):** [https://github.com/ngryman/raf](https://github.com/ngryman/raf) (Source code and information about the polyfill used)
-* **Internet Explorer Compatibility:** [https://docs.microsoft.com/en-us/ie/](https://docs.microsoft.com/en-us/ie/) (Microsoft's documentation on Internet Explorer, though largely deprecated)
+## Links to Resources to Learn More
+
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks (various articles on CSS animations and effects):** [https://css-tricks.com/](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
