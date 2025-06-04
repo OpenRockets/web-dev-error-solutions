@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `next/server` Imports in Pages
+
 
 This document addresses a common issue encountered when using Next.js Middleware: the inability to import modules from `next/server` within regular page components.  Attempting to do so results in runtime errors because Middleware runs on the server, while page components run on both the server (during Server-Side Rendering) and the client (during hydration).
 
