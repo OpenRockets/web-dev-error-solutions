@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `next/server` import errors in API routes
+
 
 This document addresses a common error encountered when trying to use functionalities from `next/server` within Next.js API routes.  The error typically manifests as a `SyntaxError: Unexpected identifier` or a similar error indicating that modules from the `next/server` package are not available in the API route context. This is because `next/server` is specifically designed for features related to request handling in the Edge runtime (middleware, etc.), and isn't available within the Node.js environment of API routes.
 
