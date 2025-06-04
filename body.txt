@@ -1,66 +1,68 @@
 
-This document details how to create a circular progress bar using only CSS.  We'll leverage CSS's `conic-gradient` function for a clean and efficient solution. This technique avoids the need for JavaScript or external libraries, making it lightweight and performant.
+This document addresses a common issue encountered when using `NextResponse.redirect()` within Next.js Middleware: preserving query parameters during redirection.  Incorrectly handling query parameters can lead to broken functionality after redirection, especially if the redirected page relies on those parameters.
 
-**Description of the Styling:**
+**Description of the Error:**
 
-The progress bar consists of a circle divided into two parts: a filled segment representing the progress and an empty segment. We use `conic-gradient` to create this division. The `conic-gradient` function takes angles as arguments, allowing us to precisely control the filled portion's size based on a percentage.  We also use some basic CSS for sizing, positioning, and visual enhancements.
+When using `NextResponse.redirect()` in Next.js Middleware to redirect a user, query parameters appended to the original URL are often lost.  This results in the redirected page not having access to the expected data or functionality depending on those parameters. The redirected page might display an error or behave unexpectedly.
+
+**Code: Step-by-Step Fix**
+
+Let's assume we have middleware that redirects `/old-page` to `/new-page` while preserving any query parameters:
 
 
-**Full Code:**
+**Incorrect Implementation (loses query parameters):**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
-.progress-ring {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background-color: #f0f0f0; /* Light gray background */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  if (req.nextUrl.pathname === '/old-page') {
+    return NextResponse.redirect(new URL('/new-page', req.url))
+  }
 }
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  width: 130px;
-  height: 130px;
-  border-radius: 50%;
-  background: conic-gradient(
-    #4CAF50 70%, /* Green fill, adjust percentage for progress */
-    #f0f0f0 70%  /* Gray empty part */
-  );
+export const config = {
+  matcher: '/old-page'
 }
-</style>
-</head>
-<body>
+```
 
-<h1>Circular Progress Bar (70%)</h1>
-<div class="progress-ring">
-  <div>70%</div> </div>
+**Correct Implementation (preserves query parameters):**
 
-</body>
-</html>
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  if (req.nextUrl.pathname === '/old-page') {
+    const newUrl = new URL('/new-page', req.url)
+    // Add existing query parameters to the new URL
+    req.nextUrl.searchParams.forEach((value, key) => {
+      newUrl.searchParams.append(key, value)
+    })
+    return NextResponse.redirect(newUrl)
+  }
+}
+
+export const config = {
+  matcher: '/old-page'
+}
 ```
 
 **Explanation:**
 
-* **`.progress-ring`**: This class styles the main container, setting its size, shape (circle using `border-radius`), background color, and centering the inner percentage display using flexbox.
+The crucial difference lies in how the `newUrl` is constructed and populated. In the incorrect implementation, `NextResponse.redirect` creates a new URL object only with the specified pathname.  This discards any existing query parameters.
 
-* **`.progress-ring::before`**: This pseudo-element creates the circular progress bar itself. It's positioned absolutely within the parent container, slightly smaller to create a border effect.  The `conic-gradient` is the key:
+The correct implementation iterates through the query parameters present in the original request (`req.nextUrl.searchParams`) using `forEach`.  Each key-value pair is then appended to the `newUrl` using `newUrl.searchParams.append()`, ensuring the query parameters are carried over during the redirection.
 
-    * `#4CAF50 70%`: This sets the first color (green) to fill 70% of the circle.  Change this percentage to adjust the progress.
-    * `#f0f0f0 70%`: This sets the remaining portion to light gray. The `70%` here is crucial; it determines where the transition between the colors happens.
+**External References:**
 
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [NextResponse.redirect API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse.redirect)
 
-**Resources to Learn More:**
+**Summary:**
 
-* **MDN Web Docs on `conic-gradient`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
-* **CSS-Tricks on Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/) (For a broader understanding of CSS gradients)
+By explicitly iterating through and appending the original request's query parameters to the new URL before redirecting, we guarantee that those parameters are not lost during the redirection process in Next.js Middleware.  This is crucial for maintaining the correct functionality of the redirected page.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
