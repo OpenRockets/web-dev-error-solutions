@@ -1,60 +1,92 @@
 
-This document addresses a common error encountered when working with Next.js Middleware: `Error: NextResponse must be used within an async function`. This error arises when you attempt to use the `NextResponse` object within a synchronous middleware function.  Next.js Middleware functions *must* be asynchronous to handle the inherent asynchronicity of network requests and data fetching.
+This document details how to create a visually appealing loading spinner using only CSS.  No JavaScript is required! This example utilizes CSS animations and transformations to achieve a smooth, rotating effect.
 
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The error message clearly states that `NextResponse`, the object used to manipulate the HTTP response in Next.js Middleware, can only be used inside an `async` function.  If you try to use it in a standard (synchronous) function, the runtime will throw this error, preventing your middleware from functioning correctly.
+This loading spinner consists of four circular elements arranged in a square.  Each element rotates independently, creating a dynamic and engaging loading animation. The styling uses `border-radius` to create the circles, `animation` for the rotation, and `transform` for positioning. The colors are easily customizable by changing the `background-color`.
 
 
-**Full Code of Fixing Step by Step:**
+**Full Code:**
 
-Let's assume you have the following erroneous middleware code:
-
-```javascript
-// pages/api/middleware.js (Incorrect)
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const url = req.nextUrl.clone()
-  url.pathname = '/login'
-  return NextResponse.redirect(url)
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Loading Spinner</title>
+<style>
+.loader {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-export const config = {
-  matcher: ['/'],
+.loader div {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: #3498db; /* Customizable color */
+  margin: 5px;
+  animation: rotate 1s linear infinite;
 }
+
+.loader div:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.loader div:nth-child(2) {
+  animation-delay: 0.25s;
+}
+
+.loader div:nth-child(3) {
+  animation-delay: 0.5s;
+}
+
+.loader div:nth-child(4) {
+  animation-delay: 0.75s;
+}
+
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="loader">
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+
+</body>
+</html>
 ```
-
-This code will produce the error.  Here's the corrected version:
-
-```javascript
-// pages/api/middleware.js (Corrected)
-import { NextResponse } from 'next/server'
-
-export async function middleware(req) { // Note the 'async' keyword
-  const url = req.nextUrl.clone()
-  url.pathname = '/login'
-  return NextResponse.redirect(url)
-}
-
-export const config = {
-  matcher: ['/'],
-}
-```
-
-The only change is adding the `async` keyword before the `middleware` function declaration.  This simple modification makes the function asynchronous, allowing the use of `NextResponse` without errors.
 
 
 **Explanation:**
 
-The `async` keyword transforms a function into an asynchronous function.  This allows the function to use the `await` keyword, pausing execution until a Promise resolves.  While `NextResponse.redirect()` doesn't explicitly use a Promise in this example, the underlying operations within Next.js Middleware inherently involve asynchronous tasks. By making the function `async`, you ensure compatibility with these internal asynchronous operations, preventing the error.
+* **`.loader`:** This class centers the spinner elements using flexbox.
+* **`.loader div`:** This styles each individual circular element.  `border-radius: 50%` creates the circle.
+* **`:nth-child`:** This selector is used to apply different animation delays to each circle, creating the staggered rotation effect.
+* **`@keyframes rotate`:** This defines the animation, smoothly rotating the elements 360 degrees.
+* **`animation-delay`:** This property offsets the start time of the animation for each circle.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/building-your-application/routing/middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)  (Check the official documentation for the most up-to-date information on Middleware.)
-* **Next.js API Routes Documentation:** [https://nextjs.org/docs/api-routes/introduction](https://nextjs.org/docs/api-routes/introduction) (Understanding API Routes helps clarify the context of Middleware within the Next.js ecosystem.)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **Flexbox:** [CSS-Tricks - A Complete Guide to Flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

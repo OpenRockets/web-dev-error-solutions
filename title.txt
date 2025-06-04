@@ -1,1 +1,1 @@
-Dealing with `Error: NextResponse must be used within an async function` in Next.js Middleware
+Creating a Pure CSS Loading Spinner
