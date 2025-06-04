@@ -18,10 +18,10 @@ jobs:
       - name: Set up Python & jq
         run: sudo apt-get update && sudo apt-get install -y jq python3
 
-      - name: Install git config for commit
+      - name: Configure Git identity
         run: |
-          git config --global user.email "github-actions@users.noreply.github.com"
-          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "motiontel@outlook.com"
+          git config --global user.name "openrocketsofficial"
 
       - name: Generate GitHub username from Gemini
         id: gemini
@@ -53,12 +53,11 @@ jobs:
           echo "USERNAME=$USERNAME" >> $GITHUB_ENV
 
       - name: Skip if username already invited
-        id: check_user
         run: |
           FILE="invited_users.json"
           USERNAME="${{ env.USERNAME }}"
 
-          # Create file if it doesn't exist
+          # Create the file if it doesn't exist
           if [ ! -f "$FILE" ]; then
             echo "[]" > "$FILE"
           fi
@@ -69,7 +68,6 @@ jobs:
           fi
 
       - name: Get GitHub User ID
-        id: get_user
         run: |
           USER_API_RESPONSE=$(curl -s https://api.github.com/users/${{ env.USERNAME }})
           USER_ID=$(echo "$USER_API_RESPONSE" | jq -r '.id')
@@ -83,7 +81,7 @@ jobs:
 
       - name: Invite user to organization
         run: |
-          ORG_NAME="your-org-name"  # <- Replace with your GitHub org name
+          ORG_NAME="your-org-name"  # Replace with your GitHub org name
 
           curl -X POST \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -99,8 +97,11 @@ jobs:
           tmp=$(mktemp)
           jq ". + [\"${{ env.USERNAME }}\"]" "$FILE" > "$tmp" && mv "$tmp" "$FILE"
 
-      - name: Commit and push updated invited_users.json
+      - name: Commit and push updated invited_users.json using PAT
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
+          git remote set-url origin https://openrocketsofficial:${PAT_TOKEN}@github.com/OpenRockets/web-dev-error-solutions.git
           git add invited_users.json
           git commit -m "Add ${{ env.USERNAME }} to invited list" || echo "No changes to commit."
           git push origin main
