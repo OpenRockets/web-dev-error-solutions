@@ -84,7 +84,7 @@ jobs:
 
       - name: Invite user to organization
         run: |
-          ORG_NAME="your-org-name"  # Replace with your GitHub org name
+          ORG_NAME="openrockets"  # Replace with your GitHub org name
 
           curl -X POST \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
