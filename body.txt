@@ -1,85 +1,71 @@
 
-## Description of the Error
+This document details the creation of a circular progress bar using only CSS.  We'll avoid JavaScript for a purely front-end CSS solution. This utilizes CSS3 features like `clip-path` and `transform` to achieve the effect.
 
-A common frustration in Next.js Middleware is encountering a `Request Aborted` error. This usually manifests when the middleware takes too long to execute, exceeding the client's timeout. This can happen with complex computations, large database queries, or external API calls within your middleware.  The client will abruptly terminate the connection, leading to an error on the user's side and potentially impacting the user experience.  The error itself might not be readily visible in your logs, making debugging challenging.  You might instead see a blank page or a network error in the browser's developer console.
+**Description of the Styling:**
 
-## Code Example: Fixing a `Request Aborted` Error
+The circular progress bar is created using a single `<div>` element.  We style this div to be a circle using `border-radius: 50%`.  A pseudo-element (`::before`) is then used to create the progress indicator.  The `clip-path` property is used to "clip" the circular indicator to a specific percentage, thus creating the progress effect.  Transforms are used for positioning and rotation.
 
-Let's illustrate this with an example. Imagine you have middleware that fetches data from a slow external API:
+**Full Code:**
 
-**Problematic Middleware (pages/api/middleware.js):**
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const response = new Response('Loading...');
-
-  // Simulate a long-running operation (replace with your actual API call)
-  const startTime = Date.now();
-  while (Date.now() - startTime < 5000) { /* do nothing */ }
-
-  return new NextResponse(JSON.stringify({ data: 'Data from slow API' }), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-}
-```
-
-This middleware intentionally waits 5 seconds, likely causing a `Request Aborted` error for many clients.
-
-**Solution:**  The solution is to make the middleware execution as fast as possible and, if necessary, employ techniques to handle long-running tasks asynchronously and outside of the middleware.
-
-**Improved Middleware (pages/api/middleware.js):**
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server';
-
-export async function middleware(req) {
-  try {
-      // Fetch data from API asynchronously, add timeout
-      const response = await fetch('YOUR_SLOW_API_ENDPOINT', { timeout: 3000 }); // 3-second timeout
-      if (!response.ok) {
-          return new NextResponse('API Error', { status: response.status });
-      }
-
-      const data = await response.json();
-
-      return NextResponse.json({ data }); 
-  } catch (error) {
-      // Handle errors gracefully, such as timeout or network issues.
-      console.error("Middleware Error:", error);
-      return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-export const config = {
-  matcher: ['/'], //Specify the routes your middleware applies to
-};
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #4CAF50; /* Progress color */
+  clip-path: circle(50% at 50% 50%); /* Initial clip path */
+  transform: rotate(-90deg); /* Start at the top */
+  transition: transform 0.5s ease; /* Smooth transition */
+}
+
+.progress-ring.progress-75::before {
+  clip-path: circle(75% at 50% 50%); /* 75% progress */
+}
+
+.progress-ring.progress-50::before {
+  clip-path: circle(50% at 50% 50%); /* 50% progress */
+}
+</style>
+</head>
+<body>
+
+<div class="progress-ring progress-75"></div> <br>
+<div class="progress-ring progress-50"></div>
+
+</body>
+</html>
 ```
 
 **Explanation:**
 
-1. **Asynchronous Operations (`async/await`):** The `async/await` syntax ensures that the API call doesn't block the middleware execution.  This is crucial; otherwise, the middleware will halt the entire response until the API call completes.
-2. **Timeouts:** The `fetch` function with a `timeout` option helps prevent indefinite waiting. If the API doesn't respond within the specified time (3000 milliseconds in this case), the promise will reject, and the `catch` block will handle the error.
-3. **Error Handling (`try...catch`):** The `try...catch` block is essential for gracefully handling potential errors during the API call or JSON parsing.  Returning an appropriate error response prevents a silent failure.
-4. **`matcher` configuration:** The `config.matcher` property is used to precisely define which routes the middleware affects. It avoids unnecessary overhead on routes that don't need it.
+* **`.progress-ring`**: This class styles the main circular container.
+* **`.progress-ring::before`**: This styles the progress indicator.  The `clip-path: circle(50% at 50% 50%);` creates a circle. The percentage inside `circle()` determines the size of the visible portion.  `transform: rotate(-90deg);` rotates the circle to start at the top.  This is important to make a clockwise progress indicator.  The `transition` property allows for a smooth animation of the progress.
+* **`.progress-75` and `.progress-50`**: These classes are used to modify the `clip-path` to show different progress levels.  You can easily adjust these values or add more classes for different percentages.
 
+To change the progress percentage, simply adjust the number in the `circle()` function of the `clip-path` property, or add a class with a different percentage.
 
-## External References
+**Links to Resources to Learn More:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [MDN Web Docs: `fetch` API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
-
-
-## Explanation of Improvements
-
-The improved code avoids the blocking behavior of the initial example.  By making the API call asynchronous and incorporating error handling, the middleware becomes much more robust and less likely to cause `Request Aborted` errors.  The timeout mechanism prevents extremely long-running calls from halting the middleware indefinitely.
+* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS-Tricks - `clip-path`:** [https://css-tricks.com/almanac/properties/c/clip-path/](https://css-tricks.com/almanac/properties/c/clip-path/)
+* **Understanding CSS Transforms:** Search for tutorials on "CSS transforms" on websites like freeCodeCamp or MDN Web Docs.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
