@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `redirect()` within `async` functions
+
 
 This document addresses a common issue developers encounter when using `redirect()` within asynchronous functions in Next.js Middleware.  The problem arises because the `redirect()` function expects a synchronous response, but an asynchronous operation (like fetching data) can delay the response, leading to unexpected behavior or errors.
 
