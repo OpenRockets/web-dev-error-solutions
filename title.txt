@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `getServerSideProps` and `redirect` Conflicts
+Creating a CSS-Only Expanding Card with a Reveal Effect

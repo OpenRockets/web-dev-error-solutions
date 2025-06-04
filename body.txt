@@ -1,115 +1,69 @@
 
-This document addresses a common conflict developers encounter when using Next.js Middleware alongside `getServerSideProps` in pages.  The conflict arises when middleware attempts a redirect, and `getServerSideProps` attempts to render content after the redirect, leading to unexpected behavior or errors.
-
-**Description of the Error:**
-
-When using middleware to redirect based on certain conditions (e.g., authentication, A/B testing), and the page also utilizes `getServerSideProps` to fetch data for rendering,  you might encounter issues. If the middleware redirects, the `getServerSideProps` function will still execute, potentially causing performance problems or unnecessary server-side calls.  This is because `getServerSideProps` runs *after* middleware, and does not inherently know if a redirect has already occurred by the middleware.  The result could be a blank page, a misleading error, or inconsistent behavior.
+This document details a CSS-only solution to create an expanding card with a subtle reveal effect.  The effect is achieved using CSS transitions and transforms, without any JavaScript.  We'll use standard CSS3 properties, making it compatible with most modern browsers.
 
 
-**Code demonstrating the Problem (Incorrect Implementation):**
+**Description of the Styling:**
 
-```javascript
-// pages/protected.js
-import { unstable_getServerSession } from "next-auth";
-import { authOptions } from "../pages/api/auth/[...nextauth]";
+This design creates a card that initially shows only a small portion of its content. Upon hovering, the card expands vertically, revealing the full content with a smooth transition.  A subtle shadow enhances the 3D effect.  The colour scheme is simple and can be easily customized.
 
 
-export async function getServerSideProps(context) {
-  const session = await unstable_getServerSession(context.req, context.res, authOptions);
+**Full Code:**
 
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  }
-
-  // ...fetch data based on session...
-  return {
-    props: { session },
-  };
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 200px;
+  height: 100px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide content that overflows initially */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
 }
 
-export default function ProtectedPage({ session }) {
-  return (
-    <div>
-      <h1>Protected Page</h1>
-      <p>Welcome, {session.user.name}!</p>
-    </div>
-  );
+.card:hover {
+  height: 300px; /* Expand on hover */
 }
+
+.card-content {
+  padding: 10px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h3>This is the title</h3>
+    <p>This is some sample text that will be revealed upon hovering over the card.  You can add more content here as needed.  The card expands smoothly to accommodate it.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-```javascript
-//middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-    const url = req.nextUrl.clone()
-    const pathname = req.nextUrl.pathname
-    console.log("pathname is: " + pathname)
-
-    if (pathname.startsWith('/protected') && !req.cookies.get("userSession")){ //Simulate Authentication
-        url.pathname = "/login"
-        return NextResponse.rewrite(url)
-    }
-}
-
-export const config = {
-  matcher: ["/protected", "/"],
-};
-
-```
-
-This setup will cause a problem. `getServerSideProps` in `protected.js` will still attempt to run *even after* the middleware redirects.  This is inefficient and may result in errors.
-
-
-**Step-by-Step Solution (Correct Implementation):**
-
-
-1. **Prioritize Middleware Redirects:** The most efficient solution is to rely *primarily* on middleware for redirects.  This prevents unnecessary calls to `getServerSideProps`.
-
-2. **Conditional Rendering in Page:**  Move the authentication check *within* the page component itself. This allows for graceful handling of the unauthenticated state *after* the initial page load.  Note that we are no longer relying on getServerSideProps for authentication logic.
-
-
-```javascript
-// pages/protected.js
-import { unstable_getServerSession } from "next-auth";
-import { authOptions } from "../pages/api/auth/[...nextauth]";
-
-export default async function ProtectedPage({ session }) {
-  const session = await unstable_getServerSession(context.req, context.res, authOptions);
-
-  if (!session) {
-    return (
-        <div>
-            <h1>Please login</h1>
-            <a href="/login">Login</a>
-        </div>
-    );
-  }
-
-  return (
-    <div>
-      <h1>Protected Page</h1>
-      <p>Welcome, {session.user.name}!</p>
-    </div>
-  );
-}
-
-```
 
 **Explanation:**
 
-The corrected approach leverages middleware for redirection and keeps authentication logic within the page component. It simplifies the code and avoids the conflict between middleware redirects and server-side props.
+* **`.card`:** This class styles the card itself.  `width` and `height` set the initial dimensions. `background-color`, `border-radius`, and `box-shadow` provide visual appeal.  Crucially, `overflow: hidden` ensures the content exceeding the initial height is initially hidden.  `transition: height 0.3s ease-in-out` enables a smooth transition when the height changes.
 
-**External References:**
+* **`.card:hover`:** This selector targets the card when the mouse hovers over it.  `height: 300px` increases the height, triggering the transition defined in `.card`.
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js `getServerSideProps` Documentation](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props)
-* [NextAuth.js](https://next-auth.js.org/) (if using for authentication)
+* **`.card-content`:** This class styles the content within the card.  `padding` adds some spacing.
+
+The interaction is entirely driven by the `:hover` pseudo-class and the `transition` property. No JavaScript is required.
+
+
+**Links to Resources to Learn More:**
+
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
