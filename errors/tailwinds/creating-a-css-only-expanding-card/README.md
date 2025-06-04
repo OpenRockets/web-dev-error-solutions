@@ -1,3 +1,5 @@
+# 🐞 Creating a CSS-Only Expanding Card
+
 
 This document details how to create an expanding card effect using only CSS.  No JavaScript is required!  We'll leverage CSS transitions and pseudo-elements to achieve a smooth and visually appealing expansion animation. This example uses plain CSS3, but the concepts are easily adaptable to frameworks like Tailwind CSS.
 
