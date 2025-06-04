@@ -1,78 +1,76 @@
 # 🐞 Resolving CanvasJS Chart Rendering Issues in a Responsive Layout
 
 
-## Description of the Error
-
-A common problem encountered when integrating CanvasJS charts into a responsive web application is the chart's failure to properly resize or render correctly when the browser window is resized or the viewport changes (e.g., on mobile devices). This often manifests as a chart that remains at its initial size, resulting in distortion, cropped elements, or parts of the chart being cut off.  The chart might render correctly initially, but fail to adapt to changes in the browser window size. This is particularly problematic in responsive designs where content reflows based on screen dimensions.
-
-## Code: Step-by-Step Fix
-
-This example demonstrates how to ensure a CanvasJS chart resizes correctly within a responsive layout using JavaScript. We'll focus on using the `window.addEventListener` to detect resize events and trigger the chart's `render()` method.  Assume you have already included the CanvasJS library and have created your chart object (`chart`).
-
-**1.  Include CanvasJS:**
-
-```html
-<script src="https://cdn.canvasjs.com/1.0.0/canvasjs.min.js"></script>
-```
-
-**2. Create the Chart (Example):**
-
-```javascript
-window.onload = function () {
-    var chart = new CanvasJS.Chart("chartContainer", {
-        title: {
-            text: "Responsive Chart"
-        },
-        data: [{
-            type: "column",
-            dataPoints: [
-                { x: 10, y: 71 },
-                { x: 20, y: 55 },
-                { x: 30, y: 50 },
-                { x: 40, y: 65 },
-                { x: 50, y: 95 }
-            ]
-        }]
-    });
-    chart.render();
-}
-```
-
-**3. Add a Resize Listener and Rerender:**
-
-```javascript
-window.addEventListener('resize', function () {
-    chart.render(); // This line is crucial
-});
-```
+This document addresses a common problem encountered when integrating CanvasJS charts into web pages with responsive layouts: chart elements not scaling correctly or being clipped when the browser window is resized. This often manifests as truncated labels, overlapping elements, or charts that fail to occupy the available space effectively.
 
 
-**4. Complete HTML Structure:**
+**Description of the Error:**
+
+The CanvasJS chart, while rendered correctly initially, doesn't adapt smoothly to changes in window size.  This leads to visual inconsistencies, especially noticeable on smaller screens or when the browser window is resized.  The chart might be cut off, text might overlap, or elements might appear disproportionately sized. This is often due to a mismatch between the chart's dimensions and the container element's dimensions, especially when using percentage-based sizing.
+
+
+**Step-by-Step Code Fix:**
+
+This solution utilizes JavaScript to dynamically adjust the chart's dimensions based on its container's size. We'll use `window.addEventListener` to trigger a chart redraw whenever the window resizes.
+
+**1. HTML Structure:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<title>Responsive CanvasJS Chart</title>
-<script src="https://cdn.canvasjs.com/1.0.0/canvasjs.min.js"></script>
-</head>
+  <title>Responsive CanvasJS Chart</title>
+  <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script> </head>
 <body>
-<div id="chartContainer" style="height: 300px; width: 100%;"></div>
-<script>
-// JavaScript from steps 2 and 3 goes here
-</script>
+  <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+  <script src="script.js"></script>
 </body>
 </html>
 ```
 
-## Explanation
+**2. JavaScript (script.js):**
 
-The core of the solution lies in the `window.addEventListener('resize', ...)` function. This adds an event listener that triggers a function whenever the browser window is resized.  Inside this function, `chart.render()` is called. This instructs CanvasJS to redraw the chart using the new dimensions of its container (`#chartContainer` in this case).  Crucially, the `#chartContainer` div should have its width set to `100%` to ensure it always occupies the full available width, allowing the chart to resize responsively.  Setting a fixed height might be necessary to prevent vertical collapse, but it could still adapt to different screen heights.
+```javascript
+window.addEventListener('resize', function() {
+  chart.render(); // Redraw the chart on window resize
+});
 
-## External References
+window.onload = function () {
 
-* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/)  (Check their documentation for advanced features and further assistance)
+  var chart = new CanvasJS.Chart("chartContainer", {
+    animationEnabled: true,
+    title:{
+      text: "Responsive Chart"
+    },
+    data: [{
+      type: "column",
+      dataPoints: [
+        { label: "Apple",  y: 10  },
+        { label: "Orange", y: 15  },
+        { label: "Banana", y: 25  }
+      ]
+    }]
+  });
+  chart.render();
+}
+```
 
 
-## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Explanation:**
+
+* **`window.addEventListener('resize', function() { ... });`:** This line attaches an event listener to the `window` object.  The function inside will execute whenever the browser window is resized.
+* **`chart.render();`:**  This crucial line within the event listener redraws the CanvasJS chart.  It forces CanvasJS to recalculate the chart's layout and rendering based on the updated dimensions of its container (`#chartContainer`).
+* **`window.onload = function() { ... };`:** This ensures the chart is initially rendered when the page loads.
+* **`style="height: 300px; width: 100%;"`:**  Using percentage width allows the chart to take up the full width of its container.  A fixed or minimum height is recommended to prevent collapse.
+
+**External References:**
+
+* [CanvasJS Documentation](https://canvasjs.com/docs/): Official CanvasJS documentation.  Refer to sections on chart options and responsive design.
+* [Responsive Web Design Basics](https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design/Introduction): A helpful introduction to responsive web design principles.
+
+
+This solution ensures the CanvasJS chart adapts dynamically to the available space, providing a consistent and visually appealing experience across different screen sizes. Remember to replace placeholder data with your actual data points.
+
+
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

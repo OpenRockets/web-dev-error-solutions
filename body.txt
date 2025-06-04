@@ -1,83 +1,73 @@
 
-This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered over, revealing hidden content. We'll achieve this using CSS transitions and the `max-height` property.  No JavaScript is required.
+This document addresses a common problem encountered when integrating CanvasJS charts into web pages with responsive layouts: chart elements not scaling correctly or being clipped when the browser window is resized. This often manifests as truncated labels, overlapping elements, or charts that fail to occupy the available space effectively.
 
 
-**Description of the Styling:**
+**Description of the Error:**
 
-The card uses a simple layout with a header and a content section. The content section initially has a `max-height` of zero, making it hidden. On hover, the `max-height` is changed to allow the content to expand to its natural height.  Smooth transitions are added using the `transition` property to create a visually appealing animation.  We'll also style the card for basic aesthetics.
+The CanvasJS chart, while rendered correctly initially, doesn't adapt smoothly to changes in window size.  This leads to visual inconsistencies, especially noticeable on smaller screens or when the browser window is resized.  The chart might be cut off, text might overlap, or elements might appear disproportionately sized. This is often due to a mismatch between the chart's dimensions and the container element's dimensions, especially when using percentage-based sizing.
 
 
-**Full Code:**
+**Step-by-Step Code Fix:**
+
+This solution utilizes JavaScript to dynamically adjust the chart's dimensions based on its container's size. We'll use `window.addEventListener` to trigger a chart redraw whenever the window resizes.
+
+**1. HTML Structure:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f2f2f2;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Hide content that overflows */
-  transition: box-shadow 0.3s ease-in-out; /* Add transition for box-shadow */
-}
-
-.card:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Enhance shadow on hover */
-}
-
-.card-header {
-  background-color: #333;
-  color: white;
-  padding: 15px;
-  text-align: center;
-}
-
-.card-content {
-  max-height: 0; /* Initially hidden */
-  overflow: hidden; /* Hide overflowing content */
-  transition: max-height 0.5s ease-in-out; /* Smooth transition */
-}
-
-.card:hover .card-content {
-  max-height: 500px; /* Allow content to expand */
-}
-
-.card-text {
-  padding: 15px;
-}
-</style>
-</head>
+  <title>Responsive CanvasJS Chart</title>
+  <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script> </head>
 <body>
-
-<div class="card">
-  <div class="card-header">
-    <h3>Expanding Card</h3>
-  </div>
-  <div class="card-content">
-    <p class="card-text">This is some example text inside the expanding card.  You can add as much content as you like here.  The card will smoothly expand to accommodate it. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam id molestie diam. Sed at quam sed dui ultricies ultrices.</p>
-    <p class="card-text">More example text to demonstrate the expansion.</p>
-  </div>
-</div>
-
+  <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+  <script src="script.js"></script>
 </body>
 </html>
+```
+
+**2. JavaScript (script.js):**
+
+```javascript
+window.addEventListener('resize', function() {
+  chart.render(); // Redraw the chart on window resize
+});
+
+window.onload = function () {
+
+  var chart = new CanvasJS.Chart("chartContainer", {
+    animationEnabled: true,
+    title:{
+      text: "Responsive Chart"
+    },
+    data: [{
+      type: "column",
+      dataPoints: [
+        { label: "Apple",  y: 10  },
+        { label: "Orange", y: 15  },
+        { label: "Banana", y: 25  }
+      ]
+    }]
+  });
+  chart.render();
+}
 ```
 
 
 **Explanation:**
 
-* **`max-height: 0;`:** This initially hides the card content.
-* **`overflow: hidden;`:** This prevents content from overflowing the card before expansion.
-* **`transition: max-height 0.5s ease-in-out;`:** This creates a smooth transition effect for the `max-height` property, making the expansion animation fluid.
-* **`:hover .card-content { max-height: 500px; }`:**  On hover, the `max-height` is set to `500px`, allowing the content to expand.  You can adjust this value to control the maximum height.  Removing it would allow the content to expand to its natural height.
+* **`window.addEventListener('resize', function() { ... });`:** This line attaches an event listener to the `window` object.  The function inside will execute whenever the browser window is resized.
+* **`chart.render();`:**  This crucial line within the event listener redraws the CanvasJS chart.  It forces CanvasJS to recalculate the chart's layout and rendering based on the updated dimensions of its container (`#chartContainer`).
+* **`window.onload = function() { ... };`:** This ensures the chart is initially rendered when the page loads.
+* **`style="height: 300px; width: 100%;"`:**  Using percentage width allows the chart to take up the full width of its container.  A fixed or minimum height is recommended to prevent collapse.
+
+**External References:**
+
+* [CanvasJS Documentation](https://canvasjs.com/docs/): Official CanvasJS documentation.  Refer to sections on chart options and responsive design.
+* [Responsive Web Design Basics](https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design/Introduction): A helpful introduction to responsive web design principles.
 
 
-**Links to Resources to Learn More:**
-
-* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **Understanding CSS `max-height`:** [Search for "CSS max-height" on your favorite search engine]
+This solution ensures the CanvasJS chart adapts dynamically to the available space, providing a consistent and visually appealing experience across different screen sizes. Remember to replace placeholder data with your actual data points.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
