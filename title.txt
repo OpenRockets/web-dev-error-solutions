@@ -1,1 +1,1 @@
-Creating a CSS-Only Pulsating Heart
+Next.js Middleware: Handling `headers` object manipulation for redirects

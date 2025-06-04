@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers` object manipulation for redirects
+
 
 This document addresses a common issue encountered when using Next.js Middleware to redirect users based on specific conditions.  The problem often stems from incorrectly manipulating the `headers` object within the middleware function, leading to unexpected behavior or errors.
 
