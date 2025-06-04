@@ -1,1 +1,1 @@
-Resolving VideoJS Player Initialization Failures in CanvasJS Integrations
+Resolving VideoJS's "TypeError: Cannot read properties of undefined (reading 'play')" Error
