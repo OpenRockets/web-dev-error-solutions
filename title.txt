@@ -1,1 +1,1 @@
-Creating a CSS-Only Expanding Card
+Handling "Invariant Violation: Minified React error #320" in Next.js API Routes

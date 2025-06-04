@@ -1,3 +1,5 @@
+# 🐞 Handling "Invariant Violation: Minified React error #320" in Next.js API Routes
+
 
 This document addresses a common error developers encounter when working with Next.js API routes:  "Invariant Violation: Minified React error #320". This error typically indicates that React components or React-specific code is being used within an API route, which is unintended. API routes are designed for server-side logic and data fetching, not for rendering React components.
 
