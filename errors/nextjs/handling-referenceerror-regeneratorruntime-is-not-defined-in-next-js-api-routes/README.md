@@ -1,3 +1,5 @@
+# 🐞 Handling `ReferenceError: regeneratorRuntime is not defined` in Next.js API Routes
+
 
 This document addresses a common error encountered when using asynchronous functions within Next.js API routes: `ReferenceError: regeneratorRuntime is not defined`. This error typically arises because asynchronous functions (using `async`/`await`) rely on the `regeneratorRuntime` object, which isn't automatically available in all Node.js environments.  Next.js API routes run in a Node.js environment, and if the necessary runtime isn't included, this error will occur.
 
