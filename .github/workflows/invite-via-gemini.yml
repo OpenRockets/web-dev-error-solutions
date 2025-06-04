@@ -4,7 +4,10 @@ on:
   schedule:
     - cron: "*/10 * * * *"  # Every 10 minutes
   workflow_dispatch:
-
+permissions:
+  contents: write  # Needed to commit and push code
+  id-token: write  # (Optional, in case you use OIDC/GitHub Apps)
+  # issues: write  # Optional: if you ever automate issues
 jobs:
   invite:
     runs-on: ubuntu-latest
