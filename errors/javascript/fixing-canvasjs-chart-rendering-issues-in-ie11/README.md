@@ -1,77 +1,74 @@
 # 🐞 Fixing CanvasJS Chart Rendering Issues in IE11
 
 
-This document addresses a common problem encountered when using CanvasJS charts in Internet Explorer 11 (IE11): the chart failing to render correctly or displaying incorrectly.  This is often due to IE11's limitations in supporting modern JavaScript features and Canvas rendering optimizations used by CanvasJS.
+## Description of the Error
 
-**Description of the Error:**
+A common problem encountered when using CanvasJS charts in older browsers like Internet Explorer 11 (IE11) is the failure of charts to render correctly or at all.  This often manifests as a blank space where the chart should be, or a partially rendered chart with missing elements.  The root cause is typically IE11's limited support for certain Canvas features or inconsistencies in its JavaScript engine compared to modern browsers.
 
-In IE11, a CanvasJS chart might display as a blank space, show only part of the chart, or render with visual artifacts.  The browser's developer console might not always provide clear error messages, making debugging challenging.  The problem stems from IE11's incomplete or different implementation of certain HTML5 Canvas functionalities and related JavaScript APIs.
+## Step-by-Step Code Fix
 
+This example focuses on ensuring compatibility with IE11 using a polyfill for `requestAnimationFrame`, a function often used within CanvasJS's rendering process.  While this might not solve *all* IE11 related CanvasJS issues, it's a frequently effective first step.
 
-**Fixing Steps (Code):**
+**1. Include the `requestAnimationFrame` polyfill:**
 
-This solution focuses on using a compatibility library and ensuring proper inclusion of CanvasJS.
-
-**Step 1: Include the Excanvas library:**
-
-IE8 and below do not support the HTML5 canvas element natively.  While IE11 *does* support it, using Excanvas can improve compatibility and mitigate potential rendering issues.  Although older, it sometimes resolves stubborn quirks.
+You need to include a polyfill for `requestAnimationFrame` if it's not already present in your project.  A simple and widely used one is available via CDN.  Add this `<script>` tag within the `<head>` of your HTML file, *before* including the CanvasJS script:
 
 ```html
-<!-- Include Excanvas (for older IE support, even if questionable in IE11) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/excanvas/r3/excanvas.compiled.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raf/3.4.0/raf.min.js"></script>
 ```
 
-**Step 2: Include the CanvasJS library:**
+**2.  Include the CanvasJS library:**
 
-Ensure you've correctly included the CanvasJS library in your HTML file.  Replace `"path/to/canvasjs.min.js"` with the actual path:
-
+Next, include the CanvasJS library.  Make sure to use a CDN or a correctly downloaded version.
 
 ```html
-<script src="path/to/canvasjs.min.js"></script>
+<script src="https://cdn.canvasjs.com/latest/canvasjs.min.js"></script>
 ```
 
-**Step 3:  Chart Creation (Example):**
+**3. Your CanvasJS chart code:**
 
-This is an example of creating a simple chart using CanvasJS.  Adapt it to your specific data and chart type.
+This is a basic example. Replace this with your actual chart creation code:
 
 ```javascript
 window.onload = function () {
-  var chart = new CanvasJS.Chart("chartContainer", {
-    animationEnabled: true,
-    title: {
-      text: "Simple Chart"
-    },
-    data: [{
-      type: "column",
-      dataPoints: [
-        { label: "Apple", y: 10 },
-        { label: "Banana", y: 15 },
-        { label: "Orange", y: 20 }
-      ]
-    }]
-  });
-  chart.render();
-};
+    var chart = new CanvasJS.Chart("chartContainer", {
+        animationEnabled: true,
+        title: {
+            text: "IE11 Compatibility Test"
+        },
+        data: [{
+            type: "column",
+            dataPoints: [
+                { x: 10, y: 71 },
+                { x: 20, y: 55 },
+                { x: 30, y: 50 },
+                { x: 40, y: 65 }
+            ]
+        }]
+    });
+    chart.render();
+}
 ```
 
-**Step 4:  HTML Container:**
+**4.  HTML Container:**
 
-Remember to include a `div` element with the ID "chartContainer" to host the chart:
+Finally, ensure you have a container element with the ID "chartContainer" in your HTML:
+
 
 ```html
 <div id="chartContainer" style="height: 300px; width: 500px;"></div>
 ```
 
-**Explanation:**
 
-Including Excanvas provides a fallback for older rendering engines, potentially resolving underlying issues in IE11's canvas handling.  While not strictly necessary for IE11, its inclusion can sometimes solve subtle discrepancies in how CanvasJS interacts with the browser's rendering pipeline.  This approach is a pragmatic solution; a more modern approach may involve using a more robust polyfill or fully rewriting the rendering logic to use a framework more compatible with IE11 (though this is less likely to be an efficient solution).
+## Explanation
 
-**External References:**
+The `requestAnimationFrame` polyfill ensures consistent behavior across different browsers, including IE11.  This function is crucial for smooth animations and rendering within CanvasJS. By adding the polyfill *before* the CanvasJS script, you ensure that CanvasJS uses the consistent polyfill implementation even if the native `requestAnimationFrame` in IE11 behaves differently. This addresses a significant source of rendering issues in older browsers.  Other issues might require additional debugging or specific workarounds depending on the nature of the error and the chart configuration.
 
-* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/) (Refer to their documentation for the latest API and usage examples.)
-* **Excanvas GitHub (archived):**  While this library is old and not actively maintained, finding an archived copy can still prove useful for this specific IE11 compatibility issue. Search for "excanvas" on GitHub.
+## External References
 
-**Note:** If the problem persists after these steps, consider checking for conflicts with other JavaScript libraries, inspecting the browser's developer tools for specific errors, or upgrading to a more modern browser.  For production environments, supporting IE11 is becoming increasingly difficult and often considered unsustainable.
+* **CanvasJS Documentation:** [https://canvasjs.com/](https://canvasjs.com/) (Check their documentation for browser compatibility and troubleshooting)
+* **`requestAnimationFrame` Polyfill (raf.js):** [https://github.com/ngryman/raf](https://github.com/ngryman/raf) (Source code and information about the polyfill used)
+* **Internet Explorer Compatibility:** [https://docs.microsoft.com/en-us/ie/](https://docs.microsoft.com/en-us/ie/) (Microsoft's documentation on Internet Explorer, though largely deprecated)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
