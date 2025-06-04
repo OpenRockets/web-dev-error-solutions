@@ -1,1 +1,1 @@
-Handling "Invariant Violation: Minified React error #320" in Next.js API Routes
+Creating a CSS-Only Pulsating Heart
