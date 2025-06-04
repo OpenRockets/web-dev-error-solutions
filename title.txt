@@ -1,1 +1,1 @@
-Creating a CSS-Only 3D Cube
+Fixing CanvasJS Chart Rendering Issues in Responsive Designs
