@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers.append` Errors in `revalidate`
+
 
 This document addresses a common issue encountered when using Next.js Middleware's `revalidate` feature in conjunction with `headers.append`.  Specifically, attempting to append headers multiple times within a single middleware execution can lead to unexpected behavior or errors.
 

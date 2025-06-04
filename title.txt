@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `NextResponse.redirect()` with Query Parameters
+Next.js Middleware: Handling `headers.append` Errors in `revalidate`
