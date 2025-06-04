@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `getHeader` Errors in API Routes
+Next.js Middleware: Handling `Request Aborted` Errors

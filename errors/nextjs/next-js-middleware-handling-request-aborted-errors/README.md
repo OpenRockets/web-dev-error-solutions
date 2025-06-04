@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Request Aborted` Errors
+
 
 ## Description of the Error
 
