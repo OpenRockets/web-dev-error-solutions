@@ -1,3 +1,5 @@
+# 🐞 Dealing with `Error: NextResponse must be used within an async function` in Next.js Middleware
+
 
 This document addresses a common error encountered when working with Next.js Middleware: `Error: NextResponse must be used within an async function`. This error arises when you attempt to use the `NextResponse` object within a synchronous middleware function.  Next.js Middleware functions *must* be asynchronous to handle the inherent asynchronicity of network requests and data fetching.
 

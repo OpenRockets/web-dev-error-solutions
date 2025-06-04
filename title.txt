@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `404 Not Found` Errors Efficiently
+Dealing with `Error: NextResponse must be used within an async function` in Next.js Middleware
