@@ -1,55 +1,94 @@
 
-## Description of the Error
-
-A common issue in VideoJS, especially on mobile devices, is the disappearance of the player controls after a short period of inactivity.  The controls simply vanish, leaving the user unable to pause, adjust volume, or interact with the video. This frustrating experience significantly impacts user engagement and satisfaction.  The problem often stems from a conflict between VideoJS's default behavior and mobile browser optimizations designed to save battery power and screen space.
+This document details a CSS-only solution to create an expanding card effect, where clicking a card reveals more information.  We'll use only CSS3, no JavaScript required.  This provides a smooth, performant, and accessible solution.
 
 
-## Step-by-Step Code Fix
+## Description of the Styling
 
-This solution focuses on modifying the `userActivity` property within VideoJS's options to prevent the automatic hiding of controls.
+This effect uses CSS transitions and the `:target` pseudo-class to achieve the expansion.  The card starts in a collapsed state. When the user clicks the card's title (a link), the URL hash changes, triggering the `:target` selector to expand the card, revealing hidden content.  A subtle animation makes the transition smooth and user-friendly.
 
-**Before:**
+## Full Code
 
-Let's assume your basic VideoJS initialization looks something like this:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+body {
+  font-family: sans-serif;
+}
 
-```javascript
-videojs('my-video', {
-  sources: [{
-    src: 'myvideo.mp4',
-    type: 'video/mp4'
-  }],
-  poster: 'myposter.jpg'
-});
+.card {
+  width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 20px;
+  transition: max-height 0.5s ease-in-out; /* Smooth transition for height change */
+}
+
+.card-header {
+  background-color: #f0f0f0;
+  padding: 15px;
+  cursor: pointer;
+}
+
+.card-content {
+  max-height: 0; /* Initially hidden */
+  overflow: hidden;
+  transition: max-height 0.5s ease-in-out; /* Smooth transition for height change */
+}
+
+.card:target .card-content {
+  max-height: 200px; /* Expanded height */
+}
+
+.card a {
+    text-decoration: none;
+    color: black;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <a href="#card1">Card Title 1</a>
+  </div>
+  <div class="card-content" id="card1">
+    <p>This is the content of the first card.  You can add as much text as you want here.  This is a test to see how the expansion works.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <a href="#card2">Card Title 2</a>
+  </div>
+  <div class="card-content" id="card2">
+    <p>This is the content of the second card.  This is another example of expanding content.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
-
-**After:**
-
-We will add the `userActivity` option to explicitly control the behavior of the controls. The `userActivity` option takes a boolean value. Setting it to `true` disables the automatic hiding.
-
-```javascript
-videojs('my-video', {
-  sources: [{
-    src: 'myvideo.mp4',
-    type: 'video/mp4'
-  }],
-  poster: 'myposter.jpg',
-  userActivity: true // <-- This line fixes the issue
-});
-```
-
-This simple addition tells VideoJS to keep the controls visible at all times, regardless of user inactivity.
 
 
 ## Explanation
 
-The `userActivity` option in VideoJS manages the automatic hiding and showing of player controls based on user interaction. By default, VideoJS utilizes this feature to optimize the user experience, especially on mobile where battery life is a major concern.  However, this automatic hiding can be problematic, leading to the issue described above. Setting `userActivity` to `true` disables this automatic behavior, guaranteeing that the controls remain permanently visible on screen.
+* **`.card`:** This class styles the overall card container.  `overflow: hidden;` is crucial to hide the content initially.
+* **`.card-header`:** Styles the clickable header.
+* **`.card-content`:**  Contains the expandable content.  `max-height: 0;` hides it by default.  The transition property ensures smooth animation.
+* **`.card:target .card-content`:** This is the key.  The `:target` pseudo-class selects the `.card` element that is currently targeted by the URL hash (e.g., `#card1`).  When the link is clicked, the `max-height` is changed to reveal the content.
+* **Transitions:** The `transition` property on both `.card` and `.card-content` ensures that the height changes smoothly over 0.5 seconds.
 
 
-## External References
+## Links to Resources to Learn More
 
-* **Video.js Documentation:** [https://docs.videojs.com/](https://docs.videojs.com/)  (While the exact documentation for `userActivity` might require searching within the site,  the official documentation is your best source for the most up-to-date information about VideoJS options and functionality.)
-* **Stack Overflow (search for "VideoJS controls disappearing mobile"):**  Searching relevant keywords on Stack Overflow can often provide alternative solutions or workarounds for this common problem.
+* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs on the `:target` pseudo-class:** [https://developer.mozilla.org/en-US/docs/Web/CSS/:target](https://developer.mozilla.org/en-US/docs/Web/CSS/:target)
+* **CSS-Tricks (General CSS resources):** [https://css-tricks.com/](https://css-tricks.com/)
 
 
-## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

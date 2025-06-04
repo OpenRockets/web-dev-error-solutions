@@ -1,11 +1,12 @@
 # 🐞 Creating a CSS-only Expanding Card
 
 
-This document details a CSS-only solution for creating an expanding card effect.  No JavaScript is needed! This effect uses CSS transitions and transforms to smoothly expand a card when it's hovered over.
+This document details a CSS-only solution to create an expanding card effect, where clicking a card reveals more information.  We'll use only CSS3, no JavaScript required.  This provides a smooth, performant, and accessible solution.
+
 
 ## Description of the Styling
 
-This technique utilizes the `:hover` pseudo-class to trigger a transformation on the card.  When the mouse hovers over the card, it expands in size and optionally reveals hidden content.  The key is leveraging CSS transitions to create a smooth animation.  We'll also employ some basic box-shadow styling for visual appeal.
+This effect uses CSS transitions and the `:target` pseudo-class to achieve the expansion.  The card starts in a collapsed state. When the user clicks the card's title (a link), the URL hash changes, triggering the `:target` selector to expand the card, revealing hidden content.  A subtle animation makes the transition smooth and user-friendly.
 
 ## Full Code
 
@@ -15,48 +16,58 @@ This technique utilizes the `:hover` pseudo-class to trigger a transformation on
 <head>
 <title>Expanding Card</title>
 <style>
-.card {
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Added transition for smoother effect */
-  overflow: hidden; /* Hide content that extends beyond card initially */
-  width: 300px;
+body {
+  font-family: sans-serif;
 }
 
-.card:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+.card {
+  width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 20px;
+  transition: max-height 0.5s ease-in-out; /* Smooth transition for height change */
+}
+
+.card-header {
+  background-color: #f0f0f0;
+  padding: 15px;
   cursor: pointer;
 }
 
 .card-content {
-  height: 100px; /* Initial height */
-  overflow: hidden; /* Hide content beyond initial height */
-  transition: height 0.3s ease-in-out; /* Added transition for smoother effect */
+  max-height: 0; /* Initially hidden */
+  overflow: hidden;
+  transition: max-height 0.5s ease-in-out; /* Smooth transition for height change */
 }
 
-.card:hover .card-content {
-  height: 200px; /* Height on hover */
+.card:target .card-content {
+  max-height: 200px; /* Expanded height */
 }
 
-.card h2 {
-  margin-top: 0;
-}
-
-.card p{
-  margin-bottom: 0;
+.card a {
+    text-decoration: none;
+    color: black;
 }
 </style>
 </head>
 <body>
 
 <div class="card">
-  <h2>Card Title</h2>
-  <div class="card-content">
-    <p>This is some example text that will expand when you hover over the card.</p>
-    <p>More text here to demonstrate the expansion.</p>
+  <div class="card-header">
+    <a href="#card1">Card Title 1</a>
+  </div>
+  <div class="card-content" id="card1">
+    <p>This is the content of the first card.  You can add as much text as you want here.  This is a test to see how the expansion works.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <a href="#card2">Card Title 2</a>
+  </div>
+  <div class="card-content" id="card2">
+    <p>This is the content of the second card.  This is another example of expanding content.</p>
   </div>
 </div>
 
@@ -64,21 +75,21 @@ This technique utilizes the `:hover` pseudo-class to trigger a transformation on
 </html>
 ```
 
+
 ## Explanation
 
-* **`transition` property:** This is crucial for the smooth animation.  We're transitioning the `transform` (for scaling) and `box-shadow` properties over 0.3 seconds with an ease-in-out timing function. We also transition the height of the `card-content` div.
-* **`transform: scale(1.1)`:** This increases the size of the card on hover by 10%.
-* **`box-shadow`:**  This adds a more pronounced shadow on hover to enhance the visual effect.
-* **`:hover` pseudo-class:** This selector targets the element when the mouse cursor is over it.
-* **`overflow: hidden`:** This ensures that content exceeding the initial height of the card is hidden before the hover effect.
-* The `card-content` div's height transition allows for a smooth expansion of the content upon hover.
+* **`.card`:** This class styles the overall card container.  `overflow: hidden;` is crucial to hide the content initially.
+* **`.card-header`:** Styles the clickable header.
+* **`.card-content`:**  Contains the expandable content.  `max-height: 0;` hides it by default.  The transition property ensures smooth animation.
+* **`.card:target .card-content`:** This is the key.  The `:target` pseudo-class selects the `.card` element that is currently targeted by the URL hash (e.g., `#card1`).  When the link is clicked, the `max-height` is changed to reveal the content.
+* **Transitions:** The `transition` property on both `.card` and `.card-content` ensures that the height changes smoothly over 0.5 seconds.
 
 
 ## Links to Resources to Learn More
 
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS-Tricks (various articles on CSS animations and effects):** [https://css-tricks.com/](https://css-tricks.com/)
+* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs on the `:target` pseudo-class:** [https://developer.mozilla.org/en-US/docs/Web/CSS/:target](https://developer.mozilla.org/en-US/docs/Web/CSS/:target)
+* **CSS-Tricks (General CSS resources):** [https://css-tricks.com/](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
