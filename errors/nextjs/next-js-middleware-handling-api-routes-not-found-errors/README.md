@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `API Routes` Not Found Errors
+
 
 This document addresses a common issue encountered when using Next.js API routes within middleware.  The problem arises when middleware attempts to fetch data from an API route that doesn't exist, resulting in an error and potentially breaking the middleware functionality.
 
