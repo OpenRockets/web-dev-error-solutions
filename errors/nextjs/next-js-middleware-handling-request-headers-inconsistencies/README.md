@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `request.headers` Inconsistencies
+
 
 This document addresses a common issue encountered when working with Next.js Middleware: inconsistencies in accessing request headers, specifically the `request.headers` object.  This often manifests as undefined or unexpectedly empty header values, leading to broken functionality in your middleware.
 

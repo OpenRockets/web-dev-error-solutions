@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `request.nextUrl.pathname` Inconsistencies
+Next.js Middleware: Handling `request.headers` Inconsistencies
