@@ -1,3 +1,5 @@
+# 🐞 Handling "ReferenceError: fetch is not defined" in Next.js API Routes
+
 
 This document addresses a common error encountered when working with Next.js API routes:  `ReferenceError: fetch is not defined`.  This error occurs because the `fetch` API is not automatically available in the Node.js environment where API routes execute.  Unlike client-side JavaScript in your components, API routes run on the server using Node.js, which doesn't inherently include the `fetch` API.
 

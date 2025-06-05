@@ -1,1 +1,1 @@
-Creating a CSS-Only Circular Progress Bar
+Handling "ReferenceError: fetch is not defined" in Next.js API Routes
