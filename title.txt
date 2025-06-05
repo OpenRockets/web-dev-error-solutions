@@ -1,1 +1,1 @@
-Handling `next/font` Issues in Next.js Middleware
+Creating a CSS-Only Circular Progress Bar
