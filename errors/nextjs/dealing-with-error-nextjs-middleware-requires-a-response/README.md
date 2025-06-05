@@ -1,3 +1,5 @@
+# 🐞 Dealing with `Error: NextJS Middleware requires a response`
+
 
 This document addresses a common error encountered when developing Next.js applications:  `Error: NextJS Middleware requires a response`. This error occurs when a Next.js middleware function doesn't explicitly return a `Response` object, causing the middleware to fail.  Middleware functions *must* return a response to be correctly processed.  Failure to do so leads to this error.
 
