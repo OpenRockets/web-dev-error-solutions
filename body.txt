@@ -1,95 +1,80 @@
 
-This document addresses a common `TypeError` encountered when using Next.js Middleware, specifically when attempting to access properties of the `req.cookies` object before verifying its existence.  This often happens when trying to determine user locale or other session-related data from cookies.
-
-## Description of the Error
-
-The error message `TypeError: Cannot read properties of undefined (reading 'locale')` indicates that you're trying to access the `locale` property (or a similar property) of the `req.cookies` object before ensuring it's defined.  This happens because `req.cookies` might be `undefined` if no cookies are present in the request, leading to the error when your code attempts to read a property from it.
+This document details how to create a circular progress bar using only CSS.  This avoids the need for JavaScript, making it lightweight and efficient. We'll use CSS3 properties to achieve the circular shape and animation.
 
 
-## Code Example:  Problem & Solution
+**Description of the Styling:**
 
-**Problematic Code:**
+This technique uses a combination of `border-radius`, `transform`, and `animation` properties to create a visually appealing circular progress bar. A pseudo-element (`::before`) is used to create the animated progress ring.  The percentage of completion is controlled by a CSS variable, allowing for easy modification.
 
-```javascript
-// pages/api/middleware.js
-export default function middleware(req, res) {
-  const locale = req.cookies.locale; // Error occurs here if req.cookies is undefined
 
-  if (locale === 'es') {
-    // Redirect to Spanish version
-    res.redirect('/es');
-  } else {
-    // Continue to default
+**Full Code:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #f0f0f0; /* Light gray background */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 10px solid transparent; /* Adjust border width as needed */
+  border-top-color: #007bff; /* Blue progress color */
+  animation: progress-bar 2s linear forwards;
+}
+
+/* Adjust percentage via CSS variable */
+:root {
+    --progress-percentage: 75; /* Percentage complete (0-100) */
+}
+
+@keyframes progress-bar {
+  to {
+    transform: rotate(calc(var(--progress-percentage) * 3.6deg));
   }
 }
+
+</style>
+</head>
+<body>
+
+<div class="progress-ring"></div>
+
+</body>
+</html>
 ```
 
-**Step-by-Step Solution:**
+**Explanation:**
 
-1. **Check for Cookie Existence:** Before accessing properties of `req.cookies`, always verify it's defined and contains the expected key.
+* **`.progress-ring`:** This class sets the basic dimensions, shape, and background of the circular progress bar.  `position: relative` is crucial for positioning the pseudo-element.
 
-2. **Use Optional Chaining:**  Next.js 13 and above make this significantly easier using optional chaining (`?.`):
+* **`.progress-ring::before`:** This pseudo-element creates the circular progress ring.  `border-radius: 50%` makes it circular.  `border-top-color` sets the color of the progress bar.  The `animation` property applies the `progress-bar` animation.
 
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
+* **`:root { --progress-percentage: 75; }`:**  This sets a CSS variable to control the progress percentage.  Changing this value will dynamically adjust the progress bar.
 
-export function middleware(req) {
-  const locale = req.cookies?.locale;
-
-  if (locale === 'es') {
-    return NextResponse.redirect(new URL('/es', req.url))
-  }
-
-  //Add other language checks
-  if (locale === 'fr') {
-    return NextResponse.redirect(new URL('/fr', req.url))
-  }
-
-}
-
-export const config = {
-  matcher: '/',
-}
-
-```
-
-3. **Use Default Value (Alternative):** You can provide a default value if the cookie isn't found using the nullish coalescing operator (`??`):
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const locale = req.cookies?.locale ?? 'en'; // Default to 'en' if no locale cookie
-
-  if (locale === 'es') {
-    return NextResponse.redirect(new URL('/es', req.url))
-  }
-
-  //Add other language checks
-  if (locale === 'fr') {
-    return NextResponse.redirect(new URL('/fr', req.url))
-  }
-
-}
-
-export const config = {
-  matcher: '/',
-}
-```
+* **`@keyframes progress-bar`:** This defines the animation.  `transform: rotate()` rotates the border, creating the progress effect. `calc(var(--progress-percentage) * 3.6deg)` calculates the rotation angle based on the percentage (360 degrees / 100% = 3.6 degrees per percentage point).  `linear` ensures a smooth animation. `forwards` keeps the animation at its final state.
 
 
-## Explanation
+**Links to Resources to Learn More:**
 
-The optional chaining operator (`?.`) prevents the error by safely accessing properties of an object only if the object itself is defined.  If `req.cookies` is `undefined`, the expression `req.cookies?.locale` evaluates to `undefined` without throwing an error. The nullish coalescing operator (`??`) provides a fallback value if the left-hand operand is `null` or `undefined`.
-
-
-## External References
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Optional Chaining Operator (?.)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
-* [Nullish Coalescing Operator (??)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing_operator)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS Pseudo-elements:** [MDN Web Docs - Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* **CSS Variables (Custom Properties):** [MDN Web Docs - CSS Custom Properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+* **Understanding `calc()` in CSS:** [MDN Web Docs - calc()](https://developer.mozilla.org/en-US/docs/Web/CSS/calc)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

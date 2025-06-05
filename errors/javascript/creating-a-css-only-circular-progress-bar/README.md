@@ -1,11 +1,13 @@
-# 🐞 Creating a CSS-Only Circular Progress Bar
+# 🐞 Creating a CSS-only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This leverages CSS's `clip-path` property for a clean and efficient solution.
+This document details how to create a circular progress bar using only CSS.  This avoids the need for JavaScript, making it lightweight and efficient. We'll use CSS3 properties to achieve the circular shape and animation.
+
 
 **Description of the Styling:**
 
-This progress bar uses a combination of techniques to achieve its circular shape and progress animation. A base circle is created using a `border-radius` of 50%. A pseudo-element (`::before`) is then layered on top. This pseudo-element is rotated using `transform: rotate()` to create the progress effect.  The `clip-path` property is used to mask the circular progress, revealing only the portion representing the progress percentage.
+This technique uses a combination of `border-radius`, `transform`, and `animation` properties to create a visually appealing circular progress bar. A pseudo-element (`::before`) is used to create the animated progress ring.  The percentage of completion is controlled by a CSS variable, allowing for easy modification.
+
 
 **Full Code:**
 
@@ -15,7 +17,7 @@ This progress bar uses a combination of techniques to achieve its circular shape
 <head>
 <title>CSS Circular Progress Bar</title>
 <style>
-.circular-progress {
+.progress-ring {
   width: 150px;
   height: 150px;
   border-radius: 50%;
@@ -26,40 +28,33 @@ This progress bar uses a combination of techniques to achieve its circular shape
   align-items: center;
 }
 
-.circular-progress::before {
+.progress-ring::before {
   content: "";
   position: absolute;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background-color: #4CAF50; /* Green progress color */
-  clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 50%); /* Initial clip path */
-  transform: rotate(225deg); /* Example: 225deg represents 62.5% progress (225/360 * 100) */
-  transition: transform 0.5s ease; /* Smooth transition */
-  z-index: 1; /* Ensure it's above the background */
+  border: 10px solid transparent; /* Adjust border width as needed */
+  border-top-color: #007bff; /* Blue progress color */
+  animation: progress-bar 2s linear forwards;
 }
 
-/* Example class to change the progress dynamically */
-.progress-75::before {
-    transform: rotate(270deg); /* 75% progress */
+/* Adjust percentage via CSS variable */
+:root {
+    --progress-percentage: 75; /* Percentage complete (0-100) */
 }
-.progress-50::before {
-    transform: rotate(180deg); /* 50% progress */
-}
-.progress-25::before {
-    transform: rotate(90deg); /* 25% progress */
+
+@keyframes progress-bar {
+  to {
+    transform: rotate(calc(var(--progress-percentage) * 3.6deg));
+  }
 }
 
 </style>
 </head>
 <body>
 
-<h1>CSS Circular Progress Bar</h1>
-
-<div class="circular-progress progress-75"></div> <br>
-<div class="circular-progress progress-50"></div><br>
-<div class="circular-progress progress-25"></div><br>
-<div class="circular-progress"></div>
+<div class="progress-ring"></div>
 
 </body>
 </html>
@@ -67,19 +62,21 @@ This progress bar uses a combination of techniques to achieve its circular shape
 
 **Explanation:**
 
-* **Base Circle:** The `.circular-progress` class creates the base circle using `width`, `height`, and `border-radius`.
-* **Pseudo-element:** The `::before` pseudo-element creates the progress indicator.
-* **`clip-path`:**  The `polygon()` function in `clip-path` defines the visible area of the pseudo-element.  The initial state shows a semicircle.
-* **`transform: rotate()`:** This rotates the pseudo-element, effectively creating the progress animation.  The degree of rotation is directly proportional to the percentage of progress (360 degrees representing 100%).
-* **`transition`:** This property ensures a smooth animation when the `transform` property changes.
-* **Classes for Dynamic Progress:** The `progress-75`, `progress-50`, and `progress-25` classes demonstrate how you would dynamically change the progress using different rotation angles.
+* **`.progress-ring`:** This class sets the basic dimensions, shape, and background of the circular progress bar.  `position: relative` is crucial for positioning the pseudo-element.
+
+* **`.progress-ring::before`:** This pseudo-element creates the circular progress ring.  `border-radius: 50%` makes it circular.  `border-top-color` sets the color of the progress bar.  The `animation` property applies the `progress-bar` animation.
+
+* **`:root { --progress-percentage: 75; }`:**  This sets a CSS variable to control the progress percentage.  Changing this value will dynamically adjust the progress bar.
+
+* **`@keyframes progress-bar`:** This defines the animation.  `transform: rotate()` rotates the border, creating the progress effect. `calc(var(--progress-percentage) * 3.6deg)` calculates the rotation angle based on the percentage (360 degrees / 100% = 3.6 degrees per percentage point).  `linear` ensures a smooth animation. `forwards` keeps the animation at its final state.
 
 
 **Links to Resources to Learn More:**
 
-* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **MDN Web Docs - `transform`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Tricks - Introduction to clip-path:** [https://css-tricks.com/clipping-masking-css/](https://css-tricks.com/clipping-masking-css/) (search for clip-path examples)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS Pseudo-elements:** [MDN Web Docs - Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* **CSS Variables (Custom Properties):** [MDN Web Docs - CSS Custom Properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+* **Understanding `calc()` in CSS:** [MDN Web Docs - calc()](https://developer.mozilla.org/en-US/docs/Web/CSS/calc)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
