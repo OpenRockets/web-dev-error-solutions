@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Not Found` Errors for Dynamic Routes
+Next.js Middleware: Handling `TypeError: Cannot read properties of undefined (reading 'locale')`
