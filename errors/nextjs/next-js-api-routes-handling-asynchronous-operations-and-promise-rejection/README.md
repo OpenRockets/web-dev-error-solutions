@@ -1,3 +1,5 @@
+# 🐞 Next.js API Routes: Handling Asynchronous Operations and `Promise` Rejection
+
 
 ## Description of the Error
 
