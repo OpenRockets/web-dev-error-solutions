@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `404 Not Found` Errors Gracefully
+Creating a CSS-Only Expanding Card
