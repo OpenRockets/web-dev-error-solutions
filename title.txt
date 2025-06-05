@@ -1,1 +1,1 @@
-Troubleshooting Next.js API Routes:  `TypeError: Cannot read properties of undefined (reading 'map')`
+Creating a CSS-Only Expanding Card with a Subtle Reveal

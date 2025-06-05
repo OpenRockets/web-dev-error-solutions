@@ -1,88 +1,86 @@
 
-This document addresses a common `TypeError` encountered when working with API routes in Next.js, specifically the error message  `TypeError: Cannot read properties of undefined (reading 'map')`. This typically arises when attempting to map over a property of an object that might be undefined.
+This document details how to create an expanding card effect using only CSS.  This effect subtly reveals content upon hover, adding a touch of elegance to your website's design. We'll be using standard CSS3 properties, making it compatible across a wide range of browsers.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The error `TypeError: Cannot read properties of undefined (reading 'map')` in a Next.js API route signifies that you're calling the `.map()` method on a property that hasn't been properly defined or is null/undefined in the data you're receiving (often from a database or external API). The `.map()` method expects an array, and attempting to use it on `undefined` throws this error.
+The card will initially display a compact summary. On hover, the card expands vertically to reveal additional content hidden beneath.  A smooth transition effect is employed to ensure a pleasing user experience.  We'll achieve this using the `transition` property alongside `max-height` and `transform`.
 
 
-**Scenario:** Let's say you have an API route that fetches data from a database and then maps over a property within that data to create a response.  If the database query returns no results or returns an object without the expected property, the `.map()` call will fail.
+**Full Code:**
 
-**Code Example (Problematic):**
-
-```javascript
-// pages/api/products.js
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
-
-export default async function handler(req, res) {
-  const products = await prisma.product.findMany()
-
-  const productNames = products.map(product => product.name); // Error here if products is empty or undefined
-
-  res.status(200).json({ productNames });
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden; /* Hide content overflowing on expansion */
+  transition: max-height 0.3s ease-in-out, transform 0.3s ease-in-out; /* Smooth transition */
+  max-height: 100px; /* Initial height */
+  width: 300px;
 }
-```
 
-**Fixing the Error Step-by-Step:**
-
-1. **Nullish Coalescing Operator (`??`):** The simplest and often most effective solution is to use the nullish coalescing operator to provide a default value if the `products` array is `null` or `undefined`.  This prevents the `.map()` method from being called on an invalid value.
-
-2. **Optional Chaining (`?.`):** Before using `.map()`, check if the `products` array exists. If it does, only then call the `.map()` method on it. This is more readable and reliable than using nullish coalescing alone.
-
-**Corrected Code:**
-
-```javascript
-// pages/api/products.js
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
-
-export default async function handler(req, res) {
-  const products = await prisma.product.findMany()
-
-  const productNames = products?.map(product => product.name) ?? []; // Handles null or undefined products
-
-  res.status(200).json({ productNames });
+.card:hover {
+  max-height: 300px; /* Expanded height */
+  transform: translateY(-10px); /* Subtle lift on hover */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Add shadow on hover */
 }
+
+.card-content {
+  padding: 15px;
+}
+
+.card-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card-summary {
+  /*Initially visible content*/
+}
+
+.card-details {
+  /*Hidden content initially*/
+  opacity:0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.card:hover .card-details {
+  opacity: 1;
+}
+
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Expanding Card Example</h2>
+    <p class="card-summary">This is a short summary of the card content.  It will expand on hover.</p>
+    <p class="card-details">This is the additional content that will be revealed when you hover over the card.  You can add as much detail as needed here.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
 **Explanation:**
 
-* `products?.map(...)`: This uses optional chaining (`?.`).  If `products` is `null` or `undefined`, the `.map()` method is not called; the whole expression short-circuits to `undefined`.
-* `?? []:`:  If the result of `products?.map(...)` is `undefined` (because `products` was nullish), the nullish coalescing operator (`??`) provides an empty array (`[]`) as a default value.  This ensures that `productNames` is always an array, preventing the error.
-
-**Alternative - Explicit Check:**
-
-Another approach involves explicitly checking for the existence of `products` before mapping.
-
-```javascript
-// pages/api/products.js
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
-
-export default async function handler(req, res) {
-  const products = await prisma.product.findMany()
-
-  let productNames = [];
-  if (products) {
-    productNames = products.map(product => product.name);
-  }
-
-  res.status(200).json({ productNames });
-}
-```
-
-This is slightly more verbose but equally effective.
+* **`max-height` and `transition`:**  These are crucial for the expansion effect.  `max-height` limits the card's height initially; the `transition` property ensures a smooth animation when this value changes on hover.
+* **`transform: translateY(-10px)`:** This subtly lifts the card on hover, adding a nice visual cue.
+* **`overflow: hidden`:** This prevents the content from overflowing the card's initial height before expansion.
+* **`box-shadow`:** This adds a subtle shadow effect on hover, further enhancing the visual appeal.
+* **`.card-summary` and `.card-details`**: These classes manage the initial and revealed content for a cleaner structure.  Opacity transition provides a smooth reveal for the details.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [Nullish Coalescing Operator (??)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing_operator)
-* [Optional Chaining (?.)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
+* **MDN Web Docs (CSS Transitions):** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs (CSS Transforms):** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
