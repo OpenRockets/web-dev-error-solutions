@@ -1,1 +1,1 @@
-Handling `Error: NextResponse.rewrite() can only be used in the context of a middleware`
+Creating a CSS-Only Expanding Card
