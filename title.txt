@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `redirect()` within `async` functions
+Creating a CSS-only Expanding Card with a Subtle Animation
