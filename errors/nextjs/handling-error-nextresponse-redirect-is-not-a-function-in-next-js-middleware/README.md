@@ -1,3 +1,5 @@
+# 🐞 Handling `Error: NextResponse.redirect() is not a function` in Next.js Middleware
+
 
 This document addresses a common error encountered when using Next.js Middleware: `Error: NextResponse.redirect() is not a function`. This error typically arises from incorrectly importing or using the `NextResponse` object within your middleware.  It means you're trying to use the `redirect()` method on something that isn't a `NextResponse` object.
 
