@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with a Subtle Animation
+Troubleshooting Next.js API Routes:  `TypeError: Cannot read properties of undefined (reading 'map')`
