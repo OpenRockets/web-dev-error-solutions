@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `unstable_revalidate` and Data Staling
+Creating a CSS-Only Expanding Card with a Subtle Reveal
