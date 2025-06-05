@@ -1,76 +1,60 @@
 
-This document addresses a common problem encountered when developing API routes in Next.js:  returning a proper 404 Not Found response when a requested resource doesn't exist.  Improperly handling 404s can lead to confusing user experiences and hinder debugging.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This example uses pure CSS, making it lightweight and efficient.  We'll achieve this using the `::before` pseudo-element and some clever manipulation of borders and rotations.
 
+**Description of the Styling:**
 
-**Description of the Error:**
+The progress bar is constructed using a circular container.  A `::before` pseudo-element is positioned inside this container. This pseudo-element is styled as a circle with a border. The progress is simulated by rotating this inner circle.  We'll use CSS variables (`custom properties`) for easy customization of colors and percentages.
 
-When a client requests a resource from your Next.js API route, and that resource is not found, a generic error might be returned, or worse, the application might crash silently.  This lacks the informative 404 status code that allows clients (e.g., browsers, other APIs) to gracefully handle the absence of data.
+**Full Code:**
 
-
-**Step-by-Step Code Fix:**
-
-Let's assume we have an API route at `/api/users/[id].js` that fetches user data based on the provided `id`. If the user doesn't exist, we need to return a 404 response.
-
-**Incorrect Implementation (Missing 404 Handling):**
-
-```javascript
-// pages/api/users/[id].js
-export default async function handler(req, res) {
-  const id = req.query.id;
-  const user = await fetchUserData(id); // Placeholder function
-
-  if (user) {
-    res.status(200).json(user);
-  } else {
-    // Missing proper 404 handling! This might return a 500 or an empty response.
-    console.error(`User with ID ${id} not found`);
-  }
-}
-
-
-async function fetchUserData(id) {
-    //Simulate database fetch - replace with your actual data source
-    const users = [{id:1, name: "John Doe"}, {id:2, name: "Jane Doe"}];
-    return users.find(user => user.id == parseInt(id)) || null;
-}
+```html
+<div class="progress-ring" style="--progress: 75;">
+  <div class="progress-ring__circle"></div>
+</div>
 ```
 
-**Correct Implementation (with 404 Handling):**
-
-```javascript
-// pages/api/users/[id].js
-export default async function handler(req, res) {
-  const id = req.query.id;
-  const user = await fetchUserData(id);
-
-  if (user) {
-    res.status(200).json(user);
-  } else {
-    res.status(404).json({ message: `User with ID ${id} not found` });
-  }
+```css
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  position: relative;
 }
 
-async function fetchUserData(id) {
-    //Simulate database fetch - replace with your actual data source
-    const users = [{id:1, name: "John Doe"}, {id:2, name: "Jane Doe"}];
-    return users.find(user => user.id == parseInt(id)) || null;
+.progress-ring__circle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 10px solid #ddd; /* Track color */
+  border-top-color: var(--progress-color, #4CAF50); /* Progress color */
+  transform: rotate(calc(var(--progress) * 3.6deg)); /* Calculation for rotation */
+}
+
+/* Custom progress value */
+.progress-ring[style*="--progress"] {
+  --progress-color: #4CAF50; /* Default progress color */
 }
 ```
-
-This corrected version explicitly sets the HTTP status code to 404 and provides a JSON response indicating the reason for the failure. This makes it easier for consuming applications to handle the error gracefully.
 
 
 **Explanation:**
 
-The crucial change is adding `res.status(404).json({ message: `User with ID ${id} not found` });`. This line ensures that the API route returns the correct HTTP status code (404) along with a JSON payload explaining the error.  The `res.status()` method sets the HTTP status code, and `res.json()` sends a JSON response to the client.
+* **`progress-ring`:** This container sets the size and shape of the entire progress bar. `border-radius: 50%;` makes it circular.
+* **`progress-ring__circle`:** This inner element creates the circular progress itself.  The `border` property creates the track and progress.
+* **`border-top-color: var(--progress-color, #4CAF50);`**:  This dynamically sets the color of the top border, representing the progress. We use a CSS variable (`--progress-color`) for easy customization.
+* **`transform: rotate(calc(var(--progress) * 3.6deg));`**: This is the key to the animation.  A full circle is 360 degrees, so we multiply the `--progress` value (a percentage from 0 to 100) by 3.6 (360/100) to get the correct rotation angle.
+* **`.progress-ring[style*="--progress"]`:** This is a custom selector that sets the default progress color if the progress value is provided directly in the style attribute. This ensures that the progress color is used even if you only specify the `--progress` value
 
 
-**External References:**
+**Resources to Learn More:**
 
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [HTTP Status Codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
-* [Handling Errors in Node.js](https://nodejs.org/api/errors.html)
+* **MDN Web Docs on CSS Variables:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+* **MDN Web Docs on Pseudo-elements:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* **CSS-Tricks (General CSS resources):** [https://css-tricks.com/](https://css-tricks.com/)
 
 
-**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
