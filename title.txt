@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card
+Handling `Error: NextResponse is not defined` in Next.js API Routes

@@ -1,3 +1,5 @@
+# 🐞 Handling `Error: NextResponse is not defined` in Next.js API Routes
+
 
 This document addresses a common error encountered when working with Next.js API routes:  `Error: NextResponse is not defined`. This error arises when you attempt to use the `NextResponse` object within an API route without the correct import.  `NextResponse` is crucial for sending custom responses (e.g., setting headers, status codes, cookies) from your API routes.
 
