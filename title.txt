@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Request Timeout` Errors
+Creating a CSS-only Expanding Card

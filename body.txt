@@ -1,114 +1,72 @@
 
-This document addresses a common issue encountered when using Next.js Middleware: `Request Timeout` errors.  These errors typically occur when your middleware function takes longer than the configured timeout period to execute, leading to a failed request and a poor user experience.  This can be caused by various factors, including computationally expensive operations within the middleware, inefficient database queries, or external API calls that experience latency.
+This document details a CSS-only solution to create an expanding card effect.  No JavaScript is required!  The effect involves a card that expands vertically when hovered over, revealing additional content.  We'll use pure CSS3 to achieve this.
 
-## Description of the Error
+**Description of the Styling:**
 
-A `Request Timeout` error in Next.js Middleware manifests as a 504 error (Gateway Timeout) or a similar error code from the server. The user's browser will typically display a "page unavailable" message or a similar indication that the request failed. This happens because the middleware responsible for processing the request exceeds the server's allotted time to respond.
+The styling utilizes CSS transitions and transforms to create the smooth expanding animation. The card's height is initially set to a smaller value. On hover, the height is transitioned to a larger value, revealing hidden content within.  We use `overflow: hidden` to keep the hidden content concealed until the card expands.
 
-## Code Example and Step-by-Step Fix
+**Full Code:**
 
-Let's consider a scenario where middleware authenticates users based on a slow external API:
-
-**Problematic Middleware:**
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const token = req.cookies.get('auth_token');
-
-  // Simulate a long-running authentication check
-  const authResponse = fetch('https://slow-api.com/auth', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-
-  //This blocks the main thread until the API call completes.
-  const data = await authResponse.json();
-
-  if (data.authenticated) {
-    return NextResponse.next();
-  } else {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f2f2f2;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  overflow: hidden; /* Hide content initially */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+  width: 300px;
+  height: 100px; /* Initial height */
 }
 
-export const config = {
-  matcher: ['/protected/*'] // Only apply this middleware to protected routes
+.card:hover {
+  height: 300px; /* Height on hover */
 }
+
+.card-content {
+  padding: 10px;
+}
+
+.card-title {
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Expanding Card</h2>
+    <p>This is some extra content that is revealed when you hover over the card.</p>
+    <p>You can add as much content as you want here.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-This middleware will likely timeout if `https://slow-api.com/auth` takes longer than the server's default timeout.
+**Explanation:**
+
+* **`.card`:** This class styles the overall card.  `overflow: hidden` is crucial for hiding the content that extends beyond the initial height.  The `transition` property defines a smooth animation for the height change on hover.
+
+* **`.card:hover`:** This selector applies styles when the card is hovered over.  The `height` is increased to reveal the hidden content.
+
+* **`.card-content` & `.card-title`:** These classes style the content within the card for better readability and presentation.
 
 
-**Solution: Asynchronous Operations and Timeouts**
+**Links to Resources to Learn More:**
 
-To fix this, we need to handle the authentication asynchronously and potentially implement a timeout mechanism:
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server';
-
-export async function middleware(req) {
-  const token = req.cookies.get('auth_token');
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3000); // 3-second timeout
-
-  try {
-    const authResponse = await fetch('https://slow-api.com/auth', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      signal: controller.signal
-    });
-
-    clearTimeout(timeoutId);
-
-    const data = await authResponse.json();
-
-    if (data.authenticated) {
-      return NextResponse.next();
-    } else {
-      return NextResponse.redirect(new URL('/login', req.url));
-    }
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      return new NextResponse('Authentication Timeout', { status: 408 }); // 408 Request Timeout
-    } else {
-      console.error('Authentication error:', error);
-      return new NextResponse('Authentication failed', { status: 500 });
-    }
-  }
-}
-
-export const config = {
-  matcher: ['/protected/*']
-}
-```
-
-This improved version uses `AbortController` to set a timeout.  If the API call takes longer than 3 seconds, the `AbortController` aborts the request, preventing a long-running process from blocking the server.  Error handling is included to gracefully manage timeouts and other potential errors.
+* **CSS Transitions:**  [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Selectors:** [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
 
 
-## Explanation
-
-The key improvements in the corrected code are:
-
-1. **`AbortController`:** This API allows you to cancel requests if they take too long.
-2. **`setTimeout`:**  This function sets a timer that triggers the abortion of the request after a specific duration.
-3. **`clearTimeout`:** This function cancels the `setTimeout` if the request completes successfully before the timeout.
-4. **Error Handling:** The `try...catch` block handles potential errors, including the `AbortError`, allowing for a more robust response to the user.
-
-
-## External References
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [MDN Web Docs: `AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)
-* [Understanding HTTP Status Codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
+This simple example demonstrates the power of CSS for creating engaging interactive effects without resorting to JavaScript. You can customize this code further by adjusting colors, adding more content, and experimenting with different transition properties.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
