@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers` Object Modifications
+Handling "TypeError: data.map is not a function" in Next.js API Routes
