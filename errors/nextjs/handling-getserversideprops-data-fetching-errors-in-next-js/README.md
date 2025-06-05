@@ -1,3 +1,5 @@
+# 🐞 Handling `getServerSideProps` Data Fetching Errors in Next.js
+
 
 This document addresses a common problem encountered when using `getServerSideProps` in Next.js applications: gracefully handling errors during data fetching.  Failing to handle these errors can lead to a poor user experience, displaying cryptic error messages or causing the application to crash.
 

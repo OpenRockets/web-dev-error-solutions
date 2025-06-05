@@ -1,1 +1,1 @@
-Creating a CSS-Only Expanding Card with a Reveal Effect
+Handling `getServerSideProps` Data Fetching Errors in Next.js
