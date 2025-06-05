@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Redirect()` Issues in `getServerSideProps`
+Next.js Middleware: Handling `headers already sent` Error
