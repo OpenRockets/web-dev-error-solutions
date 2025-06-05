@@ -1,3 +1,5 @@
+# 🐞 Next.js API Routes: Handling Large Response Data and Avoiding Memory Leaks
+
 
 This document addresses a common problem developers encounter when working with Next.js API routes that handle large datasets: exceeding the Node.js process memory limit, leading to crashes or slow responses.  This is particularly relevant when dealing with operations like fetching and processing large amounts of data from a database or external API.
 
