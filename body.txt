@@ -1,89 +1,73 @@
 
-This document details a CSS-only solution to create an expanding card effect, where clicking a card reveals more content smoothly.  We'll use plain CSS3 for this, avoiding JavaScript for a lightweight and performant solution.
+## Description of the Error
+
+A common issue when using Next.js Middleware is encountering unexpected behavior or errors when attempting to use the `redirect()` function inside an `async` function.  The `redirect()` function expects a synchronous response, but an `async` function inherently involves asynchronous operations.  This mismatch can lead to the middleware failing silently, not redirecting as expected, or throwing errors like `TypeError: Cannot read properties of undefined (reading 'writeHead')`.
+
+## Step-by-Step Code Fix
+
+Let's say you have middleware designed to redirect users based on an asynchronous database check.  Here's the problematic code and its corrected version:
 
 
-## Description of the Styling
+**Problematic Code:**
 
-The card starts in a compact state, showing only a title and a small image.  Upon clicking, the card expands vertically to reveal hidden content (in this case, some placeholder text).  The transition is smooth thanks to CSS transitions.  The styling uses simple box-shadow and border-radius for visual appeal.
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
 
+export async function middleware(req) {
+  const user = await checkUserAuthentication(req); // Asynchronous operation
 
-## Full Code
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 300px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Hide the content until expanded */
-  transition: max-height 0.3s ease-in-out; /* Smooth transition */
-  max-height: 100px; /* Initial height */
-  cursor: pointer;
+  if (!user) {
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
 }
 
-.card:hover {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /*Enhanced hover effect*/
+async function checkUserAuthentication(req) {
+  // Simulate an async database check
+  await new Promise(resolve => setTimeout(resolve, 500));
+  // In reality, this would fetch user data from a database
+  return { id: 1, name: "Test User" }; 
 }
-
-.card.expanded {
-  max-height: 400px; /* Expanded height */
-}
-
-.card-content {
-  padding: 15px;
-}
-
-.card-image {
-  width: 100%;
-  height: auto;
-}
-
-.card-title {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.card-text {
-  font-size: 14px;
-  line-height: 1.6;
-}
-</style>
-</head>
-<body>
-
-<div class="card" onclick="this.classList.toggle('expanded')">
-  <img class="card-image" src="https://via.placeholder.com/300x150" alt="Card Image">
-  <div class="card-content">
-    <h3 class="card-title">Card Title</h3>
-    <p class="card-text">This is some placeholder text for the card content.  This will be revealed when the card is expanded. Lorem ipsum dolor sit amet, consectetur adipiscing elit.  Nulla nec purus feugiat, molestie ipsum et, consequat nibh.</p>
-  </div>
-</div>
-
-</body>
-</html>
 ```
+
+This code will likely fail. `NextResponse.redirect` needs to be called synchronously within the middleware function.
+
+**Corrected Code:**
+
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export async function middleware(req) {
+  const user = await checkUserAuthentication(req);
+
+  if (!user) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+  return NextResponse.next(); // Continue to the original route
+}
+
+async function checkUserAuthentication(req) {
+  // Simulate an async database check
+  await new Promise(resolve => setTimeout(resolve, 500));
+  // In reality, this would fetch user data from a database
+  return { id: 1, name: "Test User" }; 
+}
+```
+
+The correction is subtle but crucial. While the `checkUserAuthentication` function remains asynchronous, the `redirect()` call happens *after* the `await` which ensures the user data is fetched *before* any redirect is attempted.  Crucially we also added a `NextResponse.next()` to handle the case where the user *is* authenticated, ensuring the middleware doesn't just hang.
 
 
 ## Explanation
 
-* **`max-height` and `transition`:** These are the key properties for the expanding effect.  `max-height` initially restricts the card's height, and `transition` makes the change in `max-height` smooth.
-* **`expanded` class:** This class is toggled using JavaScript's `classList.toggle()` method on click.  It changes the `max-height` to reveal the hidden content.
-* **`overflow: hidden`:** This ensures that the content outside the initial `max-height` is hidden until the card expands.
-* **`box-shadow`, `border-radius`:** These are used for basic styling and visual appeal.
-
-The JavaScript part is minimal, relying solely on the `classList.toggle()` method to add or remove the 'expanded' class which directly manipulates the CSS.
+The core issue is the timing of the `redirect()` call.  In Next.js Middleware, the response needs to be handled synchronously.  The `async`/`await` pattern allows asynchronous operations, but the result of that operation needs to be used to determine the response *before* sending the response itself.  By awaiting the completion of `checkUserAuthentication`, we guarantee that the decision to redirect (or not) is made before `redirect()` is called.
 
 
-## Links to Resources to Learn More
+## External References
 
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs - CSS max-height:** [https://developer.mozilla.org/en-US/docs/Web/CSS/max-height](https://developer.mozilla.org/en-US/docs/Web/CSS/max-height)
-* **CSS-Tricks (General CSS learning):** [https://css-tricks.com/](https://css-tricks.com/)
+* [Next.js Middleware documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware) - Official Next.js documentation on Middleware.
+* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse) - Details on the `NextResponse` object and its methods.
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
