@@ -1,71 +1,64 @@
-# 🐞 Next.js Middleware: Handling `NextResponse.redirect()` with Query Parameters
+# 🐞 Next.js Middleware: Handling `NextResponse.redirect` with Query Parameters
 
 
-This document addresses a common issue encountered when using `NextResponse.redirect()` within Next.js Middleware: preserving query parameters during redirection.  Incorrectly handling query parameters can lead to broken functionality after redirection, especially if the redirected page relies on those parameters.
+This document addresses a common issue developers encounter when using `NextResponse.redirect` within Next.js Middleware: preserving query parameters during redirection.  Incorrectly handling query parameters can lead to unexpected behavior and broken functionality in your application.
 
 **Description of the Error:**
 
-When using `NextResponse.redirect()` in Next.js Middleware to redirect a user, query parameters appended to the original URL are often lost.  This results in the redirected page not having access to the expected data or functionality depending on those parameters. The redirected page might display an error or behave unexpectedly.
+When redirecting users using `NextResponse.redirect` in Next.js Middleware, you might find that query parameters from the original request are lost in the redirected URL. This typically manifests as a redirected page missing crucial data passed through the query string.  For instance, if a user lands on `/product?id=123`, a redirect might incorrectly lead to `/product` instead of `/product?id=123`.
 
-**Code: Step-by-Step Fix**
-
-Let's assume we have middleware that redirects `/old-page` to `/new-page` while preserving any query parameters:
-
-
-**Incorrect Implementation (loses query parameters):**
+**Code Example (Illustrating the Problem):**
 
 ```javascript
-// pages/api/middleware.js
+// middleware.js
 import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  if (req.nextUrl.pathname === '/old-page') {
-    return NextResponse.redirect(new URL('/new-page', req.url))
-  }
+  const url = req.nextUrl.clone()
+  url.pathname = '/product' //Incorrect - losing query parameters
+  return NextResponse.redirect(url)
 }
 
 export const config = {
-  matcher: '/old-page'
+  matcher: '/product',
 }
 ```
 
-**Correct Implementation (preserves query parameters):**
+**Step-by-Step Code Fix:**
+
+1. **Access and Preserve Query Parameters:**  Instead of simply changing the `pathname`, we need to access and maintain the original query parameters. We achieve this using the `search` property of the `NextRequest` object.
+
+2. **Clone and Modify the URL:**  We clone the incoming URL to avoid modifying the original request object directly. This ensures that the original request remains untouched for any other middleware or components.
+
+3. **Create the Redirection Response:**  Construct the redirection response correctly by incorporating the preserved query parameters.
 
 ```javascript
-// pages/api/middleware.js
+// middleware.js
 import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  if (req.nextUrl.pathname === '/old-page') {
-    const newUrl = new URL('/new-page', req.url)
-    // Add existing query parameters to the new URL
-    req.nextUrl.searchParams.forEach((value, key) => {
-      newUrl.searchParams.append(key, value)
-    })
-    return NextResponse.redirect(newUrl)
-  }
+  const url = req.nextUrl.clone()
+  url.pathname = '/product'
+  // Preserve query parameters
+  url.search = req.nextUrl.search
+
+  return NextResponse.redirect(url)
 }
 
 export const config = {
-  matcher: '/old-page'
+  matcher: '/product',
 }
 ```
 
 **Explanation:**
 
-The crucial difference lies in how the `newUrl` is constructed and populated. In the incorrect implementation, `NextResponse.redirect` creates a new URL object only with the specified pathname.  This discards any existing query parameters.
-
-The correct implementation iterates through the query parameters present in the original request (`req.nextUrl.searchParams`) using `forEach`.  Each key-value pair is then appended to the `newUrl` using `newUrl.searchParams.append()`, ensuring the query parameters are carried over during the redirection.
+The key change is adding `url.search = req.nextUrl.search`.  This line explicitly copies the query string from the original request (`req.nextUrl.search`) to the cloned URL object (`url.search`).  This ensures that all query parameters are carried over during the redirection, maintaining the user's context and data integrity.
 
 **External References:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse.redirect API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse.redirect)
-
-**Summary:**
-
-By explicitly iterating through and appending the original request's query parameters to the new URL before redirecting, we guarantee that those parameters are not lost during the redirection process in Next.js Middleware.  This is crucial for maintaining the correct functionality of the redirected page.
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware):  The official Next.js documentation on middleware.
+* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse):  Details on the `NextResponse` object and its methods.
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
 
