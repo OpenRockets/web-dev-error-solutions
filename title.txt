@@ -1,1 +1,1 @@
-Dealing with `Error: request.headers.cookie is undefined` in Next.js API Routes
+Creating a CSS-only Expanding Card
