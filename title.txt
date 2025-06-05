@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `unstable_revalidate` and Cache Invalidation
+Next.js Middleware: Handling `NextResponse.redirect` with Query Parameters
