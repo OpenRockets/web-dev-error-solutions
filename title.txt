@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Error: read ECONNRESET`
+Creating a CSS-Only Expanding Card
