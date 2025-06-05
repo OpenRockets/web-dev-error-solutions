@@ -1,3 +1,5 @@
+# 🐞 Debugging "TypeError: data.map is not a function" in Next.js API Routes
+
 
 This document addresses a common error encountered when working with Next.js API routes: `TypeError: data.map is not a function`. This typically occurs when you attempt to use the `.map()` method on a variable that isn't an array.  Let's explore the cause and solution.
 
