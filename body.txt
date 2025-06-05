@@ -1,92 +1,51 @@
 
-This document details a CSS-only solution to create an expanding card effect.  This effect involves a card that reveals more content upon hovering or clicking.  We'll achieve this using only CSS transitions and transforms, without relying on JavaScript.  This example will use plain CSS3, but the principles can be adapted to frameworks like Tailwind CSS easily.
+This document addresses a common error encountered when attempting to use Next.js Middleware features within API routes.  The core problem stems from incorrectly importing `next/server` utilities, which are designed for middleware and not API routes.
 
+**Description of the Error:**
 
-**Description of the Styling:**
+Attempting to import functionalities from `next/server` within an API route (a file inside the `pages/api` directory) will lead to a runtime error.  This typically manifests as an `Error: Cannot find module 'next/server'` or a similar message indicating that the required modules are unavailable in the API route's context.
 
-The card consists of two main parts: a front face and a back face. The front face displays a summary, while the back face contains the detailed information.  We use CSS transitions and transforms to smoothly transition between the two faces on hover. The key is using the `transform: rotateY()` property to rotate the card around the Y-axis, revealing the back face.
+**Code Example (Incorrect):**
 
+```javascript
+// pages/api/hello.js
+import { NextResponse } from 'next/server'; // Incorrect import in API route
 
-**Full Code:**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  perspective: 1000px; /* Necessary for 3D transforms */
-  width: 300px;
-  height: 200px;
-  position: relative;
+export default function handler(req, res) {
+  const response = NextResponse.json({ message: 'Hello from API Route!' }); // Error here
+  res.status(200).json(response);
 }
-
-.card-face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden; /* Prevents the back face from showing through */
-  transition: transform 0.8s ease-in-out; /* Smooth transition */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid #ccc;
-}
-
-.card-front {
-  background-color: #f0f0f0;
-}
-
-.card-back {
-  background-color: #ddd;
-  transform: rotateY(180deg); /* Initially hidden */
-}
-
-.card:hover .card-front {
-  transform: rotateY(-180deg); /* Reveal back face on hover */
-}
-
-.card:hover .card-back {
-  transform: rotateY(0deg); /* Reveal back face on hover */
-}
-
-
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-face card-front">
-    <h3>Card Title</h3>
-    <p>Short description here...</p>
-  </div>
-  <div class="card-face card-back">
-    <h3>Detailed Information</h3>
-    <p>This is where you would put the detailed content of the card.  You can add as much information as you need here.</p>
-  </div>
-</div>
-
-</body>
-</html>
 ```
 
+**Fixing the Error Step-by-Step:**
+
+1. **Identify the Incorrect Import:** Pinpoint the lines where `next/server` modules are imported within your API route.
+
+2. **Remove `next/server` Imports:**  API routes operate within a different environment than middleware. They use standard Node.js `req` and `res` objects.  Remove all imports from `next/server`.
+
+3. **Use Standard Node.js Methods:**  Instead of `NextResponse`, leverage the standard Node.js `res` object to construct your API responses.
+
+**Corrected Code:**
+
+```javascript
+// pages/api/hello.js
+// No next/server import needed!
+
+export default function handler(req, res) {
+  res.status(200).json({ message: 'Hello from API Route!' });
+}
+```
 
 **Explanation:**
 
-* **`perspective`:** This property gives the element a 3D perspective, allowing the rotation to appear realistic.
-* **`backface-visibility: hidden;`:** This prevents the back face from being visible while it's hidden behind the front face.
-* **`transition`:** This property smoothly animates the `transform` property over 0.8 seconds.
-* **`transform: rotateY()`:** This rotates the element around the Y-axis.  The positive values rotate clockwise, while negative values rotate counter-clockwise.
-* The `:hover` pseudo-class triggers the rotation on mouse hover.
+Next.js Middleware and API Routes serve distinct purposes. Middleware runs before a request reaches the page, allowing for actions like redirects or header modifications. API routes, on the other hand, directly handle requests and produce JSON responses.  They operate within the standard Node.js request-response cycle, making the `next/server` utilities redundant and, in fact, incompatible.
 
 
-**Links to Resources to Learn More:**
+**External References:**
 
-* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **3D Transforms in CSS:** [Various tutorials available on YouTube and other online resources by searching "CSS 3D transforms"]
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
 
