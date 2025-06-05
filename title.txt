@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Error: Middleware response must not contain a `body` property`
+Creating a CSS-Only Circular Progress Bar

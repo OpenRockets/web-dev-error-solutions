@@ -1,91 +1,83 @@
 
-This document addresses a common error encountered when working with Next.js Middleware: `Error: Middleware response must not contain a 'body' property`.  This error arises when attempting to directly send a response body from middleware, which is not supported. Middleware's primary purpose is to modify the request or redirect, not to generate a full response.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This leverages CSS's `clip-path` property for a clean and efficient solution.
 
-## Description of the Error
+**Description of the Styling:**
 
-The error `Error: Middleware response must not contain a 'body' property` signifies that your middleware function is trying to return a response object that includes a `body` property.  Middleware functions should only utilize the `NextResponse` object's methods for redirection (`redirect()`), rewriting URLs (`rewrite()`), or modifying headers.  Attempting to set a body directly will result in this error.
+This progress bar uses a combination of techniques to achieve its circular shape and progress animation. A base circle is created using a `border-radius` of 50%. A pseudo-element (`::before`) is then layered on top. This pseudo-element is rotated using `transform: rotate()` to create the progress effect.  The `clip-path` property is used to mask the circular progress, revealing only the portion representing the progress percentage.
 
-## Code: Problematic and Corrected Examples
+**Full Code:**
 
-**Problematic Code (Incorrect):**
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const res = NextResponse.json({ message: 'Hello from middleware!' }) //INCORRECT
-  return res;
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.circular-progress {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #f0f0f0; /* Light gray background */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-export const config = {
-  matcher: '/about',
+.circular-progress::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #4CAF50; /* Green progress color */
+  clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 50%); /* Initial clip path */
+  transform: rotate(225deg); /* Example: 225deg represents 62.5% progress (225/360 * 100) */
+  transition: transform 0.5s ease; /* Smooth transition */
+  z-index: 1; /* Ensure it's above the background */
 }
+
+/* Example class to change the progress dynamically */
+.progress-75::before {
+    transform: rotate(270deg); /* 75% progress */
+}
+.progress-50::before {
+    transform: rotate(180deg); /* 50% progress */
+}
+.progress-25::before {
+    transform: rotate(90deg); /* 25% progress */
+}
+
+</style>
+</head>
+<body>
+
+<h1>CSS Circular Progress Bar</h1>
+
+<div class="circular-progress progress-75"></div> <br>
+<div class="circular-progress progress-50"></div><br>
+<div class="circular-progress progress-25"></div><br>
+<div class="circular-progress"></div>
+
+</body>
+</html>
 ```
 
-This code attempts to send a JSON response directly from the middleware. This will result in the error.
+**Explanation:**
+
+* **Base Circle:** The `.circular-progress` class creates the base circle using `width`, `height`, and `border-radius`.
+* **Pseudo-element:** The `::before` pseudo-element creates the progress indicator.
+* **`clip-path`:**  The `polygon()` function in `clip-path` defines the visible area of the pseudo-element.  The initial state shows a semicircle.
+* **`transform: rotate()`:** This rotates the pseudo-element, effectively creating the progress animation.  The degree of rotation is directly proportional to the percentage of progress (360 degrees representing 100%).
+* **`transition`:** This property ensures a smooth animation when the `transform` property changes.
+* **Classes for Dynamic Progress:** The `progress-75`, `progress-50`, and `progress-25` classes demonstrate how you would dynamically change the progress using different rotation angles.
 
 
-**Corrected Code (Step-by-Step Fix):**
+**Links to Resources to Learn More:**
 
-This example demonstrates redirecting to a different page if the condition is met, handling the situation correctly.  No response body is needed.
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  // Simulate checking for a condition. Replace with your actual logic.
-  const isAuthenticated = false;
-
-  if (!isAuthenticated) {
-    // Redirect to the login page if not authenticated.
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-
-  //Otherwise, continue with request.
-  return NextResponse.next();
-
-}
-
-export const config = {
-  matcher: '/about',
-}
-
-```
-
-**Corrected Code (Another Example using Headers):**
-
-This example shows how to modify headers within middleware.
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const res = NextResponse.next();
-  res.headers.set('X-Custom-Header', 'My Custom Value');
-  return res;
-}
-
-export const config = {
-  matcher: '/',
-}
-```
-
-This modifies the request's headers.  No body is included.
-
-
-## Explanation
-
-Next.js Middleware is designed for handling requests *before* they reach your pages or API routes.  Its primary function is to transform requests, not to generate responses.  Therefore, directly adding a `body` to the response object within middleware is invalid and leads to the error.  Middleware should utilize `NextResponse.redirect()`, `NextResponse.rewrite()`, and header manipulation to control request flow.  Full responses are handled within your pages or API routes.
-
-
-## External References
-
-* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/building-your-application/routing/middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware) (Refer to the section on `NextResponse` for further details.)
-* **NextResponse API Reference:** [https://nextjs.org/docs/api-reference/next/server/next-response](https://nextjs.org/docs/api-reference/next/server/next-response) (Check the methods available and their usage.)
-
+* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **MDN Web Docs - `transform`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Tricks - Introduction to clip-path:** [https://css-tricks.com/clipping-masking-css/](https://css-tricks.com/clipping-masking-css/) (search for clip-path examples)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
