@@ -1,74 +1,94 @@
 # 🐞 Next.js Middleware: Handling `Request Abort` Errors
 
 
-This document addresses a common issue encountered when working with Next.js Middleware: `Request Abort` errors. These errors often occur when a request to an external API within middleware takes longer than the user's patience, leading to the browser aborting the request before the middleware can complete its processing.
-
 ## Description of the Error
 
-A `Request Abort` error in Next.js Middleware manifests as a seemingly abrupt termination of the middleware function's execution.  It's not usually accompanied by a clear stack trace, making debugging challenging. The underlying cause is that the client (browser) cancels the request, typically due to a timeout, navigation away from the page, or closing the browser tab.  This leaves the server-side code unaware of the cancellation, potentially causing issues like resource leaks or unexpected behavior in subsequent requests.
+A common frustration when working with Next.js Middleware is encountering `Request Abort` errors. This typically occurs when a request to your middleware function is interrupted before it completes, often due to the user navigating away from the page, closing the browser tab, or a network issue.  The error itself isn't inherently problematic, but unhandled it can lead to confusing logs and potentially unexpected behavior in your application.  The key is to gracefully handle these aborted requests and prevent them from causing problems.
 
-## Fixing the Issue Step-by-Step
+## Fixing Step-by-Step with Code
 
-The key to handling `Request Abort` errors is to proactively check for request abortion within the middleware function.  Next.js doesn't provide a direct method to detect this, but we can use the `AbortController` API for a robust solution.
+Let's assume you have a middleware function that fetches data and sets a cookie:
 
-**Step 1:  Import `AbortController`**
+**Problematic Middleware:**
 
 ```javascript
-import { NextResponse } from 'next/server';
-import { AbortController } from 'abort-controller';
+// pages/api/middleware.js
+export function middleware(req, res) {
+  const start = Date.now();
+  console.log("Middleware started");
+
+  const promise = fetch('https://api.example.com/data')
+    .then(response => response.json())
+    .then(data => {
+      const endTime = Date.now();
+      console.log(`Middleware completed in ${endTime - start}ms`);
+      res.setHeader('Set-Cookie', `myCookie=${JSON.stringify(data)}; Path=/`);
+      res.next();
+    })
+    .catch(error => {
+      console.error("Error fetching data:", error);
+      res.status(500).send('Error'); //This will still fail on abort
+    });
+  
+  //This doesn't handle aborts gracefully
+}
+
+export const config = {
+  matcher: ['/']
+};
 ```
 
-**Step 2: Implement AbortController in Middleware**
+
+**Improved Middleware with Abort Handling:**
 
 ```javascript
-export async function middleware(req) {
-  const controller = new AbortController();
+// pages/api/middleware.js
+export function middleware(req, res) {
+  const start = Date.now();
+  console.log("Middleware started");
+  let controller = new AbortController();
   const signal = controller.signal;
 
-  try {
-    // Set a timeout (adjust as needed)
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5-second timeout
+  const promise = fetch('https://api.example.com/data', { signal })
+    .then(response => response.json())
+    .then(data => {
+      const endTime = Date.now();
+      console.log(`Middleware completed in ${endTime - start}ms`);
+      res.setHeader('Set-Cookie', `myCookie=${JSON.stringify(data)}; Path=/`);
+      res.next();
+    })
+    .catch(error => {
+      if (error.name === 'AbortError') {
+        console.log("Request aborted"); //Gracefully handle abort
+      } else {
+        console.error("Error fetching data:", error);
+        res.status(500).send('Error');
+      }
+    });
 
-    // Your existing API call using the signal
-    const res = await fetch('https://api.example.com/data', { signal });
+  req.on('close', () => {
+     controller.abort();  // Abort the fetch if the request closes prematurely
+     console.log('Request closed, aborting fetch')
+  });
 
-    clearTimeout(timeoutId); // Clear timeout if request completes successfully
-
-    if (!res.ok) {
-      // Handle non-2xx responses
-      return NextResponse.json({ error: 'API request failed' }, { status: res.status });
-    }
-
-    const data = await res.json();
-    // ... further processing of data ...
-    return NextResponse.next();
-
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      // Handle AbortError specifically
-      return NextResponse.json({ error: 'Request timed out' }, { status: 504 }); // 504 Gateway Timeout
-    }
-    console.error("Error in middleware:", error);
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
-  }
 }
+
+export const config = {
+  matcher: ['/']
+};
 ```
 
-**Explanation:**
 
-- We create an `AbortController` and obtain its `signal`.
-- A timeout is set using `setTimeout`.  If the fetch operation takes longer than the specified time, `controller.abort()` is called, triggering the `AbortError`.
-- The `fetch` call now includes the `signal` option, allowing it to be interrupted by the `AbortController`.
-- The `try...catch` block handles potential errors.  Specifically, it checks if the error is an `AbortError`. If it is, a 504 Gateway Timeout response is returned to the client.  Other errors are handled gracefully with a 500 Internal Server Error.
-- `clearTimeout` prevents memory leaks by removing the timeout if the fetch completes successfully.
+## Explanation
+
+The improved code utilizes an `AbortController`. This allows us to cleanly abort the `fetch` request if the user navigates away or closes the connection.  The `req.on('close', ...)` listener detects when the request is closed, and calls `controller.abort()` to stop the `fetch` operation.  The `.catch` block then specifically checks for `AbortError`, logging a message instead of throwing an error, avoiding unnecessary console noise and potential application crashes.  Handling the abort gracefully ensures a cleaner user experience and prevents resource leaks.
 
 ## External References
 
-- [AbortController API](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)
-- [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-- [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-- [Handling Errors in Next.js](https://nextjs.org/docs/basic-features/pages#error-handling)
+* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/building-your-application/routing/middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)  (Refer to the official documentation for the latest information on middleware usage.)
+* **AbortController MDN:** [https://developer.mozilla.org/en-US/docs/Web/API/AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) (Understand the functionality of `AbortController` for more advanced usage.)
+* **Fetch API MDN:** [https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) (Learn more about the `fetch` API and its capabilities.)
 
 
-## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

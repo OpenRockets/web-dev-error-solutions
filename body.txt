@@ -1,100 +1,91 @@
 
-This document details a CSS-only solution for creating an expanding card effect.  This effect involves a card that, upon hover, expands to reveal more content or details.  We'll use only CSS3 for this, avoiding JavaScript for a lightweight and efficient solution.
+## Description of the Error
 
-**Description of the Styling:**
+A common frustration when working with Next.js Middleware is encountering `Request Abort` errors. This typically occurs when a request to your middleware function is interrupted before it completes, often due to the user navigating away from the page, closing the browser tab, or a network issue.  The error itself isn't inherently problematic, but unhandled it can lead to confusing logs and potentially unexpected behavior in your application.  The key is to gracefully handle these aborted requests and prevent them from causing problems.
 
-The core idea revolves around using CSS transitions and pseudo-elements (`::before` and `::after`) to achieve the expansion. The card's initial state is compact. On hover, the `::before` pseudo-element grows in size, pushing the main content down and revealing hidden content.  We use `transform: scale()` for smooth scaling and transitions for a polished visual effect.  Opacity changes are used to control visibility of elements.
+## Fixing Step-by-Step with Code
 
+Let's assume you have a middleware function that fetches data and sets a cookie:
 
-**Full Code:**
+**Problematic Middleware:**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 200px;
-  height: 150px;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-  overflow: hidden; /* Hide content that overflows */
-  position: relative; /* Necessary for absolute positioning of pseudo-elements */
-  transition: 0.3s ease; /* Smooth transition */
+```javascript
+// pages/api/middleware.js
+export function middleware(req, res) {
+  const start = Date.now();
+  console.log("Middleware started");
+
+  const promise = fetch('https://api.example.com/data')
+    .then(response => response.json())
+    .then(data => {
+      const endTime = Date.now();
+      console.log(`Middleware completed in ${endTime - start}ms`);
+      res.setHeader('Set-Cookie', `myCookie=${JSON.stringify(data)}; Path=/`);
+      res.next();
+    })
+    .catch(error => {
+      console.error("Error fetching data:", error);
+      res.status(500).send('Error'); //This will still fail on abort
+    });
+  
+  //This doesn't handle aborts gracefully
 }
 
-.card:hover {
-  transform: scale(1.1); /* Expand on hover */
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Add shadow on hover */
-}
-
-.card__content {
-  padding: 10px;
-  color: #333;
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 0;
-  background-color: rgba(0, 123, 255, 0.8); /* Background color when expanded */
-  transition: height 0.3s ease; /* Smooth transition for height change */
-  z-index: -1; /* Ensure it's behind the content */
-}
-
-.card:hover::before {
-  height: 100%;  /* Expand on hover */
-}
-
-.card__hidden {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  height: 0;
-  overflow: hidden;
-}
-
-.card:hover .card__hidden {
-  opacity: 1;
-  height: auto;  /* Reveal hidden content on hover*/
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card__content">
-    <h2>Title</h2>
-    <p>This is some visible content.</p>
-  </div>
-  <div class="card__hidden">
-    <p>This is the hidden content that appears on hover.</p>
-    <p>More hidden details here...</p>
-  </div>
-</div>
-
-</body>
-</html>
+export const config = {
+  matcher: ['/']
+};
 ```
 
 
-**Explanation:**
+**Improved Middleware with Abort Handling:**
 
-1. **Basic Card Structure:** The `.card` class styles the card itself, setting dimensions, background, and rounding.
-2. **Hover Effect:** The `:hover` pseudo-class applies scaling and a box-shadow on hover, making the expansion visually appealing.
-3. **Pseudo-element Expansion:** The `::before` pseudo-element creates an overlay that expands to reveal hidden content.
-4. **Hidden Content:** The `.card__hidden` class initially hides content using `opacity: 0` and `height: 0`. On hover, these properties change to show the content.
-5. **Transitions:** CSS `transition` property ensures smooth animations for scaling, height changes, and opacity.
+```javascript
+// pages/api/middleware.js
+export function middleware(req, res) {
+  const start = Date.now();
+  console.log("Middleware started");
+  let controller = new AbortController();
+  const signal = controller.signal;
+
+  const promise = fetch('https://api.example.com/data', { signal })
+    .then(response => response.json())
+    .then(data => {
+      const endTime = Date.now();
+      console.log(`Middleware completed in ${endTime - start}ms`);
+      res.setHeader('Set-Cookie', `myCookie=${JSON.stringify(data)}; Path=/`);
+      res.next();
+    })
+    .catch(error => {
+      if (error.name === 'AbortError') {
+        console.log("Request aborted"); //Gracefully handle abort
+      } else {
+        console.error("Error fetching data:", error);
+        res.status(500).send('Error');
+      }
+    });
+
+  req.on('close', () => {
+     controller.abort();  // Abort the fetch if the request closes prematurely
+     console.log('Request closed, aborting fetch')
+  });
+
+}
+
+export const config = {
+  matcher: ['/']
+};
+```
 
 
-**Links to Resources to Learn More:**
+## Explanation
 
-* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs on Pseudo-elements:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* **CSS-Tricks (General CSS Resources):** [https://css-tricks.com/](https://css-tricks.com/)
+The improved code utilizes an `AbortController`. This allows us to cleanly abort the `fetch` request if the user navigates away or closes the connection.  The `req.on('close', ...)` listener detects when the request is closed, and calls `controller.abort()` to stop the `fetch` operation.  The `.catch` block then specifically checks for `AbortError`, logging a message instead of throwing an error, avoiding unnecessary console noise and potential application crashes.  Handling the abort gracefully ensures a cleaner user experience and prevents resource leaks.
+
+## External References
+
+* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/building-your-application/routing/middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)  (Refer to the official documentation for the latest information on middleware usage.)
+* **AbortController MDN:** [https://developer.mozilla.org/en-US/docs/Web/API/AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) (Understand the functionality of `AbortController` for more advanced usage.)
+* **Fetch API MDN:** [https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) (Learn more about the `fetch` API and its capabilities.)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
