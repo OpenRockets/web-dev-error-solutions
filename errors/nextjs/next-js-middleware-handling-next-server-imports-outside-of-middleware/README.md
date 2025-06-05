@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `next/server` Imports Outside of Middleware
+
 
 This document addresses a common error encountered when working with Next.js Middleware: attempting to import modules from `next/server` within files that are *not* middleware functions.  This typically leads to runtime errors during build or execution.
 
