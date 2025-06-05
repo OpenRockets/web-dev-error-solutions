@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: Only absolute URLs are supported`
+
 
 This document addresses a common error encountered when using Next.js Middleware: `Error: Only absolute URLs are supported`. This error typically arises when attempting to redirect or rewrite requests using relative URLs within your middleware function.  Middleware operates at a lower level than the client-side rendering context, meaning relative paths aren't interpreted correctly against the application's base URL.
 
