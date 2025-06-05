@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `getServerSideProps` Errors and Preventing Redirects
+Creating a CSS-Only Expanding Card
