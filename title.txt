@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `next/font` Issues in `middleware.js`
+Next.js Middleware: Handling `request.nextUrl.pathname` inconsistencies

@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `request.nextUrl.pathname` inconsistencies
+
 
 ## Description of the Error
 
