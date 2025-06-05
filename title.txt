@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card
+Handling `getServerSideProps` Errors and Preventing 500 Internal Server Errors in Next.js

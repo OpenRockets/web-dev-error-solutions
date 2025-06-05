@@ -1,3 +1,5 @@
+# 🐞 Handling `getServerSideProps` Errors and Preventing 500 Internal Server Errors in Next.js
+
 
 Next.js's `getServerSideProps` is a powerful function for fetching data on each request, but unhandled errors within it can lead to frustrating 500 Internal Server Errors, leaving users with a blank page or a cryptic error message. This document details a common scenario and how to gracefully handle these errors.
 
