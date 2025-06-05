@@ -1,3 +1,5 @@
+# 🐞 Dealing with `getServerSideProps` Data Fetching Errors in Next.js
+
 
 ## Description of the Error
 
