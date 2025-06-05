@@ -1,1 +1,1 @@
-Creating a CSS-Only Expanding Card with a Reveal Effect
+Troubleshooting Next.js API Routes: Handling `TypeError: Cannot read properties of undefined (reading 'map')`

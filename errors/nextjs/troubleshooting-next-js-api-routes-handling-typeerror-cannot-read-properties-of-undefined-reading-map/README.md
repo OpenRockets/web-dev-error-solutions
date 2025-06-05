@@ -1,3 +1,5 @@
+# 🐞 Troubleshooting Next.js API Routes: Handling `TypeError: Cannot read properties of undefined (reading 'map')`
+
 
 ## Description of the Error
 
