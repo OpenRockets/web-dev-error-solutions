@@ -1,80 +1,76 @@
 
-This document details how to create a circular progress bar using only CSS.  This avoids the need for JavaScript, making it lightweight and efficient. We'll use CSS3 properties to achieve the circular shape and animation.
+This document addresses a common error developers encounter when using Next.js Middleware to interact with API routes, specifically when attempting to access headers using `req.getHeader()`.  The issue often arises from incorrect usage or timing within the middleware chain.  The error frequently manifests as `TypeError: Cannot read properties of undefined (reading 'getHeader')` or similar variations.
 
+**Description of the Error:**
 
-**Description of the Styling:**
+The error `TypeError: Cannot read properties of undefined (reading 'getHeader')` within a Next.js Middleware function targeting an API Route indicates that the `req` object (request object) doesn't have a `getHeader` method available at the point where you're attempting to use it. This typically happens because the `req` object within middleware has a different structure compared to the `req` object within an API route itself.  Middleware operates at an earlier stage in the request lifecycle, before the request fully reaches the API route handler.  Therefore, some properties and methods might not be accessible.
 
-This technique uses a combination of `border-radius`, `transform`, and `animation` properties to create a visually appealing circular progress bar. A pseudo-element (`::before`) is used to create the animated progress ring.  The percentage of completion is controlled by a CSS variable, allowing for easy modification.
+**Step-by-Step Code Fix:**
 
+Let's assume we have an API route that needs to read a custom header (`X-Custom-Header`) and a middleware that tries to access the same header for logging or authentication purposes.  The incorrect implementation and the correction are shown below:
 
-**Full Code:**
+**Incorrect Implementation (Middleware):**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
-.progress-ring {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background-color: #f0f0f0; /* Light gray background */
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+```javascript
+// pages/api/hello.js (API Route)
+export default function handler(req, res) {
+  res.status(200).json({ text: 'Hello' });
 }
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 10px solid transparent; /* Adjust border width as needed */
-  border-top-color: #007bff; /* Blue progress color */
-  animation: progress-bar 2s linear forwards;
-}
+// middleware.js (Middleware)
+import { NextResponse } from 'next/server'
 
-/* Adjust percentage via CSS variable */
-:root {
-    --progress-percentage: 75; /* Percentage complete (0-100) */
-}
+export function middleware(req) {
+  const customHeader = req.getHeader('X-Custom-Header'); // ERROR HERE
+  console.log('Custom Header:', customHeader); // This line will likely fail
 
-@keyframes progress-bar {
-  to {
-    transform: rotate(calc(var(--progress-percentage) * 3.6deg));
+  if (customHeader === 'authorized') {
+    return NextResponse.next();
+  } else {
+    return NextResponse.redirect(new URL('/unauthorized', req.url));
   }
 }
 
-</style>
-</head>
-<body>
-
-<div class="progress-ring"></div>
-
-</body>
-</html>
+export const config = {
+  matcher: '/api/hello',
+}
 ```
+
+**Correct Implementation (Middleware - Using NextResponse Headers):**
+
+```javascript
+// pages/api/hello.js (API Route - unchanged)
+export default function handler(req, res) {
+  res.status(200).json({ text: 'Hello' });
+}
+
+// middleware.js (Middleware - corrected)
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const customHeader = req.headers.get('X-Custom-Header');
+  console.log('Custom Header:', customHeader);
+
+  // ... rest of your middleware logic using customHeader ...
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: '/api/hello',
+}
+```
+
 
 **Explanation:**
 
-* **`.progress-ring`:** This class sets the basic dimensions, shape, and background of the circular progress bar.  `position: relative` is crucial for positioning the pseudo-element.
-
-* **`.progress-ring::before`:** This pseudo-element creates the circular progress ring.  `border-radius: 50%` makes it circular.  `border-top-color` sets the color of the progress bar.  The `animation` property applies the `progress-bar` animation.
-
-* **`:root { --progress-percentage: 75; }`:**  This sets a CSS variable to control the progress percentage.  Changing this value will dynamically adjust the progress bar.
-
-* **`@keyframes progress-bar`:** This defines the animation.  `transform: rotate()` rotates the border, creating the progress effect. `calc(var(--progress-percentage) * 3.6deg)` calculates the rotation angle based on the percentage (360 degrees / 100% = 3.6 degrees per percentage point).  `linear` ensures a smooth animation. `forwards` keeps the animation at its final state.
+The key change is using `req.headers.get('X-Custom-Header')` instead of `req.getHeader('X-Custom-Header')`. In Next.js Middleware, the request object's headers are accessed via the `req.headers` object, which provides a `get()` method to retrieve header values.  `req.getHeader` is not directly available in the middleware context.
 
 
-**Links to Resources to Learn More:**
+**External References:**
 
-* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
-* **CSS Pseudo-elements:** [MDN Web Docs - Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* **CSS Variables (Custom Properties):** [MDN Web Docs - CSS Custom Properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
-* **Understanding `calc()` in CSS:** [MDN Web Docs - calc()](https://developer.mozilla.org/en-US/docs/Web/CSS/calc)
+* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/building-your-application/routing/middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)  (This link may vary based on Next.js version.  Check the official Next.js documentation for the most up-to-date information.)
+* **Next.js API Routes Documentation:** [https://nextjs.org/docs/api-routes/introduction](https://nextjs.org/docs/api-routes/introduction)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
