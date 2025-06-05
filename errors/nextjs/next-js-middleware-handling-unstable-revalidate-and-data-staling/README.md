@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `unstable_revalidate` and Data Staling
+
 
 This document addresses a common issue developers encounter when using Next.js Middleware alongside `unstable_revalidate` for cache invalidation.  The problem arises when the cache doesn't refresh as expected, leading to stale data being served to clients.
 
