@@ -1,62 +1,87 @@
 
-This document addresses a common issue developers encounter when using `NextResponse.redirect` within Next.js Middleware: preserving query parameters during redirection.  Incorrectly handling query parameters can lead to unexpected behavior and broken functionality in your application.
+This document details the creation of an expanding card using only CSS. The card expands smoothly to reveal more content when hovered over, creating an engaging interactive element.  We'll leverage CSS transitions and transforms for a polished effect.  This example uses plain CSS3, but the concept could easily be adapted to a CSS framework like Tailwind CSS.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-When redirecting users using `NextResponse.redirect` in Next.js Middleware, you might find that query parameters from the original request are lost in the redirected URL. This typically manifests as a redirected page missing crucial data passed through the query string.  For instance, if a user lands on `/product?id=123`, a redirect might incorrectly lead to `/product` instead of `/product?id=123`.
+The card utilizes a simple structure: a container div holding an image and a content area.  The core effect is achieved by using CSS transitions on `transform` (for scaling) and `opacity` (for a subtle fade-in effect on the content). The `:hover` pseudo-class triggers the animation.  We'll also use some basic box-shadow to enhance the card's visual appeal.
 
-**Code Example (Illustrating the Problem):**
 
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server'
+**Full Code:**
 
-export function middleware(req) {
-  const url = req.nextUrl.clone()
-  url.pathname = '/product' //Incorrect - losing query parameters
-  return NextResponse.redirect(url)
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 300px;
+  height: 200px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden; /* Hide content that overflows during transition */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
 }
 
-export const config = {
-  matcher: '/product',
-}
-```
-
-**Step-by-Step Code Fix:**
-
-1. **Access and Preserve Query Parameters:**  Instead of simply changing the `pathname`, we need to access and maintain the original query parameters. We achieve this using the `search` property of the `NextRequest` object.
-
-2. **Clone and Modify the URL:**  We clone the incoming URL to avoid modifying the original request object directly. This ensures that the original request remains untouched for any other middleware or components.
-
-3. **Create the Redirection Response:**  Construct the redirection response correctly by incorporating the preserved query parameters.
-
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const url = req.nextUrl.clone()
-  url.pathname = '/product'
-  // Preserve query parameters
-  url.search = req.nextUrl.search
-
-  return NextResponse.redirect(url)
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-export const config = {
-  matcher: '/product',
+.card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 15px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth transitions */
 }
+
+.card:hover {
+  transform: scale(1.05); /* Slight zoom on hover */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); /* Increased shadow on hover */
+}
+
+.card:hover .card-content {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <img src="https://via.placeholder.com/300x200" alt="Card Image">
+  <div class="card-content">
+    <h3>Card Title</h3>
+    <p>This is some example content for the expanding card.  It will smoothly appear when you hover over the card.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
 **Explanation:**
 
-The key change is adding `url.search = req.nextUrl.search`.  This line explicitly copies the query string from the original request (`req.nextUrl.search`) to the cloned URL object (`url.search`).  This ensures that all query parameters are carried over during the redirection, maintaining the user's context and data integrity.
+* **`transition` property:** This is crucial for the animation. It specifies which properties (`transform`, `opacity`) should transition smoothly, the duration (`0.3s`), and the easing function (`ease`).
+* **`transform: scale(1.05);`:** This slightly zooms the card on hover, adding a subtle visual cue.
+* **`transform: translateY(100%);`:** This initially positions the content area off-screen.
+* **`:hover` pseudo-class:** This triggers the animation and changes the styles when the mouse hovers over the card.
+* **`object-fit: cover;`:** Ensures the image covers the entire card area.
+* **`overflow: hidden;`:** Prevents content from overflowing during the transition.
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware):  The official Next.js documentation on middleware.
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse):  Details on the `NextResponse` object and its methods.
+* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks (General CSS Resources):** [https://css-tricks.com/](https://css-tricks.com/)
 
 
-**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
