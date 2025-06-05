@@ -1,1 +1,1 @@
-Dealing with `getServerSideProps` Data Fetching Errors in Next.js
+Creating a CSS-only Expanding Card
