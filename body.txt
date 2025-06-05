@@ -1,68 +1,89 @@
 
-This document addresses a common issue developers encounter when using `NextResponse.rewrite` within Next.js Middleware to redirect requests based on dynamic parameters.  The problem arises when attempting to rewrite to a route that includes those same dynamic parameters, but the rewrite URL isn't properly constructed, leading to incorrect or unexpected redirects.
+This document details how to create an expanding card using only CSS.  The card reveals its content with a subtle animation, providing a visually engaging user experience. This example uses pure CSS3, avoiding JavaScript for a lightweight and performant solution.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-Let's say you want to rewrite requests to `/product/[id]` based on a specific condition within your middleware.  A common mistake is to directly use the incoming request's `params` object within `NextResponse.rewrite`. This often results in a `404 Not Found` error because the dynamic segment isn't correctly interpreted by the rewrite function.  The middleware's `params` object might not be directly compatible with the `NextResponse.rewrite` URL construction.
-
-**Code (Illustrating the Problem):**
-
-```javascript
-// middleware.js (INCORRECT)
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const { params } = req;
-
-  if (params?.id === 'special-product') {
-    return NextResponse.rewrite(new URL(`/product/${params.id}`, req.url)); // Incorrect usage!
-  }
-
-  return NextResponse;
-}
-```
-
-This code attempts to rewrite `/product/special-product` to itself.  However, it may not function correctly due to how `NextResponse.rewrite` handles dynamic segments.
+The card utilizes CSS transitions and transforms to achieve the expanding effect.  When the card is hovered over, its height expands, revealing hidden content.  A subtle box-shadow effect is added to enhance the visual appeal.  The color scheme is minimal, but can be easily adjusted to match your project's branding.
 
 
-**Fixing the Issue Step-by-Step:**
+**Full Code:**
 
-1. **Correctly Construct the Rewrite URL:** Instead of directly using `req.url` to create a new `URL`, construct the rewrite URL string manually, ensuring correct formatting for dynamic segments:
-
-2. **Use `req.nextUrl` for better results:** Instead of manipulating the `req.url` directly, use `req.nextUrl` which provides better manipulation capabilities within the Next.js context.
-
-
-```javascript
-// middleware.js (CORRECT)
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const { params } = req;
-
-  if (params?.id === 'special-product') {
-      const url = req.nextUrl.clone();
-      url.pathname = `/product/special-product`; //Directly setting pathname for clarity
-      return NextResponse.rewrite(url);
-  }
-
-  return NextResponse.next();
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f2f2f2;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide content that overflows */
+  transition: height 0.3s ease-in-out; /* Add smooth transition */
+  height: 150px; /* Initial height */
+  width: 300px;
 }
 
+.card:hover {
+  height: 300px; /* Expanded height on hover */
+}
 
+.card-content {
+  padding: 20px;
+  height: 100%; /* Ensure content fills the card's height */
+  display: flex;
+  flex-direction: column; /* Align content vertically */
+  justify-content: space-between; /* Distribute space between items */
+}
+
+.card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card-text {
+  font-size: 1em;
+  margin-bottom: 10px;
+}
+
+.card-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Expanding Card</h2>
+    <p class="card-text">This is a simple expanding card created with pure CSS.  Hover over the card to see it expand and reveal more content.</p>
+    <button class="card-button">Learn More</button>
+  </div>
+</div>
+
+</body>
+</html>
 ```
-
-This revised code directly sets the pathname of the `req.nextUrl` to the correct path, resolving any issues related to dynamic segments in the rewrite URL. Using `req.nextUrl.clone()` allows safe modification of the URL without affecting other properties.
-
 
 **Explanation:**
 
-The original code's error stems from the way `NextResponse.rewrite` interprets dynamic segments. By manually constructing the URL string with the correct path (`/product/special-product`), we bypass potential conflicts and ensure a successful redirect.  Using `req.nextUrl` instead of constructing a URL from scratch offers additional benefit of inheriting properties like search parameters and ensuring proper URL construction within the context of the Next.js environment.
+* **`transition: height 0.3s ease-in-out;`**: This line adds a smooth transition to the card's height change over 0.3 seconds using an ease-in-out timing function.
+* **`height: 150px;` & `height: 300px;`**:  These lines control the initial and expanded heights of the card.  Adjust these values to your needs.
+* **`overflow: hidden;`**: This prevents content from overflowing the card before it expands.
+* **`display: flex;`, `flex-direction: column;`, `justify-content: space-between;`**: These flexbox properties ensure that the content within the card is neatly arranged vertically, and the space between elements is distributed evenly.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server/next-response)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Flexbox:** [CSS-Tricks - A Complete Guide to Flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
