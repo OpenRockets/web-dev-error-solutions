@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Redirect()` Errors in `next/server`
+
 
 This document addresses a common error encountered when using Next.js Middleware with the `next/server` API:  Unexpected behavior or errors when using `Redirect()` within asynchronous operations or when improperly handling exceptions.
 
