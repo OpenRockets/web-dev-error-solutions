@@ -1,35 +1,39 @@
 # 🐞 Creating a CSS-Only Circular Progress Bar
 
 
-This document details how to create a circular progress bar using only CSS.  We'll leverage CSS's `clip-path` property and some clever calculations to achieve this without any JavaScript.
+This document details how to create a circular progress bar using only CSS.  We'll leverage CSS's `clip-path` property and some clever calculations to achieve this effect without relying on JavaScript.
 
 
-## Description of the Styling
+**Description of the Styling:**
 
-This circular progress bar uses a combination of pseudo-elements (`::before` and `::after`) and the `clip-path` property to create the circular effect. The `::before` element creates the background circle, while the `::after` element creates the progress bar itself.  We'll use variables for easy customization of the color and percentage.
+This technique uses a circle as a base, then uses the `clip-path` property to create a "pie slice" representing the progress.  We manipulate the `clip-path` value dynamically with a CSS variable to control the progress percentage.  The styling includes a background circle for the track and a foreground circle for the progress fill.  We use some subtle shadows to add depth and visual appeal.
 
-## Full Code
+
+**Full Code:**
 
 ```html
-<div class="progress-bar" data-progress="75">
-  <span>75%</span>
-</div>
-
-```
-
-```css
-.progress-bar {
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
   width: 150px;
   height: 150px;
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #e0e0e0; /* Background Color */
-  border-radius: 50%;
 }
 
-.progress-bar::before {
+.progress-ring .circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 10px solid #e0e0e0; /* Track color */
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.progress-ring .circle::before {
   content: "";
   position: absolute;
   top: 0;
@@ -37,66 +41,51 @@ This circular progress bar uses a combination of pseudo-elements (`::before` and
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background-color: #fff; /* Circle Background Color */
-  z-index: -1; /*Ensures it sits behind the progress*/
+  clip-path: circle(50% at 50% 50%); /* Base circle */
+  background-color: #4CAF50; /* Progress color */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add shadow for depth */
+  transform: rotate(-90deg); /* Start at top */
 }
 
-.progress-bar::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background-color: #007bff; /* Progress Bar Color */
-  clip-path: circle(50% at 50% 50%); /* Initial clip path */
-  transform: rotate(-90deg); /* Start at the top */
-  z-index:1;
-
+.progress-ring[data-progress="75"] .circle::before {
+  clip-path: polygon(50% 0%, 75% 50%, 50% 100%, 25% 50%); /* Example for 75% progress */
 }
 
-.progress-bar[data-progress]::after {
-  --progress: attr(data-progress);
-  --rotate: calc(var(--progress) * 3.6deg); /* Calculate rotation based on percentage */
-  clip-path: polygon(
-    50% 50%,
-    calc(50% + 50% * cos(var(--rotate))) calc(50% - 50% * sin(var(--rotate))),
-    50% 50%
-  );
-  transition: clip-path 0.5s ease;  /* Add smooth animation*/
-  transform: rotate(calc(var(--rotate) - 90deg));
+/* Dynamically change clip-path using CSS variable */
+:root {
+  --progress: 75; /* You can change this value */
+}
+
+.progress-ring .circle::before {
+  --progress: var(--progress);
+  --rotate: calc(var(--progress) * 3.6deg);
+  clip-path: polygon(50% 50%, calc(50% + 50% * cos(var(--rotate))) calc(50% - 50% * sin(var(--rotate))), 50% 50%, calc(50% + 50% * cos(var(--rotate))) calc(50% + 50% * sin(var(--rotate))));
 }
 
 
-.progress-bar span{
-  position: relative;
-  z-index: 2;
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #333;
-}
+</style>
+</head>
+<body>
 
+<div class="progress-ring" data-progress="75">
+  <div class="circle"></div>
+</div>
+
+</body>
+</html>
 ```
 
-## Explanation
+**Explanation:**
 
-1. **HTML Structure:** A simple `div` with a `data-progress` attribute to hold the percentage is used.
+1. **Base Structure:**  We create a container (`progress-ring`) and an inner element (`circle`) for the track.
+2. **Pseudo-element:** The `::before` pseudo-element creates the progress fill.  It initially has a full circle `clip-path`.
+3. **Dynamic Clip-Path:** The `:root` element defines a CSS variable `--progress`  that determines the percentage. We use a calculation to convert the percentage to degrees for rotation (360 degrees / 100% = 3.6deg).  The `clip-path: polygon()` then dynamically creates the pie slice based on this calculated rotation.
+4. **Responsive Design:**  The size of the progress bar can be easily adjusted by changing the `width` and `height` of the `.progress-ring` class.
 
-2. **CSS Variables:**  CSS custom properties (`--progress` and `--rotate`) allow dynamic calculation of the rotation angle based on the `data-progress` attribute.
-
-3. **`clip-path`:** The `clip-path` property is used to create the circular progress effect.  Initially, it's a full circle. We then dynamically modify the `clip-path` to a polygon that forms a partial circle based on the progress percentage.
-
-4. **Calculation:** `calc(var(--progress) * 3.6deg)` converts the percentage to degrees (360 degrees in a full circle).
-
-5. **`transform: rotate()`:**  Rotates the progress bar element to start at the top and then rotates further based on the progress.
-
-
-## Links to Resources to Learn More
+**Resources to Learn More:**
 
 * **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **CSS Tricks:** Search for "CSS progress bar" on [https://css-tricks.com/](https://css-tricks.com/) for various examples and techniques.
-
+* **Understanding CSS Variables (Custom Properties):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
