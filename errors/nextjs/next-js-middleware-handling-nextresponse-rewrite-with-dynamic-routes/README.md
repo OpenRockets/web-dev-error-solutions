@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `NextResponse.rewrite` with Dynamic Routes
+
 
 This document addresses a common issue developers encounter when using `NextResponse.rewrite` within Next.js Middleware to redirect requests based on dynamic parameters.  The problem arises when attempting to rewrite to a route that includes those same dynamic parameters, but the rewrite URL isn't properly constructed, leading to incorrect or unexpected redirects.
 

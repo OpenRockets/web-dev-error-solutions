@@ -1,1 +1,1 @@
-Creating a CSS-Only Circular Progress Bar
+Next.js Middleware: Handling `NextResponse.rewrite` with Dynamic Routes
