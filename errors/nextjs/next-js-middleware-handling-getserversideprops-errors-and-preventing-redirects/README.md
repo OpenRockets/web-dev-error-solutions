@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `getServerSideProps` Errors and Preventing Redirects
+
 
 This document addresses a common issue developers encounter when using `getServerSideProps` within pages that also utilize Next.js Middleware. The problem arises when `getServerSideProps` throws an error, potentially leading to unexpected redirects or a poor user experience due to middleware interfering with error handling.
 
