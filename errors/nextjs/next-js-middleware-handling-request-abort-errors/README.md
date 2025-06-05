@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Request Abort` Errors
+
 
 This document addresses a common issue encountered when working with Next.js Middleware: `Request Abort` errors. These errors often occur when a request to an external API within middleware takes longer than the user's patience, leading to the browser aborting the request before the middleware can complete its processing.
 

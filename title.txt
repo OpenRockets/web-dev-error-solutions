@@ -1,1 +1,1 @@
-Creating a CSS-Only Expanding Card with a Subtle Reveal
+Next.js Middleware: Handling `Request Abort` Errors
