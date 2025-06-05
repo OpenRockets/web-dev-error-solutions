@@ -1,3 +1,5 @@
+# 🐞 Next.js API Routes: Handling Large Responses and Avoiding `ERR_INVALID_CHUNK_ENCODING`
+
 
 This document addresses a common issue encountered when working with Next.js API routes: the `ERR_INVALID_CHUNK_ENCODING` error, often triggered by attempting to send very large responses from an API route.  This usually manifests in the browser as a network error, and the response never reaches the client.
 
