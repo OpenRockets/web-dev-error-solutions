@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Request Timeout` Errors
+
 
 This document addresses a common issue encountered when using Next.js Middleware: `Request Timeout` errors.  These errors typically occur when your middleware function takes longer than the configured timeout period to execute, leading to a failed request and a poor user experience.  This can be caused by various factors, including computationally expensive operations within the middleware, inefficient database queries, or external API calls that experience latency.
 
