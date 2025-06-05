@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: Middleware response must not contain a `body` property`
+
 
 This document addresses a common error encountered when working with Next.js Middleware: `Error: Middleware response must not contain a 'body' property`.  This error arises when attempting to directly send a response body from middleware, which is not supported. Middleware's primary purpose is to modify the request or redirect, not to generate a full response.
 
