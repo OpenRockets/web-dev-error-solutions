@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `getStaticProps` Errors Gracefully
+Handling `next/font` Issues in Next.js Middleware
