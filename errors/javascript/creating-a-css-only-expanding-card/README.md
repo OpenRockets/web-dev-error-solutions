@@ -1,12 +1,11 @@
-# 🐞 Creating a CSS-only Expanding Card
+# 🐞 Creating a CSS-Only Expanding Card
 
 
-This document details a CSS-only solution to create an expanding card effect.  This effect involves a card that reveals more content upon hovering or clicking.  We'll achieve this using only CSS transitions and transforms, without relying on JavaScript.  This example will use plain CSS3, but the principles can be adapted to frameworks like Tailwind CSS easily.
-
+This document details a CSS-only solution for creating an expanding card effect.  No JavaScript is required.  The effect involves a card that expands to reveal more content when clicked.  We'll use plain CSS (no frameworks like Tailwind).
 
 **Description of the Styling:**
 
-The card consists of two main parts: a front face and a back face. The front face displays a summary, while the back face contains the detailed information.  We use CSS transitions and transforms to smoothly transition between the two faces on hover. The key is using the `transform: rotateY()` property to rotate the card around the Y-axis, revealing the back face.
+The styling relies on transitions, transforms, and the `:target` pseudo-class. The card is initially collapsed. Upon clicking, a hidden anchor link within the card is targeted, triggering a CSS transition that expands the card.  The expansion is achieved by scaling the card content and smoothly changing its height.  The styling uses clean, semantic CSS for better maintainability.
 
 
 **Full Code:**
@@ -18,76 +17,81 @@ The card consists of two main parts: a front face and a back face. The front fac
 <title>Expanding Card</title>
 <style>
 .card {
-  perspective: 1000px; /* Necessary for 3D transforms */
   width: 300px;
-  height: 200px;
-  position: relative;
+  border: 1px solid #ccc;
+  overflow: hidden;
+  transition: height 0.5s ease-in-out; /* Smooth transition for height changes */
 }
 
-.card-face {
-  position: absolute;
+.card-content {
+  padding: 20px;
+  transition: transform 0.5s ease-in-out; /* Smooth transition for transform */
+  transform-origin: top; /* Ensures scaling happens from the top */
+  height: 100px; /* Initial height of the collapsed card */
+  overflow: hidden;
+}
+
+
+.card a {
+  display: block;
   width: 100%;
   height: 100%;
-  backface-visibility: hidden; /* Prevents the back face from showing through */
-  transition: transform 0.8s ease-in-out; /* Smooth transition */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid #ccc;
+  text-decoration: none;
+  color:inherit;
 }
 
-.card-front {
-  background-color: #f0f0f0;
-}
-
-.card-back {
-  background-color: #ddd;
-  transform: rotateY(180deg); /* Initially hidden */
-}
-
-.card:hover .card-front {
-  transform: rotateY(-180deg); /* Reveal back face on hover */
-}
-
-.card:hover .card-back {
-  transform: rotateY(0deg); /* Reveal back face on hover */
+.card-content.expanded {
+  height: auto; /* Expands the height to accommodate the content */
+  transform: scaleY(1); /* Scales the content up to fill the expanded height */
 }
 
 
+.card:target .card-content {
+  height: auto;
+  transform: scaleY(1);
+  transition: transform 0.5s ease-in-out;
+  overflow: visible; /* Ensures content is fully visible when expanded */
+}
+
+.card:target .expand-button {
+    display:none;
+}
+
+.card:target {
+    box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
+}
 </style>
 </head>
 <body>
 
 <div class="card">
-  <div class="card-face card-front">
-    <h3>Card Title</h3>
-    <p>Short description here...</p>
+  <a href="#card-content">
+  <div class="card-content">
+    <h2>Card Title</h2>
+    <p>This is some sample text for the card.  This text will be hidden until the card is expanded.</p>
+    <p>More sample text...</p>
   </div>
-  <div class="card-face card-back">
-    <h3>Detailed Information</h3>
-    <p>This is where you would put the detailed content of the card.  You can add as much information as you need here.</p>
-  </div>
+  </a>
 </div>
 
 </body>
 </html>
 ```
 
-
 **Explanation:**
 
-* **`perspective`:** This property gives the element a 3D perspective, allowing the rotation to appear realistic.
-* **`backface-visibility: hidden;`:** This prevents the back face from being visible while it's hidden behind the front face.
-* **`transition`:** This property smoothly animates the `transform` property over 0.8 seconds.
-* **`transform: rotateY()`:** This rotates the element around the Y-axis.  The positive values rotate clockwise, while negative values rotate counter-clockwise.
-* The `:hover` pseudo-class triggers the rotation on mouse hover.
+*   **`.card`**:  This class styles the overall card container, setting its width, border, and applying a transition for smooth height changes.  `overflow: hidden` initially hides content exceeding the initial height.
+*   **`.card-content`**: This class styles the content within the card.  Transitions are added for smooth transform changes. `transform-origin: top;` ensures scaling happens from the top, creating a cleaner expansion effect.  `height: 100px;` sets the initial height.
+*   **`.card-content.expanded`**: This class will be applied when the card is expanded.  It sets the `height: auto;` and the transform for the expand effect.
+*   **:target**: This pseudo-class targets the element with the ID specified in the `href` attribute of the anchor. When the link is clicked, the `.card-content` will have the `height` and `transform` property changed.
+* **`.card:target .card-content`**: Adding this specific selector ensures that only when card is targetted we get the full expand effect and transitions.
 
 
 **Links to Resources to Learn More:**
 
-* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **3D Transforms in CSS:** [Various tutorials available on YouTube and other online resources by searching "CSS 3D transforms"]
+*   [MDN Web Docs on CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
+*   [MDN Web Docs on the `:target` pseudo-class](https://developer.mozilla.org/en-US/docs/Web/CSS/:target)
+*   [Understanding CSS Transforms](https://css-tricks.com/almanac/properties/t/transform/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
