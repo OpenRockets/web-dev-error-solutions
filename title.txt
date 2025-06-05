@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers` Manipulation for Specific Routes
+Next.js API Routes: Handling Large Responses and Avoiding Timeouts
