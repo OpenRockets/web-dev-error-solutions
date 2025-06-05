@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `next/font` Issues in `middleware.js`
+
 
 This document addresses a common issue encountered when using Next.js's new `next/font` package within `middleware.js` files.  The problem arises because middleware functions run server-side *before* the application's client-side JavaScript is loaded, including the font loading logic provided by `next/font`.  Attempting to directly access font objects within middleware often results in runtime errors or unexpected behavior.
 

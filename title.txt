@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers already sent` Error
+Next.js Middleware: Handling `next/font` Issues in `middleware.js`
