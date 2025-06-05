@@ -1,141 +1,92 @@
 
-This document addresses a common problem encountered when using `getServerSideProps` in Next.js applications: gracefully handling errors during data fetching.  Failing to handle these errors can lead to a poor user experience, displaying cryptic error messages or causing the application to crash.
+This document details a CSS-only solution to create an expanding card effect.  This effect involves a card that reveals more content upon hovering or clicking.  We'll achieve this using only CSS transitions and transforms, without relying on JavaScript.  This example will use plain CSS3, but the principles can be adapted to frameworks like Tailwind CSS easily.
 
-**Description of the Error:**
 
-When using `getServerSideProps` to fetch data from an external API or database, network issues or server-side errors can occur.  If these errors are not caught and handled, Next.js will typically render a blank page or display a generic error message, which is unhelpful for the user.  The application might also crash, depending on the nature of the error.
+**Description of the Styling:**
 
-**Code Example (Problem):**
+The card consists of two main parts: a front face and a back face. The front face displays a summary, while the back face contains the detailed information.  We use CSS transitions and transforms to smoothly transition between the two faces on hover. The key is using the `transform: rotateY()` property to rotate the card around the Y-axis, revealing the back face.
 
-```javascript
-// pages/index.js
 
-import { useRouter } from 'next/router';
+**Full Code:**
 
-export async function getServerSideProps(context) {
-  try {
-    const res = await fetch('https://api.example.com/data');
-    if (!res.ok) {
-      throw new Error(`Error! status: ${res.status}`);
-    }
-    const data = await res.json();
-    return {
-      props: { data },
-    };
-  } catch (error) {
-    console.error('Error fetching data:', error); // This is logged on the server, but not handled on the client
-    return {
-      props: { data: null }, // Doesn't provide useful information to the client
-    };
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  perspective: 1000px; /* Necessary for 3D transforms */
+  width: 300px;
+  height: 200px;
+  position: relative;
 }
 
-export default function Home({ data }) {
-  const router = useRouter();
-
-  if (router.isFallback) {
-    return <div>Loading...</div>; //This only handles the initial loading state
-  }
-
-  if (!data) {
-    return <div>Error loading data</div>; //Generic error message
-  }
-
-  return (
-    <div>
-      <h1>My Page</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-    </div>
-  );
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* Prevents the back face from showing through */
+  transition: transform 0.8s ease-in-out; /* Smooth transition */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ccc;
 }
+
+.card-front {
+  background-color: #f0f0f0;
+}
+
+.card-back {
+  background-color: #ddd;
+  transform: rotateY(180deg); /* Initially hidden */
+}
+
+.card:hover .card-front {
+  transform: rotateY(-180deg); /* Reveal back face on hover */
+}
+
+.card:hover .card-back {
+  transform: rotateY(0deg); /* Reveal back face on hover */
+}
+
+
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-face card-front">
+    <h3>Card Title</h3>
+    <p>Short description here...</p>
+  </div>
+  <div class="card-face card-back">
+    <h3>Detailed Information</h3>
+    <p>This is where you would put the detailed content of the card.  You can add as much information as you need here.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**Code Example (Solution):**
-
-
-```javascript
-// pages/index.js
-import { useRouter } from 'next/router';
-
-export async function getServerSideProps(context) {
-  try {
-    const res = await fetch('https://api.example.com/data');
-    if (!res.ok) {
-      //throw new Error(`Error! status: ${res.status}`); //remove this
-      return {
-        props: {
-          error: {
-            status: res.status,
-            message: `Error fetching data: ${res.status}`
-          },
-          data: null,
-        },
-      };
-    }
-    const data = await res.json();
-    return {
-      props: { data },
-    };
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    return {
-      props: {
-        error: {
-          status: 500,
-          message: 'An unexpected error occurred.' //more user-friendly message
-        },
-        data: null,
-      },
-    };
-  }
-}
-
-export default function Home({ data, error }) {
-  const router = useRouter();
-
-  if (router.isFallback) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return (
-      <div>
-        <h1>Error</h1>
-        <p>Status: {error.status}</p>
-        <p>{error.message}</p>
-      </div>
-    );
-  }
-
-  if (!data) { //This is redundant now, since error handling is better. Consider removing it for cleaner code.
-    return <div>Error loading data</div>;
-  }
-
-  return (
-    <div>
-      <h1>My Page</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-    </div>
-  );
-}
-
-```
 
 **Explanation:**
 
-The improved code handles errors more gracefully.  Instead of simply logging the error on the server or returning a generic error message, it now:
-
-1. **Returns a structured error object:**  `getServerSideProps` now returns an `error` object containing a status code and a user-friendly message. This provides more context to the client-side rendering.
-
-2. **Displays a more informative error message:** The client-side component checks for the presence of the `error` object and displays a more helpful error message, including the status code.
-
-3. **Improved User Experience:** A more informative error page improves user experience. The user is more likely to understand the issue and to know what to do next.
+* **`perspective`:** This property gives the element a 3D perspective, allowing the rotation to appear realistic.
+* **`backface-visibility: hidden;`:** This prevents the back face from being visible while it's hidden behind the front face.
+* **`transition`:** This property smoothly animates the `transform` property over 0.8 seconds.
+* **`transform: rotateY()`:** This rotates the element around the Y-axis.  The positive values rotate clockwise, while negative values rotate counter-clockwise.
+* The `:hover` pseudo-class triggers the rotation on mouse hover.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [Next.js Official Documentation on `getServerSideProps`](https://nextjs.org/docs/basic-features/data-fetching/getserversideprops)
-* [Next.js Error Handling](https://nextjs.org/docs/app/building-your-application/routing/error-handling) (Relevant for app router; similar principles apply to pages router)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **3D Transforms in CSS:** [Various tutorials available on YouTube and other online resources by searching "CSS 3D transforms"]
 
-**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
