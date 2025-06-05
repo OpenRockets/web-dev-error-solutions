@@ -1,1 +1,1 @@
-Next.js API Routes: Handling Large Responses and Avoiding `ERR_INVALID_CHUNK_ENCODING`
+Creating a CSS-Only Expanding Card
