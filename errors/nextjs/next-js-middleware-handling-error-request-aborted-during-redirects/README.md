@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: Request aborted` during redirects
+
 
 This document addresses a common error encountered when using Next.js Middleware:  `Error: Request aborted`. This typically occurs when attempting a redirect within middleware, especially when dealing with asynchronous operations or long-running processes that exceed the middleware's execution time limit.
 
