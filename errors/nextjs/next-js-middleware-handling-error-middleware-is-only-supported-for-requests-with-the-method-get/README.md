@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: Middleware is only supported for requests with the method GET`
+
 
 This document addresses a common error encountered when using Next.js Middleware: `Error: Middleware is only supported for requests with the method GET`. This error occurs when attempting to use middleware with HTTP methods other than GET.  Middleware, by default, is designed to intercept and modify requests before they reach the page, and its primary use case involves modifying GET requests for SEO optimization, redirects, and other similar tasks.
 

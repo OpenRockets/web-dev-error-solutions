@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card
+Next.js Middleware: Handling `Error: Middleware is only supported for requests with the method GET`
