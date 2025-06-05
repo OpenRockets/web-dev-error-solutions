@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Request Abort` Errors
+Dealing with `getServerSideProps` Data Fetching Errors in Next.js
