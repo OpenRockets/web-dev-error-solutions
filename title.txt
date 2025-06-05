@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Request Abort` Errors
+Next.js Middleware: Handling `headers` Manipulation for Specific Routes

@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers` Manipulation for Specific Routes
+
 
 This document addresses a common issue encountered when using Next.js Middleware: incorrectly modifying headers and potentially affecting all routes instead of targeting a specific one.  Middleware, powerful for its ability to modify requests and responses globally, can lead to unexpected behavior if not carefully scoped. This example focuses on applying custom headers only to a specific path.
 
