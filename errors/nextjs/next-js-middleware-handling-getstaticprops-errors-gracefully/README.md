@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `getStaticProps` Errors Gracefully
+
 
 This document addresses a common issue developers encounter when using `getStaticProps` within pages that also utilize Next.js Middleware.  The problem arises when `getStaticProps` throws an error during build time, causing the entire build process to fail and preventing deployment.  This makes debugging and handling unexpected errors during data fetching challenging.
 
