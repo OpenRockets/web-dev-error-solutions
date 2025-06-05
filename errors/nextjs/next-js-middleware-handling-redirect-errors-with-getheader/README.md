@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Redirect` Errors with `getHeader`
+
 
 This document addresses a common issue encountered when using Next.js Middleware: redirecting based on conditions and properly handling potential errors when accessing headers using `getHeader`.  Specifically, we'll focus on situations where attempting to access a header that doesn't exist results in unexpected behavior or errors.
 
