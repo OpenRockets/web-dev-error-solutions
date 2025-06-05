@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers already sent` Errors
+Next.js Middleware: Handling `404 Not Found` Errors Gracefully
