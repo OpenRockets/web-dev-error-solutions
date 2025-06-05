@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Not Found` Errors for Dynamic Routes
+
 
 This document addresses a common issue developers encounter when using Next.js Middleware with dynamic routes:  handling `404 Not Found` errors gracefully.  Middleware runs before a request reaches your page, and if it throws an error, it can be difficult to prevent a full application crash and instead return a proper 404 page.
 
