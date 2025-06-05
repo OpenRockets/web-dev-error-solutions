@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Error: You cannot use Next.js Middleware in a page that uses getServerSideProps or getStaticProps`
+Next.js Middleware: Handling `Request aborted` Errors
