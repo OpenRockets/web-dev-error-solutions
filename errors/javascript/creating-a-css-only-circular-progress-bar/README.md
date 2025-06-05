@@ -1,15 +1,12 @@
 # 🐞 Creating a CSS-Only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This example leverages CSS gradients and transformations to achieve the effect.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This utilizes CSS3 features such as `transform`, `animation`, and `border-radius` to achieve the effect.  We'll build a simple, customizable progress bar that can easily be adapted for different percentages and styling.
+
 
 **Description of the Styling:**
 
-The circular progress bar is created using a combination of techniques:
-
-* **`clip-path`:**  This property is used to create the circular shape by clipping a circle from a rectangular element.
-* **`conic-gradient`:** This creates a gradient that fills the circle, allowing us to represent the progress visually. The gradient's start angle defines the progress percentage.
-* **`transform`:**  This is used to rotate the element to create the visual effect of a progress bar filling up.
+The circular progress bar is constructed using a combination of two elements: a base circle and a progress circle. The base circle provides the overall structure and appearance, while the progress circle sits on top, dynamically changing its length to represent the progress percentage.  This is achieved through a clever use of `clip-path` to mask a longer circle, showing only the portion representing the progress.
 
 
 **Full Code:**
@@ -20,58 +17,86 @@ The circular progress bar is created using a combination of techniques:
 <head>
 <title>CSS Circular Progress Bar</title>
 <style>
-.progress-ring {
+.container {
   width: 150px;
   height: 150px;
-  border-radius: 50%;
-  background-color: #f0f0f0; /* Light gray background */
   position: relative;
 }
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.base-circle {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  clip-path: circle(45% at 50% 50%); /* Adjust circle size here */
-  background-image: conic-gradient(#4CAF50 75%, #f0f0f0 75%); /* Adjust color and percentage */
-  /* Percentage here controls the progress*/
-  animation: progress 2s linear forwards; /* Adjust animation duration */
+  border: 5px solid #ddd; /* Base circle border */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-@keyframes progress {
+.progress-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  clip-path: polygon(50% 50%, 0% 0%, 100% 0%); /* Initially half-circle */
+  border: 5px solid #4CAF50; /* Progress circle border */
+  position: absolute;
+  transform-origin: 50% 100%; /* Origin for rotation */
+  animation: progress-animation 2s linear forwards; /* Animate progress */
+}
+
+@keyframes progress-animation {
   to {
-    transform: translate(-50%, -50%) rotate(360deg); /* Full circle rotation */
+    transform: rotate(270deg); /* Rotate 270 degrees for 75% progress*/
   }
 }
+
+/*Example to change percentage*/
+.progress-circle.progress-70 {
+  animation: progress-animation-70 2s linear forwards;
+}
+
+@keyframes progress-animation-70 {
+  to {
+    transform: rotate(252deg); /* Rotate 252 degrees for 70% progress*/
+  }
+}
+
 </style>
 </head>
 <body>
 
-<div class="progress-ring"></div>
+  <h1>75% Complete</h1>
+  <div class="container">
+    <div class="base-circle">
+      <div class="progress-circle"></div>
+    </div>
+  </div>
+  <h1>70% Complete</h1>
+  <div class="container">
+    <div class="base-circle">
+      <div class="progress-circle progress-70"></div>
+    </div>
+  </div>
+
 
 </body>
 </html>
 ```
 
+
 **Explanation:**
 
-1. **`progress-ring`:** This is the container element, giving the overall size and shape.
-2. **`progress-ring::before`:**  A pseudo-element is used to create the progress circle within the container.  `translate(-50%, -50%)` centers the circle.
-3. **`clip-path: circle(45% at 50% 50%);`:** This line creates a circular clip path with 45% radius, centered.  You can adjust the `45%` to control the size of the progress circle relative to the container.
-4. **`conic-gradient(#4CAF50 75%, #f0f0f0 75%);`:** This creates a conic gradient.  `#4CAF50` (green) is the progress color, and `#f0f0f0` (light gray) is the background. The `75%` value indicates that 75% of the circle will be filled with the green color representing the progress. Adjust this value to change the progress.
-5. **`animation: progress 2s linear forwards;`:** This applies a CSS animation named `progress` that rotates the element over 2 seconds (`2s`).  `linear` means constant speed, and `forwards` means the animation stays at its end state.
+1. **Base Circle:** The `.base-circle` class creates the outer circle using `border-radius: 50%`.
+2. **Progress Circle:** The `.progress-circle` class is absolutely positioned within the base circle.  The crucial part is the `clip-path: polygon(50% 50%, 0% 0%, 100% 0%);`  This creates a half-circle initially. The `transform: rotate()` in the animation then rotates this half-circle to simulate progress.  The rotation angle is calculated based on the percentage (75% = 270 degrees, 100% = 360 degrees, and so on).
+
+3. **Animation:** The `@keyframes progress-animation` defines the rotation animation. `linear` ensures a constant speed, and `forwards` keeps the final state after the animation completes.  The progress percentage is dynamically adjusted through changing the `rotate` value or by using a second class and animation  (example of 70% shown above).
 
 
-**Links to Resources to Learn More:**
+**Resources to Learn More:**
 
-* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **MDN Web Docs - `conic-gradient`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
-* **MDN Web Docs - CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **CSS `clip-path`:** [MDN Web Docs - clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

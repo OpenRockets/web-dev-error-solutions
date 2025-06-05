@@ -1,63 +1,100 @@
 
-This document addresses a common error encountered when working with Next.js API routes:  `Error: NextResponse is not defined`. This error arises when you attempt to use the `NextResponse` object within an API route without the correct import.  `NextResponse` is crucial for sending custom responses (e.g., setting headers, status codes, cookies) from your API routes.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This utilizes CSS3 features such as `transform`, `animation`, and `border-radius` to achieve the effect.  We'll build a simple, customizable progress bar that can easily be adapted for different percentages and styling.
 
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The `Error: NextResponse is not defined` error indicates that the JavaScript interpreter in your API route cannot find the `NextResponse` object. This usually happens because you haven't imported it correctly from the `next/server` module, which is specific to the API routes environment in Next.js 13 and later.
-
-
-**Code & Step-by-Step Fix:**
-
-Let's say you have an API route at `pages/api/hello.js` that's attempting to send a custom response:
+The circular progress bar is constructed using a combination of two elements: a base circle and a progress circle. The base circle provides the overall structure and appearance, while the progress circle sits on top, dynamically changing its length to represent the progress percentage.  This is achieved through a clever use of `clip-path` to mask a longer circle, showing only the portion representing the progress.
 
 
-**Incorrect Code (Will produce the error):**
+**Full Code:**
 
-```javascript
-// pages/api/hello.js
-export default function handler(req, res) {
-  const response = new NextResponse('Hello, Next.js!'); // Incorrect: NextResponse is not defined here
-  res.status(200).json({ message: response });
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.container {
+  width: 150px;
+  height: 150px;
+  position: relative;
 }
+
+.base-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 5px solid #ddd; /* Base circle border */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.progress-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  clip-path: polygon(50% 50%, 0% 0%, 100% 0%); /* Initially half-circle */
+  border: 5px solid #4CAF50; /* Progress circle border */
+  position: absolute;
+  transform-origin: 50% 100%; /* Origin for rotation */
+  animation: progress-animation 2s linear forwards; /* Animate progress */
+}
+
+@keyframes progress-animation {
+  to {
+    transform: rotate(270deg); /* Rotate 270 degrees for 75% progress*/
+  }
+}
+
+/*Example to change percentage*/
+.progress-circle.progress-70 {
+  animation: progress-animation-70 2s linear forwards;
+}
+
+@keyframes progress-animation-70 {
+  to {
+    transform: rotate(252deg); /* Rotate 252 degrees for 70% progress*/
+  }
+}
+
+</style>
+</head>
+<body>
+
+  <h1>75% Complete</h1>
+  <div class="container">
+    <div class="base-circle">
+      <div class="progress-circle"></div>
+    </div>
+  </div>
+  <h1>70% Complete</h1>
+  <div class="container">
+    <div class="base-circle">
+      <div class="progress-circle progress-70"></div>
+    </div>
+  </div>
+
+
+</body>
+</html>
 ```
 
-**Corrected Code:**
 
-```javascript
-// pages/api/hello.js
-import { NextResponse } from 'next/server';
+**Explanation:**
 
-export default function handler(req, res) {
-  const response = new NextResponse('Hello, Next.js!'); //Correct: Now NextResponse is imported
-  return response; // Important: return NextResponse object
-}
-```
+1. **Base Circle:** The `.base-circle` class creates the outer circle using `border-radius: 50%`.
+2. **Progress Circle:** The `.progress-circle` class is absolutely positioned within the base circle.  The crucial part is the `clip-path: polygon(50% 50%, 0% 0%, 100% 0%);`  This creates a half-circle initially. The `transform: rotate()` in the animation then rotates this half-circle to simulate progress.  The rotation angle is calculated based on the percentage (75% = 270 degrees, 100% = 360 degrees, and so on).
 
-**Explanation of Changes:**
-
-1. **Import `NextResponse`:** We added `import { NextResponse } from 'next/server';` at the top of the file. This line imports the necessary object from the correct Next.js module.  This is crucial for working with API routes in Next.js 13+.  Older versions use different methods.
-2. **Return `NextResponse`:**  Instead of using the `res` object (which is designed for older API routes), we now return the `NextResponse` object directly. This is how you send customized responses in the new API Routes architecture. Using `res` will cause problems and is deprecated.
-
-**Alternative Example with JSON Response:**
-
-```javascript
-import { NextResponse } from 'next/server';
-
-export default function handler(req, res) {
-  const data = { message: 'Hello, Next.js from JSON!' };
-  return NextResponse.json(data); //Use NextResponse.json for JSON responses
-}
-```
-
-**External References:**
-
-* **Next.js API Routes Documentation:** [https://nextjs.org/docs/api-routes/introduction](https://nextjs.org/docs/api-routes/introduction) (Check for your Next.js version's specific documentation)
-* **Next.js `NextResponse` API:**  (Look for the `NextResponse` section within the API routes documentation - the exact link depends on the Next.js version)
+3. **Animation:** The `@keyframes progress-animation` defines the rotation animation. `linear` ensures a constant speed, and `forwards` keeps the final state after the animation completes.  The progress percentage is dynamically adjusted through changing the `rotate` value or by using a second class and animation  (example of 70% shown above).
 
 
-**Important Note:**  The use of `res` object in the way shown in the initial incorrect code is incompatible with the `NextResponse` approach.  Attempting to mix them will lead to errors.  Always use `NextResponse` exclusively when building API routes in the new architecture.
+**Resources to Learn More:**
 
+* **CSS `clip-path`:** [MDN Web Docs - clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
