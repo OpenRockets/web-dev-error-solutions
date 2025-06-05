@@ -1,3 +1,5 @@
+# 🐞 Handling `Error: NextResponse.rewrite() can only be used in the context of a middleware`
+
 
 This document describes a common error encountered when using Next.js Middleware: `Error: NextResponse.rewrite() can only be used in the context of a middleware`. This error arises when developers attempt to use `NextResponse.rewrite()` outside of a middleware function.  `NextResponse.rewrite()` is specifically designed to redirect requests within the middleware phase of Next.js's request handling.
 

@@ -1,1 +1,1 @@
-Troubleshooting Next.js API Routes: Handling `TypeError: Cannot read properties of undefined (reading 'map')`
+Handling `Error: NextResponse.rewrite() can only be used in the context of a middleware`
