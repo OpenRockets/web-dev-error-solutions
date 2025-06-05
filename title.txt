@@ -1,1 +1,1 @@
-Handling "ReferenceError: fetch is not defined" in Next.js API Routes
+Creating a CSS-Only Expanding Card
