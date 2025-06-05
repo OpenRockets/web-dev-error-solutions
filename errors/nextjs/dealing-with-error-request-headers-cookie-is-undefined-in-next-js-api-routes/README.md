@@ -1,3 +1,5 @@
+# 🐞 Dealing with `Error: request.headers.cookie is undefined` in Next.js API Routes
+
 
 This document addresses a common issue encountered when working with cookies in Next.js API routes: the `Error: request.headers.cookie is undefined` error.  This error typically occurs when your API route attempts to access cookies that aren't being sent by the client.
 

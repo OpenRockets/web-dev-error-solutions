@@ -1,1 +1,1 @@
-Handling `Error: NextResponse.redirect() is not a function` in Next.js Middleware
+Dealing with `Error: request.headers.cookie is undefined` in Next.js API Routes
