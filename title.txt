@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Redirect()` Errors in `next/server`
+Handling `Error: NextResponse must be called only inside a middleware` in Next.js Middleware

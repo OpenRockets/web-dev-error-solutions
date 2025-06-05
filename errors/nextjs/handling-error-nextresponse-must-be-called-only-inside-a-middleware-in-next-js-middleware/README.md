@@ -1,3 +1,5 @@
+# 🐞 Handling `Error: NextResponse must be called only inside a middleware` in Next.js Middleware
+
 
 This document addresses a common error encountered when working with Next.js Middleware: `Error: NextResponse must be called only inside a middleware`. This error arises when you attempt to use `NextResponse` outside the context of a middleware function. `NextResponse` is specifically designed for manipulating requests and responses within the middleware lifecycle.
 
