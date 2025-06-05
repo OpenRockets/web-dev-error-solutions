@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card
+Next.js Middleware: Handling `Error: You cannot use Next.js Middleware in a page that uses getServerSideProps or getStaticProps`

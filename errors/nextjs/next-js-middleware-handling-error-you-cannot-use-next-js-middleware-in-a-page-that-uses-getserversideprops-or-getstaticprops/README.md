@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: You cannot use Next.js Middleware in a page that uses getServerSideProps or getStaticProps`
+
 
 This document addresses a common error encountered when using Next.js Middleware with pages that also utilize `getServerSideProps` or `getStaticProps`.  This error arises because middleware runs *before* these data fetching functions, creating a conflict.  Middleware is designed to modify requests before they reach the page rendering process, while `getServerSideProps` and `getStaticProps` are responsible for generating page content. They cannot coexist directly within the same page.
 
