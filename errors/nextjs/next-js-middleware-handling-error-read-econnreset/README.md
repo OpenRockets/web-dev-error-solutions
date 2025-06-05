@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: read ECONNRESET`
+
 
 This document addresses a common error encountered when using Next.js Middleware: `Error: read ECONNRESET`. This error typically occurs during requests to external APIs within your middleware, often indicating a network issue on the client or server side.  The error message itself is fairly generic and doesn't always pinpoint the precise cause, necessitating a systematic approach to debugging.
 
