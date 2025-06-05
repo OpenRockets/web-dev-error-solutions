@@ -1,12 +1,11 @@
 # 🐞 Creating a CSS-Only Expanding Card
 
 
-This document details a CSS-only solution for creating an expanding card effect.  No JavaScript is required.  The effect involves a card that expands to reveal more content when clicked.  We'll use plain CSS (no frameworks like Tailwind).
+This document details a CSS-only solution for creating an expanding card effect.  The card expands vertically to reveal more content when hovered over.  This effect is achieved using purely CSS, making it lightweight and efficient.  No JavaScript is required.
 
 **Description of the Styling:**
 
-The styling relies on transitions, transforms, and the `:target` pseudo-class. The card is initially collapsed. Upon clicking, a hidden anchor link within the card is targeted, triggering a CSS transition that expands the card.  The expansion is achieved by scaling the card content and smoothly changing its height.  The styling uses clean, semantic CSS for better maintainability.
-
+The styling utilizes CSS transitions and transforms to create the smooth expanding animation. The card's height is initially set to a smaller value.  On hover, the `height` is changed to a larger value revealing the hidden content.  The `transition` property smoothly animates this height change.  For visual enhancement, a subtle shadow and border-radius are added.
 
 **Full Code:**
 
@@ -17,81 +16,59 @@ The styling relies on transitions, transforms, and the `:target` pseudo-class. T
 <title>Expanding Card</title>
 <style>
 .card {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide content that overflows */
+  transition: height 0.3s ease; /* Smooth transition for height change */
+  height: 100px; /* Initial height */
   width: 300px;
-  border: 1px solid #ccc;
-  overflow: hidden;
-  transition: height 0.5s ease-in-out; /* Smooth transition for height changes */
+}
+
+.card:hover {
+  height: 250px; /* Height on hover */
 }
 
 .card-content {
-  padding: 20px;
-  transition: transform 0.5s ease-in-out; /* Smooth transition for transform */
-  transform-origin: top; /* Ensures scaling happens from the top */
-  height: 100px; /* Initial height of the collapsed card */
-  overflow: hidden;
+  padding: 15px;
 }
 
-
-.card a {
-  display: block;
-  width: 100%;
-  height: 100%;
-  text-decoration: none;
-  color:inherit;
+.card-title {
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
-.card-content.expanded {
-  height: auto; /* Expands the height to accommodate the content */
-  transform: scaleY(1); /* Scales the content up to fill the expanded height */
-}
-
-
-.card:target .card-content {
-  height: auto;
-  transform: scaleY(1);
-  transition: transform 0.5s ease-in-out;
-  overflow: visible; /* Ensures content is fully visible when expanded */
-}
-
-.card:target .expand-button {
-    display:none;
-}
-
-.card:target {
-    box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
+.card-text {
+  font-size: 14px;
 }
 </style>
 </head>
 <body>
 
 <div class="card">
-  <a href="#card-content">
   <div class="card-content">
-    <h2>Card Title</h2>
-    <p>This is some sample text for the card.  This text will be hidden until the card is expanded.</p>
-    <p>More sample text...</p>
+    <h2 class="card-title">Expanding Card</h2>
+    <p class="card-text">This is some example text that will be revealed when you hover over the card.  You can add as much text as you like, and the card will expand accordingly.</p>
   </div>
-  </a>
 </div>
 
 </body>
 </html>
 ```
 
+
 **Explanation:**
 
-*   **`.card`**:  This class styles the overall card container, setting its width, border, and applying a transition for smooth height changes.  `overflow: hidden` initially hides content exceeding the initial height.
-*   **`.card-content`**: This class styles the content within the card.  Transitions are added for smooth transform changes. `transform-origin: top;` ensures scaling happens from the top, creating a cleaner expansion effect.  `height: 100px;` sets the initial height.
-*   **`.card-content.expanded`**: This class will be applied when the card is expanded.  It sets the `height: auto;` and the transform for the expand effect.
-*   **:target**: This pseudo-class targets the element with the ID specified in the `href` attribute of the anchor. When the link is clicked, the `.card-content` will have the `height` and `transform` property changed.
-* **`.card:target .card-content`**: Adding this specific selector ensures that only when card is targetted we get the full expand effect and transitions.
+* **`.card`:** This class styles the main card container.  `overflow: hidden;` prevents the hidden content from peeking out before the expansion.  `transition: height 0.3s ease;` defines the transition effect for the height change.  `height: 100px;` sets the initial height.
+* **`.card:hover`:** This selector styles the card when the mouse hovers over it.  `height: 250px;` sets the height on hover, causing the expansion.
+* **`.card-content`, `.card-title`, `.card-text`:** These classes style the internal content of the card for better readability and structure.
 
 
 **Links to Resources to Learn More:**
 
-*   [MDN Web Docs on CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
-*   [MDN Web Docs on the `:target` pseudo-class](https://developer.mozilla.org/en-US/docs/Web/CSS/:target)
-*   [Understanding CSS Transforms](https://css-tricks.com/almanac/properties/t/transform/)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **More CSS Tricks:** [CSS-Tricks](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
