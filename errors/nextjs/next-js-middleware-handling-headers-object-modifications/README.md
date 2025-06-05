@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers` Object Modifications
+
 
 This document addresses a common issue developers encounter when working with Next.js Middleware: Unexpected behavior or errors related to modifying the `headers` object.  Middleware provides a powerful way to intercept requests and modify responses before they reach the page, but improper manipulation of the `headers` object can lead to unexpected results.  This example specifically focuses on issues arising from directly mutating the `headers` object, instead of using the correct approach provided by the `NextResponse` object.
 

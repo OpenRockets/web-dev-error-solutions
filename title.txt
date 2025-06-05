@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Error: Only absolute URLs are supported`
+Next.js Middleware: Handling `headers` Object Modifications
