@@ -1,1 +1,1 @@
-Handling `Error: NextResponse must be called only inside a middleware` in Next.js Middleware
+Creating a CSS-only Expanding Card
