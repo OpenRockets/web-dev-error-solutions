@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `getHeader` Errors in API Routes
+Creating a CSS-only Expanding Card with a Subtle Reveal
