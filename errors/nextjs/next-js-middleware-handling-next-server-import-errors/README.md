@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `next/server` Import Errors
+
 
 This document addresses a common error developers encounter when working with Next.js Middleware: importing modules from `next/server`. This error typically occurs when developers attempt to use server-side-only modules in client-side components or pages.
 

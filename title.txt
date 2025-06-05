@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with a Reveal Effect
+Next.js Middleware: Handling `next/server` Import Errors
