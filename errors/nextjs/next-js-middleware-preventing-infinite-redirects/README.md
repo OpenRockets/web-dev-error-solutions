@@ -1,64 +1,77 @@
 # 🐞 Next.js Middleware: Preventing Infinite Redirects
 
 
-This document addresses a common issue encountered when using Next.js Middleware: unintended infinite redirect loops.  This occurs when your middleware redirects the user repeatedly without a proper exit condition.
+This document addresses a common issue encountered when using Next.js Middleware: **infinite redirect loops**.  This occurs when your middleware repeatedly redirects the user, creating a never-ending cycle.  This often happens due to improperly structured conditional logic or a lack of proper termination conditions.
 
 ## Description of the Error
 
-The error itself might not manifest as a clear error message in your console.  Instead, you'll experience your browser continuously refreshing, often with a spinning loading indicator.  The browser might eventually time out, or you might observe network requests continuously failing or redirecting. This happens because the middleware constantly triggers a new redirect, never allowing the request to reach a stable endpoint or render a page.
+The browser continuously redirects, leading to a "too many redirects" error in the browser console.  The user is unable to access the intended page.  This manifests as a blank page or a continuous spinning loading indicator.  The server logs might show repeated redirect attempts.
 
-## Code Example: Problem and Solution
+## Code Example: Problem & Solution
 
-Let's say you're trying to redirect all requests to `/login` unless the user is authenticated.  The following flawed middleware implementation will cause an infinite redirect loop:
-
-
-**Problematic Middleware (middleware.js):**
+**Problematic Middleware:**
 
 ```javascript
-import { NextResponse } from 'next/server';
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  const token = req.cookies.get('token');
+  const url = req.nextUrl.clone();
 
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
+  // Incorrect Logic - Always redirects
+  url.pathname = '/login';
+  return NextResponse.rewrite(url);
 }
+
+export const config = {
+  matcher: '/',
+};
 ```
 
-This code checks for a token. If the token is absent, it redirects to `/login`. However, the `/login` page itself might also be protected by this middleware. If the user is *not* logged in, and `GET /login` also lacks a token it will redirect again to `/login` and so on, leading to an infinite loop.
+This middleware *always* redirects to `/login`, regardless of the user's authentication status. This creates an infinite loop if `/login` also uses this middleware, or if the login process itself redirects in a way that again triggers the middleware.
 
-**Solution (middleware.js):**
+
+**Step-by-step Fix:**
+
+1. **Introduce Conditional Logic:** The middleware should only redirect if a specific condition isn't met (e.g., user is not logged in).
+
+2. **Check for Authentication:** We'll use a simplified example; replace this with your actual authentication method.
+
+3. **Avoid unnecessary redirects:**  Only redirect if a condition is true, otherwise return a normal response.
 
 ```javascript
-import { NextResponse } from 'next/server';
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  const token = req.cookies.get('token');
-  const url = req.nextUrl.clone(); // Create a copy of the URL
+  const url = req.nextUrl.clone();
+  const isLoggedIn = req.cookies.get('isLoggedIn'); // Replace with your auth check
 
-  if (!token && url.pathname !== '/login') {
+  if (!isLoggedIn) {
     url.pathname = '/login';
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(url); // Use redirect for better UX
   }
+
+  return NextResponse.next(); // Allows the request to continue normally
 }
+
+export const config = {
+  matcher: '/',
+};
 ```
 
-This improved version checks the pathname of the URL *before* redirecting.  If the request is already for `/login`, the middleware does nothing and lets the request proceed. This breaks the redirect loop.
+This improved middleware only redirects to `/login` if the `isLoggedIn` cookie is not found.  If the user is logged in, `NextResponse.next()` allows the request to proceed to its intended destination, preventing the infinite redirect.
 
 
-**Explanation:**
+## Explanation
 
-The key change is using `req.nextUrl.clone()` and explicitly checking `url.pathname !== '/login'` condition before redirecting. This prevents the middleware from recursively redirecting requests to `/login` again and again.  Creating a clone is crucial; modifying `req.nextUrl` directly can lead to unexpected behavior.
+The original code created an infinite redirect loop because it unconditionally redirected to `/login`. The corrected code introduces a conditional check (`isLoggedIn`) and uses `NextResponse.redirect()` to redirect only when necessary. `NextResponse.next()` is crucial for allowing requests to continue naturally when the redirect condition is false.  Using `NextResponse.rewrite()` for redirects is generally discouraged because it can lead to caching issues; `NextResponse.redirect()` is preferred for user-facing redirects.
 
 ## External References
 
-* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/building-your-application/routing/middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)  (Refer to the official Next.js documentation for comprehensive information on Middleware)
-* **Next.js API Routes Documentation:** [https://nextjs.org/docs/api-routes/introduction](https://nextjs.org/docs/api-routes/introduction) (Understanding how API routes interact with Middleware is essential to avoid conflicts)
-
-## Summary
-
-Infinite redirects in Next.js Middleware are a common issue stemming from improperly designed redirect logic within the middleware function.  Always ensure you have a proper exit condition (such as a check on the requested URL) to prevent this type of error. By carefully considering the redirection logic and using the `req.nextUrl.clone()` method, you can ensure that your middleware functions correctly.
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse)
+* [Handling Authentication in Next.js](https://nextjs.org/docs/app/building-your-application/authentication) (Find relevant sections on your authentication method)
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

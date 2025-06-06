@@ -1,1 +1,1 @@
-Dealing with `TypeError: data.map is not a function` in Next.js API Routes
+Next.js Middleware: Preventing Infinite Redirects
