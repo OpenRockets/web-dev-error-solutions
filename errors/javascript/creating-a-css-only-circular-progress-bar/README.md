@@ -1,15 +1,14 @@
-# 🐞 Creating a CSS-only Circular Progress Bar
+# 🐞 Creating a CSS-Only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This utilizes a combination of CSS `clip-path`, `transform`, and `animation` to achieve the effect. We'll focus on a simple, visually appealing design, but the principles can be easily adapted for more complex variations.
+This document details the creation of a circular progress bar using only CSS.  We'll leverage CSS3's `border-radius`, `transform`, and `animation` properties to achieve this effect without relying on JavaScript.
+
+**Description of the Styling:**
+
+The progress bar is created using a combination of two concentric circles. The outer circle represents the track, and the inner circle represents the progress.  The inner circle is rotated using `transform: rotate()` to simulate the progress.  An animation smoothly changes the rotation over time. We'll style with basic CSS, rather than a framework like Tailwind CSS for this example to better illustrate the underlying CSS principles.
 
 
-## Description of the Styling
-
-This technique creates a circular progress bar by using a circle as a base and then "clipping" a portion of it away to reveal a background color, creating the progress effect.  The `clip-path` property is crucial here.  We'll use an animation to dynamically control the visible portion of the circle, simulating progress. The animation rotates the circle's clipping path, revealing more or less of the underlying color.
-
-
-## Full Code
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
@@ -17,65 +16,69 @@ This technique creates a circular progress bar by using a circle as a base and t
 <head>
 <title>CSS Circular Progress Bar</title>
 <style>
-.progress-ring {
+.container {
   width: 150px;
   height: 150px;
-  border-radius: 50%;
-  background-color: #f0f0f0; /* Background color of the entire ring */
   position: relative;
 }
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.circle-track {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background-color: #4CAF50; /* Progress color */
-  clip-path: circle(50% at 50% 50%); /* Initial clip path */
-  animation: progress 3s linear forwards; /* Animation for progress */
+  border: 10px solid #ddd; /* Track color */
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.circle-progress {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 10px solid #4CAF50; /* Progress color */
+  position: absolute;
+  top: 0;
+  left: 0;
+  clip: rect(0, 75px, 150px, 0); /* This creates the circular effect */
+  transform-origin: 50% 100%; /* Important for rotation */
+  animation: progress 3s linear forwards; /* Animation */
 }
 
 @keyframes progress {
   0% {
-    clip-path: circle(0% at 50% 50%);
+    transform: rotate(0deg);
   }
   100% {
-    clip-path: circle(50% at 50% 50%);
+    transform: rotate(360deg);
   }
 }
-
 </style>
 </head>
 <body>
 
-<h1>CSS Circular Progress Bar</h1>
-<div class="progress-ring"></div>
+<div class="container">
+  <div class="circle-track"></div>
+  <div class="circle-progress"></div>
+</div>
 
 </body>
 </html>
 ```
 
-To adjust the percentage of progress, modify the `circle()` value in the `@keyframes progress` rule.  For example, changing `100%` to `circle(75% at 50% 50%)` in the final frame of the animation would only show 75% progress.  You can also adjust the animation duration (`3s`) to control the speed.
+**Explanation:**
 
-## Explanation
-
-* **`progress-ring`:** This is the container for our circular progress bar.  It sets the size, border radius, and background color.
-* **`::before` pseudo-element:** This creates the circular progress indicator on top of the background.  It's positioned absolutely within the parent and uses `translate` for centering.
-* **`clip-path: circle()`:** This is the key to creating the circular effect.  It defines a circular clipping region.  The percentages specify the circle's radius and its center point.
-* **`animation: progress 3s linear forwards;`:** This applies the `progress` animation, making the circle appear to fill up over 3 seconds.  `linear` ensures a constant speed, and `forwards` keeps the final state after the animation completes.
-* **`@keyframes progress`:** This defines the animation itself.  It starts with a circle of 0% radius (invisible) and animates to a circle with a 50% radius (half-filled).  Modify the `100%` value to control the final progress level.
+* **`container`:**  This div sets the overall size and relative positioning for the progress bar.
+* **`circle-track`:** This creates the outer, static circle representing the full track.
+* **`circle-progress`:** This creates the inner circle showing the progress. The `clip` property is crucial; it cuts off the circle to only show the progress arc. `transform-origin` sets the point of rotation to the bottom center, making the rotation work correctly.  The `animation` property applies the `progress` animation.
+* **`@keyframes progress`:** This defines the animation, rotating the inner circle from 0 to 360 degrees over 3 seconds. `linear` ensures a constant speed, and `forwards` makes the animation stay at its final state.
 
 
+**Links to Resources to Learn More:**
 
-## Resources to Learn More
-
-* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **MDN Web Docs on `animation`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
-* **CSS Tricks (general CSS resources):** [https://css-tricks.com/](https://css-tricks.com/)
+* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **MDN Web Docs on `transform` property:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks (various articles on CSS animations and effects):** [https://css-tricks.com/](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
