@@ -1,1 +1,1 @@
-Dealing with `next/image` Optimization Issues in Next.js Middleware
+Next.js Middleware: Handling `headersAlreadySent` Error
