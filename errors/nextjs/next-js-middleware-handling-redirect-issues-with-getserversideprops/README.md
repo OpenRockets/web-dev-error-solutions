@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Redirect` Issues with `getServerSideProps`
+
 
 This document addresses a common problem encountered when using Next.js Middleware alongside `getServerSideProps` in pages requiring redirects.  The issue arises when Middleware attempts a redirect, but `getServerSideProps` also needs to run for data fetching or other server-side operations.  If not handled correctly, this can lead to unexpected behavior or errors.
 
