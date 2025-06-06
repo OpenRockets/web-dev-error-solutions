@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `next/server` Imports in API Routes
+
 
 This document addresses a common error developers encounter when attempting to import modules from `next/server` within Next.js API routes.  While `next/server` provides powerful features for edge functions and middleware, it's crucial to understand its limitations regarding API route contexts.  Directly importing `next/server` modules into API routes will lead to runtime errors.
 

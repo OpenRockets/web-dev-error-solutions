@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers already sent` Error
+Next.js Middleware: Handling `next/server` Imports in API Routes
