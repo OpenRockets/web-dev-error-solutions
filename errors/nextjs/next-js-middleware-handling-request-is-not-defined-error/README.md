@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Request is not defined` Error
+
 
 This document addresses a common error encountered when working with Next.js Middleware:  `ReferenceError: Request is not defined`. This error arises because the `Request` object, crucial for middleware functionality, isn't accessible in all contexts.  Middleware functions operate on incoming requests, and attempting to access `Request` outside the appropriate middleware function will lead to this error.
 

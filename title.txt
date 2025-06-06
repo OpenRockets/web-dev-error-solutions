@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Response already sent` Errors
+Next.js Middleware: Handling `Request is not defined` Error
