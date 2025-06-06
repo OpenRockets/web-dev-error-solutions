@@ -1,12 +1,12 @@
-# 🐞 Creating a CSS-Only Circular Progress Bar
+# 🐞 Creating a CSS-only Circular Progress Bar
 
 
-This document details how to create a circular progress bar using only CSS.  We'll leverage CSS's `clip-path` property and some clever calculations to achieve this effect without relying on JavaScript.
+This document details the creation of a circular progress bar using only CSS.  We'll leverage CSS's `border-radius`, `transform`, and `animation` properties to achieve this effect without the need for JavaScript.  This example uses plain CSS but can be easily adapted to frameworks like Tailwind CSS.
 
 
 **Description of the Styling:**
 
-This technique uses a circle as a base, then uses the `clip-path` property to create a "pie slice" representing the progress.  We manipulate the `clip-path` value dynamically with a CSS variable to control the progress percentage.  The styling includes a background circle for the track and a foreground circle for the progress fill.  We use some subtle shadows to add depth and visual appeal.
+The circular progress bar is created using a combination of two elements: a circle representing the background and another circle overlayed on top to represent the progress.  The progress circle uses a `clip-path` to create the circular segment representing the percentage of progress. The animation smoothly increases the progress segment over time.
 
 
 **Full Code:**
@@ -17,58 +17,42 @@ This technique uses a circle as a base, then uses the `clip-path` property to cr
 <head>
 <title>CSS Circular Progress Bar</title>
 <style>
-.progress-ring {
+.container {
   width: 150px;
   height: 150px;
   position: relative;
 }
 
-.progress-ring .circle {
+.background-circle {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 10px solid #e0e0e0; /* Track color */
+  border: 5px solid #ddd; /* Light gray border */
   position: absolute;
-  top: 0;
-  left: 0;
 }
 
-.progress-ring .circle::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
+.progress-circle {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  clip-path: circle(50% at 50% 50%); /* Base circle */
-  background-color: #4CAF50; /* Progress color */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add shadow for depth */
-  transform: rotate(-90deg); /* Start at top */
+  border: 5px solid #4CAF50; /* Green progress */
+  clip-path: inset(0 round 50% 0); /* Creates the circular segment */
+  position: absolute;
+  animation: progress 3s linear forwards; /* Animate progress */
 }
 
-.progress-ring[data-progress="75"] .circle::before {
-  clip-path: polygon(50% 0%, 75% 50%, 50% 100%, 25% 50%); /* Example for 75% progress */
+@keyframes progress {
+  100% {
+    clip-path: inset(0 round 0% 0);
+  }
 }
-
-/* Dynamically change clip-path using CSS variable */
-:root {
-  --progress: 75; /* You can change this value */
-}
-
-.progress-ring .circle::before {
-  --progress: var(--progress);
-  --rotate: calc(var(--progress) * 3.6deg);
-  clip-path: polygon(50% 50%, calc(50% + 50% * cos(var(--rotate))) calc(50% - 50% * sin(var(--rotate))), 50% 50%, calc(50% + 50% * cos(var(--rotate))) calc(50% + 50% * sin(var(--rotate))));
-}
-
-
 </style>
 </head>
 <body>
 
-<div class="progress-ring" data-progress="75">
-  <div class="circle"></div>
+<div class="container">
+  <div class="background-circle"></div>
+  <div class="progress-circle"></div>
 </div>
 
 </body>
@@ -77,15 +61,18 @@ This technique uses a circle as a base, then uses the `clip-path` property to cr
 
 **Explanation:**
 
-1. **Base Structure:**  We create a container (`progress-ring`) and an inner element (`circle`) for the track.
-2. **Pseudo-element:** The `::before` pseudo-element creates the progress fill.  It initially has a full circle `clip-path`.
-3. **Dynamic Clip-Path:** The `:root` element defines a CSS variable `--progress`  that determines the percentage. We use a calculation to convert the percentage to degrees for rotation (360 degrees / 100% = 3.6deg).  The `clip-path: polygon()` then dynamically creates the pie slice based on this calculated rotation.
-4. **Responsive Design:**  The size of the progress bar can be easily adjusted by changing the `width` and `height` of the `.progress-ring` class.
+* **`container`:** This div acts as a wrapper to hold the background and progress circles.  It sets the overall size and relative positioning.
+* **`background-circle`:** This creates the base circle with a light gray border.  `border-radius: 50%;` makes it a perfect circle.
+* **`progress-circle`:** This is the dynamic part.  It's a circle with a green border.  `clip-path: inset(0 round 50% 0);` initially hides half the circle. The `animation` property and `@keyframes progress` smoothly change the `clip-path` over 3 seconds, revealing the green progress segment.  `forwards` ensures the animation stays at the final state.
+* **`@keyframes progress`:** This defines the animation. It gradually changes the `clip-path` to reveal the complete circle. Adjusting the animation duration and the `clip-path` values will control the speed and percentage of progress displayed.
 
-**Resources to Learn More:**
+
+**Links to Resources to Learn More:**
 
 * **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **Understanding CSS Variables (Custom Properties):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS-Tricks:** Search "CSS circular progress bar" on [https://css-tricks.com/](https://css-tricks.com/) for alternative approaches and more advanced techniques.
+
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
