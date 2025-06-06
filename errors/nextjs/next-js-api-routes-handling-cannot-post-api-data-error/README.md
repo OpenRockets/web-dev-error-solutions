@@ -1,3 +1,5 @@
+# 🐞 Next.js API Routes: Handling `Cannot POST /api/data` Error
+
 
 This document addresses a common error encountered when working with Next.js API routes:  `Cannot POST /api/data` (or a similar variation). This typically occurs when attempting to send a POST request to an API route but the server doesn't receive or handle the request correctly.
 
