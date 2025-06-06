@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `not-found` Responses Correctly
+Next.js Middleware: Handling `headers` in the correct location

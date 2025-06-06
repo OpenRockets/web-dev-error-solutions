@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers` in the correct location
+
 
 This document addresses a common issue developers encounter when using Next.js Middleware: incorrectly placing the `headers` manipulation code, leading to unexpected behavior or errors.  Middleware is powerful for modifying responses and redirects, but understanding its execution flow is crucial for correct implementation.
 
