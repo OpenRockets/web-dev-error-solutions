@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with a Subtle Reveal
+Handling `TypeError: Cannot read properties of undefined (reading 'locale')` in Next.js Middleware
