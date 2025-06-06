@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Preventing Infinite Redirects
+
 
 This document addresses a common issue encountered when using Next.js Middleware: unintended infinite redirect loops.  This occurs when your middleware redirects the user repeatedly without a proper exit condition.
 
