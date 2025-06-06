@@ -1,1 +1,1 @@
-Next.js API Routes: Handling Large Responses and Avoiding Timeouts
+Handling `TypeError: Cannot read properties of undefined (reading 'locale')` in Next.js Middleware

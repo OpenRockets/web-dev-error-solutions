@@ -1,37 +1,33 @@
-# 🐞 Handling "TypeError: Cannot read properties of undefined (reading 'locale')" in Next.js Middleware
+# 🐞 Handling `TypeError: Cannot read properties of undefined (reading 'locale')` in Next.js Middleware
 
 
-This document addresses a common error encountered when using Next.js's middleware functionality: `TypeError: Cannot read properties of undefined (reading 'locale')`. This typically arises when attempting to access request locale data before it's properly available within the middleware function.
+This document addresses a common `TypeError: Cannot read properties of undefined (reading 'locale')` error encountered when working with Next.js Middleware, specifically when accessing request headers or cookies to determine user locale. This often happens because the expected header or cookie might be absent in certain requests.
 
-## Description of the Error
+**Description of the Error:**
 
-The error `TypeError: Cannot read properties of undefined (reading 'locale')` specifically indicates that you're trying to access the `locale` property of the `request` object (often found within the `next/server` API), but that property is undefined at the point where your code is executing. This usually means the middleware function is being triggered before Next.js has fully processed and populated the request object with locale information.
+The error message `TypeError: Cannot read properties of undefined (reading 'locale')` indicates that your code is attempting to access the `locale` property of an object that is `undefined`. This usually occurs when you're trying to read a locale from a request header (e.g., `Accept-Language`) or a cookie, but that header or cookie is missing from the incoming request.  Your code assumes the header/cookie will always exist, leading to this error.
 
-## Fixing the Issue Step-by-Step
-
-Let's assume we have a middleware function that attempts to redirect users based on their locale:
-
-**Problematic Code:**
+**Code Example (Problematic):**
 
 ```javascript
 // pages/api/middleware.js
 import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  const locale = req.nextUrl.locale; // This line throws the error
-
-  if (locale === 'es') {
-    return NextResponse.redirect(new URL('/es', req.url))
-  }
-  return NextResponse.next()
+  const locale = req.headers.get('accept-language').split(',')[0].split('-')[0]; //Potentially throws error
+  const res = NextResponse.next();
+  res.cookies.set('locale', locale);
+  return res;
 }
-
-export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-};
 ```
 
-This code will fail because `req.nextUrl` might not be fully populated when the middleware runs.  Here's how to fix it:
+**Step-by-Step Fix:**
+
+1. **Safe Header Access:** Use optional chaining (`?.`) and nullish coalescing (`??`) to gracefully handle the absence of the header.  If `req.headers.get('accept-language')` is null or undefined, the expression short-circuits and defaults to a fallback value (e.g., 'en').
+
+2. **Robust Locale Extraction:** Even if the header exists, it might not be in the expected format. Add further checks to handle potential errors during the splitting process.
+
+3. **Error Handling:** Consider adding explicit error handling (using `try...catch`) to prevent unexpected crashes. While less necessary with the optional chaining approach, it enhances robustness.
 
 **Corrected Code:**
 
@@ -40,44 +36,31 @@ This code will fail because `req.nextUrl` might not be fully populated when the 
 import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  // 1. Ensure nextUrl is ready
-  if (!req.nextUrl) return NextResponse.next();
+  try {
+    const acceptLanguageHeader = req.headers.get('accept-language');
+    const locale = (acceptLanguageHeader?.split(',')[0]?.split('-')[0]) ?? 'en'; //Defaults to 'en' if no header or malformed header
 
-  const locale = req.nextUrl.locale;
-
-  // 2. Handle undefined locale (optional but recommended for robustness)
-  if (!locale) {
-    return NextResponse.redirect(new URL('/', req.url)); // Or handle it as needed
+    const res = NextResponse.next();
+    res.cookies.set('locale', locale);
+    return res;
+  } catch (error) {
+    console.error("Error setting locale in middleware:", error);
+    //Handle the error appropriately, maybe redirect or set a default locale.
+    return NextResponse.next(); // or redirect
   }
-
-
-  if (locale === 'es') {
-    return NextResponse.redirect(new URL('/es', req.url))
-  }
-  return NextResponse.next()
 }
 
-export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-};
 ```
 
-**Explanation of Changes:**
+**Explanation:**
 
-1. **`if (!req.nextUrl) return NextResponse.next();`:** This crucial addition checks if `req.nextUrl` exists. If it doesn't (meaning the request object isn't completely populated yet), the middleware simply proceeds to the next phase without attempting to access the `locale` property, preventing the error.  This is the primary solution.
+The corrected code uses optional chaining (`?.`) to safely access properties of potentially `undefined` objects. If `req.headers.get('accept-language')` returns `null` or `undefined`, the expression short-circuits, preventing the error.  The nullish coalescing operator (`??`) provides a fallback value ('en') if the header is missing or the splitting process results in `undefined`. This prevents the error and ensures a default locale is always used. The `try...catch` block provides further robustness.
 
-2. **`if (!locale) { ... }`:** This is an optional but highly recommended additional check.  Even if `req.nextUrl` exists, `locale` might still be `null` or `undefined` under certain edge cases.  This ensures your code gracefully handles these situations.  You'll want to replace the redirect with your desired fallback behavior.
+**External References:**
 
-
-## External References
-
-* [Next.js Middleware documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware) - Official Next.js documentation on middleware.
-* [Next.js Request Object](https://nextjs.org/docs/app/api-routes/request-object) - Information on the properties of the request object.
-
-
-## Explanation
-
-The `TypeError` stems from asynchronous operations within the Next.js request lifecycle.  The middleware function executes early in this lifecycle, before certain data, like locale information, is completely parsed and ready for access.  The added checks ensure that the code only attempts to access the `locale` property when it's guaranteed to be available, avoiding the error.
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Optional Chaining (?.)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
+* [Nullish Coalescing Operator (??)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing_operator)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
