@@ -1,3 +1,5 @@
+# 🐞 Debugging "TypeError: Cannot read properties of undefined (reading 'map')" in Next.js API Routes
+
 
 This document details a common error encountered when working with API routes in Next.js:  `TypeError: Cannot read properties of undefined (reading 'map')`. This typically occurs when attempting to iterate over an array or object that is undefined or null before being mapped or otherwise processed.
 
