@@ -1,95 +1,102 @@
 
-This document addresses a common error encountered when working with Next.js Middleware:  importing modules from `next/server` within client-side components or API routes that shouldn't access server-side-only modules.
+This document details how to create a simple, pulsating heart animation using only CSS.  No JavaScript is required! This example leverages CSS3 animations and transforms to achieve the effect.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The error typically manifests as a runtime error or build error, indicating that a module from `next/server` (like `NextResponse`) is being used in a context where it's not available. This usually happens when code intended for middleware or API routes is accidentally included in a page component or another client-side module.  The error message might vary, but it often includes phrases like "Cannot find module 'next/server'" or a similar indication that the module is unavailable in the client-side environment.
+This code creates a heart shape using a pseudo-element (`::before` and `::after`) and then applies a CSS animation to make it appear to pulsate. The animation smoothly scales the heart up and down, creating a rhythmic pulsing effect. We'll use a simple red color for the heart, but you can easily customize this to your preference.
 
-**Code Example (Problematic):**
 
-Let's say you have a component `pages/my-page.js` that tries to use `NextResponse`:
+**Full Code:**
 
-```javascript
-// pages/my-page.js (INCORRECT)
-import { NextResponse } from 'next/server';
-
-function MyPage() {
-  const response = NextResponse.redirect('/'); // This will cause an error!
-  return <div>My Page</div>;
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pulsating Heart</title>
+<style>
+.heart {
+  width: 0;
+  height: 0;
+  position: relative;
+  margin: 50px auto;
 }
 
-export default MyPage;
-```
+.heart::before,
+.heart::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
 
-**Step-by-Step Fix:**
+.heart::before {
+  top: 0;
+  left: 0;
+}
 
-1. **Identify the offending code:** Carefully review your component and its imports.  Locate any instances where modules from `next/server` are used.  In this example, it's the import of `NextResponse`.
+.heart::after {
+  top: 0;
+  right: 0;
+}
 
-2. **Move server-side logic to the appropriate location:** If the logic involving `NextResponse` belongs to middleware or an API route, move it there.  Client-side components should *not* interact directly with `NextResponse`.
+.heart {
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  animation: pulse 1s infinite;
+}
 
-3. **Refactor client-side logic (if necessary):**  If the component needs to conditionally render based on some server-side data, fetch that data using `getServerSideProps` or `getStaticProps` and pass it to the component as a prop.
-
-**Corrected Code (Middleware):**
-
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const url = req.nextUrl.clone();
-  if (req.nextUrl.pathname === '/') {
-    url.pathname = '/my-other-page';
-    return NextResponse.rewrite(url);
+@keyframes pulse {
+  0% {
+    transform: scale(1);
   }
-  return NextResponse.next();
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
-export const config = {
-  matcher: '/', // Match all requests
-};
+/* optional: customize heart color and size */
+.heart {
+  background-color: red; /* optional change color */
+  width: 100px;
+  height: 100px;  /* optional increase size */
+}
+.heart::before,
+.heart::after {
+  width: 20px;  /* optional increase size */
+  height: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="heart"></div>
+
+</body>
+</html>
 ```
-
-**Corrected Code (Component):**
-
-
-```javascript
-// pages/my-page.js (CORRECT)
-function MyPage({ isRedirected }) {
-  return (
-    <div>
-      {isRedirected ? (
-          <p>Redirected!</p>
-        ) : (
-          <p>My Page</p>
-      )}
-    </div>
-  );
-}
-
-export async function getServerSideProps(context) {
-  // Simulate a server-side condition that might trigger a redirect in middleware
-  const shouldRedirect = false; // Replace with your actual logic
-
-  return {
-    props: { isRedirected: shouldRedirect },
-  };
-}
-
-export default MyPage;
-
-```
-
 
 **Explanation:**
 
-`next/server` modules are designed for the server-side environment within Next.js. They provide functionality like `NextResponse` which is for manipulating HTTP responses.  These modules are not available in the browser (client-side). By moving the server-side logic (using `NextResponse`) to a middleware file or an API route, you ensure that the code runs only on the server, avoiding the import error. The corrected component retrieves the server-side information through `getServerSideProps` and renders accordingly.
+1. **Heart Structure:** We create the heart shape using two pseudo-elements (`::before` and `::after`), positioned absolutely to form the top two curves.  `border-radius: 50%;` makes them circular, and `transform: rotate(45deg);` angles them correctly.
 
-**External References:**
+2. **Animation:** The `@keyframes pulse` rule defines the animation.  It scales the heart from its original size (scale(1)) to slightly larger (scale(1.1)) and back, creating the pulsing effect.  `animation: pulse 1s infinite;` applies the animation with a duration of 1 second and loops infinitely.
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [Next.js Data Fetching](https://nextjs.org/docs/basic-features/data-fetching)
+3. **Optional Customization:** The last CSS block provides options to change the color and size of the heart.
+
+**Links to Resources to Learn More:**
+
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Pseudo-elements:** [MDN Web Docs - CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
 
 
-**Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
