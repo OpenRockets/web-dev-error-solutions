@@ -1,71 +1,79 @@
 
-This document addresses a common error encountered when working with Next.js Middleware: the `Headers already sent` error. This error typically occurs when you attempt to modify HTTP headers after the response has already started being sent to the client. This often happens due to unintended multiple calls to `next.response.setHeader()` or mixing synchronous and asynchronous operations within your middleware.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This leverages the power of CSS's `conic-gradient` function and some clever manipulation of shapes.
 
-## Description of the Error
 
-The `Headers already sent` error manifests as a server-side error preventing your Next.js application from correctly responding to requests.  It usually arises when you try to set or modify response headers after data has already been written to the response stream. This often prevents the correct setting of cookies, caching headers, or other vital response headers.  The error message itself will vary slightly depending on the server environment, but the core message remains the same.
+## Description of the Styling
 
-## Code Example & Step-by-Step Fix
+This style creates a circular progress bar that fills from the top clockwise. The percentage of completion is controlled by a single CSS variable (`--progress`).  The design uses a circle as the base, and then a conic gradient to represent the filled portion. A subtle shadow is added for visual enhancement.
 
-Let's imagine a scenario where we're trying to add a custom header and redirect in our middleware:
 
-**Problem Code:**
+## Full Code
 
-```javascript
-// pages/api/middleware.js
-export function middleware(req, res) {
-  res.setHeader('X-Custom-Header', 'My Custom Value');
-  res.redirect('/another-page'); //This will likely cause the error.
-  //More code that won't execute after the header issue.
-}
-export const config = {
-  matcher: ['/'], // This matches all routes
-};
-```
-
-**Explanation of the Problem:**
-
-In this example, we are using the `res` object directly, which is not suitable for Next.js Middleware. The `res` object in this context isn't the same as in a typical Node.js server.  Attempting to set a header *after* a redirect (`res.redirect`) is likely to cause the headers-already-sent error because the redirect initiates the response process.
-
-**Corrected Code:**
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const res = NextResponse.next(); //Creating the response object
-  res.headers.set('X-Custom-Header', 'My Custom Value'); //Correct way to set header using NextResponse.
-  //Conditional redirect using NextResponse.redirect
-  if(req.nextUrl.pathname === '/') {
-     return NextResponse.redirect(new URL('/another-page', req.url));
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+  .progress-ring {
+    --progress: 75; /* Adjust this value to change the progress percentage */
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: conic-gradient(
+      #4CAF50 var(--progress)%,
+      #f1f1f1 0
+    ); /* Green filled portion, then grey */
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
   }
-  return res;
-}
-export const config = {
-  matcher: ['/'],
-};
 
+  .progress-ring::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    border-radius: 50%;
+    z-index: 1; /* Make sure this is on top of the gradient */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .progress-ring::after {
+    content: attr(data-progress) "%";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    z-index: 2; /* Ensure it's on top */
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-ring" data-progress="75"></div>
+
+</body>
+</html>
 ```
-
-**Explanation of the Fix:**
-
-1. **Import `NextResponse`:** We import `NextResponse` from `next/server` to properly handle responses within the middleware.
-2. **Use `NextResponse.next()`:** Instead of directly manipulating `res`, we create a response using `NextResponse.next()`. This ensures the response is managed correctly.
-3. **Use `res.headers.set()`:** We correctly set the headers using `res.headers.set()`.  This is the method provided by `NextResponse`.
-4. **Conditional Redirect with `NextResponse.redirect()`:** We use `NextResponse.redirect()` to handle redirects, preventing the header-sending conflict. This creates a new response object, avoiding conflicts with already-sent headers.
-
-
-
-## External References
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware) - Official Next.js documentation on Middleware.
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server/next-response) - Details about the `NextResponse` object.
-* [Understanding HTTP Headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) - General information about HTTP Headers.
 
 ## Explanation
 
-The core issue is the asynchronous nature of HTTP requests and the limitations of manipulating response objects once the response process has begun. `NextResponse` provides a structured and asynchronous way to handle these operations, preventing the `headersAlreadySent` error.  By using `NextResponse`, you ensure that header modifications and redirects happen before any data is sent to the client, maintaining the integrity of the HTTP response.
+* **`conic-gradient()`:** This CSS function creates a gradient that is circular rather than linear. The first color (`#4CAF50` - green in this case) fills up to the percentage specified by `--progress`.  The rest is filled with the second color (`#f1f1f1` - light grey).
+* **`::before` pseudo-element:** This creates a white circle on top of the gradient, creating the visual effect of an empty circle within the progress bar.
+* **`::after` pseudo-element:** This displays the percentage value of the progress in the center of the circular progress bar.
+* **`data-progress` attribute:** This attribute allows you to easily change the percentage displayed dynamically (though this example uses a CSS variable for simplicity). You could manipulate this via JavaScript if needed.
+
+
+## Links to Resources to Learn More
+
+* **MDN Web Docs on `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **CSS Tricks on Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/) (Provides a broader understanding of gradients in CSS)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

@@ -1,14 +1,15 @@
 # 🐞 Creating a CSS-Only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS.  We'll leverage CSS3's `border-radius`, `transform`, and `animation` properties to achieve this effect without relying on JavaScript.
-
-**Description of the Styling:**
-
-The progress bar is created using a combination of two concentric circles. The outer circle represents the track, and the inner circle represents the progress.  The inner circle is rotated using `transform: rotate()` to simulate the progress.  An animation smoothly changes the rotation over time. We'll style with basic CSS, rather than a framework like Tailwind CSS for this example to better illustrate the underlying CSS principles.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This leverages the power of CSS's `conic-gradient` function and some clever manipulation of shapes.
 
 
-**Full Code:**
+## Description of the Styling
+
+This style creates a circular progress bar that fills from the top clockwise. The percentage of completion is controlled by a single CSS variable (`--progress`).  The design uses a circle as the base, and then a conic gradient to represent the filled portion. A subtle shadow is added for visual enhancement.
+
+
+## Full Code
 
 ```html
 <!DOCTYPE html>
@@ -16,69 +17,65 @@ The progress bar is created using a combination of two concentric circles. The o
 <head>
 <title>CSS Circular Progress Bar</title>
 <style>
-.container {
-  width: 150px;
-  height: 150px;
-  position: relative;
-}
-
-.circle-track {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 10px solid #ddd; /* Track color */
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.circle-progress {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 10px solid #4CAF50; /* Progress color */
-  position: absolute;
-  top: 0;
-  left: 0;
-  clip: rect(0, 75px, 150px, 0); /* This creates the circular effect */
-  transform-origin: 50% 100%; /* Important for rotation */
-  animation: progress 3s linear forwards; /* Animation */
-}
-
-@keyframes progress {
-  0% {
-    transform: rotate(0deg);
+  .progress-ring {
+    --progress: 75; /* Adjust this value to change the progress percentage */
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: conic-gradient(
+      #4CAF50 var(--progress)%,
+      #f1f1f1 0
+    ); /* Green filled portion, then grey */
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
   }
-  100% {
-    transform: rotate(360deg);
+
+  .progress-ring::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    border-radius: 50%;
+    z-index: 1; /* Make sure this is on top of the gradient */
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-}
+
+  .progress-ring::after {
+    content: attr(data-progress) "%";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    z-index: 2; /* Ensure it's on top */
+  }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="circle-track"></div>
-  <div class="circle-progress"></div>
-</div>
+<div class="progress-ring" data-progress="75"></div>
 
 </body>
 </html>
 ```
 
-**Explanation:**
+## Explanation
 
-* **`container`:**  This div sets the overall size and relative positioning for the progress bar.
-* **`circle-track`:** This creates the outer, static circle representing the full track.
-* **`circle-progress`:** This creates the inner circle showing the progress. The `clip` property is crucial; it cuts off the circle to only show the progress arc. `transform-origin` sets the point of rotation to the bottom center, making the rotation work correctly.  The `animation` property applies the `progress` animation.
-* **`@keyframes progress`:** This defines the animation, rotating the inner circle from 0 to 360 degrees over 3 seconds. `linear` ensures a constant speed, and `forwards` makes the animation stay at its final state.
+* **`conic-gradient()`:** This CSS function creates a gradient that is circular rather than linear. The first color (`#4CAF50` - green in this case) fills up to the percentage specified by `--progress`.  The rest is filled with the second color (`#f1f1f1` - light grey).
+* **`::before` pseudo-element:** This creates a white circle on top of the gradient, creating the visual effect of an empty circle within the progress bar.
+* **`::after` pseudo-element:** This displays the percentage value of the progress in the center of the circular progress bar.
+* **`data-progress` attribute:** This attribute allows you to easily change the percentage displayed dynamically (though this example uses a CSS variable for simplicity). You could manipulate this via JavaScript if needed.
 
 
-**Links to Resources to Learn More:**
+## Links to Resources to Learn More
 
-* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
-* **MDN Web Docs on `transform` property:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS-Tricks (various articles on CSS animations and effects):** [https://css-tricks.com/](https://css-tricks.com/)
+* **MDN Web Docs on `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **CSS Tricks on Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/) (Provides a broader understanding of gradients in CSS)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
