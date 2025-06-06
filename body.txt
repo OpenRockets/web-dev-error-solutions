@@ -1,86 +1,76 @@
 
-This document details how to create a circular progress bar using only CSS.  No JavaScript required! This technique leverages CSS's `conic-gradient` function for a clean and efficient solution.  This example uses plain CSS, but could easily be adapted to a framework like Tailwind CSS by replacing the inline styles with Tailwind classes.
+This document addresses a common `TypeError` encountered when working with Next.js Middleware, specifically the error `TypeError: Cannot read properties of undefined (reading 'pathname')`. This typically occurs when attempting to access the `req.nextUrl.pathname` property before it's properly defined within the middleware function.
 
+**Description of the Error:**
 
-**Description of the Styling:**
+The error message `TypeError: Cannot read properties of undefined (reading 'pathname')` signifies that the `req.nextUrl` object, and consequently its `pathname` property, is undefined at the point where your middleware attempts to access it. This often happens because the middleware is triggered before the `nextUrl` object is fully populated with request information.
 
-The circular progress bar is created using a single `<div>` element.  The `conic-gradient` function generates the circular gradient, with the color changing based on the percentage complete.  The `mask` property is used to create a circular clipping mask, revealing only a portion of the gradient based on the progress.  Border and other styling elements add visual polish.
+**Step-by-Step Code Fix:**
 
+Let's assume you have a middleware function that attempts to redirect users based on the pathname:
 
-**Full Code:**
+**Incorrect Code:**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
-.progress-ring {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  border: 10px solid #f0f0f0; /* Light grey border */
-  box-sizing: border-box; /* Include border in size calculation */
-  position: relative;
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const pathname = req.nextUrl.pathname; // Error occurs here!
+
+  if (pathname === '/dashboard') {
+    //Check if user is authenticated, etc.  For now we just redirect for demonstration.
+    return NextResponse.redirect(new URL('/', req.url))
+  }
 }
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: conic-gradient(#4CAF50 75%, #f0f0f0 75%); /* 75% progress */
-  mask: radial-gradient(farthest-side, #000 95%, transparent 100%);
-  mask-type:luminance;
-}
-
-.progress-ring.progress-80::before {
-  background: conic-gradient(#4CAF50 80%, #f0f0f0 80%); /* 80% progress */
-}
-
-.progress-ring.progress-50::before {
-  background: conic-gradient(#4CAF50 50%, #f0f0f0 50%); /* 50% progress */
-}
-
-.progress-ring.progress-25::before {
-  background: conic-gradient(#4CAF50 25%, #f0f0f0 25%); /* 25% progress */
-}
-</style>
-</head>
-<body>
-
-<h1>CSS Circular Progress Bars</h1>
-
-<div class="progress-ring progress-75"></div>
-<div class="progress-ring progress-80"></div>
-<div class="progress-ring progress-50"></div>
-<div class="progress-ring progress-25"></div>
-
-</body>
-</html>
+export const config = {
+  matcher: ['/dashboard'],
+};
 ```
 
+**Corrected Code:**
+
+To resolve this, ensure that you access `req.nextUrl` *after* Next.js has fully populated it. This is typically done within an async function to allow for asynchronous operations:
+
+
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export async function middleware(req) {
+  const url = req.nextUrl.clone(); // Clone the URL to avoid modifying the original
+  const pathname = url.pathname;
+
+  if (pathname === '/dashboard') {
+    //Check if user is authenticated, etc. For now we just redirect for demonstration.
+    return NextResponse.redirect(new URL('/', req.url))
+  }
+
+  return NextResponse.next(); //Important!  If you don't return NextResponse.next(), the request won't continue.
+}
+
+export const config = {
+  matcher: ['/dashboard'],
+};
+```
 
 **Explanation:**
 
-* **`conic-gradient()`:** This function creates a circular gradient. The first color (`#4CAF50` - green in this case) represents the filled portion, and the second (`#f0f0f0` - light grey) represents the empty portion.  The percentage value determines the size of the filled section.
-
-* **`mask: radial-gradient(...)`:** This creates a circular mask that hides the parts of the gradient outside the circle. The `farthest-side` keyword makes sure the circle fills the entire `div`.
-
-* **`mask-type: luminance;`:** This ensures that the mask works correctly with the gradient.
-
-* **Classes for different progress levels:**  The `.progress-75`, `.progress-80`, `.progress-50`, `.progress-25` classes demonstrate how easily you can adjust the progress percentage by changing the conic-gradient values.
+The key change is the use of `req.nextUrl.clone()`.  The `req.nextUrl` object is read-only. Creating a clone allows you to safely manipulate the URL object without impacting the original request.  This is crucial for preventing unexpected behavior or further errors.  Also, the inclusion of `return NextResponse.next();` is critical; this allows the request to proceed to the next stage in the request pipeline.  Without it, the request might be stalled or return an error.
 
 
-**Links to Resources to Learn More:**
+**External References:**
 
-* **MDN Web Docs - `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient()](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient())
-* **MDN Web Docs - `mask` property:** [https://developer.mozilla.org/en-US/docs/Web/CSS/mask](https://developer.mozilla.org/en-US/docs/Web/CSS/mask)
-* **CSS-Tricks (general CSS tutorials):** [https://css-tricks.com/](https://css-tricks.com/)
+* [Next.js Middleware documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Next.js API Routes documentation](https://nextjs.org/docs/api-routes/introduction)
+* [NextResponse Documentation](https://nextjs.org/docs/api-reference/next/server#nextresponse)
+
+**Important Considerations:**
+
+* **Asynchronous Operations:**  Remember that middleware runs before many aspects of the request are complete.  Use `async/await` for any operations that might take time, such as database queries or external API calls.
+* **Error Handling:** Implement proper error handling within your middleware to catch unexpected issues and prevent the application from crashing.
+* **`matcher` Configuration:** Carefully define your `matcher` to apply middleware only to the necessary routes.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
