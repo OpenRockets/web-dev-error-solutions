@@ -1,1 +1,1 @@
-Dealing with `NextResponse.redirect()` in Next.js Middleware and Unexpected Behavior
+Creating a CSS-only Circular Progress Bar

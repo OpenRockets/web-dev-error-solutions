@@ -1,3 +1,5 @@
+# 🐞 Creating a CSS-only Circular Progress Bar
+
 
 This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This utilizes CSS gradients, transforms, and animations to achieve the effect.  While this example doesn't use a specific framework like Tailwind, the concepts are easily adaptable.
 
