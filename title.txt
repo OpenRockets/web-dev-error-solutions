@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Request Already Finished` Error
+Creating a CSS-only Expanding Card
