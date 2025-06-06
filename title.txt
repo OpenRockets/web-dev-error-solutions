@@ -1,1 +1,1 @@
-Next.js API Routes: Handling `Cannot POST /api/data` Error
+Creating a CSS-only Expanding Card
