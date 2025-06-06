@@ -1,11 +1,12 @@
-# 🐞 Creating a CSS-Only Expanding Card
+# 🐞 Creating a CSS-only Expanding Card
 
 
-This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered, revealing hidden content.  This uses only CSS3, avoiding JavaScript for a lightweight and performant solution.
+This document details a CSS-only solution to create an expanding card effect.  No JavaScript is required. The effect involves a card that expands vertically to reveal hidden content when clicked.  We'll use plain CSS, focusing on transitions and pseudo-elements for a smooth animation.
 
 **Description of the Styling:**
 
-The card uses a combination of transitions, pseudo-elements (`::before` and `::after`), and max-height to achieve the expanding effect.  The `::before` pseudo-element is used to create the visually appealing overlay that appears upon hover.  The max-height is initially set to a smaller value, limiting the card's height. Upon hover, the max-height is removed, allowing the card to expand to its full content height.  Transitions ensure a smooth animation.
+The styling utilizes a simple card structure with a hidden content area.  The `:target` pseudo-class and `transition` property work together to animate the height change.  A subtle background color change adds visual feedback.
+
 
 **Full Code:**
 
@@ -16,56 +17,52 @@ The card uses a combination of transitions, pseudo-elements (`::before` and `::a
 <title>Expanding Card</title>
 <style>
 .card {
-  background-color: #f2f2f2;
-  border-radius: 8px;
-  overflow: hidden; /* Hide content that overflows */
-  transition: max-height 0.3s ease-in-out; /* Smooth transition */
-  max-height: 150px; /* Initial height */
-  width: 300px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, height 0.5s ease; /*Smooth transition for background and height*/
+  overflow: hidden; /* Hide the expanding content initially */
 }
 
-.card:hover {
-  max-height: 500px; /* Expanded height on hover */
+.card:target {
+  background-color: #ddd; /* Change background on expand */
+  height: 300px; /* Expanded height */
 }
 
 .card-content {
-  padding: 20px;
+  height: 100px; /* Initial hidden content height */
+  transition: height 0.5s ease; /*Smooth transition for hidden content*/
+  overflow: hidden;
 }
 
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Overlay on hover */
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
+.card-title{
+    font-weight: bold;
+    margin-bottom:10px;
 }
 
-.card:hover::before {
-  opacity: 1; /* Show overlay on hover */
-}
-
-.card h2 {
-  margin-top: 0;
-}
-
-.card p {
-    margin-bottom: 0;
+a {
+  text-decoration: none; /* Removing default underline from the link */
+  color: inherit;       /* Inheriting color from the parent element (the card) */
 }
 </style>
 </head>
 <body>
 
-<div class="card">
+<a href="#card1" class="card" id="card1">
+  <div class="card-title">Card Title 1</div>
   <div class="card-content">
-    <h2>Expanding Card</h2>
-    <p>This is some example content within the card.  It will expand when you hover over the card.</p>
-    <p>Additional content to demonstrate the expansion effect. Add as much text as you like!</p>
+    This is the content of the first card. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
   </div>
-</div>
+</a>
+
+<a href="#card2" class="card" id="card2">
+    <div class="card-title">Card Title 2</div>
+    <div class="card-content">
+      This is the content of the second card.  Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    </div>
+  </a>
+
 
 </body>
 </html>
@@ -73,17 +70,17 @@ The card uses a combination of transitions, pseudo-elements (`::before` and `::a
 
 **Explanation:**
 
-* **`.card`:**  The main container for the card.  `overflow: hidden` prevents content from overflowing before the expansion.  `max-height` initially restricts the card's height.  `transition` defines the smooth animation.
-* **`.card:hover`:**  Styles applied when the card is hovered over.  `max-height` is removed to allow expansion.
-* **`.card::before`:**  Creates a semi-transparent overlay that appears on hover.
-* **`.card:hover::before`:**  Sets the overlay's opacity to 1 when hovering, making it visible.
-* **`.card-content`:** Contains the actual content of the card.
+* **`.card`:** This class styles the base card.  `transition` applies smooth transitions to both the background color and height changes. `overflow: hidden` prevents the hidden content from spilling outside the card.
+* **`.card:target`:**  When the `#card1` or `#card2` is the target of a link (i.e., the user clicked the link), this styles the expanded state.  The height increases to reveal the hidden content and the background color changes.
+* **`.card-content`:** Styles the initially hidden content area. The `height` and `transition` properties are crucial for the expanding animation.
+* **`a` tag**  This is used to create clickable links for card expansion using the `href` attribute. Setting the `href` attribute to `#card1` (or `#card2`) and using the same ID for the card div will trigger the animation when the link is clicked.
+
 
 **Links to Resources to Learn More:**
 
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs - Pseudo-elements:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* **CSS-Tricks:** Search for "CSS-only card animations" on [https://css-tricks.com/](https://css-tricks.com/) for more advanced examples.
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+* **CSS Targeting (`:target`):** [CSS-Tricks: :target](https://css-tricks.com/almanac/selectors/t/target/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

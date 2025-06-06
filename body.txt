@@ -1,102 +1,85 @@
 
-This document addresses a common `TypeError` encountered when working with Next.js Middleware, specifically when accessing properties from the `request` object before they've been properly populated. This often manifests when trying to access localization data (like `locale`) within the middleware function before the relevant headers are fully processed.
+This document details a CSS-only solution to create an expanding card effect.  No JavaScript is required. The effect involves a card that expands vertically to reveal hidden content when clicked.  We'll use plain CSS, focusing on transitions and pseudo-elements for a smooth animation.
+
+**Description of the Styling:**
+
+The styling utilizes a simple card structure with a hidden content area.  The `:target` pseudo-class and `transition` property work together to animate the height change.  A subtle background color change adds visual feedback.
 
 
-## Description of the Error
+**Full Code:**
 
-The error message `TypeError: Cannot read properties of undefined (reading 'locale')` indicates that you're attempting to access the `locale` property of the `request` object within your middleware, but this property is `undefined`.  This usually occurs because the middleware function is executed before Next.js has had a chance to parse and set the request headers containing the locale information.
-
-
-## Code Example: Problematic Middleware
-
-This code attempts to redirect based on locale *before* the locale is available:
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const locale = req.nextUrl.locale; // Error occurs here!
-
-  if (locale === 'es') {
-    return NextResponse.redirect(new URL('/es', req.url))
-  }
-  return NextResponse.next();
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, height 0.5s ease; /*Smooth transition for background and height*/
+  overflow: hidden; /* Hide the expanding content initially */
 }
 
-export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-};
-```
-
-## Step-by-Step Fix
-
-
-1. **Ensure Locale Parsing:** Confirm that your Next.js application is correctly configured to parse locales. Check your `next.config.js` file for the `i18n` configuration.  Without this, the locale will never be available.
-
-```javascript
-// next.config.js
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  i18n: {
-    locales: ['en', 'es'],
-    defaultLocale: 'en',
-  },
+.card:target {
+  background-color: #ddd; /* Change background on expand */
+  height: 300px; /* Expanded height */
 }
 
-module.exports = nextConfig
-```
-
-2. **Asynchronous Middleware:** The problem arises because the request headers are not immediately available.  Rewrite your middleware to use an async function and `await` the request headers processing implicitly by using `req.nextUrl.locale`.
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export async function middleware(req) {
-  const locale = req.nextUrl.locale; // Now it should work
-
-  if (locale === 'es') {
-    return NextResponse.redirect(new URL('/es', req.url));
-  }
-  return NextResponse.next();
+.card-content {
+  height: 100px; /* Initial hidden content height */
+  transition: height 0.5s ease; /*Smooth transition for hidden content*/
+  overflow: hidden;
 }
 
-export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-};
-```
-
-3. **Conditional Logic (Alternative):** If you need to perform actions based on the locale *only* for specific routes or conditions, you can add conditional logic after explicitly checking if `locale` is defined:
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export async function middleware(req) {
-  const locale = req.nextUrl.locale;
-
-  if (locale && locale === 'es') { //Check for undefined
-    return NextResponse.redirect(new URL('/es', req.url));
-  }
-  return NextResponse.next();
+.card-title{
+    font-weight: bold;
+    margin-bottom:10px;
 }
 
-export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-};
+a {
+  text-decoration: none; /* Removing default underline from the link */
+  color: inherit;       /* Inheriting color from the parent element (the card) */
+}
+</style>
+</head>
+<body>
+
+<a href="#card1" class="card" id="card1">
+  <div class="card-title">Card Title 1</div>
+  <div class="card-content">
+    This is the content of the first card. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+  </div>
+</a>
+
+<a href="#card2" class="card" id="card2">
+    <div class="card-title">Card Title 2</div>
+    <div class="card-content">
+      This is the content of the second card.  Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    </div>
+  </a>
+
+
+</body>
+</html>
 ```
 
-## Explanation
+**Explanation:**
 
-The original code attempts to access `req.nextUrl.locale` synchronously.  However, Next.js's internal processing of the request, including parsing locale information from headers, happens asynchronously. By using `async/await`, we ensure that the middleware waits for the `req.nextUrl.locale` property to be populated before accessing it, resolving the error.  The conditional check in the alternative method provides robustness against the edge case where the locale is not found.
+* **`.card`:** This class styles the base card.  `transition` applies smooth transitions to both the background color and height changes. `overflow: hidden` prevents the hidden content from spilling outside the card.
+* **`.card:target`:**  When the `#card1` or `#card2` is the target of a link (i.e., the user clicked the link), this styles the expanded state.  The height increases to reveal the hidden content and the background color changes.
+* **`.card-content`:** Styles the initially hidden content area. The `height` and `transition` properties are crucial for the expanding animation.
+* **`a` tag**  This is used to create clickable links for card expansion using the `href` attribute. Setting the `href` attribute to `#card1` (or `#card2`) and using the same ID for the card div will trigger the animation when the link is clicked.
 
 
-## External References
+**Links to Resources to Learn More:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js Internationalization (i18n) Documentation](https://nextjs.org/docs/basic-features/i18n-routing)
-* [Next.js `next/server` API Reference](https://nextjs.org/docs/api-reference/file-system-routing)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+* **CSS Targeting (`:target`):** [CSS-Tricks: :target](https://css-tricks.com/almanac/selectors/t/target/)
+
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
