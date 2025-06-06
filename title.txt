@@ -1,1 +1,1 @@
-Troubleshooting Next.js API Routes: Handling `TypeError: Cannot read properties of undefined (reading 'map')`
+Next.js Middleware: Handling `Request Not Found` Errors in API Routes

@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Request Not Found` Errors in API Routes
+
 
 This document addresses a common error encountered when working with API routes in Next.js: the `Request Not Found` error. This usually occurs when a client attempts to access an API route that doesn't exist or is incorrectly defined.
 
