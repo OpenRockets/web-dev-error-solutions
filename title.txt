@@ -1,1 +1,1 @@
-Handling `getServerSideProps` Data in Next.js Middleware
+Creating a CSS-only Expanding Card with a Subtle Animation
