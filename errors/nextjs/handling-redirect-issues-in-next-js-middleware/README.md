@@ -1,3 +1,5 @@
+# 🐞 Handling `Redirect()` Issues in Next.js Middleware
+
 
 This document addresses a common problem developers encounter when using Next.js Middleware: unexpected behavior or errors related to the `Redirect()` function.  Specifically, we'll focus on situations where redirects aren't working as intended, leading to incorrect page rendering or infinite redirect loops.
 
