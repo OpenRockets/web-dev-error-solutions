@@ -1,107 +1,95 @@
 
-This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered over, revealing hidden content.  No JavaScript is required.  We'll use pure CSS3 for this effect.
+This document addresses a common error encountered when working with Next.js Middleware:  importing modules from `next/server` within client-side components or API routes that shouldn't access server-side-only modules.
 
-**Description of the Styling:**
+**Description of the Error:**
 
-The card utilizes a combination of transitions, pseudo-elements (`::before` and `::after`), and flexible box layout (`flexbox`) to achieve the expansion.  The `::before` pseudo-element creates a subtle background overlay during the transition, and the height transition smoothly expands the card to reveal hidden content.  Padding, borders, and box-shadow are used for styling.
+The error typically manifests as a runtime error or build error, indicating that a module from `next/server` (like `NextResponse`) is being used in a context where it's not available. This usually happens when code intended for middleware or API routes is accidentally included in a page component or another client-side module.  The error message might vary, but it often includes phrases like "Cannot find module 'next/server'" or a similar indication that the module is unavailable in the client-side environment.
 
-**Full Code:**
+**Code Example (Problematic):**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Hide content that overflows */
-  transition: all 0.3s ease-in-out; /* Smooth transition */
-  width: 300px;
-  position: relative; /* Needed for absolute positioning of pseudo elements */
+Let's say you have a component `pages/my-page.js` that tries to use `NextResponse`:
+
+```javascript
+// pages/my-page.js (INCORRECT)
+import { NextResponse } from 'next/server';
+
+function MyPage() {
+  const response = NextResponse.redirect('/'); // This will cause an error!
+  return <div>My Page</div>;
 }
 
-.card:hover {
-  transform: scale(1.05); /* Slight scaling on hover */
-  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
-}
-
-
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.1); /* Semi-transparent overlay on hover */
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-.card:hover::before {
-  opacity: 1; /* Overlay appears on hover */
-}
-
-
-.card-content {
-  padding: 20px;
-  display: flex;
-  flex-direction: column; /* Stack content vertically */
-}
-
-.card-title {
-  font-size: 1.2em;
-  margin-bottom: 10px;
-}
-
-.card-text {
-  height: 0; /* Initially hidden */
-  overflow: hidden;
-  transition: height 0.3s ease-in-out;
-}
-
-
-.card:hover .card-text {
-  height: auto; /* Expand on hover */
-}
-
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-content">
-    <h2 class="card-title">Expanding Card</h2>
-    <p class="card-text">This is some sample text that is initially hidden.  The card expands on hover to reveal this text using pure CSS.  No JavaScript is required for this effect.</p>
-  </div>
-</div>
-
-</body>
-</html>
+export default MyPage;
 ```
+
+**Step-by-Step Fix:**
+
+1. **Identify the offending code:** Carefully review your component and its imports.  Locate any instances where modules from `next/server` are used.  In this example, it's the import of `NextResponse`.
+
+2. **Move server-side logic to the appropriate location:** If the logic involving `NextResponse` belongs to middleware or an API route, move it there.  Client-side components should *not* interact directly with `NextResponse`.
+
+3. **Refactor client-side logic (if necessary):**  If the component needs to conditionally render based on some server-side data, fetch that data using `getServerSideProps` or `getStaticProps` and pass it to the component as a prop.
+
+**Corrected Code (Middleware):**
+
+```javascript
+// middleware.js
+import { NextResponse } from 'next/server';
+
+export function middleware(req) {
+  const url = req.nextUrl.clone();
+  if (req.nextUrl.pathname === '/') {
+    url.pathname = '/my-other-page';
+    return NextResponse.rewrite(url);
+  }
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: '/', // Match all requests
+};
+```
+
+**Corrected Code (Component):**
+
+
+```javascript
+// pages/my-page.js (CORRECT)
+function MyPage({ isRedirected }) {
+  return (
+    <div>
+      {isRedirected ? (
+          <p>Redirected!</p>
+        ) : (
+          <p>My Page</p>
+      )}
+    </div>
+  );
+}
+
+export async function getServerSideProps(context) {
+  // Simulate a server-side condition that might trigger a redirect in middleware
+  const shouldRedirect = false; // Replace with your actual logic
+
+  return {
+    props: { isRedirected: shouldRedirect },
+  };
+}
+
+export default MyPage;
+
+```
+
 
 **Explanation:**
 
-1. **Base Styling:** The `.card` class sets up the basic appearance of the card with background color, border, shadow, and a crucial `overflow: hidden;` to initially hide the expanding content.
+`next/server` modules are designed for the server-side environment within Next.js. They provide functionality like `NextResponse` which is for manipulating HTTP responses.  These modules are not available in the browser (client-side). By moving the server-side logic (using `NextResponse`) to a middleware file or an API route, you ensure that the code runs only on the server, avoiding the import error. The corrected component retrieves the server-side information through `getServerSideProps` and renders accordingly.
 
-2. **Hover Effects:** The `.card:hover` selector applies scaling and enhanced shadow on mouseover.
+**External References:**
 
-3. **Pseudo-element Overlay:** The `::before` pseudo-element creates a semi-transparent overlay that appears smoothly on hover, adding a visual cue.
-
-4. **Content Expansion:** The `.card-text` class initially hides the content with `height: 0;` and `overflow: hidden;`. On hover (`card:hover .card-text`), the height transitions to `auto`, smoothly revealing the hidden text.
-
-5. **Transitions:**  `transition` property is used extensively to ensure smooth animations for height, opacity, and transform.
-
-**Links to Resources to Learn More:**
-
-* [CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* [CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* [CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
+* [Next.js Data Fetching](https://nextjs.org/docs/basic-features/data-fetching)
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
 
