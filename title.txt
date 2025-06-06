@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Not Found` Errors During Redirects
+Next.js Middleware: Handling `headers` in the Response Object

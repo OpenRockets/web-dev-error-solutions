@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers` in the Response Object
+
 
 ## Description of the Error
 
