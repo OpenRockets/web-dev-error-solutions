@@ -1,93 +1,135 @@
 
-This document addresses a common issue encountered when using Next.js Middleware: the `Request aborted` error. This error typically arises when a middleware function takes too long to execute, causing the client's request to time out before receiving a response.
-
-**Description of the Error:**
-
-The `Request aborted` error manifests in your browser's developer console or network tab, indicating that the client-side request to your Next.js application was interrupted before completion.  This is frequently caused by long-running operations within your middleware function, exceeding the client's timeout limit (often around 30 seconds).  Other potential, less common causes include issues with your server's configuration or network connectivity.
+This document details how to create a visually appealing loading spinner using only CSS.  No JavaScript is required! This technique leverages CSS animations and keyframes to achieve a smooth, rotating effect.  We'll be using standard CSS3, no frameworks like Tailwind are needed for this particular effect.
 
 
-**Scenario:**  Imagine a middleware function that performs a complex database query or external API call to authenticate a user before proceeding to the requested page. If this operation takes longer than the client's timeout period, the `Request aborted` error will occur.
+**Description of the Styling:**
+
+The spinner is composed of eight equally spaced divs, each representing a segment of the circle.  We use the `::before` and `::after` pseudo-elements to create the visual effect of a rotating circle, leveraging transforms and animations for the smooth loading animation. The styling focuses on creating a clean, minimalist design with subtle color variations.
 
 
-**Step-by-Step Code Fix:**
+**Full Code:**
 
-Let's assume we have a middleware function that fetches data from a slow external API:
-
-**Problematic Middleware:**
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const response = fetch('https://slow-api.example.com/data'); //Simulates a slow API
-
-  // This will likely cause a timeout if the API is slow
-  return response.then((res) => {
-      if (!res.ok) {
-          return new Response("API error", { status: 500 });
-      }
-      return NextResponse.next();
-  });
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Loading Spinner</title>
+<style>
+.spinner {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  animation: rotate 2s linear infinite;
 }
 
-export const config = {
-  matcher: ['/protected'],
+.spinner div {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: #3498db;
+  border-radius: 50%;
+  animation: bounce 1s ease-in-out infinite;
 }
-```
 
-**Improved Middleware with Timeout Handling:**
+.spinner div:nth-child(1) {
+  top: 0;
+  left: 35px;
+  animation-delay: 0s;
+}
 
-To prevent this error, we need to implement timeout mechanisms and handle potential errors gracefully:
+.spinner div:nth-child(2) {
+  top: 15px;
+  left: 65px;
+  animation-delay: 0.1s;
+}
+
+.spinner div:nth-child(3) {
+  top: 45px;
+  left: 65px;
+  animation-delay: 0.2s;
+}
+
+.spinner div:nth-child(4) {
+  top: 75px;
+  left: 35px;
+  animation-delay: 0.3s;
+}
+
+.spinner div:nth-child(5) {
+  top: 75px;
+  left: 5px;
+  animation-delay: 0.4s;
+}
+
+.spinner div:nth-child(6) {
+  top: 45px;
+  left: 5px;
+  animation-delay: 0.5s;
+}
+
+.spinner div:nth-child(7) {
+  top: 15px;
+  left: 5px;
+  animation-delay: 0.6s;
+}
+
+.spinner div:nth-child(8) {
+  top: 15px;
+  left: 35px;
+  animation-delay: 0.7s;
+}
 
 
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export async function middleware(req) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5-second timeout
-
-  try {
-    const response = await fetch('https://slow-api.example.com/data', { signal: controller.signal });
-
-    clearTimeout(timeoutId); // Clear timeout if successful
-
-    if (!response.ok) {
-      return new NextResponse("API error", { status: 500 });
-    }
-
-    return NextResponse.next();
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      return new NextResponse('Request timed out', { status: 504 }); // Gateway Timeout
-    }
-    console.error('Error fetching data:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 
-export const config = {
-  matcher: ['/protected'],
+@keyframes bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
 }
+</style>
+</head>
+<body>
+
+<div class="spinner">
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+
+</body>
+</html>
 ```
 
 **Explanation:**
 
-1. **`AbortController`:** We introduce `AbortController` to allow us to abort the `fetch` request if it takes too long.
-2. **`setTimeout`:**  A timeout of 5 seconds is set using `setTimeout`.  Adjust this value as needed based on your API's expected response time.
-3. **`controller.signal`:** The `signal` option in the `fetch` call allows the `AbortController` to interrupt the request.
-4. **`clearTimeout`:** If the `fetch` completes successfully within the timeout period, `clearTimeout` prevents unnecessary cleanup.
-5. **`try...catch` Block:**  The `try...catch` block handles potential errors.  Specifically, it checks for `AbortError` to distinguish between timeouts and other errors.
-6. **Appropriate Status Codes:**  Returning appropriate HTTP status codes (504 for timeout, 500 for other server-side errors) helps clients handle the situation correctly.
+*   The `spinner` div acts as a container, setting the size and initiating the rotation animation.
+*   Each individual `div` within the `spinner` represents a segment of the loading circle. Their positions are manually set using `top` and `left`.
+*   `animation-delay` creates a staggered effect, making the animation more visually appealing.
+*   `@keyframes rotate` defines the animation that rotates the entire spinner.
+*   `@keyframes bounce` creates a subtle pulsing effect for each segment.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [AbortController MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)
-* [Fetch API MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
+*   **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+*   **CSS Keyframes:** [MDN Web Docs - @keyframes](https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes)
+*   **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

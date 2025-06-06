@@ -1,15 +1,15 @@
 # 🐞 Creating a Pure CSS Loading Spinner
 
 
-This document details the creation of a visually appealing loading spinner using only CSS.  No JavaScript is required! This utilizes CSS animations and transforms to achieve the effect.
+This document details how to create a visually appealing loading spinner using only CSS.  No JavaScript is required! This technique leverages CSS animations and keyframes to achieve a smooth, rotating effect.  We'll be using standard CSS3, no frameworks like Tailwind are needed for this particular effect.
 
 
-## Description of the Styling
+**Description of the Styling:**
 
-This spinner consists of five equally spaced circles arranged in a circular pattern.  These circles pulsate individually, creating a dynamic loading animation. The styling uses keyframes to define the animation and transforms to position the circles correctly.  We'll leverage CSS variables for easy customization of colors and sizes.
+The spinner is composed of eight equally spaced divs, each representing a segment of the circle.  We use the `::before` and `::after` pseudo-elements to create the visual effect of a rotating circle, leveraging transforms and animations for the smooth loading animation. The styling focuses on creating a clean, minimalist design with subtle color variations.
 
 
-## Full Code
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
@@ -17,50 +17,68 @@ This spinner consists of five equally spaced circles arranged in a circular patt
 <head>
 <title>CSS Loading Spinner</title>
 <style>
-:root {
-  --spinner-size: 80px;
-  --spinner-color: #007bff; /* Blue, easily customizable */
-}
-
 .spinner {
-  width: var(--spinner-size);
-  height: var(--spinner-size);
+  width: 80px;
+  height: 80px;
   position: relative;
   animation: rotate 2s linear infinite;
 }
 
-.spinner::before {
-  content: '';
+.spinner div {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   width: 10px;
   height: 10px;
-  background-color: var(--spinner-color);
+  background-color: #3498db;
   border-radius: 50%;
   animation: bounce 1s ease-in-out infinite;
 }
 
-.spinner::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 10px;
-    height: 10px;
-    background-color: var(--spinner-color);
-    border-radius: 50%;
-    animation: bounce 1s ease-in-out infinite;
+.spinner div:nth-child(1) {
+  top: 0;
+  left: 35px;
+  animation-delay: 0s;
 }
 
-.spinner::before {
+.spinner div:nth-child(2) {
+  top: 15px;
+  left: 65px;
+  animation-delay: 0.1s;
+}
+
+.spinner div:nth-child(3) {
+  top: 45px;
+  left: 65px;
   animation-delay: 0.2s;
 }
 
-.spinner::after {
+.spinner div:nth-child(4) {
+  top: 75px;
+  left: 35px;
+  animation-delay: 0.3s;
+}
+
+.spinner div:nth-child(5) {
+  top: 75px;
+  left: 5px;
   animation-delay: 0.4s;
+}
+
+.spinner div:nth-child(6) {
+  top: 45px;
+  left: 5px;
+  animation-delay: 0.5s;
+}
+
+.spinner div:nth-child(7) {
+  top: 15px;
+  left: 5px;
+  animation-delay: 0.6s;
+}
+
+.spinner div:nth-child(8) {
+  top: 15px;
+  left: 35px;
+  animation-delay: 0.7s;
 }
 
 
@@ -76,38 +94,44 @@ This spinner consists of five equally spaced circles arranged in a circular patt
 @keyframes bounce {
   0%, 100% {
     transform: scale(1);
-    opacity: 1;
-
   }
   50% {
     transform: scale(1.2);
-    opacity: 0.5;
   }
 }
 </style>
 </head>
 <body>
 
-<div class="spinner"></div>
+<div class="spinner">
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
 
 </body>
 </html>
 ```
 
-## Explanation
+**Explanation:**
 
-* **`--spinner-size` and `--spinner-color`:** These CSS variables allow easy customization of the spinner's size and color.
-* **`.spinner`:** This class sets the dimensions and relative positioning for the spinner. The `rotate` animation spins the container.
-* **`.spinner::before` and `.spinner::after`:** These pseudo-elements create the individual circles.  `transform: translate(-50%, -50%);` centers them within the parent.  `border-radius: 50%;` makes them circular. The `bounce` animation creates the pulsating effect. Different animation delays stagger the pulses.
-* **`@keyframes rotate`:** This defines the rotation animation for the overall spinner.
-* **`@keyframes bounce`:**  This keyframes animation defines the scaling and opacity changes to give the bouncing/pulsating effect.
+*   The `spinner` div acts as a container, setting the size and initiating the rotation animation.
+*   Each individual `div` within the `spinner` represents a segment of the loading circle. Their positions are manually set using `top` and `left`.
+*   `animation-delay` creates a staggered effect, making the animation more visually appealing.
+*   `@keyframes rotate` defines the animation that rotates the entire spinner.
+*   `@keyframes bounce` creates a subtle pulsing effect for each segment.
 
 
-## Resources to Learn More
+**Links to Resources to Learn More:**
 
-* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations)
-* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS-Tricks (various articles on animations and loaders):** [https://css-tricks.com/](https://css-tricks.com/)
+*   **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+*   **CSS Keyframes:** [MDN Web Docs - @keyframes](https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes)
+*   **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

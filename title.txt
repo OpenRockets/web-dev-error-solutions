@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Request aborted` Errors
+Creating a Pure CSS Loading Spinner
