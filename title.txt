@@ -1,1 +1,1 @@
-Handling `Error: Next Response already sent` in Next.js API Routes
+Creating a CSS-only Expanding Card
