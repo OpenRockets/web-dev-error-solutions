@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with a Subtle Animation
+Handling "TypeError: data.map is not a function" in Next.js API Routes
