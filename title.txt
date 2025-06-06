@@ -1,1 +1,1 @@
-Creating a CSS-Only 3D Rotating Cube
+Dealing with `getServerSideProps` Data Fetching Errors in Next.js
