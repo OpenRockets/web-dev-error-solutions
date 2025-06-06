@@ -1,3 +1,5 @@
+# 🐞 Dealing with `NextResponse.redirect()` in Next.js Middleware and Unexpected Behavior
+
 
 This document addresses a common issue developers encounter when using `NextResponse.redirect()` within Next.js Middleware: redirects not working as expected, often leading to infinite redirect loops or unexpected page rendering.  This frequently occurs when improperly handling external redirects or failing to consider the interplay between middleware and other Next.js features like API routes and client-side routing.
 
