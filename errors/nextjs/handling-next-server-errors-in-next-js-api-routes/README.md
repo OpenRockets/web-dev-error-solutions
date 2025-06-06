@@ -1,3 +1,5 @@
+# 🐞 Handling `next/server` Errors in Next.js API Routes
+
 
 This document addresses a common error encountered when working with API routes in Next.js using the `next/server` API, specifically the `Response` object's inability to directly return certain data types, leading to unexpected behavior or errors.  This often manifests as a 500 Internal Server Error without clear diagnostic information.
 
