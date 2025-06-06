@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `getStaticPaths` Errors in Dynamic Routes
+
 
 This document addresses a common issue encountered when using `getStaticPaths` within Next.js's Static Site Generation (SSG) with dynamic routes:  **errors preventing the successful generation of paths for your pages.**  This often manifests as build errors or missing pages at runtime.  The error might be a generic build failure or a specific error relating to data fetching within `getStaticPaths`.
 

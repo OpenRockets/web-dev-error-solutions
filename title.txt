@@ -1,1 +1,1 @@
-Creating a Pure CSS Expanding Card with a Subtle Reveal
+Next.js Middleware: Handling `getStaticPaths` Errors in Dynamic Routes
