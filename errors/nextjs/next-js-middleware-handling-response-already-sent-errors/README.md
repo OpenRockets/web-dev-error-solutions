@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Response already sent` Errors
+
 
 This document addresses a common issue encountered when using Next.js Middleware: the dreaded "Response already sent" error. This error typically occurs when you attempt to send a response from your middleware more than once, leading to unpredictable behavior and application crashes.  This often stems from a misunderstanding of how middleware functions and its interaction with other parts of your application.
 
