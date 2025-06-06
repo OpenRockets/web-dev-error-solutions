@@ -1,3 +1,5 @@
+# 🐞 Handling `next/image` Errors in Next.js Middleware
+
 
 This document addresses a common issue encountered when using `next/image` within Next.js Middleware or API routes. The problem arises because `next/image` relies on the `request` object's properties which are not readily available in these contexts.  Attempting to use `next/image` directly will typically result in a runtime error related to missing `request` properties, or simply not rendering correctly.
 
