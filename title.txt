@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `TypeError: Cannot read properties of undefined (reading 'pathname')`
+Troubleshooting Next.js Middleware:  `TypeError: Cannot read properties of undefined (reading 'locale')`
