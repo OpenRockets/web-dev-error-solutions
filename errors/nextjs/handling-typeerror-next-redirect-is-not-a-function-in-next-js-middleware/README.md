@@ -1,3 +1,5 @@
+# 🐞 Handling "TypeError: next.redirect is not a function" in Next.js Middleware
+
 
 This document addresses a common error encountered when using Next.js Middleware: `TypeError: next.redirect is not a function`. This error typically arises when attempting to use the `next.redirect()` function incorrectly within your middleware.  The `next.redirect()` function is only available *within the context of a middleware function's response*.  Incorrect placement or usage will trigger this error.
 
