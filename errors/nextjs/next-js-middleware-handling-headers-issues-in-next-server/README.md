@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers` Issues in `next/server`
+
 
 This document addresses a common problem developers encounter when using Next.js Middleware within the `next/server` API, specifically related to manipulating response headers.  The issue often manifests as unexpected behavior or errors when attempting to set or modify headers, leading to incorrect caching, CORS problems, or other functionalities not working as intended.
 
