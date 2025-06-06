@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Request Already Finished` Error
+
 
 This document addresses a common error encountered when working with Next.js Middleware: the `Request Already Finished` error.  This usually occurs when you try to modify the response after it has already been sent to the client.  This often happens due to asynchronous operations within the middleware that complete *after* the response has been committed.
 

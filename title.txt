@@ -1,1 +1,1 @@
-Next.js Middleware: Preventing Infinite Redirects
+Next.js Middleware: Handling `Request Already Finished` Error
