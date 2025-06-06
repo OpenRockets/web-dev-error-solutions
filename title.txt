@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Headers Already Sent` Error
+Creating a CSS-only Circular Progress Bar

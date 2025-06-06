@@ -1,67 +1,81 @@
 
-This document addresses a common error encountered when working with Next.js Middleware: the `Headers Already Sent` error. This error typically occurs when you attempt to set headers in your middleware after the response has already started being sent to the client.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required!  This example utilizes CSS variables for easy customization.
 
-**Description of the Error:**
 
-The `Headers Already Sent` error indicates that your middleware function is trying to modify HTTP headers (e.g., setting cookies, redirecting) after the response stream has begun. This usually happens due to unintended output or conflicting interactions with other middleware functions or components.  The browser receives a partial or incomplete response, leading to unpredictable behavior.
+**Description of the Styling:**
 
-**Full Code of Fixing Step by Step:**
+This technique leverages the `clip-path` property to create a circular segment representing the progress. We use a pseudo-element (`::before`) to create the circle, and a rotation transform to visually represent the progress percentage.  CSS variables control the size, color, and progress percentage.
 
-Let's consider a scenario where we're trying to redirect users to a login page if they're not authenticated.  The following erroneous middleware code might trigger the error:
 
-```javascript
-// middleware.js (Incorrect)
-import { NextResponse } from 'next/server'
+**Full Code:**
 
-export function middleware(req) {
-  const token = req.cookies.get('auth-token')
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  --size: 100px; /* Control the size of the progress ring */
+  --progress: 75; /* Control the progress percentage (0-100) */
+  --primary-color: #4CAF50; /* Primary color of the progress */
+  --secondary-color: #e0e0e0; /* Secondary color (background) */
 
-  if (!token) {
-    console.log("Redirecting...") // This can cause the error if logging is done after response.redirect()
-    return NextResponse.redirect(new URL('/login', req.url))
-    console.log("After Redirect") // This line will never execute
-  }
+  width: var(--size);
+  height: var(--size);
+  position: relative;
 }
 
-export const config = {
-  matcher: ['/protected/:path*']
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--size);
+  height: var(--size);
+  background-color: var(--secondary-color);
+  border-radius: 50%;
 }
+
+.progress-ring::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--size);
+  height: var(--size);
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  clip-path: polygon(50% 50%, 100% 50%, 100% 0, 50% 0); /*Initial shape*/
+  transform: rotate(calc(var(--progress) * 3.6deg)); /*Rotate based on progress*/
+  transform-origin: 50% 50%;
+}
+</style>
+</head>
+<body>
+
+<h1>CSS Circular Progress Bar</h1>
+<div class="progress-ring"></div>
+
+</body>
+</html>
 ```
-
-The problem is often subtle.  Even seemingly innocuous `console.log` statements *after* a redirect or other header-setting operation can trigger this error.
-
-Here's the corrected version:
-
-```javascript
-// middleware.js (Corrected)
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const token = req.cookies.get('auth-token')
-
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', req.url))
-  }
-}
-
-export const config = {
-  matcher: ['/protected/:path*']
-}
-```
-
-The fix simply removes any code that executes after the `NextResponse.redirect()` call.  The middleware function should return a `NextResponse` object immediately after setting headers or initiating a redirect.
 
 
 **Explanation:**
 
-The key to understanding this error lies in the asynchronous nature of HTTP responses. Once the response stream starts (e.g., by sending a redirect or writing data to the response body), you can't modify the headers anymore.  The order of operations within the middleware function is critical.  Avoid any operations that generate output (including logging) after you've initiated a redirect or set crucial headers.
-
-**External References:**
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware):  The official Next.js documentation on middleware.
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction):  Understanding API routes is helpful in context.
-* [HTTP Headers and their order](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers):  A general understanding of HTTP headers is beneficial.
+* **`--size`, `--progress`, `--primary-color`, `--secondary-color`:** These CSS variables allow for easy customization of the progress bar's appearance.
+* **`.progress-ring::before`:** This creates the background circle using `border-radius: 50%`.
+* **`.progress-ring::after`:** This creates the progress segment.  The `clip-path` initially defines a triangle. The `transform: rotate()`  rotates this triangle based on the `--progress` variable.  `calc(var(--progress) * 3.6deg)` converts the percentage to degrees (360 degrees in a circle).
+* **`transform-origin: 50% 50%;`:** Sets the rotation origin to the center of the circle.
 
 
-**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+**Links to Resources to Learn More:**
+
+* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **MDN Web Docs on CSS Variables:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+* **CSS-Tricks (general CSS resource):** [https://css-tricks.com/](https://css-tricks.com/)
+
+
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
