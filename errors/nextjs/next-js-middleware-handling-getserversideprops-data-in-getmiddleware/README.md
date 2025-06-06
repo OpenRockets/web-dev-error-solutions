@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `getServerSideProps` Data in `getMiddleware`
+
 
 This document addresses a common issue developers encounter when attempting to use data fetched in `getServerSideProps` within Next.js Middleware (`getMiddleware`).  Middleware runs *before* `getServerSideProps`, making it impossible to directly access data fetched in `getServerSideProps` within the middleware function.
 
