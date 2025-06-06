@@ -1,1 +1,1 @@
-Handling "TypeError: next.redirect is not a function" in Next.js Middleware
+Creating a CSS-only Expanding Card with a Subtle Reveal
