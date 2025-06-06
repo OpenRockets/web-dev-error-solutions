@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Request is not defined` Error
+Creating a CSS-only Expanding Card

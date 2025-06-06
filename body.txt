@@ -1,93 +1,94 @@
 
-This document addresses a common error encountered when working with Next.js Middleware:  `ReferenceError: Request is not defined`. This error arises because the `Request` object, crucial for middleware functionality, isn't accessible in all contexts.  Middleware functions operate on incoming requests, and attempting to access `Request` outside the appropriate middleware function will lead to this error.
+This document details a CSS-only solution to create an expanding card effect.  No JavaScript is required.  The effect uses CSS transitions and transforms to smoothly expand a card when hovered over, revealing hidden content.  We'll be using standard CSS3 for this example.
 
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The `ReferenceError: Request is not defined` error in Next.js Middleware signifies that you're trying to use the `Request` object (or associated methods like `Request.method`, `Request.headers`, etc.) within a code segment where it's not available. This commonly happens when you accidentally try to use middleware logic within a regular component, API route, or other parts of your application that don't have access to the incoming request context.
+The styling employs a container div for the card.  Inside, there's a "front" section displaying the main content visible initially, and a "back" section containing the expanded content, initially hidden.  We use `transform: rotateY()` and transitions to create the flipping animation.  The hover effect triggers the transformation, revealing the back of the card.
 
+**Full Code:**
 
-**Code Example and Step-by-Step Fix:**
-
-Let's say you have a middleware function intended to redirect users based on their authentication status.  Incorrect implementation might look like this:
-
-**Incorrect Code (Will throw the error):**
-
-```javascript
-// pages/middleware.js
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const isAuthenticated = checkAuthentication(req); // Function to check authentication
-
-  if (!isAuthenticated) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Expanding Card</title>
+<style>
+.card {
+  width: 200px;
+  height: 150px;
+  perspective: 1000px; /* Necessary for 3D transformations */
+  margin: 20px;
 }
 
-// pages/index.js
-import { checkAuthentication } from './middleware'; //INCORRECT - Attempting to use middleware logic outside middleware
-
-export default function Home() {
-    const isAuth = checkAuthentication(); //Throws the error because 'req' is not defined here.
-    return <h1>Home Page</h1>
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s; /* Smooth transition for the flip */
+  transform-style: preserve-3d; /* Enables 3D transformations on child elements */
 }
 
-//Incorrect helper function
-function checkAuthentication(req){
-    if(req){
-        //logic to check authentication
-        return true;
-    }
-    return false;
+.card-front, .card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* Prevents the back from being visible during transition */
 }
 
+.card-front {
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333;
+  font-size: 1.2em;
+}
+
+.card-back {
+  background-color: #ddd;
+  transform: rotateY(180deg); /* Initially rotated to the back */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333;
+  font-size: 1em;
+}
+
+.card:hover .card-inner {
+  transform: rotateY(180deg); /* Flip on hover */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-inner">
+    <div class="card-front">Front</div>
+    <div class="card-back">Back: This is the expanded content!</div>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**Correct Code:**
-
-```javascript
-// pages/middleware.js
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const isAuthenticated = checkAuthentication(req);
-
-  if (!isAuthenticated) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-}
-
-
-function checkAuthentication(req){
-    //logic to check authentication using 'req' object - example
-    const token = req.cookies.get('token');
-    if(token){
-        return true;
-    }
-    return false;
-}
-
-// pages/login.js
-// ...Login Page logic...
-
-// pages/index.js
-export default function Home() {
-  return <h1>Home Page</h1>; // No authentication logic here
-}
-
-```
 
 **Explanation:**
 
-The corrected code encapsulates the authentication logic entirely within the `middleware.js` file. The `checkAuthentication` function now correctly receives the `req` object as an argument within the middleware function. This ensures that the `Request` object is only accessed where it is properly defined and available. The `Home` component no longer attempts to access authentication logic; this is handled entirely by the middleware.
+* **`perspective`**: This property creates the 3D space for the flip effect.
+* **`transform-style: preserve-3d`**: This ensures that child elements are also transformed in 3D space.
+* **`backface-visibility: hidden`**: This prevents the back of the card from being visible before the flip.
+* **`transition`**: This property provides a smooth animation for the `transform` property.
+* **`transform: rotateY()`**: This rotates the card around the Y-axis to create the flip effect.
+* **The hover event**: This triggers the rotation, revealing the hidden content.
 
 
+**Links to Resources to Learn More:**
 
-**External References:**
-
-* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/building-your-application/routing/middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)  (Refer to this for detailed information on using Next.js middleware)
-* **Next.js API Routes Documentation:** [https://nextjs.org/docs/api-routes/introduction](https://nextjs.org/docs/api-routes/introduction) (Understanding the difference between API routes and middleware)
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS-Tricks - 3D Transforms:** [https://css-tricks.com/almanac/properties/t/transform/](https://css-tricks.com/almanac/properties/t/transform/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
