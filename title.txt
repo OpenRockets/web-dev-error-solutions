@@ -1,1 +1,1 @@
-Creating a Pure CSS Loading Spinner
+Next.js Middleware: Handling `Headers Already Sent` Error
