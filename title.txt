@@ -1,1 +1,1 @@
-Debugging "TypeError: data.map is not a function" in Next.js API Routes
+Handling `getServerSideProps` Data in Next.js Middleware

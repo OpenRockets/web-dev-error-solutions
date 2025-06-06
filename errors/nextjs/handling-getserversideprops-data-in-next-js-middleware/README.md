@@ -1,3 +1,5 @@
+# 🐞 Handling `getServerSideProps` Data in Next.js Middleware
+
 
 ## Description of the Error
 
