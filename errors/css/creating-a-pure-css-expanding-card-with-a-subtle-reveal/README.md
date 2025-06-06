@@ -1,3 +1,5 @@
+# 🐞 Creating a Pure CSS Expanding Card with a Subtle Reveal
+
 
 This document details the creation of an expanding card using only CSS. The card expands vertically to reveal more content when hovered over, providing a smooth and engaging user experience.  We'll achieve this effect using CSS transitions and transforms, keeping the HTML clean and simple. This example utilizes plain CSS3; no frameworks like Tailwind are needed.
 

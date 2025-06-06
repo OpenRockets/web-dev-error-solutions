@@ -1,1 +1,1 @@
-Dealing with `next/router` Issues in Next.js Middleware
+Creating a Pure CSS Expanding Card with a Subtle Reveal
