@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `request.nextUrl.pathname` inconsistencies
+Creating a CSS-only Expanding Card
