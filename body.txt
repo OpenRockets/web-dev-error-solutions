@@ -1,91 +1,85 @@
 
-This document details the creation of an expanding card effect using only CSS.  This effect is achieved without JavaScript, relying solely on CSS transitions and pseudo-elements. The card expands to reveal additional content when hovered over.
+This document addresses a common issue developers encounter when working with Next.js API routes: handling 404 (Not Found) errors gracefully.  Improperly handled 404s can lead to unexpected behavior in your application, hindering a seamless user experience.
 
+**Description of the Error:**
 
-**Description of the Styling:**
+When a request is made to an API route that doesn't exist, Next.js by default returns a generic 404 error. While functional, this response lacks context and doesn't provide helpful information to the client or developer for debugging purposes.  This can manifest as a blank page, a generic error message, or even unexpected behavior in the frontend application relying on that API endpoint.
 
-This design uses a simple card structure with a main content area and a hidden expandable section.  On hover, the card expands vertically, revealing the hidden content smoothly thanks to CSS transitions. We'll leverage `::before` and `::after` pseudo-elements to achieve a clean visual effect without extra HTML.
+**Step-by-Step Code Fix:**
 
+Let's assume we have an API route at `/api/users/[id].js` that fetches user data based on the ID.  If an invalid ID is provided, we want to return a more informative 404 response.
 
-**Full Code:**
+**1.  Initial (Problematic) Code:**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 200px;
-  height: 150px;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-  overflow: hidden; /* Hide content overflowing on expansion */
-  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+```javascript
+// pages/api/users/[id].js
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export default async function handler(req, res) {
+  const { id } = req.query;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      // This is insufficient - it doesn't explicitly tell the client it's a 404
+      res.status(404).end(); 
+    }
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 }
-
-.card:hover {
-  height: 300px; /* Expanded height on hover */
-}
-
-.card-content {
-  padding: 10px;
-}
-
-.card-expand {
-  height: 150px; /* Initial height of expandable section */
-  background-color: #e0e0e0;
-  overflow: hidden;
-  transition: height 0.3s ease-in-out;
-}
-
-.card:hover .card-expand {
-  height: 150px; /* Expanded height on hover */
-}
-
-.card h2 {
-  margin-top: 0;
-}
-
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-content">
-    <h2>Card Title</h2>
-    <p>Some initial content.</p>
-  </div>
-  <div class="card-expand">
-    <p>This is the expanded content that appears on hover.</p>
-    <p>More expanded content here.</p>
-  </div>
-</div>
-
-</body>
-</html>
 ```
 
+**2. Improved Code with Explicit 404 Handling:**
+
+```javascript
+// pages/api/users/[id].js
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export default async function handler(req, res) {
+  const { id } = req.query;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      // Explicit 404 response with a helpful message
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+```
 
 **Explanation:**
 
-* **`.card`:** This class styles the main card container.  `overflow: hidden` prevents content from spilling outside the card boundaries before expansion. The `transition` property ensures a smooth animation when the height changes.
-
-* **`.card:hover`:** This selector targets the card when the mouse hovers over it, increasing its height to reveal the hidden content.
-
-* **`.card-content`:** Styles the initial visible content of the card.
-
-* **`.card-expand`:** This class styles the expandable section, initially hidden by the `height` property and `overflow: hidden`. The `transition` property ensures smooth height changes on hover.
-
-* **`.card:hover .card-expand`:**  When hovering over the card, this selector changes the height of the `.card-expand` div, revealing its content.
+The key improvement is in the `else` block. Instead of simply using `res.status(404).end()`, we now send a JSON response with a descriptive error message (`{ error: 'User not found' }`).  This provides valuable context to the client, allowing it to handle the error gracefully (e.g., display a "User not found" message to the user).  Adding a `finally` block ensures the database connection is closed, preventing resource leaks.
 
 
-**Resources to Learn More:**
+**External References:**
 
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
-* **CSS Pseudo-elements:** [MDN Web Docs - Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* **Understanding CSS Selectors:** [MDN Web Docs - Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
+* [HTTP Status Codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
+* [Error Handling in Node.js](https://nodejs.org/api/errors.html)
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
 

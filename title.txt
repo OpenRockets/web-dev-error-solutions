@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card
+Handling 404 Errors in Next.js API Routes
