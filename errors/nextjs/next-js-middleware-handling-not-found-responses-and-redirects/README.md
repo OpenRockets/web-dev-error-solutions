@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `not_found` Responses and Redirects
+
 
 This document addresses a common issue developers encounter when using Next.js Middleware: incorrectly handling `not_found` responses and subsequent redirects.  Improperly configured middleware can lead to unexpected behavior, such as infinite redirect loops or failure to display a custom 404 page.
 
