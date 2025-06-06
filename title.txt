@@ -1,1 +1,1 @@
-Next.js API Routes: Handling Large Responses and Avoiding Timeouts
+Next.js Middleware: Handling `request.nextUrl.pathname` inconsistencies
