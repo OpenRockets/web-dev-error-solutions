@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `NextResponse.redirect()` in Development Mode
+
 
 ## Description of the Error
 

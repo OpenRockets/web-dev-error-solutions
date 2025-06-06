@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `getStaticProps` Errors Gracefully
+Next.js Middleware: Handling `NextResponse.redirect()` in Development Mode
