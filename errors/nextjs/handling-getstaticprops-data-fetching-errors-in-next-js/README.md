@@ -1,3 +1,5 @@
+# 🐞 Handling `getStaticProps` Data Fetching Errors in Next.js
+
 
 This document addresses a common problem developers encounter when using `getStaticProps` in Next.js: gracefully handling errors during data fetching to prevent application crashes and display informative messages to the user.
 

@@ -1,1 +1,1 @@
-Creating a CSS-Only Circular Progress Bar
+Handling `getStaticProps` Data Fetching Errors in Next.js
