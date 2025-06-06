@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers already sent` Errors
+Dealing with `next/router` Issues in Next.js Middleware

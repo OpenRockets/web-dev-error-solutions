@@ -1,3 +1,5 @@
+# 🐞 Dealing with `next/router` Issues in Next.js Middleware
+
 
 This document addresses a common problem developers encounter when using the `next/router` object within Next.js Middleware.  Specifically, we'll focus on scenarios where attempting to use router methods like `push` or `replace` results in unexpected behavior or errors.
 
