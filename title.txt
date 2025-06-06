@@ -1,1 +1,1 @@
-Handling `getStaticProps` Data Fetching Errors in Next.js
+Next.js Middleware: Handling `Request Not Found` Errors

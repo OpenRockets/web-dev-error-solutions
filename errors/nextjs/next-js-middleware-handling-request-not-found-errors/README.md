@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Request Not Found` Errors
+
 
 This document addresses a common problem encountered when working with Next.js Middleware: the `Request Not Found` error.  This error typically arises when middleware attempts to access a path that doesn't exist or isn't handled by your application.  It can be frustrating because it often lacks specific details, making debugging challenging.
 
