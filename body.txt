@@ -1,87 +1,73 @@
 
-This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered, revealing hidden content.  This uses only CSS3, avoiding JavaScript for a lightweight and performant solution.
+## Description of the Error
 
-**Description of the Styling:**
+The dreaded "headers already sent" error in Next.js Middleware is a common frustration.  It occurs when your middleware attempts to set headers after the response has already begun to be sent to the client. This typically happens due to unintended output (e.g., accidental console logs, extra whitespace) *before* the `next()` function is called within your middleware.  This prevents the middleware from correctly modifying the response headers and can lead to unexpected behavior or a broken application.
 
-The card uses a combination of transitions, pseudo-elements (`::before` and `::after`), and max-height to achieve the expanding effect.  The `::before` pseudo-element is used to create the visually appealing overlay that appears upon hover.  The max-height is initially set to a smaller value, limiting the card's height. Upon hover, the max-height is removed, allowing the card to expand to its full content height.  Transitions ensure a smooth animation.
+## Code Example & Step-by-step Fix
 
-**Full Code:**
+Let's imagine you're trying to redirect users to a login page if they're not authenticated.  Here's an example of middleware code that *would* produce the "headers already sent" error, followed by the corrected version:
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f2f2f2;
-  border-radius: 8px;
-  overflow: hidden; /* Hide content that overflows */
-  transition: max-height 0.3s ease-in-out; /* Smooth transition */
-  max-height: 150px; /* Initial height */
-  width: 300px;
+**Problem Code (middleware.js):**
+
+```javascript
+// middleware.js - INCORRECT
+import { NextResponse } from 'next/server';
+
+export function middleware(req) {
+  console.log('Middleware running...'); // Accidental output!
+  const token = req.cookies.get('auth-token');
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+
+  return NextResponse.next();
 }
 
-.card:hover {
-  max-height: 500px; /* Expanded height on hover */
-}
-
-.card-content {
-  padding: 20px;
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Overlay on hover */
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-.card:hover::before {
-  opacity: 1; /* Show overlay on hover */
-}
-
-.card h2 {
-  margin-top: 0;
-}
-
-.card p {
-    margin-bottom: 0;
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-content">
-    <h2>Expanding Card</h2>
-    <p>This is some example content within the card.  It will expand when you hover over the card.</p>
-    <p>Additional content to demonstrate the expansion effect. Add as much text as you like!</p>
-  </div>
-</div>
-
-</body>
-</html>
+export const config = {
+  matcher: ['/'],
+};
 ```
 
-**Explanation:**
+The `console.log` statement is the culprit.  It outputs text *before* the `NextResponse.redirect` or `NextResponse.next()` is called, leading to the error.
 
-* **`.card`:**  The main container for the card.  `overflow: hidden` prevents content from overflowing before the expansion.  `max-height` initially restricts the card's height.  `transition` defines the smooth animation.
-* **`.card:hover`:**  Styles applied when the card is hovered over.  `max-height` is removed to allow expansion.
-* **`.card::before`:**  Creates a semi-transparent overlay that appears on hover.
-* **`.card:hover::before`:**  Sets the overlay's opacity to 1 when hovering, making it visible.
-* **`.card-content`:** Contains the actual content of the card.
+**Corrected Code (middleware.js):**
 
-**Links to Resources to Learn More:**
+```javascript
+// middleware.js - CORRECTED
+import { NextResponse } from 'next/server';
 
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs - Pseudo-elements:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* **CSS-Tricks:** Search for "CSS-only card animations" on [https://css-tricks.com/](https://css-tricks.com/) for more advanced examples.
+export function middleware(req) {
+  const token = req.cookies.get('auth-token');
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/'],
+};
+```
+
+Simply removing the `console.log` statement resolves the issue. The order of operations is crucial.  The response headers must be set *before* any output is sent.
+
+## Explanation
+
+Next.js Middleware operates within a very specific context.  It intercepts requests *before* the main application logic executes.  Once the middleware sends a response (explicitly or implicitly via output), it cannot modify the headers further.  This is a fundamental HTTP constraint.  Any data sent to the client *before* the appropriate response headers are set will trigger the "headers already sent" error.  Common culprits, besides accidental `console.log` calls, include:
+
+* **Whitespace or extra newline characters** at the beginning or end of your middleware file.
+* **Unhandled errors** that may produce unintended output.
+* **Using `console.log`, `console.error`, etc.** within the middleware before the `next()` or `redirect()` call.
+* **Including HTML or other content directly in the middleware** outside of the response object.
+
+## External References
+
+* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/building-your-application/routing/middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* **Next.js API Routes Documentation:** [https://nextjs.org/docs/api-routes/introduction](https://nextjs.org/docs/api-routes/introduction)  (Understanding API routes helps grasp the related concepts)
+* **HTTP Headers:** [https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) (For a deeper understanding of how HTTP headers work)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
