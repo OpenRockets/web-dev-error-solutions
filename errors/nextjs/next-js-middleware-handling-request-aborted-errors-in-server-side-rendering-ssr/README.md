@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Request aborted` Errors in Server-Side Rendering (SSR)
+
 
 This document addresses a common issue encountered when using Next.js Middleware in conjunction with Server-Side Rendering (SSR): the dreaded `Request aborted` error. This typically occurs when your middleware takes longer to execute than the time allocated by the server for rendering the page. This can lead to a broken user experience, with incomplete or missing content.
 

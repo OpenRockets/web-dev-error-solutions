@@ -1,1 +1,1 @@
-Handling `Error: Route not found` in Next.js API Routes
+Next.js Middleware: Handling `Request aborted` Errors in Server-Side Rendering (SSR)
