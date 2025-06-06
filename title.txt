@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `not_found` Responses and Redirects
+Next.js Middleware: Handling `Request aborted` Errors
