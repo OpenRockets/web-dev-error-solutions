@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `NextResponse.redirect()` in Development Mode
+Creating a CSS-only Expanding Card
