@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers` in the correct location
+Creating a CSS-only Expanding Card
