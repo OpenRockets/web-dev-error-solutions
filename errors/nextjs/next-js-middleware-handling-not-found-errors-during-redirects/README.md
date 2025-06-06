@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Not Found` Errors During Redirects
+
 
 This document addresses a common problem encountered when using Next.js Middleware to redirect users based on conditions.  The problem arises when the middleware attempts a redirect to a route that doesn't exist, resulting in a confusing error or unexpected behavior.  Specifically, we'll focus on scenarios where the redirect target depends on dynamic data not readily available in the middleware.
 
