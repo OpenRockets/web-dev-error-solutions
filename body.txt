@@ -1,75 +1,80 @@
 
-This document addresses a common issue encountered when using Next.js Middleware: **infinite redirect loops**.  This occurs when your middleware repeatedly redirects the user, creating a never-ending cycle.  This often happens due to improperly structured conditional logic or a lack of proper termination conditions.
+This document details how to create an expanding card effect using only CSS.  This is a common CSS challenge that showcases the power of CSS transitions and transforms. We'll use plain CSS3 for this example, making it widely compatible.
 
-## Description of the Error
 
-The browser continuously redirects, leading to a "too many redirects" error in the browser console.  The user is unable to access the intended page.  This manifests as a blank page or a continuous spinning loading indicator.  The server logs might show repeated redirect attempts.
+## Description of the Styling
 
-## Code Example: Problem & Solution
+The effect creates a card that expands vertically when hovered over.  The expansion reveals hidden content below the initial card height.  The expansion is smooth and uses CSS transitions for a polished look.  The card utilizes simple styling for clarity, but can easily be customized with different colors, fonts, and backgrounds.
 
-**Problematic Middleware:**
 
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
+## Full Code
 
-export function middleware(req) {
-  const url = req.nextUrl.clone();
-
-  // Incorrect Logic - Always redirects
-  url.pathname = '/login';
-  return NextResponse.rewrite(url);
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f2f2f2;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden; /* Hide content that overflows */
+  transition: height 0.3s ease; /* Smooth transition for height change */
+  height: 100px; /* Initial height */
+  width: 200px;
 }
 
-export const config = {
-  matcher: '/',
-};
-```
-
-This middleware *always* redirects to `/login`, regardless of the user's authentication status. This creates an infinite loop if `/login` also uses this middleware, or if the login process itself redirects in a way that again triggers the middleware.
-
-
-**Step-by-step Fix:**
-
-1. **Introduce Conditional Logic:** The middleware should only redirect if a specific condition isn't met (e.g., user is not logged in).
-
-2. **Check for Authentication:** We'll use a simplified example; replace this with your actual authentication method.
-
-3. **Avoid unnecessary redirects:**  Only redirect if a condition is true, otherwise return a normal response.
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const url = req.nextUrl.clone();
-  const isLoggedIn = req.cookies.get('isLoggedIn'); // Replace with your auth check
-
-  if (!isLoggedIn) {
-    url.pathname = '/login';
-    return NextResponse.redirect(url); // Use redirect for better UX
-  }
-
-  return NextResponse.next(); // Allows the request to continue normally
+.card:hover {
+  height: 250px; /* Height on hover */
 }
 
-export const config = {
-  matcher: '/',
-};
-```
+.card-content {
+  padding: 10px;
+}
 
-This improved middleware only redirects to `/login` if the `isLoggedIn` cookie is not found.  If the user is logged in, `NextResponse.next()` allows the request to proceed to its intended destination, preventing the infinite redirect.
+.hidden-content {
+  display: none; /* Initially hidden */
+}
+
+.card:hover .hidden-content {
+  display: block; /* Shown on hover */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2>Card Title</h2>
+    <p>Some initial card content.</p>
+  </div>
+  <div class="hidden-content">
+    <p>This content is hidden until the card is hovered over.</p>
+    <p>More hidden content here.</p>
+  </div>
+</div>
+
+</body>
+</html>
+```
 
 
 ## Explanation
 
-The original code created an infinite redirect loop because it unconditionally redirected to `/login`. The corrected code introduces a conditional check (`isLoggedIn`) and uses `NextResponse.redirect()` to redirect only when necessary. `NextResponse.next()` is crucial for allowing requests to continue naturally when the redirect condition is false.  Using `NextResponse.rewrite()` for redirects is generally discouraged because it can lead to caching issues; `NextResponse.redirect()` is preferred for user-facing redirects.
+* **`.card`:** This class styles the main card element. `overflow: hidden;` is crucial to prevent the expanding content from overflowing before the transition completes.  The `transition` property defines a smooth 0.3-second ease transition for the `height` property. The initial `height` is set to 100px.
+* **`.card:hover`:** This selector styles the card when the mouse hovers over it.  The `height` is increased to 250px, triggering the transition.
+* **`.card-content`:** This class styles the visible content within the card.
+* **`.hidden-content`:** This class initially hides the extra content using `display: none;`.
+* **`.card:hover .hidden-content`:**  This selector shows the hidden content when the card is hovered. `display: block;` makes the content visible.
 
-## External References
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse)
-* [Handling Authentication in Next.js](https://nextjs.org/docs/app/building-your-application/authentication) (Find relevant sections on your authentication method)
+## Links to Resources to Learn More
+
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks:**  Search "CSS card hover effects" on [https://css-tricks.com/](https://css-tricks.com/) for many more examples and variations.
+
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

@@ -1,1 +1,1 @@
-Next.js Middleware: Preventing Infinite Redirects
+Creating a CSS-only Expanding Card
