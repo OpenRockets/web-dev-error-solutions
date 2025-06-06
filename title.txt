@@ -1,1 +1,1 @@
-Handling 404 Errors in Next.js API Routes
+Next.js Middleware: Handling `getStaticProps` Data in `getServerSideProps`

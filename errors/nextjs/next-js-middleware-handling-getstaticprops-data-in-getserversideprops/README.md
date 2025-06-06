@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `getStaticProps` Data in `getServerSideProps`
+
 
 This document addresses a common issue developers encounter when attempting to access data fetched using `getStaticProps` within a page's `getServerSideProps` function in Next.js.  `getStaticProps` runs at build time, generating static HTML, while `getServerSideProps` runs on every request. Therefore, directly accessing data from `getStaticProps` within `getServerSideProps` is impossible.  This often leads to runtime errors or unexpected behavior.
 
