@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers already sent` Errors
+Creating a CSS-only Expanding Card
