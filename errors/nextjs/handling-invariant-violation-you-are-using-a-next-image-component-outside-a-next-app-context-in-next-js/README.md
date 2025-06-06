@@ -1,3 +1,5 @@
+# 🐞 Handling "Invariant Violation: You are using a next/image component outside a `next/app` context" in Next.js
+
 
 This document describes a common error encountered when using Next.js's `next/image` component outside the recommended context and provides a step-by-step solution.
 

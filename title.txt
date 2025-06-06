@@ -1,1 +1,1 @@
-Handling 404 Errors in Next.js API Routes
+Handling "Invariant Violation: You are using a next/image component outside a `next/app` context" in Next.js
