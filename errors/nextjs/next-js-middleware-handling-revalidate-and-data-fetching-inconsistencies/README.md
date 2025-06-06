@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `revalidate` and Data Fetching Inconsistencies
+
 
 **Description of the Error:**
 
