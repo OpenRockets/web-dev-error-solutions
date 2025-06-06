@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Request aborted` Errors in Server-Side Rendering (SSR)
+Creating a Pure CSS Expanding Card
