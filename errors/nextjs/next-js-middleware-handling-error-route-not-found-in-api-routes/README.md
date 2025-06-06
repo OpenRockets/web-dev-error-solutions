@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: Route Not Found` in API Routes
+
 
 This document addresses a common error encountered when working with API routes in Next.js: `Error: Route Not Found`. This usually happens when a client attempts to access an API route that doesn't exist or is improperly configured.
 

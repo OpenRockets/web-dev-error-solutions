@@ -1,1 +1,1 @@
-Creating a CSS-only Pulsating Heart
+Next.js Middleware: Handling `Error: Route Not Found` in API Routes
