@@ -1,91 +1,87 @@
 
-This document addresses a common issue developers encounter when attempting to access data fetched using `getStaticProps` within a page's `getServerSideProps` function in Next.js.  `getStaticProps` runs at build time, generating static HTML, while `getServerSideProps` runs on every request. Therefore, directly accessing data from `getStaticProps` within `getServerSideProps` is impossible.  This often leads to runtime errors or unexpected behavior.
+This document details how to create a circular progress bar using only CSS.  No JavaScript required! This technique leverages CSS's `conic-gradient` function for a clean and efficient solution.  This example uses plain CSS, but could easily be adapted to a framework like Tailwind CSS by replacing the inline styles with Tailwind classes.
 
-**Description of the Error:**
 
-You might encounter errors like `ReferenceError: getStaticProps is not defined` or your page might render incorrectly, showing stale or missing data because `getServerSideProps` doesn't have access to the data fetched during build time by `getStaticProps`.
+**Description of the Styling:**
 
-**Problem Scenario:**
+The circular progress bar is created using a single `<div>` element.  The `conic-gradient` function generates the circular gradient, with the color changing based on the percentage complete.  The `mask` property is used to create a circular clipping mask, revealing only a portion of the gradient based on the progress.  Border and other styling elements add visual polish.
 
-Let's say you have a blog post page where you fetch post data using `getStaticProps` to optimize for SEO and initial load time, but also need to include dynamic user-specific data using `getServerSideProps`.  Trying to access the post data fetched by `getStaticProps` within `getServerSideProps` will fail.
 
-**Code (Incorrect):**
+**Full Code:**
 
-```javascript
-// pages/post/[slug].js
-import { getStaticProps } from 'next'; // Incorrect import
-
-export async function getStaticProps({ params }) {
-  const res = await fetch(`https://api.example.com/posts/${params.slug}`);
-  const data = await res.json();
-  return {
-    props: {
-      post: data,
-    },
-  };
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 10px solid #f0f0f0; /* Light grey border */
+  box-sizing: border-box; /* Include border in size calculation */
+  position: relative;
 }
 
-export async function getServerSideProps({ req, params, ...rest }) { // Incorrect usage
-    console.log('post data from getStaticProps', getStaticProps);  // Trying to access getStaticProps data here
-    const userData = await fetch(`https://api.example.com/users/${req.session.userId}`) //fetching user data
-    const user = await userData.json()
-    console.log(post.title) // Trying to access post data (Will Fail)
-
-  return {
-    props: {
-      user: user,
-      post: rest.post // Attempt to pass post data (Not working)
-    },
-  };
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(#4CAF50 75%, #f0f0f0 75%); /* 75% progress */
+  mask: radial-gradient(farthest-side, #000 95%, transparent 100%);
+  mask-type:luminance;
 }
 
-// ... rest of the component
+.progress-ring.progress-80::before {
+  background: conic-gradient(#4CAF50 80%, #f0f0f0 80%); /* 80% progress */
+}
+
+.progress-ring.progress-50::before {
+  background: conic-gradient(#4CAF50 50%, #f0f0f0 50%); /* 50% progress */
+}
+
+.progress-ring.progress-25::before {
+  background: conic-gradient(#4CAF50 25%, #f0f0f0 25%); /* 25% progress */
+}
+</style>
+</head>
+<body>
+
+<h1>CSS Circular Progress Bars</h1>
+
+<div class="progress-ring progress-75"></div>
+<div class="progress-ring progress-80"></div>
+<div class="progress-ring progress-50"></div>
+<div class="progress-ring progress-25"></div>
+
+</body>
+</html>
 ```
 
-**Code (Corrected):**
-
-```javascript
-// pages/post/[slug].js
-
-export async function getStaticProps({ params }) {
-  const res = await fetch(`https://api.example.com/posts/${params.slug}`);
-  const data = await res.json();
-  return {
-    props: {
-      post: data,
-    },
-  };
-}
-
-export async function getServerSideProps({ params, req, res, query }) {
-  const userData = await fetch(`https://api.example.com/users/${req.session.userId}`); //fetching user data
-  const user = await userData.json();
-
-  // Fetch the post data again in getServerSideProps
-  const postRes = await fetch(`https://api.example.com/posts/${params.slug}`);
-  const post = await postRes.json();
-
-  return {
-    props: {
-      user: user,
-      post: post,
-    },
-  };
-}
-
-
-// ... rest of the component
-```
 
 **Explanation:**
 
-The corrected code addresses the problem by fetching the post data again within `getServerSideProps`. This ensures that the data is available on every request, even though it was initially fetched during the build process by `getStaticProps`.  We are not trying to access the `getStaticProps` function, but rather refetching the data within `getServerSideProps`.  This ensures consistency and avoids the runtime error.
+* **`conic-gradient()`:** This function creates a circular gradient. The first color (`#4CAF50` - green in this case) represents the filled portion, and the second (`#f0f0f0` - light grey) represents the empty portion.  The percentage value determines the size of the filled section.
 
-**External References:**
+* **`mask: radial-gradient(...)`:** This creates a circular mask that hides the parts of the gradient outside the circle. The `farthest-side` keyword makes sure the circle fills the entire `div`.
 
-* [Next.js Documentation on `getStaticProps`](https://nextjs.org/docs/basic-features/data-fetching/getstaticprops)
-* [Next.js Documentation on `getServerSideProps`](https://nextjs.org/docs/basic-features/data-fetching/getserversideprops)
-* [Understanding Static Site Generation vs. Server-Side Rendering in Next.js](https://www.example.com/blog-post-on-ssr-vs-ssg) *(replace with a relevant blog post)*
+* **`mask-type: luminance;`:** This ensures that the mask works correctly with the gradient.
+
+* **Classes for different progress levels:**  The `.progress-75`, `.progress-80`, `.progress-50`, `.progress-25` classes demonstrate how easily you can adjust the progress percentage by changing the conic-gradient values.
+
+
+**Links to Resources to Learn More:**
+
+* **MDN Web Docs - `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient()](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient())
+* **MDN Web Docs - `mask` property:** [https://developer.mozilla.org/en-US/docs/Web/CSS/mask](https://developer.mozilla.org/en-US/docs/Web/CSS/mask)
+* **CSS-Tricks (general CSS tutorials):** [https://css-tricks.com/](https://css-tricks.com/)
+
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
