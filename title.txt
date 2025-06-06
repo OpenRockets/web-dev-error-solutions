@@ -1,1 +1,1 @@
-Handling `next/image` Errors in Next.js Middleware
+Creating a CSS-only Expanding Card

@@ -1,92 +1,106 @@
 
-This document addresses a common issue encountered when using `next/image` within Next.js Middleware or API routes. The problem arises because `next/image` relies on the `request` object's properties which are not readily available in these contexts.  Attempting to use `next/image` directly will typically result in a runtime error related to missing `request` properties, or simply not rendering correctly.
+This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered over, revealing hidden content.  No JavaScript is required.  We'll use pure CSS3 for this effect.
 
+**Description of the Styling:**
 
-## Description of the Error
+The card utilizes a combination of transitions, pseudo-elements (`::before` and `::after`), and flexible box layout (`flexbox`) to achieve the expansion.  The `::before` pseudo-element creates a subtle background overlay during the transition, and the height transition smoothly expands the card to reveal hidden content.  Padding, borders, and box-shadow are used for styling.
 
-The most common error manifests as:
+**Full Code:**
 
-* **`TypeError: Cannot read properties of undefined (reading 'headers')`** or similar errors related to accessing properties of the `request` object within `next/image`.
-*  `next/image` component fails to render, showing a broken image placeholder or nothing at all.
-
-
-## Fixing the Issue Step-by-Step
-
-This issue can be solved by avoiding direct usage of `next/image` in Middleware or API routes. These environments are server-side only and lack the necessary browser context for `next/image` to function properly.  Instead, you should generate the necessary image URLs server-side and pass them to the client-side components.
-
-Let's assume we have a middleware function that needs to dynamically serve an image based on a condition:
-
-**Incorrect (Will cause error):**
-
-```javascript
-// pages/api/image.js
-import Image from 'next/image';
-
-export default function handler(req, res) {
-  const showImage = req.query.showImage === 'true';
-
-  if (showImage) {
-    // This will cause an error! next/image is not designed for this context.
-    return res.status(200).json({ image: <Image src="/images/myimage.jpg" width={300} height={200} alt="My Image" /> });
-  } else {
-    return res.status(200).json({ image: null });
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide content that overflows */
+  transition: all 0.3s ease-in-out; /* Smooth transition */
+  width: 300px;
+  position: relative; /* Needed for absolute positioning of pseudo elements */
 }
+
+.card:hover {
+  transform: scale(1.05); /* Slight scaling on hover */
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.1); /* Semi-transparent overlay on hover */
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.card:hover::before {
+  opacity: 1; /* Overlay appears on hover */
+}
+
+
+.card-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column; /* Stack content vertically */
+}
+
+.card-title {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+.card-text {
+  height: 0; /* Initially hidden */
+  overflow: hidden;
+  transition: height 0.3s ease-in-out;
+}
+
+
+.card:hover .card-text {
+  height: auto; /* Expand on hover */
+}
+
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Expanding Card</h2>
+    <p class="card-text">This is some sample text that is initially hidden.  The card expands on hover to reveal this text using pure CSS.  No JavaScript is required for this effect.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**Correct (Generating image URL server-side):**
+**Explanation:**
 
+1. **Base Styling:** The `.card` class sets up the basic appearance of the card with background color, border, shadow, and a crucial `overflow: hidden;` to initially hide the expanding content.
 
-```javascript
-// pages/api/image.js
-export default function handler(req, res) {
-  const showImage = req.query.showImage === 'true';
+2. **Hover Effects:** The `.card:hover` selector applies scaling and enhanced shadow on mouseover.
 
-  let imageUrl = null;
-  if (showImage) {
-    imageUrl = "/images/myimage.jpg";
-  }
+3. **Pseudo-element Overlay:** The `::before` pseudo-element creates a semi-transparent overlay that appears smoothly on hover, adding a visual cue.
 
-  return res.status(200).json({ imageUrl });
-}
+4. **Content Expansion:** The `.card-text` class initially hides the content with `height: 0;` and `overflow: hidden;`. On hover (`card:hover .card-text`), the height transitions to `auto`, smoothly revealing the hidden text.
 
+5. **Transitions:**  `transition` property is used extensively to ensure smooth animations for height, opacity, and transform.
 
-// pages/mypage.js
-import Image from 'next/image';
+**Links to Resources to Learn More:**
 
-export default function MyPage({ imageUrl }) {
-  return (
-    <div>
-      {imageUrl && (
-        <Image src={imageUrl} width={300} height={200} alt="My Image" />
-      )}
-    </div>
-  );
-}
-
-export async function getServerSideProps() {
-  const res = await fetch('/api/image?showImage=true');
-  const data = await res.json();
-  return { props: { imageUrl: data.imageUrl } };
-}
-```
-
-This revised approach works because:
-
-1. The API route (`pages/api/image.js`) only generates the image URL.
-2. The client-side component (`pages/mypage.js`) receives the URL from the `getServerSideProps` function and then uses `next/image` to render it.
-
-
-## Explanation
-
-`next/image` is optimized for client-side rendering and leverages browser capabilities.  It relies on the browser's request object to handle image optimization and loading.  Middleware and API routes run on the server, lacking the browser's context.  By generating the image URLs on the server and passing them to the client, we effectively decouple `next/image` from the server-side environment where it's not suitable.
-
-
-## External References
-
-* [Next.js Image Optimization](https://nextjs.org/docs/basic-features/image-optimization)
-* [Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)
-* [Next.js Middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* [CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* [CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
