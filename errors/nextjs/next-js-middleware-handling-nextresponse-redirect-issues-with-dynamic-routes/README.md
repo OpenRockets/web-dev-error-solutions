@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `NextResponse.redirect` Issues with Dynamic Routes
+
 
 This document addresses a common problem encountered when using `NextResponse.redirect` within Next.js Middleware with dynamic routes.  The issue arises when attempting to redirect based on dynamic route segments, often leading to incorrect redirects or unexpected behavior.
 
