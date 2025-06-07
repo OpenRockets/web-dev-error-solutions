@@ -1,1 +1,1 @@
-Creating a Pure CSS Circular Progress Bar
+Handling `TypeError: Cannot read properties of undefined (reading 'locale')` in Next.js Middleware

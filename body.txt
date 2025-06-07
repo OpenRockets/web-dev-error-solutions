@@ -1,78 +1,72 @@
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This utilizes CSS3's `clip-path` and `transform` properties to achieve the effect.  This example will create a progress bar that is 75% complete.  You can easily adjust this value.
+This document addresses a common `TypeError` encountered when using Next.js Middleware, specifically when attempting to access locale information before it's properly defined.  This often occurs when trying to redirect users based on their locale settings too early in the request lifecycle.
 
-**Description of the Styling:**
+**Description of the Error:**
 
-The progress bar consists of two concentric circles. The outer circle acts as the background, while the inner circle represents the progress.  We use `clip-path` to create a circular segment that represents the filled portion of the progress bar. The `transform: rotate()` property is used to dynamically rotate this segment based on the percentage of progress.
+The error message `TypeError: Cannot read properties of undefined (reading 'locale')` indicates that you're trying to access the `locale` property of an object that is currently undefined. In Next.js Middleware, this usually happens within the `nextRequest.nextUrl.locale`  access because the locale might not yet be determined when your middleware function executes.  This is especially true if you're relying on locale detection that happens later in the request processing pipeline.
 
-**Full Code:**
+**Code Example (Illustrating the Problem):**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
-.progress-ring {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  position: relative;
+```javascript
+// middleware.js
+import { NextResponse } from 'next/server';
+
+export function middleware(req) {
+  const locale = req.nextUrl.locale; // Error happens here!
+  
+  if (!locale || locale === 'en') {
+    return NextResponse.redirect(new URL(`/en${req.nextUrl.pathname}`, req.url));
+  }
+  // ... further logic ...
+}
+```
+
+**Step-by-Step Code Fix:**
+
+1. **Check for undefined:** Before accessing `req.nextUrl.locale`, ensure it's defined.
+
+2. **Use a default value or fallback:** Provide a default locale if `req.nextUrl.locale` is undefined.
+
+3. **Delay Locale-Dependent Logic:** If possible, move the locale-dependent logic to a page component or an API route where the locale is guaranteed to be set.
+
+
+```javascript
+// middleware.js (Fixed)
+import { NextResponse } from 'next/server';
+
+export function middleware(req) {
+  // Option 1: Provide a default locale
+  const locale = req.nextUrl.locale || 'en';
+
+  if (locale === 'en') {
+    // This will be more robust if you are already checking for null
+    return NextResponse.redirect(new URL(`/en${req.nextUrl.pathname}`, req.url));
+  } else {
+    // Option 2: Handle other locales
+    // ...
+  }
+
+  return NextResponse.next();
 }
 
-.progress-ring .progress-ring-background {
-  width: 100%;
-  height: 100%;
-  border: 5px solid #ddd; /* Background circle */
-  border-radius: 50%;
-  position: absolute;
-}
-
-.progress-ring .progress-ring-progress {
-  width: 100%;
-  height: 100%;
-  border: 5px solid #4CAF50; /* Progress circle */
-  border-radius: 50%;
-  position: absolute;
-  clip-path: polygon(50% 50%, 75% 0%, 100% 50%, 75% 100%, 50% 100%, 25% 100%, 0 50%, 25% 0%); /* Adjust percentage as needed*/
-  transform: rotate(270deg); /* 75% progress = 75% * 360deg = 270deg */
-  transform-origin: 50% 50%;
-}
-
-</style>
-</head>
-<body>
-
-<h1>CSS Circular Progress Bar</h1>
-
-<div class="progress-ring">
-  <div class="progress-ring-background"></div>
-  <div class="progress-ring-progress"></div>
-</div>
-
-</body>
-</html>
 ```
 
 **Explanation:**
 
-* **`progress-ring`:** This class sets the size and shape of the overall progress bar.
-* **`progress-ring-background`:** This creates the outer circle, providing context for the progress.
-* **`progress-ring-progress`:** This is the crucial part.
-    * `clip-path`: This creates the circular segment. The polygon coordinates define the shape.  Adjusting the `75%` values will alter the progress.
-    * `transform: rotate()`: This rotates the segment, creating the progress effect.  The calculation (`75% * 360deg`) determines the rotation angle based on the percentage.
-    * `transform-origin`:  This sets the center point of rotation.
+The original code directly attempts to read `req.nextUrl.locale`.  If the locale hasn't been resolved yet by Next.js, this results in the `TypeError`. The corrected code addresses this by:
 
-To change the percentage, modify the `clip-path` polygon points and the `rotate()` value accordingly. For example, for 50% progress:
+* **Option 1:**  Providing a default locale ('en' in this example).  This ensures that the code continues executing even if the locale is not yet determined.
 
-* `clip-path: polygon(50% 50%, 50% 0%, 100% 50%, 50% 100%, 50% 100%, 50% 100%, 0 50%, 50% 0%);`
-* `transform: rotate(180deg);`
+* **Option 2:**  Explicitly checking for undefined and handling different scenarios.  This is more robust solution.
 
-**Resources to Learn More:**
+Moving locale-based logic to a Page component or API route is ideal because, by that stage of the request pipeline, Next.js has likely processed the locale information.
 
-* [MDN Web Docs - clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* [MDN Web Docs - transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* [CSS Tricks](https://css-tricks.com/)  (General resource for CSS techniques)
+**External References:**
+
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Next.js Request Object](https://nextjs.org/docs/app/building-your-application/routing/middleware#request-object)
+* [Understanding the Next.js Request Lifecycle](https://nextjs.org/docs/app/building-your-application/routing/overview) (Helpful for understanding request phases)
+
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
