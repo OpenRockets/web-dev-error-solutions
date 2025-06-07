@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `next/server` Imports in Client Components
+
 
 This document addresses a common issue developers encounter when using Next.js Middleware: attempting to import modules from `next/server` within client-side components.  This results in runtime errors because `next/server` modules are only available on the server during the request lifecycle, not in the browser.
 
