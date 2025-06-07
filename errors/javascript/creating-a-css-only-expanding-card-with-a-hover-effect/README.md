@@ -1,3 +1,5 @@
+# 🐞 Creating a CSS-only Expanding Card with a Hover Effect
+
 
 This document details a CSS-only solution for creating an expanding card effect on hover.  No JavaScript is required.  The effect involves a card that smoothly expands to reveal more content when the mouse hovers over it, and collapses back when the mouse leaves.  We'll use pure CSS3 to achieve this.
 
