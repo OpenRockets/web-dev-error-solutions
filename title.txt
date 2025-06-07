@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with a Hover Effect
+Next.js Middleware: Handling `Response already sent` Errors
