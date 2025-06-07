@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Error: Failed to fetch` in API Route Calls
+Creating a CSS-Only Expanding Card
