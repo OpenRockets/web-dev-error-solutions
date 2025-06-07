@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `request.cookies` Inconsistencies
+
 
 This document addresses a common issue developers encounter when working with cookies within Next.js Middleware: inconsistencies in accessing and modifying cookies across different requests.  The problem often manifests as unexpected behavior where cookies set in one middleware function aren't available in subsequent middleware calls or in API routes. This is due to the asynchronous nature of middleware and the way Next.js handles the request lifecycle.
 
