@@ -1,81 +1,91 @@
 
-This document details how to create a circular progress bar using only CSS.  This avoids the need for JavaScript, making it lightweight and efficient.  We'll leverage CSS's `conic-gradient` function for a clean and simple solution.
+## Description of the Error
 
+A common error encountered when working with Next.js Middleware is the cryptic "Request aborted" message. This error doesn't usually provide a specific line number or detailed explanation, making debugging challenging.  It often manifests when your middleware attempts to perform an action that takes too long to complete, exceeding the timeout set by the server or client.  This can be triggered by various factors, including slow database queries, external API calls with long response times, or computationally intensive operations within the middleware itself.  The result is a frustratingly vague error message that leaves developers scratching their heads.
 
-## Description of the Styling
+## Code Example & Fixing Steps
 
-The circular progress bar is achieved using a combination of techniques:
+Let's imagine a scenario where our middleware fetches data from a slow external API before proceeding.  The following code snippet demonstrates the problem and its solution:
 
-* **`conic-gradient`:** This CSS function creates a gradient that sweeps around a circle. We use this to create the visual progress bar itself. The start and end angles define the filled portion of the circle.
-* **`clip-path`:**  We use `clip-path: circle()` to create a circular shape for the progress bar.
-* **Pseudo-elements:**  Pseudo-elements (`::before` and `::after`) are used to create the circle background and the progress indicator.
+**Problem Code (middleware.js):**
 
+```javascript
+import { NextResponse } from 'next/server'
 
-## Full Code
+export async function middleware(req) {
+  const res = await fetch('https://slow-api.example.com/data'); // Simulates a slow API
+  const data = await res.json();
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
-.progress-ring {
-  --progress: 75; /* Adjust this value to change the progress */
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  position: relative;
+  if (data.success) {
+    return NextResponse.rewrite(new URL('/success', req.url));
+  } else {
+    return NextResponse.rewrite(new URL('/error', req.url));
+  }
 }
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  background: conic-gradient(
-    #e6e6e6,
-    #e6e6e6 calc(var(--progress) * 1%),
-    #4caf50 calc(var(--progress) * 1%),
-    #4caf50
-  );
-  clip-path: circle(50% at 50% 50%); /*Keeps the gradient circular*/
-}
-
-.progress-ring::after {
-  content: attr(data-progress) "%";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 16px;
-  font-weight: bold;
-}
-</style>
-</head>
-<body>
-
-<div class="progress-ring" data-progress="75"></div>
-
-</body>
-</html>
+export const config = {
+  matcher: ['/'],
+};
 ```
+
+This code will likely throw a `Request aborted` error if `https://slow-api.example.com/data` takes too long to respond.
+
+**Fixing Steps:**
+
+1. **Implement Timeouts:** The most effective solution is to introduce timeouts to your `fetch` calls.  This prevents your middleware from hanging indefinitely.
+
+2. **Use `AbortController`:**  `AbortController` allows you to gracefully cancel a request if it takes too long.
+
+**Corrected Code (middleware.js):**
+
+```javascript
+import { NextResponse } from 'next/server'
+
+export async function middleware(req) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5-second timeout
+
+  try {
+    const res = await fetch('https://slow-api.example.com/data', { signal: controller.signal });
+    clearTimeout(timeoutId);
+    const data = await res.json();
+
+    if (data.success) {
+      return NextResponse.rewrite(new URL('/success', req.url));
+    } else {
+      return NextResponse.rewrite(new URL('/error', req.url));
+    }
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      // Handle timeout gracefully
+      console.error('API request timed out');
+      return NextResponse.rewrite(new URL('/timeout', req.url));
+    } else {
+      // Handle other errors
+      console.error('API request failed:', error);
+      return NextResponse.rewrite(new URL('/error', req.url));
+    }
+  }
+}
+
+export const config = {
+  matcher: ['/'],
+};
+```
+
+This improved version includes a 5-second timeout. If the API doesn't respond within that time, the `AbortController` aborts the request, and the `catch` block handles the `AbortError`, preventing the middleware from crashing.  We've added error handling for other potential issues as well.  Remember to create `/success`, `/error`, and `/timeout` pages to handle the different outcomes.
 
 
 ## Explanation
 
-1. **The `progress-ring` class:** This sets up the basic dimensions, shape (circle), and relative positioning for the container.
-2. **`::before` pseudo-element:** This creates the circular background and the colored progress section using `conic-gradient`. The `calc(var(--progress) * 1%)` expression dynamically calculates the filled portion of the circle based on the `--progress` custom property.  The `#e6e6e6` is a light gray for the background, and `#4caf50` is a green for the progress.
-3. **`::after` pseudo-element:** This adds the percentage value as text to the center of the progress ring.
+The `Request aborted` error arises from the asynchronous nature of Next.js Middleware and the limitations of the server's response time.  By adding timeouts with `AbortController`, we ensure that the middleware doesn't block indefinitely, leading to a more robust and reliable application.  Proper error handling allows you to gracefully manage timeouts and other potential issues, providing a better user experience.
 
 
-## Links to Resources to Learn More
+## External References
 
-* **MDN Web Docs on `conic-gradient`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
-* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **CSS Tricks on Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/) (a general resource on CSS gradients, including conic gradients)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [MDN Web Docs: AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)
+* [Fetch API Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

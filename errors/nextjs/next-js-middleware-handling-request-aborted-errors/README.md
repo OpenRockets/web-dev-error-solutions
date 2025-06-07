@@ -1,50 +1,46 @@
 # 🐞 Next.js Middleware: Handling `Request aborted` Errors
 
 
-This document addresses a common issue encountered when using Next.js Middleware: the `Request aborted` error. This error typically arises when a middleware function takes too long to execute, causing the client's request to time out before receiving a response.
+## Description of the Error
 
-**Description of the Error:**
+A common error encountered when working with Next.js Middleware is the cryptic "Request aborted" message. This error doesn't usually provide a specific line number or detailed explanation, making debugging challenging.  It often manifests when your middleware attempts to perform an action that takes too long to complete, exceeding the timeout set by the server or client.  This can be triggered by various factors, including slow database queries, external API calls with long response times, or computationally intensive operations within the middleware itself.  The result is a frustratingly vague error message that leaves developers scratching their heads.
 
-The `Request aborted` error manifests in your browser's developer console or network tab, indicating that the client-side request to your Next.js application was interrupted before completion.  This is frequently caused by long-running operations within your middleware function, exceeding the client's timeout limit (often around 30 seconds).  Other potential, less common causes include issues with your server's configuration or network connectivity.
+## Code Example & Fixing Steps
 
+Let's imagine a scenario where our middleware fetches data from a slow external API before proceeding.  The following code snippet demonstrates the problem and its solution:
 
-**Scenario:**  Imagine a middleware function that performs a complex database query or external API call to authenticate a user before proceeding to the requested page. If this operation takes longer than the client's timeout period, the `Request aborted` error will occur.
-
-
-**Step-by-Step Code Fix:**
-
-Let's assume we have a middleware function that fetches data from a slow external API:
-
-**Problematic Middleware:**
+**Problem Code (middleware.js):**
 
 ```javascript
-// pages/api/middleware.js
 import { NextResponse } from 'next/server'
 
-export function middleware(req) {
-  const response = fetch('https://slow-api.example.com/data'); //Simulates a slow API
+export async function middleware(req) {
+  const res = await fetch('https://slow-api.example.com/data'); // Simulates a slow API
+  const data = await res.json();
 
-  // This will likely cause a timeout if the API is slow
-  return response.then((res) => {
-      if (!res.ok) {
-          return new Response("API error", { status: 500 });
-      }
-      return NextResponse.next();
-  });
+  if (data.success) {
+    return NextResponse.rewrite(new URL('/success', req.url));
+  } else {
+    return NextResponse.rewrite(new URL('/error', req.url));
+  }
 }
 
 export const config = {
-  matcher: ['/protected'],
-}
+  matcher: ['/'],
+};
 ```
 
-**Improved Middleware with Timeout Handling:**
+This code will likely throw a `Request aborted` error if `https://slow-api.example.com/data` takes too long to respond.
 
-To prevent this error, we need to implement timeout mechanisms and handle potential errors gracefully:
+**Fixing Steps:**
 
+1. **Implement Timeouts:** The most effective solution is to introduce timeouts to your `fetch` calls.  This prevents your middleware from hanging indefinitely.
+
+2. **Use `AbortController`:**  `AbortController` allows you to gracefully cancel a request if it takes too long.
+
+**Corrected Code (middleware.js):**
 
 ```javascript
-// pages/api/middleware.js
 import { NextResponse } from 'next/server'
 
 export async function middleware(req) {
@@ -52,44 +48,46 @@ export async function middleware(req) {
   const timeoutId = setTimeout(() => controller.abort(), 5000); // 5-second timeout
 
   try {
-    const response = await fetch('https://slow-api.example.com/data', { signal: controller.signal });
+    const res = await fetch('https://slow-api.example.com/data', { signal: controller.signal });
+    clearTimeout(timeoutId);
+    const data = await res.json();
 
-    clearTimeout(timeoutId); // Clear timeout if successful
-
-    if (!response.ok) {
-      return new NextResponse("API error", { status: 500 });
+    if (data.success) {
+      return NextResponse.rewrite(new URL('/success', req.url));
+    } else {
+      return NextResponse.rewrite(new URL('/error', req.url));
     }
-
-    return NextResponse.next();
   } catch (error) {
     if (error.name === 'AbortError') {
-      return new NextResponse('Request timed out', { status: 504 }); // Gateway Timeout
+      // Handle timeout gracefully
+      console.error('API request timed out');
+      return NextResponse.rewrite(new URL('/timeout', req.url));
+    } else {
+      // Handle other errors
+      console.error('API request failed:', error);
+      return NextResponse.rewrite(new URL('/error', req.url));
     }
-    console.error('Error fetching data:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
 
 export const config = {
-  matcher: ['/protected'],
-}
+  matcher: ['/'],
+};
 ```
 
-**Explanation:**
-
-1. **`AbortController`:** We introduce `AbortController` to allow us to abort the `fetch` request if it takes too long.
-2. **`setTimeout`:**  A timeout of 5 seconds is set using `setTimeout`.  Adjust this value as needed based on your API's expected response time.
-3. **`controller.signal`:** The `signal` option in the `fetch` call allows the `AbortController` to interrupt the request.
-4. **`clearTimeout`:** If the `fetch` completes successfully within the timeout period, `clearTimeout` prevents unnecessary cleanup.
-5. **`try...catch` Block:**  The `try...catch` block handles potential errors.  Specifically, it checks for `AbortError` to distinguish between timeouts and other errors.
-6. **Appropriate Status Codes:**  Returning appropriate HTTP status codes (504 for timeout, 500 for other server-side errors) helps clients handle the situation correctly.
+This improved version includes a 5-second timeout. If the API doesn't respond within that time, the `AbortController` aborts the request, and the `catch` block handles the `AbortError`, preventing the middleware from crashing.  We've added error handling for other potential issues as well.  Remember to create `/success`, `/error`, and `/timeout` pages to handle the different outcomes.
 
 
-**External References:**
+## Explanation
+
+The `Request aborted` error arises from the asynchronous nature of Next.js Middleware and the limitations of the server's response time.  By adding timeouts with `AbortController`, we ensure that the middleware doesn't block indefinitely, leading to a more robust and reliable application.  Proper error handling allows you to gracefully manage timeouts and other potential issues, providing a better user experience.
+
+
+## External References
 
 * [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [AbortController MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)
-* [Fetch API MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
+* [MDN Web Docs: AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)
+* [Fetch API Documentation](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
