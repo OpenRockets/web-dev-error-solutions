@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Request is not defined` Error
+Handling `Error: NextRouter.push called with pathname that starts with '/' but is not absolute` in Next.js

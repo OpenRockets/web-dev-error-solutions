@@ -1,3 +1,5 @@
+# 🐞 Handling `Error: NextRouter.push called with pathname that starts with '/' but is not absolute` in Next.js
+
 
 This document addresses a common error encountered when using `NextRouter.push` within Next.js applications, particularly within API routes or middleware.  The error message typically reads: `Error: NextRouter.push called with pathname that starts with '/' but is not absolute`.
 
