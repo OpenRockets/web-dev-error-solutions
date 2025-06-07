@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Error: Route is protected by middleware`
+Creating a Pure CSS Circular Progress Bar
