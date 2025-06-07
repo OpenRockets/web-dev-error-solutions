@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Redirect` Issues with Dynamic Routes
+Creating a CSS-only Expanding Card
