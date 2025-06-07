@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: Route is protected by middleware`
+
 
 This document addresses a common error encountered when implementing Next.js Middleware:  `Error: Route is protected by middleware`. This error arises when you've configured middleware to protect a route, but the client-side navigation or a direct request to that route doesn't properly handle the authentication or authorization checks enforced by the middleware.  This usually happens when you're not redirecting to a login page or handling the unauthorized access appropriately within the middleware itself.
 
