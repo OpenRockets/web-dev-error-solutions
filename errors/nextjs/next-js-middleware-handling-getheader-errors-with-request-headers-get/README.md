@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `getHeader` Errors with `Request.headers.get()`
+
 
 ## Description of the Error
 
