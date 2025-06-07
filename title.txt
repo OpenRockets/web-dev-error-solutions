@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `next/server` Imports Outside of Middleware
+Creating a CSS-Only Circular Progress Bar
