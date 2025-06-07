@@ -1,82 +1,64 @@
 
-This document addresses a common issue encountered when working with Next.js Middleware: the `Request Not Found` error. This typically arises when middleware attempts to access a route that doesn't exist or isn't handled by your application.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This example uses pure CSS, leveraging the `conic-gradient()` function for a smooth, visually appealing effect.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The `Request Not Found` error in Next.js Middleware manifests as a 404 error in the browser. It signifies that the middleware function is attempting to match a URL pattern that isn't defined in your application's routing structure or API routes.  This could be due to incorrect path matching in your middleware, typos in your route definitions, or an issue with the way you're structuring your application's file system and routes.
+The circular progress bar is created using a pseudo-element (`::before`) on a parent element.  The `conic-gradient()` function generates the circular gradient, with the progress represented by a colored section and the rest by a gray background.  The size and color are easily customizable through CSS variables (custom properties).
 
+**Full Code:**
 
-**Scenario:**  Let's imagine you are building a protected authentication middleware that should only allow access to specific routes.  If you mistakenly reference a non-existent route, you'll encounter this error.
-
-**Full Code (Illustrative Example & Fixing Steps):**
-
-
-**Problematic Middleware (`middleware.js`):**
-
-```javascript
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const path = req.nextUrl.pathname;
-
-  // Incorrect path - leading to the 404 error
-  if (path === '/protected/page') { 
-    //Check for authentication... (implementation omitted for brevity)
-
-    if (/* user is authenticated */ true) {
-       return NextResponse.next();
-    } else {
-      return NextResponse.redirect(new URL('/login', req.url));
-    }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+  .progress-ring {
+    --progress: 75; /* Percentage of progress (0-100) */
+    --size: 100px; /* Size of the ring */
+    --color: #007bff; /* Color of the progress */
+    width: var(--size);
+    height: var(--size);
+    position: relative;
   }
-}
 
-export const config = {
-  matcher: '/protected/:path*' //Incorrect matcher for the example
-}
+  .progress-ring::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(
+      var(--color) var(calc(--progress * 1%)),
+      #ddd 0
+    );
+  }
+</style>
+</head>
+<body>
+
+  <div class="progress-ring"></div>
+
+</body>
+</html>
 ```
 
-This code might throw a `Request Not Found` if `/protected/page` isn't actually a route in your application.  The `matcher` is also overly broad and could lead to unexpected behavior.
 
-**Corrected Middleware (`middleware.js`):**
+**Explanation:**
 
-```javascript
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const path = req.nextUrl.pathname;
-
-  // Correct Path
-  if (path === '/protected/profile') { //updated path to match actual route.
-    const session = req.cookies.get('session'); // Example Authentication check
-
-    if (session) {
-       return NextResponse.next();
-    } else {
-      return NextResponse.redirect(new URL('/login', req.url));
-    }
-  }
-}
+* **`--progress`:** This custom property controls the percentage of the progress bar filled.  Changing this value dynamically (e.g., with JavaScript, though this example avoids that) will update the progress bar visually.
+* **`--size`:**  This custom property determines the diameter of the circular progress bar.
+* **`--color`:** This custom property sets the color of the progress section.
+* **`conic-gradient()`:** This function is key. It creates a circular gradient.  `var(--color) var(calc(--progress * 1%))`  sets the colored section based on the `--progress` variable.  `#ddd 0` sets the remaining portion to a light gray.
+* **Pseudo-element `::before`:**  This is used to create the visual ring overlaying the parent element.  Its properties are set to create the circular shape and apply the gradient.
 
 
-export const config = {
-  matcher: '/protected/profile' //More specific matcher, matches only one route
-}
-```
+**Links to Resources to Learn More:**
 
-**Explanation of the Fix:**
-
-1. **Correct Path:** The original middleware tried to match `/protected/page`, which likely wasn't a defined route.  We changed it to `/protected/profile`, assuming a `/protected/profile.js` (or `.tsx`) page exists under the `pages/protected` directory.
-2. **Specific Matcher:**  The `matcher` configuration is crucial. Using `'/protected/:path*'` is too broad; it will attempt to intercept *all* paths under `/protected`, leading to potential errors if not all subpaths are handled correctly.  A more specific matcher, `'/protected/profile'`, only targets the intended route.
-
-**External References:**
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [Next.js Routing](https://nextjs.org/docs/app/building-your-application/routing)
-
-
-This corrected example demonstrates how careful attention to route definition and the `matcher` configuration in your middleware is vital for avoiding `Request Not Found` errors.  Always ensure your middleware matches existing routes or handles appropriately if they do not exist.
+* **MDN Web Docs - `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **CSS Tricks - Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/) (For a broader understanding of CSS gradients)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

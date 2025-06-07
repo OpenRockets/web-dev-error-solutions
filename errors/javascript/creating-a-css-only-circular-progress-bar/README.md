@@ -1,61 +1,67 @@
 # 🐞 Creating a CSS-only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This technique leverages the `clip-path` property and some clever trigonometry to achieve a visually appealing and fully customizable progress indicator.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This example uses pure CSS, leveraging the `conic-gradient()` function for a smooth, visually appealing effect.
 
 **Description of the Styling:**
 
-The circular progress bar is created using a single `<div>`.  We use a background color for the track (the circle's outer ring), and then a pseudo-element (`::before`) to create the progress indicator. The progress indicator is a circle with a background color, positioned over the track. The `clip-path` property is used to dynamically "cut" the circle, creating the progress effect. The percentage of completion is controlled by a CSS variable (`--progress`). This allows for easy modification via CSS or JavaScript (though this example is CSS-only).
+The circular progress bar is created using a pseudo-element (`::before`) on a parent element.  The `conic-gradient()` function generates the circular gradient, with the progress represented by a colored section and the rest by a gray background.  The size and color are easily customizable through CSS variables (custom properties).
 
 **Full Code:**
 
 ```html
-<div class="progress-ring">
-</div>
-```
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+  .progress-ring {
+    --progress: 75; /* Percentage of progress (0-100) */
+    --size: 100px; /* Size of the ring */
+    --color: #007bff; /* Color of the progress */
+    width: var(--size);
+    height: var(--size);
+    position: relative;
+  }
 
-```css
-.progress-ring {
-  --progress: 75; /* Adjust this value to change the progress percentage (0-100) */
-  --size: 100px; /* Adjust the size of the progress ring */
-  --thickness: 10px; /* Adjust the thickness of the progress ring */
-  width: var(--size);
-  height: var(--size);
-  position: relative;
-  border-radius: 50%;
-  background-color: #f0f0f0; /* Track background color */
-}
+  .progress-ring::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(
+      var(--color) var(calc(--progress * 1%)),
+      #ddd 0
+    );
+  }
+</style>
+</head>
+<body>
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: calc(var(--size) - var(--thickness) * 2);
-  height: calc(var(--size) - var(--thickness) * 2);
-  border-radius: 50%;
-  background-color: #4CAF50; /* Progress indicator color */
-  clip-path: polygon(
-    50% 50%,
-    calc(50% + (var(--size) / 2 - var(--thickness)) * cos(calc(var(--progress) * 3.14159 / 50))) calc(50% - (var(--size) / 2 - var(--thickness)) * sin(calc(var(--progress) * 3.14159 / 50))),
-    calc(50% + (var(--size) / 2 - var(--thickness)) * cos(calc(3.14159 * 2 - var(--progress) * 3.14159 / 50))) calc(50% - (var(--size) / 2 - var(--thickness)) * sin(calc(3.14159 * 2 - var(--progress) * 3.14159 / 50)))
-  );
-}
+  <div class="progress-ring"></div>
+
+</body>
+</html>
 ```
 
 
 **Explanation:**
 
-* **`--progress` variable:** Controls the percentage of the circle filled.
-* **`--size` variable:** Determines the overall size of the progress ring.
-* **`--thickness` variable:** Controls the thickness of the progress ring.
-* **`clip-path: polygon(...)`:** This is where the magic happens. The formula calculates the coordinates of the polygon's vertices, effectively creating the circular progress.  The trigonometry ensures the correct arc is drawn based on the `--progress` value.  It creates a filled segment from 0 degrees to the `--progress` percentage of a full 360-degree circle.
+* **`--progress`:** This custom property controls the percentage of the progress bar filled.  Changing this value dynamically (e.g., with JavaScript, though this example avoids that) will update the progress bar visually.
+* **`--size`:**  This custom property determines the diameter of the circular progress bar.
+* **`--color`:** This custom property sets the color of the progress section.
+* **`conic-gradient()`:** This function is key. It creates a circular gradient.  `var(--color) var(calc(--progress * 1%))`  sets the colored section based on the `--progress` variable.  `#ddd 0` sets the remaining portion to a light gray.
+* **Pseudo-element `::before`:**  This is used to create the visual ring overlaying the parent element.  Its properties are set to create the circular shape and apply the gradient.
 
-**Resources to Learn More:**
 
-* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **Understanding Trigonometry:** Search for basic trigonometry tutorials online (many resources are available).
+**Links to Resources to Learn More:**
+
+* **MDN Web Docs - `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **CSS Tricks - Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/) (For a broader understanding of CSS gradients)
+
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
