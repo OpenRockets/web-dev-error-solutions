@@ -1,107 +1,74 @@
 
-This document addresses a common problem encountered when using Next.js Middleware with dynamic routes:  correctly handling 404 (Not Found) errors.  Improperly configured middleware can inadvertently return a 404 for valid routes, leading to a broken user experience.
+This document details a CSS-only solution to create an expanding card effect, similar to what you might see on a product showcase page or a news article feed.  This effect uses only CSS, no JavaScript required!  We'll use standard CSS3, though the principles could be adapted to frameworks like Tailwind CSS.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-When using middleware with dynamic segments in your routes (e.g., `/blog/[slug]`), you might encounter a `Not Found` error even if the requested page exists. This usually happens when the middleware's logic doesn't correctly handle cases where the dynamic segment doesn't match any existing data.  The middleware might prematurely respond with a 404 before the actual page rendering logic has a chance to verify the existence of the resource.
+The core idea is to leverage CSS transitions and the `:hover` pseudo-class to create the expanding animation.  The card starts in a compact state.  On hover, we enlarge it using CSS transitions, making the expansion visually smooth.  We'll also add some subtle styling for visual appeal.
 
+**Full Code:**
 
-**Code Example: Incorrect Middleware**
-
-This example demonstrates middleware that incorrectly handles a dynamic route, resulting in a `Not Found` error for valid slugs:
-
-```javascript
-// pages/api/middleware.js
-export function middleware(req) {
-  const slug = req.query.slug;
-  // Incorrect:  We don't check if a page with this slug exists before setting the response
-  if (!slug) {
-    return NextResponse.rewrite(new URL('/404', req.url))
-  }
-    // ...other middleware logic...
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 200px;
+  height: 150px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden; /* Hide content that overflows */
+  transition: all 0.3s ease-in-out; /* Smooth transition for all properties */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
 }
 
-
-export const config = {
-  matcher: ['/blog/:slug*'],
+.card:hover {
+  width: 300px;
+  height: 250px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2); /* Increased shadow on hover */
 }
 
-// pages/blog/[slug].js
-import { useRouter } from 'next/router'
-export default function BlogPost(){
-  const router = useRouter()
-  const {slug} = router.query
-  return(
-    <h1>This is blog post {slug}</h1>
-  )
+.card-content {
+  padding: 10px;
+  color: #333;
 }
+
+.card-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.card-text {
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Expanding Card</h2>
+    <p class="card-text">This is a simple example of an expanding card created using only CSS.  Hover over the card to see the effect.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
-
-**Step-by-step Fix:**
-
-1. **Conditional Redirects/Rewrites:**  Instead of immediately rewriting to a 404 page, check if the resource exists *before* responding. This usually involves querying a database or file system.
-
-2. **Data Fetching:** Fetch data related to the dynamic segment (e.g., blog post data for `/blog/[slug]`).  Only if the data fetch is successful should you proceed.  If the fetch fails, then you can return a 404.
-
-3. **Error Handling:**  Implement robust error handling to catch potential issues during data fetching.
-
-
-**Corrected Code:**
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export async function middleware(req) {
-  const slug = req.query.slug;
-
-  if (!slug) {
-    return NextResponse.rewrite(new URL('/404', req.url))
-  }
-
-  try {
-    // Simulate fetching blog post data; replace with your actual data fetching logic.
-    const blogPost = await fetch(`https://api.example.com/blog/${slug}`);
-
-    if (!blogPost.ok) {
-      return NextResponse.rewrite(new URL('/404', req.url));
-    }
-
-    // ...other middleware logic...
-
-  } catch (error) {
-    console.error("Error fetching blog post:", error);
-    return NextResponse.rewrite(new URL('/404', req.url));
-  }
-}
-
-export const config = {
-  matcher: ['/blog/:slug*'],
-}
-
-
-// pages/blog/[slug].js
-import { useRouter } from 'next/router'
-export default function BlogPost(){
-  const router = useRouter()
-  const {slug} = router.query
-  return(
-    <h1>This is blog post {slug}</h1>
-  )
-}
-```
-
 
 **Explanation:**
 
-The corrected middleware now attempts to fetch data for the given `slug`. If the fetch request fails (e.g., due to a network error or the blog post not existing), or the API returns a non-200 status code, a 404 response is returned.  Otherwise, the middleware continues to process the request.  This ensures that a 404 is only returned when a blog post genuinely does not exist.
+* **`.card`:** This class defines the basic styling of the card, including its dimensions, background color, border radius, and initial box shadow.  Crucially, the `transition` property is set to smoothly animate changes to all properties over 0.3 seconds.
+* **`.card:hover`:** This styles the card when the mouse hovers over it.  We increase the width and height, and enhance the box shadow to provide visual feedback.
+* **`.card-content`, `.card-title`, `.card-text`:** These classes style the content within the card, providing basic layout and typography.
+* **`overflow: hidden;`:**  This is important to prevent the content from spilling outside the card before and after the expansion.
 
+**Links to Resources to Learn More:**
 
-**External References:**
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [Next.js Error Handling](https://nextjs.org/docs/app/building-your-application/handling-errors)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+* **CSS Box-Shadow:** [MDN Web Docs - CSS Box-Shadow](https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
