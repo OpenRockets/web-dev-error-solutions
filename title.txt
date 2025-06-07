@@ -1,1 +1,1 @@
-Handling `NextResponse.redirect` Issues in Next.js Middleware
+Debugging "Headers Already Sent" Error in Next.js API Routes

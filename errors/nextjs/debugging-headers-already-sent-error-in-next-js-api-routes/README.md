@@ -1,3 +1,5 @@
+# 🐞 Debugging "Headers Already Sent" Error in Next.js API Routes
+
 
 This document addresses a common issue encountered when developing API routes in Next.js: the "Headers already sent" error.  This error typically arises when you attempt to send a response header after the response body has already started being sent to the client. This prevents the server from sending the proper HTTP response, leading to unexpected behavior or errors in your application.
 
