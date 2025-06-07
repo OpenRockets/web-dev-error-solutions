@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `redirect()` in `revalidate`
+
 
 This document addresses a common issue encountered when using Next.js Middleware's `redirect()` function within a `revalidate` context.  Specifically, we'll tackle the scenario where a redirect initiated within a `revalidate` function fails to produce the expected outcome, leading to unexpected behavior or errors.
 

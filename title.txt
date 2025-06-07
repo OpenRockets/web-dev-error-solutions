@@ -1,1 +1,1 @@
-Handling `TypeError: Cannot read properties of undefined (reading 'map')` in Next.js Middleware
+Next.js Middleware: Handling `redirect()` in `revalidate`
