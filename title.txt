@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers.append` Errors with `setHeader`
+Next.js API Routes: Handling Large Responses and Preventing Memory Leaks
