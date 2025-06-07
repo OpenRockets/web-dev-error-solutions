@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `NextResponse.redirect` in `getServerSideProps`
+
 
 This document addresses a common issue developers encounter when trying to redirect users from within `getServerSideProps` using `NextResponse`.  `NextResponse` is designed for use within middleware and API routes, not within the `getServerSideProps` function of a page component.  Attempting to use it will result in an error.
 
