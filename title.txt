@@ -1,1 +1,1 @@
-Handling `NextResponse.redirect` Issues in Next.js Middleware
+Handling "ReferenceError: fetch is not defined" in Next.js API Routes
