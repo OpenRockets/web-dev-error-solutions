@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `NextResponse.redirect` Issues with Dynamic Routes
+Handling "Failed to load resource: net::ERR_SPDY_PROTOCOL_ERROR" in Next.js Middleware
