@@ -1,1 +1,1 @@
-Handling `getServerSideProps` Errors and Preventing 500 Internal Server Errors in Next.js
+Next.js API Routes: Handling CORS Errors
