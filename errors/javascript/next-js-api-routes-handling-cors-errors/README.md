@@ -1,3 +1,5 @@
+# 🐞 Next.js API Routes: Handling CORS Errors
+
 
 **Description of the Error:**
 
