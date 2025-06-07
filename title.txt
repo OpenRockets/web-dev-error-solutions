@@ -1,1 +1,1 @@
-Handling `Error: NextRouter.push called with pathname that starts with '/' but is not absolute` in Next.js
+Next.js Middleware: Handling `headers already sent` Error
