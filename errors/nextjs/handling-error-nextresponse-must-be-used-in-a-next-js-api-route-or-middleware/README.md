@@ -1,3 +1,5 @@
+# 🐞 Handling `Error: NextResponse must be used in a Next.js API route or middleware`
+
 
 This document addresses a common error encountered when working with Next.js API routes and middleware: `Error: NextResponse must be used in a Next.js API route or middleware`.  This error occurs when you attempt to use `NextResponse` outside of its designated contexts: API routes or middleware.  `NextResponse` is specifically designed for manipulating HTTP responses within these environments and cannot be used in traditional page components or other parts of your Next.js application.
 

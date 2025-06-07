@@ -1,1 +1,1 @@
-Handling 404 Errors in Next.js API Routes
+Handling `Error: NextResponse must be used in a Next.js API route or middleware`
