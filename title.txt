@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `404` Errors Gracefully
+Next.js Middleware: Handling `UnhandledPromiseRejectionWarning` in API Routes
