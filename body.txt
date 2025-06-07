@@ -1,112 +1,90 @@
 
-This document addresses a common issue developers encounter when using Next.js Middleware: unintended infinite redirect loops.  This typically occurs when middleware redirects to a route that itself triggers the same middleware, creating a recursive redirect chain that never terminates.
+This document details a CSS-only solution to create an expanding card effect.  No JavaScript is required! The effect involves a card that expands to reveal more content when hovered over. We'll use pure CSS3 transitions and transforms to achieve this.
 
-## Description of the Error
+**Description of the Styling:**
 
-The error doesn't manifest as a specific error message in the console. Instead, you'll observe your browser continuously loading, showing the spinning loading indicator, or experiencing an extremely slow page load.  Your browser's network tab will likely show a series of increasingly long redirect requests, indicating the infinite loop.  This often happens when you're trying to implement authentication or conditional redirects based on routes.
+The card is styled using a simple structure with a container div for the overall card and inner divs for the content.  The key to the expanding effect lies in CSS transitions applied to `transform: scale()` and `box-shadow`.  On hover, the card scales up slightly and gets a more prominent box shadow, creating a visually appealing expanding effect.  We also use `overflow: hidden` to keep the initial content neatly within the card boundaries before expansion.
 
-## Code Example & Step-by-Step Fix
 
-Let's assume we're building an application where only authenticated users can access the `/dashboard` route.  An incorrect implementation might lead to an infinite redirect:
+**Full Code:**
 
-**Incorrect Middleware (`middleware.js`):**
-
-```javascript
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const session = req.cookies.get('session'); // Simplistic session check
-
-  if (!session) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 200px;
+  height: 150px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-export const config = {
-  matcher: ['/dashboard'],
-};
-```
-
-**Incorrect Login Page (`pages/login.js`):**  This would cause the infinite loop because the `/login` page also triggers the `middleware` if it doesn't have a session cookie.
-
-```javascript
-// pages/login.js - some basic login page
-export default function Login() {
-    return <div>Login Page</div>;
-}
-```
-
-**Step 1: Identifying the Loop**
-
-Carefully examine your middleware's logic and the routes it redirects to. Look for cases where the redirect target also triggers the same middleware.  In this example, both `/dashboard` and `/login` indirectly or directly trigger the same middleware leading to a loop.
-
-**Step 2:  Using `next/server.js` to prevent redirection of /login**
-
-The correct solution requires that the `/login` path *doesn't* trigger the middleware again.  We can achieve this by using the `matcher` config more precisely.
-
-**Corrected Middleware (`middleware.js`):**
-
-```javascript
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const session = req.cookies.get('session');
-
-  if (!session) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer; /* Indicate interactivity */
 }
 
-export const config = {
-  matcher: ['/dashboard/:path*'], // Only match routes starting with /dashboard
-};
-```
-
-**Step 3:  Consider a different approach for protected routes (if possible)**
-
-In many cases, the best solution would be to check authentication on the protected component itself using `getServerSideProps` or `getStaticProps` to fetch user data, or using a library like `next-auth` to manage authentication.
-
-**Corrected Dashboard Page (`pages/dashboard.js`):**
-
-```javascript
-import { getSession } from 'next-auth/react';
-
-export async function getServerSideProps(context) {
-  const session = await getSession(context);
-  if (!session) {
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    };
-  }
-  return { props: { session } };
+.card-content {
+  padding: 10px;
+  color: #333;
 }
 
-export default function Dashboard({ session }) {
-  return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>Welcome, {session.user.email}!</p>
+.card-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.card-text {
+  font-size: 14px;
+}
+
+.expanded-content {
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+.card:hover .expanded-content {
+  height: 100px; /* Adjust as needed */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h3 class="card-title">Card Title</h3>
+    <p class="card-text">This is some sample text for the card.</p>
+    <div class="expanded-content">
+      <p>This content expands on hover.</p>
     </div>
-  );
-}
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-This approach moves authentication logic to the component itself, preventing the middleware from recursively redirecting.
+
+**Explanation:**
+
+* **`transition` property:** This smoothly animates changes in `transform` and `box-shadow` over 0.3 seconds using an ease timing function.
+* **`transform: scale(1.05)`:** On hover, the card scales up to 105% of its original size.
+* **`box-shadow`:**  The box shadow increases on hover, giving a more pronounced 3D effect.
+* **`overflow: hidden`:** Prevents the expanded content from overflowing before the hover state.
+* **`.expanded-content`:** This div holds the extra content that's initially hidden and then shown with a height transition.
 
 
+**Links to Resources to Learn More:**
 
-## Explanation
-
-The infinite redirect occurs because the middleware's redirect logic is recursively called. By carefully defining the `matcher` property in the middleware's `config` object,  we explicitly control which routes trigger the middleware.  Furthermore, moving the authentication check to the protected route, ensures that the middleware is only used for a single redirection.
-
-
-## External References
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextAuth.js](https://next-auth.js.org/) - A popular authentication library for Next.js.
+* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
