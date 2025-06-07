@@ -1,3 +1,5 @@
+# 🐞 Next.js API Routes: Handling Large Response Sizes and Timeouts
+
 
 This document addresses a common issue developers face when working with Next.js API routes: exceeding the default response size and timeout limits, leading to errors and incomplete data delivery.
 
