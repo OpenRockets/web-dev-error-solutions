@@ -1,1 +1,1 @@
-Dealing with `NextResponse.redirect()` in Next.js Middleware leading to infinite redirect loops
+Creating a CSS-Only Expanding Card
