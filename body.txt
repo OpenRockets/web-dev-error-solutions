@@ -1,84 +1,78 @@
 
-## Description of the Error
-
-A common issue when using Next.js Middleware to perform redirects is improperly handling the `headers` and `cookies` objects.  Attempting to modify cookies directly within the middleware's `response` object during a redirect often leads to unpredictable behavior or silently fails to set the intended cookies. This is particularly problematic when you need to set authentication cookies after redirecting a user to a protected route. The redirect might succeed, but the intended cookies may not be set correctly, causing further authentication issues.
-
-## Code: Step-by-Step Fix
-
-Let's say we want to redirect an unauthenticated user to `/login` after checking for the presence of a session cookie named `token`.  A naive, incorrect approach might look like this:
+This document details a CSS-only solution for creating an expanding card effect, a common user interface element.  The effect involves a card that expands vertically when hovered over, revealing additional content.  We'll achieve this using pure CSS, without relying on JavaScript.
 
 
-**Incorrect Approach:**
+## Description of the Styling
 
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
+The card is styled using a simple `div` element and several CSS properties.  Key techniques include:
 
-export function middleware(req) {
-  const token = req.cookies.get('token')?.value;
+* **Transitions:**  Smooth transitions are applied to the `height` property to create the expansion animation.
+* **Overflow:** The `overflow: hidden;` property initially hides the extra content, revealing it only during expansion.
+* **Height:**  The initial height is set to a smaller value, then dynamically changed on hover.
+* **Pseudo-elements:** We use `::before` and `::after` pseudo-elements for stylistic touches (optional).
 
-  if (!token) {
-    const res = NextResponse.redirect(new URL('/login', req.url))
-    res.cookies.set('redirect_to', req.nextUrl.pathname) // INCORRECT: This will likely fail
-    return res;
-  }
+## Full Code
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden; /* Hide content beyond initial height */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+  width: 300px;
+  height: 100px; /* Initial height */
+  position: relative; /* Needed for absolute positioning of pseudo-elements */
 }
 
-export const config = {
-  matcher: '/',
+.card:hover {
+  height: 250px; /* Expanded height on hover */
 }
+
+.card-content {
+  padding: 10px;
+}
+
+.card::before { /* Optional: Add a subtle shadow */
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: -1;
+}
+
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h3>Card Title</h3>
+    <p>This is some initial text content of the card. </p>
+    <p>Additional content revealed on hover. </p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-This approach is flawed because the `res.cookies.set` method after initiating a redirect does not reliably set the cookie.
+## Explanation
 
-**Correct Approach:**
-
-This improved version uses the `NextResponse.rewrite` method instead of `NextResponse.redirect`.  This ensures cookies are set before the response is sent.  We also handle setting the `redirect_to` cookie within the `NextResponse` constructor:
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const token = req.cookies.get('token')?.value;
-
-  if (!token) {
-    return NextResponse.rewrite(new URL('/login', req.url), {
-      headers: {
-        'Set-Cookie': `redirect_to=${encodeURIComponent(req.nextUrl.pathname)}; Path=/; HttpOnly; Secure; SameSite=Strict`
-      }
-    });
-  }
-}
-
-export const config = {
-  matcher: '/',
-}
-```
-
-**Explanation of the Fix:**
-
-1. **`NextResponse.rewrite`:** Instead of `NextResponse.redirect`, we use `NextResponse.rewrite`. This method allows you to modify the response headers before the redirect.
-
-2. **`headers` object:** We use the `headers` object within `NextResponse.rewrite` to set the cookie using the `Set-Cookie` header.  This is the correct and reliable way to set cookies in the response.
-
-3. **Cookie attributes:**  The `Set-Cookie` header includes important attributes:
-   - `Path=/`:  The cookie is accessible across all paths on the domain.
-   - `HttpOnly`: The cookie is only accessible via HTTP requests and not client-side JavaScript, enhancing security.
-   - `Secure`: The cookie is only sent over HTTPS, further increasing security.
-   - `SameSite=Strict`: This prevents the cookie from being sent with cross-site requests.
-
-4. **`encodeURIComponent`:**  This function is crucial for safely encoding the URL path to prevent issues with special characters.
-
-Now, the redirect to `/login` will successfully set the `redirect_to` cookie, allowing you to handle the redirect appropriately on the `/login` page.
+The core logic lies in the CSS rules for the `.card` class. The `transition` property makes the change in height smooth.  The `overflow: hidden;` ensures only the visible content is initially displayed. The `height` is set to a smaller value, and the `:hover` pseudo-class increases the height, revealing hidden content smoothly.  The optional pseudo-elements (`::before`) add a simple shadow effect.  This technique relies on the browser's ability to handle CSS transitions.
 
 
-## External References
+## Resources to Learn More
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse)
-* [HTTP Cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies)
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs - CSS Pseudo-elements:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* **CSS-Tricks - Transitions and Animations:** [https://css-tricks.com/almanac/properties/t/transition/](https://css-tricks.com/almanac/properties/t/transition/) (Look for examples related to height transitions)
 
 
-## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

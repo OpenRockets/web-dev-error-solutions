@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers` and `cookies` correctly for Redirects
+Creating a CSS-Only Expanding Card
