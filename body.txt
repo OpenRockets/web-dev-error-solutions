@@ -1,109 +1,64 @@
 
-This document addresses a common error encountered when working with Next.js API routes and middleware: `Error: NextResponse must be used in a Next.js API route or middleware`.  This error occurs when you attempt to use `NextResponse` outside of its designated contexts: API routes or middleware.  `NextResponse` is specifically designed for manipulating HTTP responses within these environments and cannot be used in traditional page components or other parts of your Next.js application.
+This document details the creation of a circular progress bar using only CSS.  We'll leverage CSS3's `conic-gradient` function for a clean and efficient solution.  This avoids the complexities of JavaScript-based solutions, making it lightweight and performant.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The error message clearly states that `NextResponse` can only be used within API routes (`pages/api/**/*.js`) or middleware (`middleware.js` or similar files within the `pages` directory). Attempting to use it in a regular component or a page function will result in this error.  This is because `NextResponse` modifies the HTTP response directly, which is only possible within the context of an API route or middleware where Next.js controls the HTTP response cycle.
+The circular progress bar is created using a combination of a circle (`border-radius: 50%`) and a `conic-gradient`. The `conic-gradient` allows us to create a gradient that fills a portion of the circle, representing the progress. We control the progress percentage by manipulating the size of the colored arc within the gradient.  We also use a few other CSS properties for styling and visual enhancements.
 
+**Full Code:**
 
-**Code Example and Step-by-Step Fix:**
-
-Let's imagine you're trying to redirect a user to a different page based on some condition within a page component.  Incorrect implementation:
-
-```javascript
-// pages/my-page.js (INCORRECT)
-import { NextResponse } from 'next/server';
-
-export default function MyPage() {
-  const isLoggedIn = false;
-
-  if (!isLoggedIn) {
-    return <NextResponse redirect(new URL('/login', location.href)) />; // Error here!
-  }
-
-  return <h1>Welcome!</h1>;
-}
-```
-
-This will throw the `Error: NextResponse must be used in a Next.js API route or middleware` error.  The correct way is to handle redirects within an API route or middleware:
-
-**1. Using API Routes:**
-
-```javascript
-// pages/api/redirect.js
-import { NextResponse } from 'next/server';
-
-export function GET(request) {
-  const isLoggedIn = false; // Replace with your actual authentication logic
-
-  if (!isLoggedIn) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  return NextResponse.json({ message: 'Welcome!' });
-}
-```
-
-Then in `my-page.js`, you would fetch this API route to get the redirect:
-
-
-```javascript
-// pages/my-page.js (CORRECT using API Route)
-import { useEffect, useState } from 'react';
-
-export default function MyPage() {
-  const [redirect, setRedirect] = useState(null);
-
-  useEffect(() => {
-    const fetchRedirect = async () => {
-      const res = await fetch('/api/redirect');
-      const data = await res.json();
-      if (res.status === 307) { // Check for redirect status
-          window.location.href = data.redirect;
-      } else if (data.message) {
-          setRedirect(data.message);
-      }
-    };
-    fetchRedirect();
-  }, []);
-
-  return redirect ? <h1>{redirect}</h1> : <h1>Loading...</h1>;
-}
-```
-
-
-**2. Using Middleware:**
-
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const isLoggedIn = false; // Replace with your actual authentication logic
-
-  if (!isLoggedIn) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #ddd 0%,
+    #ddd 75%,
+    #007bff 75%,
+    #007bff 75%
+  ); /* Adjust the 75% value to change the progress */
+  border: 5px solid #ddd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-export const config = {
-  matcher: ['/my-page'], // Only match /my-page
-};
+.progress-ring::before {
+  content: attr(data-progress) "%";
+  font-size: 20px;
+  font-weight: bold;
+  color: #007bff;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-ring" data-progress="75"></div>
+
+</body>
+</html>
 ```
-
-This middleware will intercept requests to `/my-page` and redirect unauthenticated users to `/login`.  No changes are needed in `my-page.js` in this case, but remember to add the middleware file.
-
 
 **Explanation:**
 
-The key difference is that API routes and middleware operate within the context of the HTTP request lifecycle, allowing `NextResponse` to modify the response directly.  Page components, on the other hand, render on the client-side (or server-side during the initial render) and don't have direct access to manipulate the raw HTTP response.  Using API routes or middleware provides the appropriate context for `NextResponse` to function correctly.
+* **`width` and `height`:** Set the dimensions of the circular progress bar.
+* **`border-radius: 50%`:** Creates the circular shape.
+* **`conic-gradient()`:** The core of the progress bar.  It creates a gradient that sweeps around the circle. The `75%` value in this example specifies that 75% of the circle should be filled with the blue color (`#007bff`).  Change this value to adjust the progress.  The `#ddd` represents the background color (grey in this case).
+* **`border`:** Adds a border to visually separate the progress bar from its background.
+* **`display: flex`, `justify-content: center`, `align-items: center`:** These ensure the percentage text is nicely centered.
+* **`::before` pseudo-element:** Used to display the progress percentage.  The `attr(data-progress)` pulls the percentage value from the `data-progress` attribute on the container element.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server/next-response)
+* **MDN Web Docs on `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **CSS-Tricks on CSS Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
