@@ -1,3 +1,5 @@
+# 🐞 Handling `Error: Request failed with status code 404` in Next.js API Routes
+
 
 This document addresses a common error developers encounter when working with Next.js API routes: a `404 Not Found` error. This often arises from misconfigurations in the API route file's path, incorrect method handling, or problems with the request itself.
 
