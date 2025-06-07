@@ -1,80 +1,68 @@
 
-This document addresses a common error encountered when working with Next.js Middleware: the dreaded "Error: headers already sent" message. This usually happens when you try to modify the response headers after some content has already been sent to the client.  This can be particularly tricky because the error doesn't always pinpoint the exact location of the issue within your middleware.
+This document addresses a common error encountered when using Next.js Middleware: the "headers already sent" error. This typically occurs when you attempt to set headers in your middleware after data has already been sent to the client, often due to unintended outputs before the `next()` function call.
 
 **Description of the Error:**
 
-The `Error: headers already sent` error in Next.js Middleware means your code attempted to set or modify HTTP headers after the response body has already started being sent to the client. This typically happens because you have some output (e.g., `console.log`, accidental whitespace, or even a stray character) *before* your `next()` call within the middleware.  This prevents the middleware from correctly modifying headers, leading to unexpected behavior or crashes.
+The "headers already sent" error in Next.js Middleware indicates that your middleware function has already begun sending a response to the client (e.g., by implicitly or explicitly printing data) before calling `next()`.  This prevents you from modifying headers, which are typically set before the main response body. The error message itself might vary slightly depending on the underlying server environment, but the core problem is always the same: premature response generation.
 
-**Scenario:**  Let's imagine a middleware that redirects unauthenticated users to the login page.  A common mistake is to include unintended output *before* calling `next()`.
+**Scenario:**  Imagine you're trying to redirect users based on a condition in your middleware. If something outputs data (even a simple log statement) *before* the `next()` function call which handles the redirect, this error occurs.
 
-
-**Faulty Code:**
+**Code Example with Error (Illustrative):**
 
 ```javascript
 // pages/api/middleware.js
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  console.log("This will cause the error!") //Unintentional output before next()
-  const session = req.cookies.get('session');
-
-  if (!session) {
-    return NextResponse.redirect(new URL('/login', req.url));
+export function middleware(req, res) {
+  console.log("Middleware triggered!"); // This might cause the error if unhandled.
+  if (req.url === '/secret') {
+    if (req.cookies.isLoggedIn) {
+      next();
+    } else {
+      res.writeHead(307, { Location: '/login' }); // Redirect
+      res.end();
+    }
   }
-
-  return NextResponse.next();
 }
-
-export const config = {
-  matcher: '/',
-};
 ```
 
+**Fixing the Error Step-by-Step:**
 
-**Step-by-Step Fix:**
+1. **Identify the Source:** Carefully examine your middleware function. Look for any `console.log` statements, accidental `res.send()` or `res.write()` calls outside of your conditional logic, or any unintentional output before `next()` is called.
 
-1. **Identify the culprit:** Carefully examine your middleware code *before* the `next()` or `NextResponse` function call. Look for any unintentional output, including:
-    * `console.log` statements
-    * Unintended whitespace or characters (even a single space or newline)
-    * Errors or exceptions that might be logging to the console
 
-2. **Remove or fix the pre-mature output:** In our example, the `console.log` statement is the problem. Simply remove it:
+2. **Ensure Proper Conditional Logic:** Ensure your logic for redirecting or setting headers is properly contained within an `if` statement or other conditional structure.  Make sure that the `res.writeHead` (or similar header-setting functions) and `res.end()` are only called in branches where they are needed.
+
+
+3. **Corrected Code:**
 
 ```javascript
-// pages/api/middleware.js (Corrected)
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const session = req.cookies.get('session');
-
-  if (!session) {
-    return NextResponse.redirect(new URL('/login', req.url));
+// pages/api/middleware.js
+export function middleware(req, res, next) {
+  if (req.url === '/secret') {
+    if (req.cookies.isLoggedIn) {
+      next(); // Allow access if logged in
+    } else {
+      res.writeHead(307, { Location: '/login' });
+      res.end();
+    }
+  } else {
+    next(); // Allow other requests to continue
   }
-
-  return NextResponse.next();
 }
-
-export const config = {
-  matcher: '/',
-};
 ```
-
-3. **Ensure Proper `return` Statements:** Always ensure that your middleware function has a `return` statement.  If you don't return anything, implicit output might occur, triggering the error.  Explicitly return `NextResponse.next()` if you don't want to modify the response.
-
-4. **Check for Errors:** If you have any `try...catch` blocks in your middleware, make sure any errors within the `try` block are handled appropriately without unintended output (like logging to the console within the `catch` block).
-
 
 **Explanation:**
 
-Next.js middleware operates in a specific order.  It intercepts requests before they reach your pages. If the middleware function produces any output before the `NextResponse` object is returned, the response headers are implicitly closed. Any subsequent attempt to change headers results in the `headers already sent` error. By removing unnecessary output or ensuring a clean `return` statement, you prevent this premature header closure.
+The corrected code explicitly handles all possible paths within the middleware. By placing the `res.writeHead` and `res.end` inside the `else` block of the conditional and adding a `next()` statement for other requests, we ensure that the headers are only set when the redirect is necessary, and that other requests pass through unaffected.  The critical change is that nothing is sent to the response before the conditional logic decides the appropriate action.
 
 
 **External References:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [Handling Errors in Next.js](https://nextjs.org/docs/basic-features/pages#handling-errors)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware) - The official Next.js documentation on middleware.
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction) -  Relevant if you're also using API routes alongside middleware.
+* [Node.js `http.ServerResponse`](https://nodejs.org/api/http.html#http_class_http_serverresponse) -  Understanding the `res` object in the context of Node.js HTTP responses.
+
+**Note:**  If your problem persists, double check for any other unintended output such as accidentally calling an external API that sends a response before your `res.end()`
 
 
-**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

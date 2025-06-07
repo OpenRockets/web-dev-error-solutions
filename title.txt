@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Error: headers already sent`
+Next.js Middleware: Handling `headers already sent` Error
