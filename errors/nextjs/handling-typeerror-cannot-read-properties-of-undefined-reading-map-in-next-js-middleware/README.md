@@ -1,3 +1,5 @@
+# 🐞 Handling `TypeError: Cannot read properties of undefined (reading 'map')` in Next.js Middleware
+
 
 This document addresses a common error encountered when working with Next.js Middleware:  `TypeError: Cannot read properties of undefined (reading 'map')`. This typically arises when attempting to iterate over an array or object that is unexpectedly undefined within the middleware function.  Middleware runs early in the request lifecycle, before data fetching, making it prone to this error if you're relying on data fetched from a database or API.
 
