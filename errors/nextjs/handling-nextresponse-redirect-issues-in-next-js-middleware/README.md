@@ -1,3 +1,5 @@
+# 🐞 Handling `NextResponse.redirect` Issues in Next.js Middleware
+
 
 This document addresses a common problem encountered when using `NextResponse.redirect` within Next.js Middleware:  **Unexpected behavior or errors when redirecting based on dynamic conditions or external API responses**.  This often manifests as redirects not working as expected, loops, or even crashes.
 

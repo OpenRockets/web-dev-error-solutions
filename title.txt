@@ -1,1 +1,1 @@
-Creating a CSS-only Expanding Card with a Subtle Reveal
+Handling `NextResponse.redirect` Issues in Next.js Middleware
