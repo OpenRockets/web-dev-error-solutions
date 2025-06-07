@@ -1,68 +1,72 @@
 
-This document addresses a common problem developers encounter when using the `Redirect()` function within Next.js Middleware: unexpected redirect behavior or failures to redirect correctly.  This often stems from misunderstandings about how middleware operates and interacts with the request lifecycle.
+This document details how to create a circular progress bar using only CSS.  No JavaScript required! This technique leverages the `clip-path` property and some clever manipulation of borders and pseudo-elements.
+
+**Description of the Styling:**
+
+The circular progress bar is achieved using a single `<div>` element. We style this div to create a circular background. A pseudo-element (`::before`) is then used to create the actual progress bar segment.  The `clip-path` property is key; it allows us to create a circular clip that reveals only a portion of the pseudo-element, representing the progress percentage.  This percentage is controlled via a custom property (`--progress`).
 
 
-**Description of the Error:**
+**Full Code:**
 
-The error isn't a specific error message, but rather a range of behaviors. You might see:
+```html
+<div class="circular-progress" style="--progress: 75">
+  <span>75%</span>
+</div>
 
-* **No redirect:** The middleware runs, but the expected redirect doesn't happen, and the user remains on the original page.
-* **Incorrect redirect:** The redirect goes to the wrong URL or behaves unexpectedly.
-* **Infinite redirect loop:**  The middleware continually redirects, resulting in a browser error.
-
-
-**Code Example and Step-by-Step Fix:**
-
-Let's say we're building a feature where only authenticated users can access `/dashboard`.  A naive implementation might look like this (incorrect):
-
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const token = req.cookies.get('auth_token')
-
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', req.url))
-  }
-}
-
-export const config = {
-  matcher: '/dashboard',
-}
 ```
 
-This *might* seem correct, but it often fails due to how `req.url` works within middleware.  `req.url` contains the *original* requested URL, *not* the URL after any previous redirects.  If the user tries to access `/dashboard` while not logged in, it will perpetually redirect from `/dashboard` to `/login` and back, creating an infinite loop.
-
-Here's the corrected version:
-
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const token = req.cookies.get('auth_token')
-
-  if (!token) {
-    const loginUrl = new URL('/login', req.nextUrl) //Use req.nextUrl instead of req.url
-    return NextResponse.redirect(loginUrl)
-  }
+```css
+.circular-progress {
+  --size: 100px; /* Adjust size as needed */
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background-color: #f0f0f0; /* Background color */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-export const config = {
-  matcher: '/dashboard',
+.circular-progress::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background-color: #4CAF50; /* Progress bar color */
+  clip-path: circle(50% at 50% 50%); /* Initial circle */
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /*Makes it a square*/
+  transform: rotate(calc(var(--progress) * 3.6deg)); /* Rotate based on progress */
+  transform-origin: 50% 100%; /* Rotate from bottom */
+}
+
+.circular-progress span {
+  position: absolute;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: white;
+  z-index: 1; /* Ensure text is on top */
 }
 ```
 
 **Explanation:**
 
-The crucial change is replacing `req.url` with `req.nextUrl`.  `req.nextUrl` reflects the URL after any rewriting or redirection steps that may have already occurred in the middleware chain. Using this ensures that the redirect target is calculated correctly, preventing the infinite redirect loop.
+* **`--size`:** A custom property to easily control the size of the progress bar.
+* **`border-radius: 50%`:** Creates the circular shape.
+* **`position: relative`:** Allows absolute positioning of the pseudo-element.
+* **`clip-path: circle(50% at 50% 50%)`:** Creates the initial circular clip.
+* **`transform: rotate(calc(var(--progress) * 3.6deg))`:** This is the core of the animation.  It rotates the pseudo-element based on the `--progress` value.  `3.6deg` is 360 degrees divided by 100 (percentage).
+* **`transform-origin: 50% 100%`:** Sets the rotation origin to the bottom center, making the progress bar appear to fill from the bottom.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/api-reference/middleware](https://nextjs.org/docs/app/api-reference/middleware) (Refer to the sections on `NextResponse.redirect` and how middleware operates)
-* **Next.js Request Object:** [https://nextjs.org/docs/app/api-reference/request-object](https://nextjs.org/docs/app/api-reference/request-object) (Understand the differences between `req.url` and `req.nextUrl`)
+* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS Tricks - `clip-path` examples:**  [Search "clip-path" on css-tricks.com](https://css-tricks.com/) (Many relevant articles exist)
+* **Understanding CSS Variables (Custom Properties):** [Search "CSS Custom Properties" on MDN Web Docs](https://developer.mozilla.org/en-US/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

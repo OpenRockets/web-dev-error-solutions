@@ -1,25 +1,33 @@
 # 🐞 Creating a CSS-only Circular Progress Bar
 
 
-This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This technique leverages CSS's `clip-path` property and a pseudo-element to create a visually appealing and performant progress indicator.
+This document details how to create a circular progress bar using only CSS.  No JavaScript required! This technique leverages the `clip-path` property and some clever manipulation of borders and pseudo-elements.
 
 **Description of the Styling:**
 
-The progress bar is composed of two concentric circles. The outer circle acts as the background, while the inner circle represents the progress.  The `clip-path` property is used to create a circular "mask" on the inner circle, revealing only a portion based on the progress percentage.  This is achieved by dynamically adjusting the `clip-path`'s `circle()` function.  The styling includes customization options for colors, sizes, and stroke widths.
+The circular progress bar is achieved using a single `<div>` element. We style this div to create a circular background. A pseudo-element (`::before`) is then used to create the actual progress bar segment.  The `clip-path` property is key; it allows us to create a circular clip that reveals only a portion of the pseudo-element, representing the progress percentage.  This percentage is controlled via a custom property (`--progress`).
+
 
 **Full Code:**
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
+<div class="circular-progress" style="--progress: 75">
+  <span>75%</span>
+</div>
+
+```
+
+```css
 .circular-progress {
-  width: 150px;
-  height: 150px;
+  --size: 100px; /* Adjust size as needed */
+  width: var(--size);
+  height: var(--size);
   border-radius: 50%;
+  background-color: #f0f0f0; /* Background color */
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .circular-progress::before {
@@ -30,60 +38,37 @@ The progress bar is composed of two concentric circles. The outer circle acts as
   width: 100%;
   height: 100%;
   border-radius: inherit;
-  background-color: #f0f0f0; /* Background color */
-  z-index: 1; /* Ensure it's behind the progress */
+  background-color: #4CAF50; /* Progress bar color */
+  clip-path: circle(50% at 50% 50%); /* Initial circle */
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /*Makes it a square*/
+  transform: rotate(calc(var(--progress) * 3.6deg)); /* Rotate based on progress */
+  transform-origin: 50% 100%; /* Rotate from bottom */
 }
 
-.circular-progress::after {
-  content: "";
+.circular-progress span {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  background-color: #4CAF50; /* Progress color */
-  z-index: 2; /* On top of the background */
-  clip-path: circle(50% at 50% 50%); /* Adjust percentage here for progress */
+  font-size: 1.2em;
+  font-weight: bold;
+  color: white;
+  z-index: 1; /* Ensure text is on top */
 }
-
-
-.progress-75 .circular-progress::after {
-  clip-path: circle(75% at 50% 50%);
-}
-
-.progress-50 .circular-progress::after {
-  clip-path: circle(50% at 50% 50%);
-}
-
-.progress-25 .circular-progress::after {
-  clip-path: circle(25% at 50% 50%);
-}
-
-</style>
-</head>
-<body>
-
-<h1>CSS Only Circular Progress Bar</h1>
-
-<div class="circular-progress progress-75"></div>
-<div class="circular-progress progress-50"></div>
-<div class="circular-progress progress-25"></div>
-
-</body>
-</html>
 ```
 
 **Explanation:**
 
-*   The `.circular-progress` class sets up the basic structure: a square div with rounded corners to form a circle.
-*   The `::before` pseudo-element creates the background circle.
-*   The `::after` pseudo-element creates the progress circle.  Its `clip-path` is dynamically adjusted to show the desired percentage.  The example shows 75%, 50%, and 25% progress examples with separate classes.  You would need to change the `clip-path: circle(X% at 50% 50%);`  to adjust the percentage.  The `at 50% 50%` centers the circle.
+* **`--size`:** A custom property to easily control the size of the progress bar.
+* **`border-radius: 50%`:** Creates the circular shape.
+* **`position: relative`:** Allows absolute positioning of the pseudo-element.
+* **`clip-path: circle(50% at 50% 50%)`:** Creates the initial circular clip.
+* **`transform: rotate(calc(var(--progress) * 3.6deg))`:** This is the core of the animation.  It rotates the pseudo-element based on the `--progress` value.  `3.6deg` is 360 degrees divided by 100 (percentage).
+* **`transform-origin: 50% 100%`:** Sets the rotation origin to the bottom center, making the progress bar appear to fill from the bottom.
+
 
 **Links to Resources to Learn More:**
 
-*   [MDN Web Docs on `clip-path`](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-*   [CSS-Tricks on `clip-path`](https://css-tricks.com/clipping-masking-css/)
+* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS Tricks - `clip-path` examples:**  [Search "clip-path" on css-tricks.com](https://css-tricks.com/) (Many relevant articles exist)
+* **Understanding CSS Variables (Custom Properties):** [Search "CSS Custom Properties" on MDN Web Docs](https://developer.mozilla.org/en-US/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
