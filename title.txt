@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `getServerSideProps` Errors Gracefully
+Next.js API Routes: Handling Large Responses and Avoiding Timeouts
