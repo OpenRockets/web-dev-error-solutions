@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `next/navigation` in `GET` requests
+
 
 ## Description of the Error
 

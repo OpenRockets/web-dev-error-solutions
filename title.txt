@@ -1,1 +1,1 @@
-Creating a CSS-Only Pulsating Heart
+Next.js Middleware: Handling `next/navigation` in `GET` requests
