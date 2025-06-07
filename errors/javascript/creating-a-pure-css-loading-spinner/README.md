@@ -1,12 +1,11 @@
 # 🐞 Creating a Pure CSS Loading Spinner
 
 
-This document details how to create a visually appealing loading spinner using only CSS.  No JavaScript is required! This technique leverages CSS animations and keyframes to achieve a smooth, rotating effect.  We'll be using standard CSS3, no frameworks like Tailwind are needed for this particular effect.
-
+This document details the creation of a loading spinner using only CSS.  No JavaScript is required.  This example utilizes CSS animations and transformations to create a visually appealing and performant loading effect.
 
 **Description of the Styling:**
 
-The spinner is composed of eight equally spaced divs, each representing a segment of the circle.  We use the `::before` and `::after` pseudo-elements to create the visual effect of a rotating circle, leveraging transforms and animations for the smooth loading animation. The styling focuses on creating a clean, minimalist design with subtle color variations.
+This spinner consists of four circular elements arranged in a square.  Each circle pulsates individually with a slight delay, creating a rotating effect. The styling uses keyframes to define the animation and transforms to rotate and scale the elements.  The overall effect is a clean and modern loading indicator.
 
 
 **Full Code:**
@@ -17,97 +16,59 @@ The spinner is composed of eight equally spaced divs, each representing a segmen
 <head>
 <title>CSS Loading Spinner</title>
 <style>
-.spinner {
+.loader {
   width: 80px;
   height: 80px;
   position: relative;
-  animation: rotate 2s linear infinite;
+  margin: 50px auto;
 }
-
-.spinner div {
+.loader div {
   position: absolute;
-  width: 10px;
-  height: 10px;
-  background-color: #3498db;
+  width: 16px;
+  height: 16px;
+  background-color: #007bff;
   border-radius: 50%;
-  animation: bounce 1s ease-in-out infinite;
+  animation: animate 1s linear infinite;
 }
-
-.spinner div:nth-child(1) {
+.loader div:nth-child(1) {
   top: 0;
-  left: 35px;
+  left: 0;
   animation-delay: 0s;
 }
-
-.spinner div:nth-child(2) {
-  top: 15px;
-  left: 65px;
-  animation-delay: 0.1s;
+.loader div:nth-child(2) {
+  top: 0;
+  right: 0;
+  animation-delay: 0.25s;
 }
-
-.spinner div:nth-child(3) {
-  top: 45px;
-  left: 65px;
-  animation-delay: 0.2s;
-}
-
-.spinner div:nth-child(4) {
-  top: 75px;
-  left: 35px;
-  animation-delay: 0.3s;
-}
-
-.spinner div:nth-child(5) {
-  top: 75px;
-  left: 5px;
-  animation-delay: 0.4s;
-}
-
-.spinner div:nth-child(6) {
-  top: 45px;
-  left: 5px;
+.loader div:nth-child(3) {
+  bottom: 0;
+  right: 0;
   animation-delay: 0.5s;
 }
-
-.spinner div:nth-child(7) {
-  top: 15px;
-  left: 5px;
-  animation-delay: 0.6s;
+.loader div:nth-child(4) {
+  bottom: 0;
+  left: 0;
+  animation-delay: 0.75s;
 }
-
-.spinner div:nth-child(8) {
-  top: 15px;
-  left: 35px;
-  animation-delay: 0.7s;
-}
-
-
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes bounce {
-  0%, 100% {
+@keyframes animate {
+  0% {
     transform: scale(1);
+    opacity: 1;
   }
   50% {
-    transform: scale(1.2);
+    transform: scale(0.5);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 </style>
 </head>
 <body>
 
-<div class="spinner">
-  <div></div>
-  <div></div>
-  <div></div>
-  <div></div>
+<div class="loader">
   <div></div>
   <div></div>
   <div></div>
@@ -120,18 +81,18 @@ The spinner is composed of eight equally spaced divs, each representing a segmen
 
 **Explanation:**
 
-*   The `spinner` div acts as a container, setting the size and initiating the rotation animation.
-*   Each individual `div` within the `spinner` represents a segment of the loading circle. Their positions are manually set using `top` and `left`.
-*   `animation-delay` creates a staggered effect, making the animation more visually appealing.
-*   `@keyframes rotate` defines the animation that rotates the entire spinner.
-*   `@keyframes bounce` creates a subtle pulsing effect for each segment.
+* **`loader` class:** This container sets the size and positioning of the spinner.
+* **`loader div`:**  This selects each of the four circular elements.  `position: absolute` allows precise placement.
+* **`nth-child` selectors:** These target each circle individually to apply different animation delays.
+* **`@keyframes animate`:** This defines the animation, scaling and fading each circle.
+* **`animation-delay`:** This property creates the staggered effect of the animation.
 
 
 **Links to Resources to Learn More:**
 
-*   **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
-*   **CSS Keyframes:** [MDN Web Docs - @keyframes](https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes)
-*   **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Selectors:** [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
