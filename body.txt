@@ -1,93 +1,81 @@
 
-This document addresses a common issue developers encounter when using `next/image` within Next.js Middleware or API routes:  the inability to directly use `next/image` components in these contexts.  `next/image` relies on the rendering process of the pages, and those processes aren't available within middleware or API routes.  Attempting to use it will result in errors related to `next/image` not being properly configured or initialized.
+This document details a CSS-only solution to create an expanding card effect.  This effect involves a card that, on hover, expands to reveal more content. We will achieve this using pure CSS, avoiding JavaScript entirely.  This example utilizes CSS3 transitions for smooth animation.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-You'll likely encounter errors similar to these when trying to use `next/image` within middleware or API routes:
+The card is designed with a simple, clean look. On hover, the card increases in width and height, smoothly revealing hidden content within. We utilize the `transition` property for animation and `transform: scale()` for the expansion effect.  The hidden content is initially positioned absolutely and uses `max-height` to control its initial collapsed state. On hover, `max-height` is removed.
 
-* `Error: Image optimization only works within a Next.js application`
-*  `TypeError: Cannot read properties of undefined (reading 'config')` (this could stem from incorrect import paths).
-*  `Error: Image component must be wrapped in a Layout` (If attempting to render it on the server-side without proper context.)
+**Full Code:**
 
-
-**Fixing Step-by-Step:**
-
-The solution is to *not* use `next/image` directly in middleware or API routes. These environments are designed for server-side logic and data manipulation, not for rendering components intended for client-side display.  Instead, you should perform any image processing or manipulation *before* rendering your page component, perhaps even before the middleware is called.
-
-Let's say you want to generate an optimized image URL based on the request in your middleware.  Here's how you might approach it:
-
-
-**1.  Use a different image optimization library (optional, but often preferred):**  Libraries like `sharp` offer server-side image manipulation which is far more flexible than `next/image` within this context.
-
-**2.  Prepare the image URL in Middleware (Example with `sharp`):**
-
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server'
-import sharp from 'sharp';
-import fs from 'node:fs/promises';
-
-export async function middleware(req) {
-  // Only process requests for /image-route
-  if (!req.nextUrl.pathname.startsWith('/image-route')) {
-    return NextResponse.next();
-  }
-
-  const imagePath = '/public/images/original.jpg'; // Path to original image
-
-  try {
-    const imageBuffer = await fs.readFile(imagePath);
-    const resizedImage = await sharp(imageBuffer)
-      .resize({ width: 300, height: 300 })
-      .toBuffer();
-
-    // Create a data URL to embed the image or use the path to a new file
-    const dataUrl = `data:image/jpeg;base64,${resizedImage.toString('base64')}`;
-    //OR create/save the image to public folder and use relative path
-    const resizedImagePath = '/public/images/resized.jpg'
-    await fs.writeFile(resizedImagePath, resizedImage);
-    
-
-    return NextResponse.rewrite(new URL('/image-page?image='+ resizedImagePath, req.url)); //redirect to page with image URL
-  } catch (error) {
-    console.error('Error processing image:', error);
-    return new NextResponse("Image processing failed", { status: 500 });
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f2f2f2;
+  border-radius: 5px;
+  padding: 20px;
+  width: 300px;
+  transition: width 0.3s ease, height 0.3s ease, transform 0.3s ease; /* Smooth transition */
+  overflow: hidden; /* Prevent content overflow before expansion */
 }
-```
 
-**3.  Use the prepared URL in your page component:**
+.card:hover {
+  width: 450px;
+  height: auto; /* Adjust height dynamically */
+  transform: scale(1.1); /* Slight scaling for emphasis */
+}
 
-```javascript
-// pages/image-page.js
-import Image from 'next/image';
-import { useRouter } from 'next/router';
+.card-content {
+  position: relative;
+}
 
-export default function ImagePage() {
-  const router = useRouter();
-  const imageUrl = router.query.image;
+.card-hidden {
+  position: absolute;
+  max-height: 0; /* Initially hidden */
+  overflow: hidden;
+  transition: max-height 0.3s ease; /* Smooth transition for hidden content */
+  padding-top: 10px;
+}
 
-  return (
-    <div>
-      {imageUrl && (
-          <Image src={imageUrl} alt="Resized Image" width={300} height={300} />
-      )}
+.card:hover .card-hidden {
+  max-height: 200px; /* Reveal content on hover */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h3>Card Title</h3>
+    <p>This is some visible card content.</p>
+    <div class="card-hidden">
+      <p>This is the hidden content that reveals on hover.</p>
+      <p>More hidden text here.</p>
     </div>
-  );
-}
+  </div>
+</div>
 
+</body>
+</html>
 ```
+
 
 **Explanation:**
 
-The example above demonstrates how to use `sharp` to resize the image within the middleware and then pass the optimized URL to the page component.  The key is separating the image manipulation (server-side) from the image rendering (client-side).  This approach ensures proper behavior and avoids the errors associated with using `next/image` in inappropriate contexts.  Using a data URL avoids a separate image file if you want to keep things simpler.
+* **`transition` property:**  This smoothly animates changes to width, height, and transform.
+* **`transform: scale(1.1)`:** This slightly enlarges the card on hover, adding a visual cue to the expansion.
+* **`max-height`:** Controls the height of the hidden content. Setting it to 0 initially hides the content, and removing it or setting it to a value reveals it.
+* **`overflow: hidden;`:** This prevents the hidden content from spilling over the card boundaries before expanding.
+* **`position: absolute;` and `position: relative;`:** These are crucial for proper positioning of the hidden content within the card.
 
+**Links to Resources to Learn More:**
 
-**External References:**
-
-* [Next.js Middleware documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js Image Component documentation](https://nextjs.org/docs/basic-features/image-optimization)
-* [Sharp image processing library](https://sharp.pixelplumbing.com/)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Positioning:** [MDN Web Docs - CSS Positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/position)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
