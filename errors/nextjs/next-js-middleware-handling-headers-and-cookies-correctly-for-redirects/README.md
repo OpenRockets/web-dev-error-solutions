@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers` and `cookies` correctly for Redirects
+
 
 ## Description of the Error
 
