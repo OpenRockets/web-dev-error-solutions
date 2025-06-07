@@ -1,1 +1,1 @@
-Creating a Pure CSS Expanding Card
+Next.js API Routes: Handling Asynchronous Operations and Returning Data
