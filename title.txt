@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `request.cookies` Inconsistencies
+Handling 404 Errors in Next.js API Routes
