@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `next/navigation` within `redirect()`
+
 
 This document addresses a common issue developers encounter when using `next/navigation`'s `redirect()` function within Next.js Middleware.  Specifically, it focuses on the error arising from attempting to redirect based on asynchronous operations within the middleware.
 
