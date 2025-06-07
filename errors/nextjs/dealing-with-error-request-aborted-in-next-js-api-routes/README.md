@@ -1,3 +1,5 @@
+# 🐞 Dealing with `Error: request aborted` in Next.js API Routes
+
 
 This document addresses a common error, `Error: request aborted`, frequently encountered when working with Next.js API routes, especially within serverless functions.  This error typically indicates that the client (e.g., the browser) canceled the request before the server could complete its processing.
 
