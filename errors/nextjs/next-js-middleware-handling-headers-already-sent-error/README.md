@@ -1,107 +1,85 @@
 # 🐞 Next.js Middleware: Handling `headers already sent` Error
 
 
-This document addresses a common error developers encounter when working with Next.js Middleware: the "headers already sent" error.  This typically happens when you attempt to modify the response headers after data has already been sent to the client.
+This document addresses a common error encountered when working with Next.js Middleware: the `headers already sent` error. This typically happens when you try to set headers or send a response multiple times within the same middleware function.
+
+**Description of the Error:**
+
+The `headers already sent` error indicates that your Next.js middleware function has already begun sending a response to the client, but it's attempting to modify headers or send additional data. This usually happens because you've unintentionally called `next()` (or implicitly called it through redirect or rewrite) more than once or you've attempted to write to the response body after headers have been sent.  This is a common problem when you are trying to manipulate headers before routing happens or dealing with asynchronous operations.
 
 
-## Description of the Error
+**Full Code of Fixing Step by Step:**
 
-The `headers already sent` error in Next.js Middleware manifests when you try to set headers (e.g., `setHeader`, `appendHeader`) or send a redirect (`redirect`) after some content has already been written to the response stream.  This often stems from accidentally printing or logging data to the console *before* manipulating headers, or mixing synchronous and asynchronous operations improperly.
+Let's assume you have a middleware function intended to check for authentication and redirect unauthenticated users:
 
-
-## Code Example: Problematic Middleware
-
-Let's imagine we're trying to implement authentication middleware that redirects unauthenticated users:
+**Problem Code:**
 
 ```javascript
-// pages/api/middleware.js
+// middleware.js
 import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  const token = req.cookies.get('auth_token')
+  const token = req.cookies.get('token');
 
   if (!token) {
-    console.log("User is not authenticated"); // Problematic line!
-    return NextResponse.redirect(new URL('/login', req.url))
+    const url = req.nextUrl.clone();
+    url.pathname = '/login';
+    return NextResponse.redirect(url); 
   }
-  return NextResponse.next()
+  //This line will cause the error if the redirect above is already processed
+  if (token === "invalid"){
+      return new NextResponse("Unauthorized", { status: 401});
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: '/protected/:path*'
+  matcher: ['/profile'],
 }
 ```
 
-The `console.log` statement before the redirect is the culprit. It might seem harmless, but it sends data to the client before the redirect is initiated, causing the error.
 
-
-## Step-by-Step Fix
-
-1. **Remove unintended output:**  The most common solution is to remove any accidental output before modifying headers or redirecting. In our example, we simply remove the `console.log` line:
-
+**Corrected Code:**
 
 ```javascript
-// pages/api/middleware.js (Corrected)
+// middleware.js
 import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  const token = req.cookies.get('auth_token')
+  const token = req.cookies.get('token');
 
   if (!token) {
-    return NextResponse.redirect(new URL('/login', req.url))
+    const url = req.nextUrl.clone();
+    url.pathname = '/login';
+    return NextResponse.redirect(url); 
   }
-  return NextResponse.next()
+
+  //Early exit to prevent multiple responses
+  if (token === "invalid"){
+      return new NextResponse("Unauthorized", { status: 401});
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: '/protected/:path*'
+  matcher: ['/profile'],
 }
 ```
 
-2. **Handle Asynchronous Operations Carefully:** If your middleware relies on asynchronous operations (like fetching data from an API), ensure you correctly handle the promises.  Use `await` to wait for the asynchronous operation to complete before setting headers or redirecting:
+
+**Explanation:**
+
+The problem lies in having multiple `return` statements that send responses within the middleware.  In the corrected code, we added conditional checks. If an unauthenticated user is detected, a redirect is performed, and the function immediately terminates using the `return` statement. This prevents the subsequent check for an invalid token from executing after a response has already been sent.  Only one response is allowed per middleware execution.
 
 
-```javascript
-// Example with async operation
-import { NextResponse } from 'next/server'
+**External References:**
 
-export async function middleware(req) {
-  const token = req.cookies.get('auth_token');
-
-  try {
-    const user = await fetchUser(token); // Hypothetical function
-    if (!user) {
-      return NextResponse.redirect(new URL('/login', req.url));
-    }
-    return NextResponse.next();
-  } catch (error) {
-    console.error("Error during authentication:", error);
-    return new NextResponse("Authentication failed", { status: 500 });
-  }
-}
-
-export const config = {
-  matcher: '/protected/:path*'
-};
-
-async function fetchUser(token) {
-  // Your logic to fetch user data using the token
-  return new Promise(resolve => setTimeout(() => resolve(true),100)) //simulating async call
-}
-
-```
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
+* [Next.js Error Handling](https://nextjs.org/docs/app/building-your-application/handling-errors)
 
 
-## Explanation
-
-The `headers already sent` error arises from a fundamental HTTP constraint. Once the server starts sending a response body, it cannot modify the headers. This is a low-level HTTP limitation, not specific to Next.js.  Next.js Middleware operates within this constraint, so it's crucial to ensure all header modifications and redirects happen *before* any data is sent to the client (including accidental console logs).
-
-
-## External References
-
-* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/building-your-application/routing/middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware) (Check for the latest version)
-* **HTTP Headers:** [https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers)
-
-
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
 

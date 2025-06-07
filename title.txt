@@ -1,1 +1,1 @@
-Creating a CSS-only 3D-like Cube
+Next.js Middleware: Handling `headers already sent` Error
