@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers` Manipulation Errors
+Creating a CSS-only Expanding Card with a Subtle Reveal
