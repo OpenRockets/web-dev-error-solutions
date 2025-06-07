@@ -1,77 +1,81 @@
 # 🐞 Next.js Middleware: Handling `headers already sent` Error
 
 
-This document addresses a common error encountered when working with Next.js Middleware: the "headers already sent" error.  This typically occurs when you attempt to set headers after the response has already begun being sent to the client.
+This document addresses a common error developers encounter when working with Next.js Middleware: the `headers already sent` error. This error typically occurs when you try to send headers to the client more than once within a single request.  This often happens when you mix middleware with other response-modifying techniques.
 
-## Description of the Error
 
-The `headers already sent` error in Next.js Middleware manifests as a server-side error.  It prevents your middleware from properly modifying the response headers, resulting in unexpected behavior or a broken application.  The underlying cause is usually attempting to send headers (e.g., using `res.setHeader`, `res.writeHead`, or implicitly through a redirect) after some data has already been written to the response stream. This is often subtle and can be hard to track down.
+**Description of the Error:**
 
-## Code Example: Problem & Solution
+The `headers already sent` error in Next.js Middleware indicates that your middleware function has already attempted to send headers to the client (e.g., using `res.setHeader()` or implicitly through a redirect) before another attempt to modify the response. This can be frustrating as it often doesn't provide clear context to its source.
 
-Let's consider a scenario where you're trying to redirect users to a login page if they are not authenticated, using middleware:
+**Scenario:**
 
-**Problem Code (middleware.js):**
+Let's imagine you're building authentication middleware that redirects unauthenticated users and adds custom headers for authenticated users.  If you incorrectly attempt to redirect *after* setting custom headers, you'll run into this problem.
+
+
+**Code Demonstrating the Error (Incorrect):**
 
 ```javascript
+// pages/api/middleware.js
 import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  const session = req.cookies.get('session')
+  const token = req.cookies.get('auth-token')
 
-  if (!session) {
-    console.log("User not authenticated, redirecting..."); //This log will appear
-    // Problem:  The next line tries to redirect AFTER implicitly sending data (console.log)
+  if (!token) {
+    //Incorrect Placement - sends headers before redirection
+    res.setHeader('X-Custom-Header', 'some-value')
     return NextResponse.redirect(new URL('/login', req.url)) 
   }
+
+  return NextResponse.next()
 }
 
+
 export const config = {
-  matcher: '/',
+  matcher: ['/protected/:path*'],
 }
 ```
 
-In this example, the `console.log` statement implicitly sends data to the response stream *before* the redirect. This triggers the "headers already sent" error.
+**Step-by-Step Code Fix:**
 
+1. **Prioritize Redirection:**  Always handle redirection *before* setting any headers. This ensures you're only manipulating the response if it isn't already committed to being a redirection.
 
-**Solution Code (middleware.js):**
+2. **Conditional Header Setting:**  Only set headers if the request isn't being redirected.  This isolates the header setting logic to cases where it's safe to apply.
 
 ```javascript
+// pages/api/middleware.js (Corrected)
 import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  const session = req.cookies.get('session')
+  const token = req.cookies.get('auth-token')
 
-  if (!session) {
-    return NextResponse.redirect(new URL('/login', req.url)) 
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url))
   }
+
+  //Set headers only if not redirected
+  const response = NextResponse.next()
+  response.headers.set('X-Custom-Header', 'some-value')
+  return response;
 }
 
 export const config = {
-  matcher: '/',
+  matcher: ['/protected/:path*'],
 }
 ```
 
-The solution is simply to remove the `console.log` statement.  Any output to the console (or any other implicit response writing, like prematurely rendering a component) before setting headers will cause this error.  Always ensure all header manipulation happens *before* any data is sent to the client.
+**Explanation:**
+
+The corrected code prioritizes redirection. If the user isn't authenticated, a redirect is immediately returned.  If the user is authenticated, `NextResponse.next()` creates a response object that can safely have headers added later without conflicts; it then adds the custom header and returns the modified response.
 
 
-## Explanation
+**External References:**
 
-Next.js Middleware operates at a low level, interacting directly with the HTTP response.  Once the response begins sending data, it's too late to modify headers.  The order of operations is crucial.  Headers must be set *before* any other part of the response is sent.  This includes:
-
-* **Console Output:** `console.log`, `console.error`, etc.  These implicitly send data.
-* **Implicit Data:**  Any data written directly to the response stream (e.g., through a premature `res.write` or by rendering a component).
-* **Early Redirects:** Incorrectly placed redirects within conditional statements.
-
-The provided solution prioritizes the `NextResponse.redirect` which properly manages headers before sending the redirect.
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware): The official documentation on Next.js Middleware.
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction):  Understanding API routes helps clarify how middleware interacts with the request/response cycle.
+* [MDN Web Docs - `headers already sent`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Headers_already_sent): A broader explanation of the error from a web development perspective.
 
 
-## External References
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware) - The official Next.js documentation for middleware.
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction) -  Understanding API routes helps to contrast with middleware behavior.
-* [HTTP Headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers) - A general understanding of HTTP headers is beneficial.
-
-
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
 
