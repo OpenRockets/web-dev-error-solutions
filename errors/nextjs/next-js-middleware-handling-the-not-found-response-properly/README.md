@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling the `not-found` Response Properly
+
 
 ## Description of the Error
 
