@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `getServerSideProps` Errors Gracefully
+
 
 This document addresses a common problem developers encounter when using `getServerSideProps` within Next.js pages, specifically how to handle errors gracefully and prevent a blank or broken page from rendering to the user.  The problem typically manifests as a blank page or a generic Next.js error screen when an unexpected error occurs during the `getServerSideProps` execution.
 
