@@ -1,72 +1,83 @@
 # 🐞 Next.js Middleware: Handling `not-found` Responses Correctly
 
 
+This document addresses a common issue encountered when using Next.js Middleware: incorrectly handling `404 Not Found` responses and how to prevent them from interfering with other middleware functions or page rendering.
+
+
 **Description of the Error:**
 
-A common issue when using Next.js Middleware is incorrectly handling `not-found` responses.  If your middleware attempts to redirect or modify a request that ultimately results in a 404 (Not Found) error from your application, you might see unexpected behavior, such as redirects that don't work or unexpected error pages. This often stems from trying to modify the response after a `notFound` is already determined.
+When using Next.js Middleware, a `Response.notFound()` call within a middleware function intended to handle a specific route or pattern might inadvertently trigger a 404 response for *all* subsequent middleware functions and even the page itself, even if those subsequent functions or the page should rightfully exist.  This happens because middleware execution stops immediately upon encountering a `Response.notFound()`. This can lead to unexpected behavior, where valid pages or API routes appear to be broken.
 
-**Scenario:**  Imagine you have middleware that checks for authentication and redirects unauthenticated users to the login page. If the requested page itself doesn't exist (a 404), the middleware might still attempt to redirect, leading to a confusing user experience.
+
+**Example Scenario:**
+
+Let's say we have middleware designed to redirect `/old-blog` to `/blog` and another middleware that handles authentication. If the `/old-blog` redirect fails (e.g., due to a missing `/blog` page), the `notFound()` call in the redirect middleware prematurely stops execution. The authentication middleware won't run, and the user will see a 404, rather than a proper authentication failure or redirect.
 
 
 **Step-by-Step Code Fix:**
 
-Let's say we have middleware that attempts to redirect unauthenticated users, but fails gracefully if the page is already a 404:
+Let's assume we have two middleware functions: one for redirects and one for authentication.
 
-**Incorrect Middleware:**
+**Incorrect Middleware (Problem):**
 
 ```javascript
-// middleware.js (INCORRECT)
+// middleware.js
 import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  const token = req.cookies.get('token')
+  const path = req.nextUrl.pathname
 
-  if (!token) {
+  if (path === '/old-blog') {
+    // Incorrect handling: Response.notFound() prematurely stops all middleware
+    return NextResponse.rewrite(new URL('/blog', req.url))
+  }
+
+  if (req.cookies.get('authToken') === null) {
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
+
+}
+
+export const config = {
+  matcher: ['/old-blog', '/((?!_next/static|_next/image|favicon.ico).*)'], // This matcher covers most of the app, potentially leading to unexpected 404s
+}
+```
+
+**Correct Middleware (Solution):**
+
+```javascript
+// middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const path = req.nextUrl.pathname
+
+  if (path === '/old-blog') {
+    try {
+      // Rewrite, handling potential errors explicitly
+      return NextResponse.rewrite(new URL('/blog', req.url))
+    } catch (error) {
+      // Log the error for debugging
+      console.error("Error rewriting URL:", error)
+      // Continue middleware chain.  Could return a default 404 or proceed to the next middleware check.
+      // Returning nothing lets the middleware chain continue
+    }
+  }
+
+  if (req.cookies.get('authToken') === null) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/old-blog', '/((?!_next/static|_next/image|favicon.ico).*)'],
 }
 ```
-
-This code redirects unauthenticated users, but will attempt a redirect *even if the page the user is requesting doesn't exist*.  This is problematic.
-
-**Correct Middleware:**
-
-```javascript
-// middleware.js (CORRECT)
-import { NextResponse } from 'next/server'
-
-export async function middleware(req) {
-  const token = req.cookies.get('token')
-  const response = NextResponse.next();
-
-  if (!token) {
-    const url = new URL('/login', req.url);
-    
-    //Check if the original request already resulted in a 404, and bypass the redirect if so
-    if(response.status != 404){
-        return NextResponse.redirect(url)
-    } else {
-      return response;
-    }
-  }
-  return response;
-}
-
-export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-}
-```
-
-This improved version checks the response status before redirecting.  If it's already a 404, it avoids the unnecessary redirect and lets the `notFound` response proceed.
 
 
 **Explanation:**
 
-The key change is the addition of a check against `response.status`. Before attempting the redirect, the middleware now verifies whether the underlying request has already resulted in a 404.  Only if the status is not a 404, does it proceed with the redirect. This ensures that the middleware gracefully handles cases where the requested resource is not found.  The `NextResponse.next()` method is essential, acting as a default response which middleware can modify.
+The corrected middleware uses a `try...catch` block to handle potential errors during the rewrite.  If the rewrite to `/blog` fails (because `/blog` doesn't exist), the `catch` block executes. Instead of immediately returning `notFound()`, it logs the error (crucial for debugging) and then allows the middleware chain to continue. The authentication middleware will still be executed.  Alternatively, you can add a specific response inside the `catch` to handle the situation gracefully.
 
 
 **External References:**
@@ -75,5 +86,10 @@ The key change is the addition of a check against `response.status`. Before atte
 * [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse)
 
 
-**Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+**Conclusion:**
+
+By carefully handling potential errors within your Next.js Middleware functions and avoiding premature `Response.notFound()` calls, you can ensure the smooth operation of your application's routing and prevent unexpected 404 errors from disrupting other parts of your middleware chain.
+
+
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
