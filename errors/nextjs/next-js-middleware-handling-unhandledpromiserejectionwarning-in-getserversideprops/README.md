@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `UnhandledPromiseRejectionWarning` in `getServerSideProps`
+
 
 This document addresses a common issue developers encounter when using `getServerSideProps` within Next.js applications: the `UnhandledPromiseRejectionWarning` error.  This warning, while not always immediately halting execution, often indicates a problem that can lead to unpredictable behavior or crashes in production.  It usually arises when a promise within `getServerSideProps` rejects without being properly handled.
 
