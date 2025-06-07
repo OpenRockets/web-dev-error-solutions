@@ -1,76 +1,83 @@
 
-This document addresses a common error encountered when working with Next.js Middleware: the `headersAlreadySent` error.  This error occurs when your middleware attempts to send headers to the client after the response has already started being sent.  This typically happens due to inconsistencies in how you're handling the response within your middleware.
+This document details a CSS-only solution to create an expanding card effect, where clicking a card reveals additional content.  We'll achieve this using purely CSS transitions and transformations, without relying on JavaScript. This example uses standard CSS3;  adapting it to Tailwind would simply involve replacing the CSS class names with their Tailwind equivalents.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The `headersAlreadySent` error manifests as an HTTP error, often preventing your application from functioning correctly.  The browser receives an error message, and the intended functionality provided by your middleware fails. The core issue is that you're attempting to modify the response headers (e.g., setting cookies, redirecting) after the response stream has already begun.
+The card consists of two main parts: a front and a back.  The front displays a summary, and the back reveals more detailed information. By default, the back is hidden.  On click, we use CSS transitions to smoothly animate the transformation of the card, rotating it to reveal the back.
 
-**Scenario:**
+**Full Code:**
 
-Let's say you're building authentication middleware that redirects unauthenticated users to a login page.  If you accidentally try to set a cookie *after* initiating a redirect, you'll encounter this error.
-
-**Step-by-step Code Fix:**
-
-Let's illustrate this with a problematic and then a corrected example.
-
-**Problematic Code (Middleware):**
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const token = req.cookies.get('auth-token');
-
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', req.url));
-    // Problem: Setting a cookie AFTER redirecting causes the error.
-    req.cookies.set({ name: 'redirected', value: 'true' }); 
-  }
-  return NextResponse.next();
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  perspective: 1000px; /* Necessary for 3D transforms */
+  width: 300px;
+  height: 200px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.5s ease-in-out; /* Smooth transition */
 }
 
-export const config = {
-  matcher: ['/'],
-};
-```
-
-**Corrected Code (Middleware):**
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const token = req.cookies.get('auth-token');
-
-  if (!token) {
-    const response = NextResponse.redirect(new URL('/login', req.url));
-    response.cookies.set({ name: 'redirected', value: 'true' }); //Set cookie on the response object.
-    return response;
-  }
-  return NextResponse.next();
+.card .front,
+.card .back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* Prevent back from showing initially */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-export const config = {
-  matcher: ['/'],
-};
+.card .front {
+  background-color: #4CAF50;
+  color: white;
+  font-size: 24px;
+}
+
+.card .back {
+  background-color: #2196F3;
+  color: white;
+  font-size: 16px;
+  transform: rotateY(180deg); /* Initially hidden */
+}
+
+.card.active {
+  transform: rotateY(180deg); /* Rotate on click */
+}
+</style>
+</head>
+<body>
+
+<div class="card" onclick="this.classList.toggle('active')">
+  <div class="front">Click Me!</div>
+  <div class="back">
+    This is the back of the card.  More detailed information would go here.
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
 **Explanation:**
 
-The corrected code fixes the issue by assigning the result of `NextResponse.redirect` to a variable `response`.  We then use the `response.cookies.set()` method instead of `req.cookies.set()`. This ensures that the cookie is set *before* the redirect response is sent to the client, preventing the `headersAlreadySent` error.  The `req` object represents the incoming request, while the `response` object represents the outgoing response that you are building and manipulating.  Crucially, manipulating headers and cookies should happen *before* you return the response.
-
-**External References:**
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse) (Look for the `cookies` property)
-* [Understanding HTTP Headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers)
+* **`perspective`:** This property creates a 3D space for the transformation to occur realistically.
+* **`transition`:** This smoothly animates the `transform` property over 0.5 seconds.
+* **`backface-visibility: hidden`:** This prevents the back side of the card from being visible initially.
+* **`transform: rotateY(180deg)`:** This rotates the card around the Y-axis, revealing the back side.
+* **`onclick="this.classList.toggle('active')"`:** This toggles the `active` class on the card element when clicked, triggering the CSS transition.  The `active` class applies the `rotateY(180deg)` transform.
 
 
-**Conclusion:**
+**Links to Resources to Learn More:**
 
-The `headersAlreadySent` error in Next.js Middleware highlights the importance of managing response headers and cookies correctly.  By carefully constructing your response object and ensuring all header and cookie manipulations happen *before* the response is returned, you can avoid this common pitfall.
+* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **Understanding CSS 3D Transforms:**  Numerous tutorials are available on YouTube and other online learning platforms by searching for "CSS 3D transforms tutorial".
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
