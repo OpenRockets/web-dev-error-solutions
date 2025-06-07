@@ -1,87 +1,85 @@
 
-This document addresses a common issue developers encounter when trying to redirect users from within `getServerSideProps` using `NextResponse`.  `NextResponse` is designed for use within middleware and API routes, not within the `getServerSideProps` function of a page component.  Attempting to use it will result in an error.
+This document details the creation of an expanding card using only CSS. The card expands to reveal additional content on hover, employing a smooth transition for a polished user experience.  We'll be using plain CSS (no CSS preprocessors like Sass or Less, and no frameworks like Tailwind CSS) for this example to demonstrate the core concepts.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-When you use `NextResponse.redirect` inside `getServerSideProps`, you'll typically encounter an error similar to this:
+The card uses a single `<div>` element to contain the entire structure.  The front of the card displays a title and a brief summary.  On hover, the card expands vertically, revealing hidden content below.  The expansion is animated using CSS transitions.  A subtle shadow effect is added to enhance the three-dimensional look.
 
-```
-Error: Cannot find module 'next/server'
-```
 
-or a less specific error indicating an unexpected response from `getServerSideProps`. This happens because `getServerSideProps` expects to return an object containing props, not a `Response` object created by `NextResponse`.
+**Full Code:**
 
-**Fixing the Issue Step-by-Step:**
-
-Instead of using `NextResponse.redirect` directly, you should leverage the standard `redirect` function provided by Next.js within `getServerSideProps`.
-
-**Code Example (Problematic):**
-
-```javascript
-// pages/my-page.js
-import {getServerSideProps} from 'next/server';
-import {NextResponse} from 'next/server';
-
-export async function getServerSideProps(context) {
-  // ... some logic ...
-  if (someCondition) {
-    return NextResponse.redirect(new URL('/another-page', context.req.url));
-  }
-  // ... more logic ...
-  return { props: { data: someData } };
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 300px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide the content initially */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
 }
 
-export default function MyPage({ data }) {
-  // ... render component ...
+.card:hover {
+  height: 400px; /* Expand on hover */
 }
+
+.card-content {
+  padding: 20px;
+}
+
+.card-title {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+
+.card-summary {
+  margin-bottom: 20px;
+}
+
+.card-details {
+  height: 0; /* Initially hidden */
+  overflow: hidden; /* Hide overflow */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+}
+
+.card:hover .card-details {
+  height: 150px; /* Reveal details on hover */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Expanding Card</h2>
+    <p class="card-summary">This is a simple example of an expanding card created using only CSS.  Hover over the card to see it in action!</p>
+    <div class="card-details">
+      <p>This is the hidden content that is revealed when you hover over the card. You can add any content you want here, like more details, images, or anything else.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
 ```
-
-**Code Example (Corrected):**
-
-```javascript
-// pages/my-page.js
-import {getServerSideProps} from 'next/server';
-
-export async function getServerSideProps(context) {
-  // ... some logic ...
-  if (someCondition) {
-    return {
-      redirect: {
-        destination: '/another-page',
-        permanent: false // or true depending on your needs
-      }
-    }
-  }
-  // ... more logic ...
-  const someData = await fetchSomeData();
-  return { props: { data: someData } };
-}
-
-export default function MyPage({ data }) {
-  // ... render component ...
-}
-```
-
 
 **Explanation:**
 
-The corrected code utilizes the standard `redirect` object within the return value of `getServerSideProps`. This object takes two properties:
-
-* `destination`: The URL to redirect to.
-* `permanent`: A boolean indicating whether the redirect should be permanent (301) or temporary (307).
-
-
-**External References:**
-
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [Next.js getServerSideProps Documentation](https://nextjs.org/docs/basic-features/data-fetching/getserversideprops)
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* **`overflow: hidden;`**: This is crucial for hiding the content initially and preventing the card from expanding beyond its initial height before the hover effect is triggered.
+* **`transition: height 0.3s ease-in-out;`**: This line adds a smooth transition to the height change, making the expansion visually appealing.  Adjust the duration (`0.3s`) and easing function (`ease-in-out`) to your liking.
+* **`.card:hover`**: This selector targets the `.card` element when the mouse hovers over it.
+* **`height: 0;` (on `.card-details`)**:  Keeps the details section collapsed initially.
+* **`height: 150px;` (on `.card:hover .card-details`)**: Sets the height when hovering to reveal the content. Adjust this value as needed.
 
 
-**Conclusion:**
+**Links to Resources to Learn More:**
 
-Remember that `NextResponse` is for use in the context of Middleware and API routes.  For redirects within `getServerSideProps`, always utilize the structured `redirect` object as shown above. This ensures compatibility and avoids runtime errors.
-
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS-Tricks - CSS Transitions and Transforms:** [https://css-tricks.com/almanac/properties/t/transition/](https://css-tricks.com/almanac/properties/t/transition/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

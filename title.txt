@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `NextResponse.redirect` in `getServerSideProps`
+Creating a CSS-Only Expanding Card with a Subtle Reveal
