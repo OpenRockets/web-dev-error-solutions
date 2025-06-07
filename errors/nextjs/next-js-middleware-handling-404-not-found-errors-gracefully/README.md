@@ -1,78 +1,74 @@
 # 🐞 Next.js Middleware: Handling `404 Not Found` Errors Gracefully
 
 
-**Description of the error:**
+This document addresses a common problem encountered when using Next.js Middleware: handling 404 (Not Found) errors effectively.  Middleware, while powerful for modifying requests before they reach your page components, can inadvertently cause 404s if not handled carefully.  For instance, if your middleware attempts to redirect based on conditions that aren't met, or if it tries to access data that doesn't exist, it can lead to a frustrating 404 response for the user.  This is especially problematic because the standard Next.js error handling might not always be sufficient in a middleware context.
 
-A common issue when using Next.js Middleware is handling `404 Not Found` errors.  If a user navigates to a route that doesn't exist, the default behavior is to return a plain `404` response.  This can lead to a poor user experience, as it might not be clear to the user why the page is not found, or how they might navigate to the correct content.  Ideally, you'd want a custom 404 page that provides helpful information or redirects to a relevant page.
+**Description of the Error:**
 
-**Step-by-step code fix:**
+A `404 Not Found` error in Next.js Middleware typically manifests as a blank page or a generic error message in the browser, with no clear indication of the problem's origin. This makes debugging challenging.  The root cause often lies in how middleware modifies requests or attempts to manipulate the response.  For example, redirecting to a non-existent route within middleware will result in a 404.  Similarly, using incorrect paths or failing to handle asynchronous operations gracefully can also trigger this error.
 
-The solution involves creating a custom `404` page and handling the `404` response within the middleware.  We'll use the `next/server` API's `notFound()` function.
+**Code Example: Incorrect Middleware and Solution**
 
 
-**1. Create a custom 404 page:**
+Let's say we have middleware that redirects users based on a role stored in a session.  If the session doesn't exist or the role is invalid, the redirect might fail, leading to a 404.
 
-Create a file named `pages/404.js` (or `pages/404.tsx` if you're using TypeScript) with the following content:
-
-```javascript
-// pages/404.js
-import Link from 'next/link';
-
-export default function Custom404() {
-  return (
-    <div>
-      <h1>404 - Page Not Found</h1>
-      <p>The page you are looking for does not exist.</p>
-      <Link href="/">
-        <a>Go back to the homepage</a>
-      </Link>
-    </div>
-  );
-}
-```
-
-**2. Implement Middleware to handle the 404:**
-
-Create (or modify) your middleware file (e.g., `middleware.js` or `middleware.ts` in the `pages` directory).  Import the `NextResponse` object and handle the 404:
+**Incorrect Middleware (middleware.js):**
 
 ```javascript
-// middleware.js
 import { NextResponse } from 'next/server';
 
 export function middleware(req) {
-  // ... other middleware logic ...
+  const session = req.cookies.get('session'); // Assume session is stored in cookie
 
-  if (req.nextUrl.pathname.startsWith('/api')) {
-    //Skip middleware for API routes
-    return NextResponse.next();
+  if (session && session.role === 'admin') {
+    return NextResponse.redirect(new URL('/admin', req.url));
+  } else {
+    return NextResponse.redirect(new URL('/home', req.url)); // potential 404 here
   }
-
-  //check if route is valid.  Replace with your route validation
-  const validRoutes = ['/', '/about', '/contact'];
-  if (!validRoutes.includes(req.nextUrl.pathname)) {
-    return NextResponse.rewrite(new URL('/404', req.url));
-  }
-
-  return NextResponse.next();
 }
 
-
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'], //Match all routes except API, static assets, and favicon
+  matcher: ['/'], // Applies middleware to all routes
 };
 ```
 
+This code might fail if `session` or `session.role` is undefined or if `/home` doesn't exist (leading to a 404).
+
+**Corrected Middleware (middleware.js):**
+
+```javascript
+import { NextResponse } from 'next/server';
+
+export function middleware(req) {
+  const session = req.cookies.get('session');
+
+  if (session && session.role === 'admin') {
+    return NextResponse.redirect(new URL('/admin', req.url));
+  } else if(session){ //Check if session exist before accessing role.
+      return NextResponse.redirect(new URL('/home', req.url)); 
+  } else {
+    //Handle missing session gracefully.  Return the original request.
+    return NextResponse.next();
+  }
+}
+
+export const config = {
+  matcher: ['/'],
+};
+```
+
+This improved version includes explicit checks for the existence of the session and avoids potential redirection to non-existent routes. If a session doesn't exist or the user isn't an admin, it simply passes the request to the next handler, preventing the 404.
+
+
 **Explanation:**
 
-* **`pages/404.js`:** This component renders a custom 404 page with a user-friendly message and a link back to the homepage. You can customize this to fit your application's design and messaging.
-* **`middleware.js`:** This middleware function intercepts requests before they reach the page rendering process.  The `if` statement checks if the requested route is valid. If not, `NextResponse.rewrite()` redirects the request to the `/404` page.  `NextResponse.next()` allows the request to proceed normally.
-* **`matcher` config:** The `matcher` property in the `config` object specifies which paths the middleware should apply to.  The regular expression excludes API routes, static assets, and the favicon.  Adjust as needed for your application's structure.  Without this, the 404 redirect could infinitely loop.
+The key to preventing `404` errors in middleware is defensive programming. Always validate your inputs, handle potential errors gracefully (using `try...catch` blocks where necessary for asynchronous operations), and ensure that any redirects point to valid routes.  Avoid hardcoding paths; use relative paths or route constants to make your middleware more resilient to changes in your application's structure.  Using `NextResponse.next()` allows the request to proceed to the next handler in the chain, preventing premature 404 errors.
 
 **External References:**
 
 * [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse API](https://nextjs.org/docs/api-reference/next/server#nextresponse)
-* [Next.js Routing](https://nextjs.org/docs/app/building-your-application/routing)
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
+* [Next.js Error Handling](https://nextjs.org/docs/app/building-your-application/handling-errors)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
