@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `404` Errors Gracefully
+
 
 ## Description of the Error
 
