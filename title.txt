@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `next/navigation` in `GET` requests
+Next.js Middleware: Handling `Redirect` Issues with Dynamic Routes

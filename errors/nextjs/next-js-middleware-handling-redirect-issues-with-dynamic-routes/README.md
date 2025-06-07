@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Redirect` Issues with Dynamic Routes
+
 
 This document addresses a common problem encountered when using Next.js Middleware with dynamic routes and redirects. The issue arises when attempting to redirect based on conditions involving route parameters, leading to unexpected behavior or errors.
 
