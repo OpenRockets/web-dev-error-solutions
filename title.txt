@@ -1,1 +1,1 @@
-Creating a Pure CSS Diagonal Gradient Background
+Next.js Middleware: Handling `Redirect` Issues After Server-Side Rendering (SSR)
