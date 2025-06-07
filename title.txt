@@ -1,1 +1,1 @@
-Handling "Error: Request header field size too large" in Next.js API Routes
+Creating a CSS-Only Expanding Card with a Subtle Reveal
