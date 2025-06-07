@@ -1,1 +1,1 @@
-Next.js Middleware: Handling the "TypeError: Cannot read properties of undefined (reading 'pathname')" Error
+Next.js Middleware: Handling `headersAlreadySent` Error

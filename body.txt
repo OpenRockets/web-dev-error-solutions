@@ -1,70 +1,76 @@
 
-This document addresses a common error encountered when working with Next.js Middleware: `TypeError: Cannot read properties of undefined (reading 'pathname')`. This usually occurs when accessing the `req.nextUrl.pathname` property within middleware before it's properly defined.  This often happens when attempting to conditionally redirect or modify the request based on the URL path.
+This document addresses a common error encountered when working with Next.js Middleware: the `headersAlreadySent` error.  This error occurs when your middleware attempts to send headers to the client after the response has already started being sent.  This typically happens due to inconsistencies in how you're handling the response within your middleware.
 
+**Description of the Error:**
 
-## Description of the Error
+The `headersAlreadySent` error manifests as an HTTP error, often preventing your application from functioning correctly.  The browser receives an error message, and the intended functionality provided by your middleware fails. The core issue is that you're attempting to modify the response headers (e.g., setting cookies, redirecting) after the response stream has already begun.
 
-The error `TypeError: Cannot read properties of undefined (reading 'pathname')` indicates that the `req.nextUrl` object, specifically its `pathname` property, is undefined when your middleware tries to access it.  This means the Next.js request object hasn't been fully populated with URL information at the point your code attempts to read it.
+**Scenario:**
 
+Let's say you're building authentication middleware that redirects unauthenticated users to a login page.  If you accidentally try to set a cookie *after* initiating a redirect, you'll encounter this error.
 
-## Step-by-Step Code Fix
+**Step-by-step Code Fix:**
 
-Let's assume you're trying to redirect users from `/old-page` to `/new-page` using middleware.  This is a common scenario where the error might occur.
+Let's illustrate this with a problematic and then a corrected example.
 
-
-**Incorrect Code (Will throw the error):**
-
-```javascript
-// pages/api/middleware.js
-export function middleware(req) {
-  if (req.nextUrl.pathname === '/old-page') {
-    return NextResponse.redirect(new URL('/new-page', req.url))
-  }
-}
-
-export const config = {
-  matcher: '/old-page'
-}
-```
-
-**Correct Code:**
+**Problematic Code (Middleware):**
 
 ```javascript
 // pages/api/middleware.js
 import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  const url = req.nextUrl.clone(); // clone the URL object
-  if (url.pathname === '/old-page') {
-    url.pathname = '/new-page';
-    return NextResponse.rewrite(url); // Use rewrite instead of redirect for better performance
+  const token = req.cookies.get('auth-token');
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url));
+    // Problem: Setting a cookie AFTER redirecting causes the error.
+    req.cookies.set({ name: 'redirected', value: 'true' }); 
   }
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: '/old-page'
-}
+  matcher: ['/'],
+};
 ```
 
-**Explanation of Changes:**
+**Corrected Code (Middleware):**
 
-1. **Import `NextResponse`:** We explicitly import `NextResponse` to ensure correct usage.
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
 
-2. **Cloning the URL:** The crucial fix is `const url = req.nextUrl.clone();`.  This creates a copy of the `req.nextUrl` object.  This is important because directly manipulating `req.nextUrl` can cause unexpected behavior.  By working with a clone, we avoid potential race conditions or unintended side effects.
+export function middleware(req) {
+  const token = req.cookies.get('auth-token');
 
+  if (!token) {
+    const response = NextResponse.redirect(new URL('/login', req.url));
+    response.cookies.set({ name: 'redirected', value: 'true' }); //Set cookie on the response object.
+    return response;
+  }
+  return NextResponse.next();
+}
 
-3. **`NextResponse.rewrite()`:**  Instead of redirecting, we're now using `NextResponse.rewrite()`.  While `redirect` works, `rewrite` is generally preferred for middleware as it avoids a separate HTTP request, leading to better performance.
+export const config = {
+  matcher: ['/'],
+};
+```
 
+**Explanation:**
 
-## Explanation
+The corrected code fixes the issue by assigning the result of `NextResponse.redirect` to a variable `response`.  We then use the `response.cookies.set()` method instead of `req.cookies.set()`. This ensures that the cookie is set *before* the redirect response is sent to the client, preventing the `headersAlreadySent` error.  The `req` object represents the incoming request, while the `response` object represents the outgoing response that you are building and manipulating.  Crucially, manipulating headers and cookies should happen *before* you return the response.
 
-The `req.nextUrl` object is populated asynchronously by Next.js. If your middleware attempts to access `req.nextUrl.pathname` before it's ready, the `pathname` property will be undefined, resulting in the error. Cloning `req.nextUrl` provides a safe copy to manipulate without interfering with the original object's asynchronous population.  Using `rewrite` also ensures efficient handling of the redirection within the middleware context.
-
-
-## External References
+**External References:**
 
 * [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server/next-response)
+* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse) (Look for the `cookies` property)
+* [Understanding HTTP Headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers)
+
+
+**Conclusion:**
+
+The `headersAlreadySent` error in Next.js Middleware highlights the importance of managing response headers and cookies correctly.  By carefully constructing your response object and ensuring all header and cookie manipulations happen *before* the response is returned, you can avoid this common pitfall.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
