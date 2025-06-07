@@ -1,88 +1,81 @@
 
-## Description of the Error
-
-A common issue in Next.js Middleware is incorrectly handling the `not-found` response.  Middleware functions can redirect or rewrite requests, but if you don't handle a 404 (Not Found) scenario explicitly, your users might see a generic error page instead of a custom 404 page you designed.  This is particularly problematic if your middleware is attempting to rewrite URLs based on conditions which might not always be met.  If the condition fails, the middleware will implicitly pass through, possibly leading to a 404 if the resulting URL doesn't exist.
+This document details how to create a circular progress bar using only CSS.  This avoids the need for JavaScript, making it lightweight and efficient.  We'll leverage CSS's `conic-gradient` function for a clean and simple solution.
 
 
-## Step-by-Step Code Fix
+## Description of the Styling
 
-Let's imagine we have middleware that attempts to redirect `/blog/:slug` URLs to a specific CMS-based URL. If the slug doesn't exist in the CMS, we should return a 404 instead of a generic error.
+The circular progress bar is achieved using a combination of techniques:
 
-**Incorrect Middleware (Will lead to a generic 404):**
+* **`conic-gradient`:** This CSS function creates a gradient that sweeps around a circle. We use this to create the visual progress bar itself. The start and end angles define the filled portion of the circle.
+* **`clip-path`:**  We use `clip-path: circle()` to create a circular shape for the progress bar.
+* **Pseudo-elements:**  Pseudo-elements (`::before` and `::after`) are used to create the circle background and the progress indicator.
 
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server'
 
-export function middleware(req) {
-  const slug = req.nextUrl.pathname.replace('/blog/', '');
+## Full Code
 
-  // Simulate fetching data from a CMS - this could fail
-  const blogPost = fetchBlogPost(slug);  // Assume this function sometimes returns null
-
-  if (blogPost) {
-    return NextResponse.rewrite(new URL(`/blog-post/${blogPost.id}`, req.url))
-  }
-  // Missing 404 handling here!
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  --progress: 75; /* Adjust this value to change the progress */
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  position: relative;
 }
 
-export const config = {
-  matcher: '/blog/:slug*'
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: conic-gradient(
+    #e6e6e6,
+    #e6e6e6 calc(var(--progress) * 1%),
+    #4caf50 calc(var(--progress) * 1%),
+    #4caf50
+  );
+  clip-path: circle(50% at 50% 50%); /*Keeps the gradient circular*/
 }
 
-
-//Helper function - simulating an API call that might fail
-const fetchBlogPost = async (slug) => {
-  // Simulate a failed API call 
-  if(slug === 'nonexistent-post') return null;
-  return {id: slug} //Simulate successful fetch
+.progress-ring::after {
+  content: attr(data-progress) "%";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  font-weight: bold;
 }
+</style>
+</head>
+<body>
+
+<div class="progress-ring" data-progress="75"></div>
+
+</body>
+</html>
 ```
-
-**Corrected Middleware (Handles 404):**
-
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server'
-
-export async function middleware(req) {
-  const slug = req.nextUrl.pathname.replace('/blog/', '');
-
-  const blogPost = await fetchBlogPost(slug);
-
-  if (blogPost) {
-    return NextResponse.rewrite(new URL(`/blog-post/${blogPost.id}`, req.url));
-  } else {
-    return new NextResponse(null, { status: 404 });
-  }
-}
-
-export const config = {
-  matcher: '/blog/:slug*'
-};
-
-
-//Helper function - simulating an API call that might fail
-const fetchBlogPost = async (slug) => {
-  // Simulate a failed API call 
-  if(slug === 'nonexistent-post') return null;
-  await new Promise(resolve => setTimeout(resolve, 500));//Simulate API call delay
-  return {id: slug} //Simulate successful fetch
-}
-```
-
-This corrected version explicitly returns a `NextResponse` with a `status` of 404 when `fetchBlogPost` returns `null`, ensuring a proper 404 response is sent.
 
 
 ## Explanation
 
-The crucial change is adding an `else` block to explicitly handle the case where `blogPost` is null (or undefined, depending on your `fetchBlogPost` implementation).  Without this explicit handling, the middleware silently passes through, and Next.js attempts to handle the request, likely resulting in a generic 404 error.  By returning a `NextResponse` with a `404` status code, you ensure that Next.js knows to serve your custom 404 page (if you have one configured), providing a much better user experience.  Using `async/await` ensures proper handling of asynchronous API calls.
+1. **The `progress-ring` class:** This sets up the basic dimensions, shape (circle), and relative positioning for the container.
+2. **`::before` pseudo-element:** This creates the circular background and the colored progress section using `conic-gradient`. The `calc(var(--progress) * 1%)` expression dynamically calculates the filled portion of the circle based on the `--progress` custom property.  The `#e6e6e6` is a light gray for the background, and `#4caf50` is a green for the progress.
+3. **`::after` pseudo-element:** This adds the percentage value as text to the center of the progress ring.
 
 
-## External References
+## Links to Resources to Learn More
 
-* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/building-your-application/routing/middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* **NextResponse API:** [https://nextjs.org/docs/api-reference/next/server#nextresponse](https://nextjs.org/docs/api-reference/next/server#nextresponse)
+* **MDN Web Docs on `conic-gradient`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS Tricks on Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/) (a general resource on CSS gradients, including conic gradients)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
