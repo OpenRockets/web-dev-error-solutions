@@ -1,1 +1,1 @@
-Handling `next/font` Errors in Next.js Middleware
+Next.js Middleware: Handling `Not Found` Errors in API Routes

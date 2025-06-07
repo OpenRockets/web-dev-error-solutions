@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Not Found` Errors in API Routes
+
 
 This document addresses a common issue encountered when working with API routes in Next.js: handling 404 (Not Found) errors gracefully.  Incorrectly handling these errors can lead to a poor user experience and potentially break your application.
 
