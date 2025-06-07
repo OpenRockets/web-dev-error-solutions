@@ -1,78 +1,112 @@
 
-This document details the creation of a circular progress bar using only CSS.  We'll leverage CSS3's `conic-gradient` function for a clean and efficient solution.  No JavaScript required!
+This document addresses a common issue developers encounter when using Next.js Middleware: unintended infinite redirect loops.  This typically occurs when middleware redirects to a route that itself triggers the same middleware, creating a recursive redirect chain that never terminates.
 
-**Description of the Styling:**
+## Description of the Error
 
-This progress bar uses a combination of a circle created with the `border-radius` property and a `conic-gradient` to represent the progress.  The `conic-gradient` allows us to easily create a pie-chart-like effect, where the filled portion represents the progress percentage. We'll also add some styling for visual appeal.
+The error doesn't manifest as a specific error message in the console. Instead, you'll observe your browser continuously loading, showing the spinning loading indicator, or experiencing an extremely slow page load.  Your browser's network tab will likely show a series of increasingly long redirect requests, indicating the infinite loop.  This often happens when you're trying to implement authentication or conditional redirects based on routes.
 
-**Full Code:**
+## Code Example & Step-by-Step Fix
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Circular Progress Bar</title>
-<style>
-.progress-ring {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background: conic-gradient(
-    #e74c3c 70%,
-    #f1f2f6 0
-  );
-}
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: #fff;
-  z-index: 1;
-}
-.progress-ring::after {
-    content: "70%";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2;
-    font-size: 1.2em;
-    font-weight: bold;
+Let's assume we're building an application where only authenticated users can access the `/dashboard` route.  An incorrect implementation might lead to an infinite redirect:
+
+**Incorrect Middleware (`middleware.js`):**
+
+```javascript
+import { NextResponse } from 'next/server';
+
+export function middleware(req) {
+  const session = req.cookies.get('session'); // Simplistic session check
+
+  if (!session) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
 }
 
-</style>
-</head>
-<body>
-
-<div class="progress-ring"></div>
-
-
-</body>
-</html>
+export const config = {
+  matcher: ['/dashboard'],
+};
 ```
 
-**Explanation:**
+**Incorrect Login Page (`pages/login.js`):**  This would cause the infinite loop because the `/login` page also triggers the `middleware` if it doesn't have a session cookie.
 
-* **`.progress-ring`**: This class styles the main circular element.  `border-radius: 50%;` creates the circle. The `conic-gradient` function defines the progress.  The first color (`#e74c3c`) is the filled portion, and the percentage (70%) determines how much of the circle is filled. The second color (`#f1f2f6`) is the background.
+```javascript
+// pages/login.js - some basic login page
+export default function Login() {
+    return <div>Login Page</div>;
+}
+```
 
-* **`.progress-ring::before`**: This pseudo-element creates a white circle on top to create the visual effect of a progress ring.  `z-index: 1` ensures it's layered correctly.
+**Step 1: Identifying the Loop**
 
-* **`.progress-ring::after`**: This pseudo-element adds the percentage text in the center.  `z-index: 2` places it on top of other elements.  You can easily adjust the percentage value in the content to update the progress.
+Carefully examine your middleware's logic and the routes it redirects to. Look for cases where the redirect target also triggers the same middleware.  In this example, both `/dashboard` and `/login` indirectly or directly trigger the same middleware leading to a loop.
+
+**Step 2:  Using `next/server.js` to prevent redirection of /login**
+
+The correct solution requires that the `/login` path *doesn't* trigger the middleware again.  We can achieve this by using the `matcher` config more precisely.
+
+**Corrected Middleware (`middleware.js`):**
+
+```javascript
+import { NextResponse } from 'next/server';
+
+export function middleware(req) {
+  const session = req.cookies.get('session');
+
+  if (!session) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+}
+
+export const config = {
+  matcher: ['/dashboard/:path*'], // Only match routes starting with /dashboard
+};
+```
+
+**Step 3:  Consider a different approach for protected routes (if possible)**
+
+In many cases, the best solution would be to check authentication on the protected component itself using `getServerSideProps` or `getStaticProps` to fetch user data, or using a library like `next-auth` to manage authentication.
+
+**Corrected Dashboard Page (`pages/dashboard.js`):**
+
+```javascript
+import { getSession } from 'next-auth/react';
+
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+  return { props: { session } };
+}
+
+export default function Dashboard({ session }) {
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      <p>Welcome, {session.user.email}!</p>
+    </div>
+  );
+}
+```
+
+This approach moves authentication logic to the component itself, preventing the middleware from recursively redirecting.
 
 
-**To change the percentage:**  Modify the first value in `conic-gradient` (currently 70%) to adjust the filled portion of the circle.  Also, update the text content of `.progress-ring::after` to reflect the new percentage.
+
+## Explanation
+
+The infinite redirect occurs because the middleware's redirect logic is recursively called. By carefully defining the `matcher` property in the middleware's `config` object,  we explicitly control which routes trigger the middleware.  Furthermore, moving the authentication check to the protected route, ensures that the middleware is only used for a single redirection.
 
 
-**Links to Resources to Learn More:**
+## External References
 
-* **CSS Gradients:** [MDN Web Docs on Gradients](https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient)
-* **CSS Pseudo-elements:** [MDN Web Docs on Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* **CSS `conic-gradient`:** [CSS-Tricks article on conic-gradient](https://css-tricks.com/conic-gradient-for-circular-progress-bars/) (Search for relevant articles; conic-gradient documentation is scattered across various sites)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [NextAuth.js](https://next-auth.js.org/) - A popular authentication library for Next.js.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
