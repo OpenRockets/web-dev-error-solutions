@@ -1,1 +1,1 @@
-Creating a CSS-Only Expanding Card
+Next.js API Routes: Handling Large Response Sizes and Timeouts
