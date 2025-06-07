@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers.append` Errors with `setHeader`
+
 
 This document addresses a common issue developers encounter when using Next.js Middleware:  incorrectly using `headers.append` to set response headers, resulting in unexpected behavior or errors.  While `headers.append` works in some contexts, it's not consistently reliable within Next.js Middleware.
 
