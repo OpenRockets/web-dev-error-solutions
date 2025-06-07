@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `request.nextUrl.pathname` Errors in Redirects
+
 
 This document addresses a common error encountered when using Next.js Middleware to perform redirects based on the incoming request's URL. Specifically, we'll focus on scenarios where attempting to access `request.nextUrl.pathname` within the middleware leads to unexpected behavior or errors, especially when dealing with dynamic routes.
 

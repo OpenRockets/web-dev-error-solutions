@@ -1,1 +1,1 @@
-Creating a CSS-only Accordion
+Next.js Middleware: Handling `request.nextUrl.pathname` Errors in Redirects
