@@ -1,1 +1,1 @@
-Handling `Error: Request failed with status code 404` in Next.js API Routes
+Creating a CSS-only Expanding Card
