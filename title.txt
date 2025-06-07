@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `UnhandledPromiseRejectionWarning` in `getServerSideProps`
+Creating a Pure CSS Diagonal Gradient Background

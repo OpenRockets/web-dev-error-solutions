@@ -1,3 +1,5 @@
+# 🐞 Creating a Pure CSS Diagonal Gradient Background
+
 
 This document details how to create a diagonal gradient background using only CSS.  This technique avoids the use of images and offers flexibility in customizing the gradient colors and angle. We'll use pure CSS3, no frameworks like Tailwind involved.
 
