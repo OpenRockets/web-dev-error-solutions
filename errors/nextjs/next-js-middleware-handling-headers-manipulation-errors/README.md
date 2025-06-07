@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers` Manipulation Errors
+
 
 This document addresses a common issue encountered when manipulating response headers within Next.js Middleware: accidentally modifying headers in ways that lead to unexpected behavior, particularly regarding caching and redirects.  Specifically, we'll focus on the error where incorrect header manipulation results in a blank page or unexpected redirect loops.
 
