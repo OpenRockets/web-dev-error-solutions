@@ -1,97 +1,110 @@
 
-This document details the creation of a loading spinner using only CSS.  No JavaScript is required.  This example utilizes CSS animations and transformations to create a visually appealing and performant loading effect.
+This document addresses a common error encountered when working with Next.js Middleware:  `ReferenceError: Request is not defined`. This error occurs because the `Request` object, crucial for middleware functionality, is not accessible in all contexts within your middleware function.  This typically happens when you try to access the `Request` object outside the middleware's main function, perhaps in a helper function or a module imported into the middleware.
 
-**Description of the Styling:**
+**Description of the Error:**
 
-This spinner consists of four circular elements arranged in a square.  Each circle pulsates individually with a slight delay, creating a rotating effect. The styling uses keyframes to define the animation and transforms to rotate and scale the elements.  The overall effect is a clean and modern loading indicator.
+The `ReferenceError: Request is not defined` error in Next.js Middleware means that your code is attempting to use the `Request` object (or other objects like `Response` provided by the middleware environment) in a location where it's not available.  The `Request` object is automatically provided as the first argument to your middleware function, but this context isn't propagated to other functions unless explicitly passed.
 
+**Code: Problem and Solution**
 
-**Full Code:**
+Let's illustrate with an example.  Suppose you have a middleware function that needs to check user authentication before proceeding.  An incorrect implementation might look like this:
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Loading Spinner</title>
-<style>
-.loader {
-  width: 80px;
-  height: 80px;
-  position: relative;
-  margin: 50px auto;
-}
-.loader div {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  background-color: #007bff;
-  border-radius: 50%;
-  animation: animate 1s linear infinite;
-}
-.loader div:nth-child(1) {
-  top: 0;
-  left: 0;
-  animation-delay: 0s;
-}
-.loader div:nth-child(2) {
-  top: 0;
-  right: 0;
-  animation-delay: 0.25s;
-}
-.loader div:nth-child(3) {
-  bottom: 0;
-  right: 0;
-  animation-delay: 0.5s;
-}
-.loader div:nth-child(4) {
-  bottom: 0;
-  left: 0;
-  animation-delay: 0.75s;
-}
-@keyframes animate {
-  0% {
-    transform: scale(1);
-    opacity: 1;
+```javascript
+// pages/api/middleware.js (INCORRECT)
+import { getToken } from './auth';
+
+export function middleware(req, res) {
+  const token = getToken(req); // Error: Request is not defined inside getToken
+
+  if (!token) {
+    return new Response("Unauthorized", { status: 401 });
   }
-  50% {
-    transform: scale(0.5);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+
+  // ... rest of the middleware
 }
-</style>
-</head>
-<body>
 
-<div class="loader">
-  <div></div>
-  <div></div>
-  <div></div>
-  <div></div>
-</div>
+export const config = {
+  matcher: ['/protected/:path*'],
+}
 
-</body>
-</html>
+//pages/api/auth.js
+export const getToken = (req) => {
+  // ... logic to extract token from request headers ...
+  const authHeader = req.headers.get('authorization');
+  return authHeader;
+}
+```
+
+The `getToken` function is attempting to use `req` which is only available directly within the `middleware` function.
+
+Here's the corrected version:
+
+```javascript
+// pages/api/middleware.js (CORRECT)
+import { getToken } from './auth';
+
+export function middleware(req, res) {
+  const token = getToken(req);
+
+  if (!token) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  // ... rest of the middleware
+}
+
+export const config = {
+  matcher: ['/protected/:path*'],
+}
+
+//pages/api/auth.js
+export const getToken = (req) => {
+  // ... logic to extract token from request headers ...
+  const authHeader = req.headers.get('authorization');
+  return authHeader;
+}
+```
+
+The solution is simple: pass the `req` object as an argument to `getToken`:
+
+
+```javascript
+// pages/api/middleware.js (CORRECT)
+import { getToken } from './auth';
+
+export function middleware(req, res) {
+  const token = getToken(req); // Correct: req is explicitly passed
+
+  if (!token) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  // ... rest of the middleware
+}
+
+export const config = {
+  matcher: ['/protected/:path*'],
+}
+
+//pages/api/auth.js
+export const getToken = (req) => {
+    // ... logic to extract token from request headers ...
+    const authHeader = req.headers.get('authorization');
+    return authHeader;
+  }
+
 ```
 
 **Explanation:**
 
-* **`loader` class:** This container sets the size and positioning of the spinner.
-* **`loader div`:**  This selects each of the four circular elements.  `position: absolute` allows precise placement.
-* **`nth-child` selectors:** These target each circle individually to apply different animation delays.
-* **`@keyframes animate`:** This defines the animation, scaling and fading each circle.
-* **`animation-delay`:** This property creates the staggered effect of the animation.
+The `Request` and `Response` objects are inherently tied to the Next.js middleware execution context.  They are not global objects.  To use them in any helper function, you must explicitly pass them as arguments. This ensures that the function receives the necessary context to operate correctly.
 
 
-**Links to Resources to Learn More:**
+**External References:**
 
-* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
-* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Selectors:** [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
 

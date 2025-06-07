@@ -1,1 +1,1 @@
-Creating a Pure CSS Loading Spinner
+Next.js Middleware: Handling `Request is not defined` Error

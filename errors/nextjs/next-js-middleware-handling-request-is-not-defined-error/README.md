@@ -1,96 +1,112 @@
 # 🐞 Next.js Middleware: Handling `Request is not defined` Error
 
 
-This document addresses a common error encountered when working with Next.js Middleware:  `ReferenceError: Request is not defined`. This error arises because the `Request` object, crucial for middleware functionality, isn't accessible in all contexts.  Middleware functions operate on incoming requests, and attempting to access `Request` outside the appropriate middleware function will lead to this error.
-
+This document addresses a common error encountered when working with Next.js Middleware:  `ReferenceError: Request is not defined`. This error occurs because the `Request` object, crucial for middleware functionality, is not accessible in all contexts within your middleware function.  This typically happens when you try to access the `Request` object outside the middleware's main function, perhaps in a helper function or a module imported into the middleware.
 
 **Description of the Error:**
 
-The `ReferenceError: Request is not defined` error in Next.js Middleware signifies that you're trying to use the `Request` object (or associated methods like `Request.method`, `Request.headers`, etc.) within a code segment where it's not available. This commonly happens when you accidentally try to use middleware logic within a regular component, API route, or other parts of your application that don't have access to the incoming request context.
+The `ReferenceError: Request is not defined` error in Next.js Middleware means that your code is attempting to use the `Request` object (or other objects like `Response` provided by the middleware environment) in a location where it's not available.  The `Request` object is automatically provided as the first argument to your middleware function, but this context isn't propagated to other functions unless explicitly passed.
 
+**Code: Problem and Solution**
 
-**Code Example and Step-by-Step Fix:**
-
-Let's say you have a middleware function intended to redirect users based on their authentication status.  Incorrect implementation might look like this:
-
-**Incorrect Code (Will throw the error):**
+Let's illustrate with an example.  Suppose you have a middleware function that needs to check user authentication before proceeding.  An incorrect implementation might look like this:
 
 ```javascript
-// pages/middleware.js
-import { NextResponse } from 'next/server';
+// pages/api/middleware.js (INCORRECT)
+import { getToken } from './auth';
 
-export function middleware(req) {
-  const isAuthenticated = checkAuthentication(req); // Function to check authentication
+export function middleware(req, res) {
+  const token = getToken(req); // Error: Request is not defined inside getToken
 
-  if (!isAuthenticated) {
-    return NextResponse.redirect(new URL('/login', req.url));
+  if (!token) {
+    return new Response("Unauthorized", { status: 401 });
   }
+
+  // ... rest of the middleware
 }
 
-// pages/index.js
-import { checkAuthentication } from './middleware'; //INCORRECT - Attempting to use middleware logic outside middleware
-
-export default function Home() {
-    const isAuth = checkAuthentication(); //Throws the error because 'req' is not defined here.
-    return <h1>Home Page</h1>
+export const config = {
+  matcher: ['/protected/:path*'],
 }
 
-//Incorrect helper function
-function checkAuthentication(req){
-    if(req){
-        //logic to check authentication
-        return true;
-    }
-    return false;
+//pages/api/auth.js
+export const getToken = (req) => {
+  // ... logic to extract token from request headers ...
+  const authHeader = req.headers.get('authorization');
+  return authHeader;
 }
-
 ```
 
-**Correct Code:**
+The `getToken` function is attempting to use `req` which is only available directly within the `middleware` function.
+
+Here's the corrected version:
 
 ```javascript
-// pages/middleware.js
-import { NextResponse } from 'next/server';
+// pages/api/middleware.js (CORRECT)
+import { getToken } from './auth';
 
-export function middleware(req) {
-  const isAuthenticated = checkAuthentication(req);
+export function middleware(req, res) {
+  const token = getToken(req);
 
-  if (!isAuthenticated) {
-    return NextResponse.redirect(new URL('/login', req.url));
+  if (!token) {
+    return new Response("Unauthorized", { status: 401 });
   }
+
+  // ... rest of the middleware
 }
 
-
-function checkAuthentication(req){
-    //logic to check authentication using 'req' object - example
-    const token = req.cookies.get('token');
-    if(token){
-        return true;
-    }
-    return false;
+export const config = {
+  matcher: ['/protected/:path*'],
 }
 
-// pages/login.js
-// ...Login Page logic...
-
-// pages/index.js
-export default function Home() {
-  return <h1>Home Page</h1>; // No authentication logic here
+//pages/api/auth.js
+export const getToken = (req) => {
+  // ... logic to extract token from request headers ...
+  const authHeader = req.headers.get('authorization');
+  return authHeader;
 }
+```
+
+The solution is simple: pass the `req` object as an argument to `getToken`:
+
+
+```javascript
+// pages/api/middleware.js (CORRECT)
+import { getToken } from './auth';
+
+export function middleware(req, res) {
+  const token = getToken(req); // Correct: req is explicitly passed
+
+  if (!token) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  // ... rest of the middleware
+}
+
+export const config = {
+  matcher: ['/protected/:path*'],
+}
+
+//pages/api/auth.js
+export const getToken = (req) => {
+    // ... logic to extract token from request headers ...
+    const authHeader = req.headers.get('authorization');
+    return authHeader;
+  }
 
 ```
 
 **Explanation:**
 
-The corrected code encapsulates the authentication logic entirely within the `middleware.js` file. The `checkAuthentication` function now correctly receives the `req` object as an argument within the middleware function. This ensures that the `Request` object is only accessed where it is properly defined and available. The `Home` component no longer attempts to access authentication logic; this is handled entirely by the middleware.
-
+The `Request` and `Response` objects are inherently tied to the Next.js middleware execution context.  They are not global objects.  To use them in any helper function, you must explicitly pass them as arguments. This ensures that the function receives the necessary context to operate correctly.
 
 
 **External References:**
 
-* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/building-your-application/routing/middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)  (Refer to this for detailed information on using Next.js middleware)
-* **Next.js API Routes Documentation:** [https://nextjs.org/docs/api-routes/introduction](https://nextjs.org/docs/api-routes/introduction) (Understanding the difference between API routes and middleware)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
 
