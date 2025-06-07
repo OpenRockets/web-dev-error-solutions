@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `TypeError: Cannot read properties of undefined (reading 'locale')`
+Dealing with `NextResponse.redirect()` in Next.js Middleware leading to infinite redirect loops

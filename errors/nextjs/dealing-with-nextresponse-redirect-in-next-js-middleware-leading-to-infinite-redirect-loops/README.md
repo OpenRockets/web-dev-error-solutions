@@ -1,3 +1,5 @@
+# 🐞 Dealing with `NextResponse.redirect()` in Next.js Middleware leading to infinite redirect loops
+
 
 This document addresses a common issue encountered when using `NextResponse.redirect()` within Next.js Middleware:  unintentional infinite redirect loops.  This happens when the redirect condition isn't properly managed, causing the middleware to repeatedly redirect the request, resulting in a browser error.
 
