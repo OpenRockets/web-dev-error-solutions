@@ -1,67 +1,79 @@
 
-This document addresses a common issue encountered when using Next.js API routes: the `UnhandledPromiseRejectionWarning`. This warning, while not immediately crashing your application, indicates a potential problem that could lead to instability or unexpected behavior.  It often arises when a promise within an API route is rejected without proper error handling.
+This document details the creation of a circular progress bar using only CSS.  We'll leverage CSS3's `conic-gradient` function for a clean and efficient solution.  No JavaScript required!
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The `UnhandledPromiseRejectionWarning` appears in your console (usually during development) when a promise in your API route fails to be handled using `.catch()`. This can happen due to network errors, database errors, or any other unexpected failure within asynchronous operations.  Ignoring these warnings is not recommended as they can mask underlying issues and might lead to silent failures in production.
+This progress bar uses a combination of a circle created with the `border-radius` property and a `conic-gradient` to represent the progress.  The `conic-gradient` allows us to easily create a pie-chart-like effect, where the filled portion represents the progress percentage. We'll also add some styling for visual appeal.
 
-**Example Scenario:**  Imagine an API route fetching data from an external API. If that external API is unavailable, the promise will reject. Without a `.catch()` block, the rejection goes unhandled, leading to the warning.
+**Full Code:**
 
-
-**Code demonstrating the problem:**
-
-```javascript
-// pages/api/data.js
-export default async function handler(req, res) {
-  try {
-    const response = await fetch('https://some-unreliable-api.com/data');
-    const data = await response.json();
-    res.status(200).json(data);
-  } catch (error) {
-    console.error("Error fetching data:", error); //This will log the error, but the promise is still unhandled
-    res.status(500).json({ error: 'Failed to fetch data' });
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Circular Progress Bar</title>
+<style>
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #e74c3c 70%,
+    #f1f2f6 0
+  );
 }
-```
-
-**Step-by-Step Code Fix:**
-
-The solution is simple: ensure every promise within your API route is handled with a `.catch()` block. This allows you to gracefully handle errors, preventing the `UnhandledPromiseRejectionWarning`.
-
-```javascript
-// pages/api/data.js (Fixed)
-export default async function handler(req, res) {
-  try {
-    const response = await fetch('https://some-unreliable-api.com/data')
-    .catch(error => {
-      console.error("Error fetching data:", error);
-      throw new Error('Failed to fetch data from external API'); //Re-throwing allows the outer catch to handle it uniformly.
-    });
-
-    const data = await response.json();
-    res.status(200).json(data);
-  } catch (error) {
-    console.error("API Route Error:", error);
-    res.status(500).json({ error: 'Failed to fetch data' });
-  }
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #fff;
+  z-index: 1;
 }
-```
+.progress-ring::after {
+    content: "70%";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    font-size: 1.2em;
+    font-weight: bold;
+}
 
+</style>
+</head>
+<body>
+
+<div class="progress-ring"></div>
+
+
+</body>
+</html>
+```
 
 **Explanation:**
 
-The improved code now includes a `.catch()` block within the `fetch` call itself. This ensures that if the `fetch` operation fails, the `catch` block is executed, logging the error, and re-throwing a more descriptive error to be caught by the outer `try...catch`. This allows you to handle errors uniformly without letting the unhandled promise warning slip through. The outer `try...catch` block provides a safety net for other potential errors that might occur within the API route.
+* **`.progress-ring`**: This class styles the main circular element.  `border-radius: 50%;` creates the circle. The `conic-gradient` function defines the progress.  The first color (`#e74c3c`) is the filled portion, and the percentage (70%) determines how much of the circle is filled. The second color (`#f1f2f6`) is the background.
 
-**External References:**
+* **`.progress-ring::before`**: This pseudo-element creates a white circle on top to create the visual effect of a progress ring.  `z-index: 1` ensures it's layered correctly.
 
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [Understanding Promises in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
-* [Handling Errors in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling)
+* **`.progress-ring::after`**: This pseudo-element adds the percentage text in the center.  `z-index: 2` places it on top of other elements.  You can easily adjust the percentage value in the content to update the progress.
 
 
-**Conclusion:**
+**To change the percentage:**  Modify the first value in `conic-gradient` (currently 70%) to adjust the filled portion of the circle.  Also, update the text content of `.progress-ring::after` to reflect the new percentage.
 
-Properly handling promises in your Next.js API routes is crucial for building robust and reliable applications.  By consistently using `.catch()` blocks, you can prevent `UnhandledPromiseRejectionWarning` and gracefully handle errors, improving the user experience and overall stability of your application.
+
+**Links to Resources to Learn More:**
+
+* **CSS Gradients:** [MDN Web Docs on Gradients](https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient)
+* **CSS Pseudo-elements:** [MDN Web Docs on Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* **CSS `conic-gradient`:** [CSS-Tricks article on conic-gradient](https://css-tricks.com/conic-gradient-for-circular-progress-bars/) (Search for relevant articles; conic-gradient documentation is scattered across various sites)
+
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
