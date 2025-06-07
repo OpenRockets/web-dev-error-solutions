@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers already sent` Error
+Next.js Middleware: Handling `Not Found` Errors for Dynamic Routes
