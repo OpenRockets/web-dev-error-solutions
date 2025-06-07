@@ -1,3 +1,5 @@
+# 🐞 Handling `next/font` Errors in Next.js Middleware
+
 
 This document addresses a common issue encountered when using `next/font` within Next.js Middleware, specifically the error related to attempting to access the `next/font` module's functionality in an environment where it's not designed to operate.  This typically happens when trying to load and use fonts directly within middleware functions.
 
