@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Redirect` Issues After Server-Side Rendering (SSR)
+Next.js Middleware: Handling `NextResponse.redirect()` Issues with Dynamic Paths
