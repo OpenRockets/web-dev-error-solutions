@@ -1,80 +1,95 @@
 
-This document addresses a common problem encountered when using `NextResponse.redirect()` within Next.js Middleware, specifically when dealing with dynamic routes and ensuring proper redirect behavior.  The issue typically manifests as redirects not working as expected, often resulting in infinite redirect loops or incorrect destination URLs.
+This document details the creation of an expanding card using only CSS.  The card expands vertically when hovered, revealing hidden content. We'll be using CSS transitions and transforms to achieve this smooth animation effect. No JavaScript is required.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-When using dynamic routes in your Next.js application and attempting to redirect from middleware based on request parameters, you might find that the redirect URL is incorrectly constructed or that the redirect leads to an unexpected route. This can happen if you're not properly handling the dynamic route segments within the redirect URL.
+The card utilizes a simple structure: a container holding a visible front section and a hidden back section.  On hover, the front section scales down slightly and moves upward, revealing the back section which simultaneously slides upwards.  The animation is controlled using CSS transitions and transforms.  We will style it with simple box-shadow and padding for a more appealing look.
 
-**Scenario:**
 
-Let's assume you have a blog with dynamic routes like `/blog/[slug]`. You want to redirect any requests to `/blog/old-post` to the updated `/blog/new-post` location.  Incorrectly handling the redirection within middleware can lead to issues.
+**Full Code:**
 
-**Incorrect Code (Illustrative Example):**
-
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  if (req.nextUrl.pathname === '/blog/old-post') {
-    const res = NextResponse.redirect(new URL('/blog/new-post', req.url))
-    return res;
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 300px;
+  height: 200px;
+  perspective: 1000px; /* Required for 3D transforms */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  overflow: hidden; /* Hide content overflowing during transition */
 }
 
-export const config = {
-  matcher: '/blog/:path*',
-};
-```
-
-**Explanation of Incorrect Code:**
-
-The above code seems plausible, but it fails to correctly handle the dynamic segment `:path*`.  If a user accesses `/blog/old-post/extra-path`, the redirect will be to `/blog/new-post/extra-path`, which might not exist.  This might result in a 404 error or unintended behavior.
-
-**Step-by-Step Code Fix:**
-
-Here's the corrected code, addressing the dynamic path issue:
-
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  if (req.nextUrl.pathname === '/blog/old-post') {
-    const res = NextResponse.redirect(new URL('/blog/new-post', req.url))
-    return res;
-  }
-
-  if(req.nextUrl.pathname.startsWith('/blog/old-post/')){
-    const path = req.nextUrl.pathname.substring('/blog/old-post/'.length);
-    const url = new URL(`/blog/new-post/${path}`, req.url);
-    return NextResponse.redirect(url);
-  }
+.card-front, .card-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* Prevent back face from showing during transition */
+  transition: transform 0.3s ease-in-out; /* Smooth transition */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
 }
 
-export const config = {
-  matcher: '/blog/:path*',
-};
+.card-front {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.card-back {
+  background-color: #4CAF50;
+  color: white;
+  transform: translateY(100%); /* Initially hidden below the front */
+}
+
+.card:hover .card-front {
+  transform: translateY(-20%) scale(0.9); /* Move up and scale down */
+}
+
+.card:hover .card-back {
+  transform: translateY(0%); /* Reveal the back section */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-front">
+    <h3>Click to Reveal!</h3>
+  </div>
+  <div class="card-back">
+    <h2>Hidden Content!</h2>
+    <p>This is the hidden content revealed on hover.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**Explanation of Corrected Code:**
+**Explanation:**
 
-1. **Handle the base case:** The first `if` statement remains, handling redirects for the exact `/blog/old-post` path.
-
-2. **Handle dynamic paths:** The second `if` statement checks if the pathname starts with `/blog/old-post/`. If true, it extracts the remaining path using `substring`.
-
-3. **Construct the redirect URL:** The extracted path is then appended to `/blog/new-post` ensuring that any extra segments from the original path are included in the redirect.  This handles the dynamic portion of the route correctly.
-
-
-**External References:**
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse.redirect API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse.redirect)
+* **`perspective`:** This property creates a 3D space for the card's transformation, making the animation more realistic.
+* **`backface-visibility: hidden;`:** This prevents the back of the card from being visible during the transition.
+* **`transition`:** This property defines the smooth animation for the transform property.
+* **`transform: translateY()`:** This property moves the elements along the Y-axis (vertically).
+* **`transform: scale()`:** This property changes the size of the element.
+* **Hover Effects:** The `:hover` pseudo-class triggers the animation when the mouse hovers over the card.
 
 
-**Conclusion:**
+**Links to Resources to Learn More:**
 
-By carefully considering how dynamic route segments are handled within `NextResponse.redirect()`, you can avoid common pitfalls and ensure your redirects function as intended within Next.js Middleware. The key is to correctly reconstruct the redirect URL to maintain the context of the original request.
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS-Tricks:** (Search for "CSS animations" or "CSS transitions" on their site for numerous tutorials and examples)
+
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
