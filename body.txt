@@ -1,109 +1,59 @@
 
-## Description of the Error
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This technique leverages the `clip-path` property and some clever trigonometry to achieve a visually appealing and fully customizable progress indicator.
 
-A common problem when working with Next.js API routes is handling large responses efficiently.  If your API route generates a very large JSON response (e.g., a large dataset, a complex object graph), you might encounter memory issues on the server, leading to performance degradation or even crashes. The server may run out of memory, resulting in 500 errors or unexpected behavior.  This is particularly relevant when dealing with data fetching from external services or databases.
+**Description of the Styling:**
 
+The circular progress bar is created using a single `<div>`.  We use a background color for the track (the circle's outer ring), and then a pseudo-element (`::before`) to create the progress indicator. The progress indicator is a circle with a background color, positioned over the track. The `clip-path` property is used to dynamically "cut" the circle, creating the progress effect. The percentage of completion is controlled by a CSS variable (`--progress`). This allows for easy modification via CSS or JavaScript (though this example is CSS-only).
 
-## Fixing Step by Step
+**Full Code:**
 
-This example demonstrates how to handle a large response by streaming the data instead of loading it all into memory at once. We will be using `ReadableStream` to achieve this.
+```html
+<div class="progress-ring">
+</div>
+```
 
-**Step 1:  Modify your API route to stream the data.**
-
-```javascript
-// pages/api/largeData.js
-import { NextApiRequest, NextApiResponse } from 'next';
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'GET') {
-    // Simulate a large dataset (replace with your actual data fetching)
-    const largeDataset = Array.from({ length: 10000 }, (_, i) => ({ id: i, value: `Data ${i}` }));
-
-    // Create a ReadableStream to stream the data
-    const stream = new ReadableStream({
-      start(controller) {
-        for (const item of largeDataset) {
-          controller.enqueue(JSON.stringify(item) + '\n'); // Add a newline for readability
-        }
-        controller.close();
-      },
-    });
-
-
-    // Set the response headers
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Length', largeDataset.length * (JSON.stringify(largeDataset[0]).length + 1) ); //Important:  Set Content-Length accurately.
-    //Note: This calculation assumes all objects are roughly the same size + newline.  For better accuracy, calculate the total size in advance.
-
-    // Pipe the stream to the response
-    stream.pipeTo(res);
-
-
-  } else {
-    res.status(405).end(); // Method Not Allowed
-  }
+```css
+.progress-ring {
+  --progress: 75; /* Adjust this value to change the progress percentage (0-100) */
+  --size: 100px; /* Adjust the size of the progress ring */
+  --thickness: 10px; /* Adjust the thickness of the progress ring */
+  width: var(--size);
+  height: var(--size);
+  position: relative;
+  border-radius: 50%;
+  background-color: #f0f0f0; /* Track background color */
 }
 
-```
-
-**Step 2: Adjust Client-Side Fetching (Optional but Recommended)**
-
-While streaming on the server is key, efficiently handling the streamed response on the client is equally crucial.  Avoid simply using `fetch` and trying to parse the entire response at once. Instead, use a technique that processes the data as it arrives.
-
-```javascript
-// components/MyComponent.js
-import React, { useState, useEffect } from 'react';
-
-const MyComponent = () => {
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch('/api/largeData');
-      const reader = response.body?.getReader();
-
-      if (!reader) return;
-
-      let dataChunks = [];
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        dataChunks.push(value);
-      }
-
-      const combinedData = new TextDecoder("utf-8").decode(new Uint8Array(dataChunks.flat()))
-                           .split('\n')
-                           .filter(line => line.trim() !== '') // Remove empty lines
-                           .map(line => JSON.parse(line));
-
-      setData(combinedData);
-    };
-
-    fetchData();
-  }, []);
-
-  return (
-    <div>
-      {data.map(item => (
-        <p key={item.id}>{item.value}</p>
-      ))}
-    </div>
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(var(--size) - var(--thickness) * 2);
+  height: calc(var(--size) - var(--thickness) * 2);
+  border-radius: 50%;
+  background-color: #4CAF50; /* Progress indicator color */
+  clip-path: polygon(
+    50% 50%,
+    calc(50% + (var(--size) / 2 - var(--thickness)) * cos(calc(var(--progress) * 3.14159 / 50))) calc(50% - (var(--size) / 2 - var(--thickness)) * sin(calc(var(--progress) * 3.14159 / 50))),
+    calc(50% + (var(--size) / 2 - var(--thickness)) * cos(calc(3.14159 * 2 - var(--progress) * 3.14159 / 50))) calc(50% - (var(--size) / 2 - var(--thickness)) * sin(calc(3.14159 * 2 - var(--progress) * 3.14159 / 50)))
   );
-};
-
-export default MyComponent;
+}
 ```
 
-## Explanation
 
-The key change is using `ReadableStream`. Instead of creating the entire JSON response in memory, we create a stream that yields data chunks one at a time.  This drastically reduces memory usage, especially when dealing with large datasets.  The client-side handling (optional, but good practice) mirrors this approach.  It processes the streamed response in smaller chunks preventing a single, large allocation in the browser memory.  Accurate `Content-Length` header is crucial for the client to understand the total size of response for progress indicators or other functionalities.
+**Explanation:**
 
-## External References
+* **`--progress` variable:** Controls the percentage of the circle filled.
+* **`--size` variable:** Determines the overall size of the progress ring.
+* **`--thickness` variable:** Controls the thickness of the progress ring.
+* **`clip-path: polygon(...)`:** This is where the magic happens. The formula calculates the coordinates of the polygon's vertices, effectively creating the circular progress.  The trigonometry ensures the correct arc is drawn based on the `--progress` value.  It creates a filled segment from 0 degrees to the `--progress` percentage of a full 360-degree circle.
 
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [MDN ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)
-* [Node.js Streams](https://nodejs.org/api/stream.html)
+**Resources to Learn More:**
+
+* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **Understanding Trigonometry:** Search for basic trigonometry tutorials online (many resources are available).
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
