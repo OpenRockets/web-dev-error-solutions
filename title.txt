@@ -1,1 +1,1 @@
-Handling "Failed to load resource: net::ERR_SPDY_PROTOCOL_ERROR" in Next.js Middleware
+Next.js Middleware: Handling `Error: Failed to fetch` in API Route Calls

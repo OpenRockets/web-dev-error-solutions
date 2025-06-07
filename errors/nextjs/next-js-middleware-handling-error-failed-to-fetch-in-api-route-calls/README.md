@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: Failed to fetch` in API Route Calls
+
 
 This document addresses a common error encountered when using API routes within Next.js Middleware: `Error: Failed to fetch`. This typically occurs when your middleware attempts to fetch data from an API route, but the fetch request fails due to network issues, incorrect URLs, or server-side errors in the API route itself.
 
