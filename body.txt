@@ -1,72 +1,93 @@
 
-This document addresses a common problem encountered when using Next.js Middleware: handling 404 (Not Found) errors effectively.  Middleware, while powerful for modifying requests before they reach your page components, can inadvertently cause 404s if not handled carefully.  For instance, if your middleware attempts to redirect based on conditions that aren't met, or if it tries to access data that doesn't exist, it can lead to a frustrating 404 response for the user.  This is especially problematic because the standard Next.js error handling might not always be sufficient in a middleware context.
+This document addresses a common issue developers encounter when using `next/image` within Next.js Middleware or API routes:  the inability to directly use `next/image` components in these contexts.  `next/image` relies on the rendering process of the pages, and those processes aren't available within middleware or API routes.  Attempting to use it will result in errors related to `next/image` not being properly configured or initialized.
 
 **Description of the Error:**
 
-A `404 Not Found` error in Next.js Middleware typically manifests as a blank page or a generic error message in the browser, with no clear indication of the problem's origin. This makes debugging challenging.  The root cause often lies in how middleware modifies requests or attempts to manipulate the response.  For example, redirecting to a non-existent route within middleware will result in a 404.  Similarly, using incorrect paths or failing to handle asynchronous operations gracefully can also trigger this error.
+You'll likely encounter errors similar to these when trying to use `next/image` within middleware or API routes:
 
-**Code Example: Incorrect Middleware and Solution**
+* `Error: Image optimization only works within a Next.js application`
+*  `TypeError: Cannot read properties of undefined (reading 'config')` (this could stem from incorrect import paths).
+*  `Error: Image component must be wrapped in a Layout` (If attempting to render it on the server-side without proper context.)
 
 
-Let's say we have middleware that redirects users based on a role stored in a session.  If the session doesn't exist or the role is invalid, the redirect might fail, leading to a 404.
+**Fixing Step-by-Step:**
 
-**Incorrect Middleware (middleware.js):**
+The solution is to *not* use `next/image` directly in middleware or API routes. These environments are designed for server-side logic and data manipulation, not for rendering components intended for client-side display.  Instead, you should perform any image processing or manipulation *before* rendering your page component, perhaps even before the middleware is called.
 
-```javascript
-import { NextResponse } from 'next/server';
+Let's say you want to generate an optimized image URL based on the request in your middleware.  Here's how you might approach it:
 
-export function middleware(req) {
-  const session = req.cookies.get('session'); // Assume session is stored in cookie
 
-  if (session && session.role === 'admin') {
-    return NextResponse.redirect(new URL('/admin', req.url));
-  } else {
-    return NextResponse.redirect(new URL('/home', req.url)); // potential 404 here
-  }
-}
+**1.  Use a different image optimization library (optional, but often preferred):**  Libraries like `sharp` offer server-side image manipulation which is far more flexible than `next/image` within this context.
 
-export const config = {
-  matcher: ['/'], // Applies middleware to all routes
-};
-```
-
-This code might fail if `session` or `session.role` is undefined or if `/home` doesn't exist (leading to a 404).
-
-**Corrected Middleware (middleware.js):**
+**2.  Prepare the image URL in Middleware (Example with `sharp`):**
 
 ```javascript
-import { NextResponse } from 'next/server';
+// middleware.js
+import { NextResponse } from 'next/server'
+import sharp from 'sharp';
+import fs from 'node:fs/promises';
 
-export function middleware(req) {
-  const session = req.cookies.get('session');
-
-  if (session && session.role === 'admin') {
-    return NextResponse.redirect(new URL('/admin', req.url));
-  } else if(session){ //Check if session exist before accessing role.
-      return NextResponse.redirect(new URL('/home', req.url)); 
-  } else {
-    //Handle missing session gracefully.  Return the original request.
+export async function middleware(req) {
+  // Only process requests for /image-route
+  if (!req.nextUrl.pathname.startsWith('/image-route')) {
     return NextResponse.next();
   }
-}
 
-export const config = {
-  matcher: ['/'],
-};
+  const imagePath = '/public/images/original.jpg'; // Path to original image
+
+  try {
+    const imageBuffer = await fs.readFile(imagePath);
+    const resizedImage = await sharp(imageBuffer)
+      .resize({ width: 300, height: 300 })
+      .toBuffer();
+
+    // Create a data URL to embed the image or use the path to a new file
+    const dataUrl = `data:image/jpeg;base64,${resizedImage.toString('base64')}`;
+    //OR create/save the image to public folder and use relative path
+    const resizedImagePath = '/public/images/resized.jpg'
+    await fs.writeFile(resizedImagePath, resizedImage);
+    
+
+    return NextResponse.rewrite(new URL('/image-page?image='+ resizedImagePath, req.url)); //redirect to page with image URL
+  } catch (error) {
+    console.error('Error processing image:', error);
+    return new NextResponse("Image processing failed", { status: 500 });
+  }
+}
 ```
 
-This improved version includes explicit checks for the existence of the session and avoids potential redirection to non-existent routes. If a session doesn't exist or the user isn't an admin, it simply passes the request to the next handler, preventing the 404.
+**3.  Use the prepared URL in your page component:**
 
+```javascript
+// pages/image-page.js
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+
+export default function ImagePage() {
+  const router = useRouter();
+  const imageUrl = router.query.image;
+
+  return (
+    <div>
+      {imageUrl && (
+          <Image src={imageUrl} alt="Resized Image" width={300} height={300} />
+      )}
+    </div>
+  );
+}
+
+```
 
 **Explanation:**
 
-The key to preventing `404` errors in middleware is defensive programming. Always validate your inputs, handle potential errors gracefully (using `try...catch` blocks where necessary for asynchronous operations), and ensure that any redirects point to valid routes.  Avoid hardcoding paths; use relative paths or route constants to make your middleware more resilient to changes in your application's structure.  Using `NextResponse.next()` allows the request to proceed to the next handler in the chain, preventing premature 404 errors.
+The example above demonstrates how to use `sharp` to resize the image within the middleware and then pass the optimized URL to the page component.  The key is separating the image manipulation (server-side) from the image rendering (client-side).  This approach ensures proper behavior and avoids the errors associated with using `next/image` in inappropriate contexts.  Using a data URL avoids a separate image file if you want to keep things simpler.
+
 
 **External References:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [Next.js Error Handling](https://nextjs.org/docs/app/building-your-application/handling-errors)
+* [Next.js Middleware documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Next.js Image Component documentation](https://nextjs.org/docs/basic-features/image-optimization)
+* [Sharp image processing library](https://sharp.pixelplumbing.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

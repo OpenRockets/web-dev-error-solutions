@@ -1,91 +1,95 @@
 # 🐞 Handling `Next/Image` Errors in Next.js Middleware
 
 
-This document addresses a common problem developers encounter when using the `next/image` component within Next.js Middleware or API Routes:  the inability to use the optimized image features provided by `next/image` in these server-side contexts.  `next/image` relies on client-side rendering to optimize images, and attempting to use it directly within middleware or API routes will typically result in errors or unexpected behavior.
-
+This document addresses a common issue developers encounter when using `next/image` within Next.js Middleware or API routes:  the inability to directly use `next/image` components in these contexts.  `next/image` relies on the rendering process of the pages, and those processes aren't available within middleware or API routes.  Attempting to use it will result in errors related to `next/image` not being properly configured or initialized.
 
 **Description of the Error:**
 
-When you try to render an image using `next/image` within a Next.js Middleware function or an API route, you'll likely encounter an error similar to this:  `Error: image is being used outside of a browser environment`. This is because `next/image` requires a browser environment to function correctly.  It leverages the browser's capabilities for image optimization and lazy loading. Server-side contexts like middleware and API routes lack these functionalities.
+You'll likely encounter errors similar to these when trying to use `next/image` within middleware or API routes:
 
-**Code (Illustrative Example - Error Case):**
+* `Error: Image optimization only works within a Next.js application`
+*  `TypeError: Cannot read properties of undefined (reading 'config')` (this could stem from incorrect import paths).
+*  `Error: Image component must be wrapped in a Layout` (If attempting to render it on the server-side without proper context.)
+
+
+**Fixing Step-by-Step:**
+
+The solution is to *not* use `next/image` directly in middleware or API routes. These environments are designed for server-side logic and data manipulation, not for rendering components intended for client-side display.  Instead, you should perform any image processing or manipulation *before* rendering your page component, perhaps even before the middleware is called.
+
+Let's say you want to generate an optimized image URL based on the request in your middleware.  Here's how you might approach it:
+
+
+**1.  Use a different image optimization library (optional, but often preferred):**  Libraries like `sharp` offer server-side image manipulation which is far more flexible than `next/image` within this context.
+
+**2.  Prepare the image URL in Middleware (Example with `sharp`):**
 
 ```javascript
-// pages/api/image.js (Incorrect)
-import Image from 'next/image'
+// middleware.js
+import { NextResponse } from 'next/server'
+import sharp from 'sharp';
+import fs from 'node:fs/promises';
 
-export default async function handler(req, res) {
+export async function middleware(req) {
+  // Only process requests for /image-route
+  if (!req.nextUrl.pathname.startsWith('/image-route')) {
+    return NextResponse.next();
+  }
+
+  const imagePath = '/public/images/original.jpg'; // Path to original image
+
   try {
-    // This will cause an error!
-    const imageMarkup = <Image src="/images/my-image.jpg" width={300} height={200} alt="My Image" />;
+    const imageBuffer = await fs.readFile(imagePath);
+    const resizedImage = await sharp(imageBuffer)
+      .resize({ width: 300, height: 300 })
+      .toBuffer();
 
-    res.status(200).send(imageMarkup); 
+    // Create a data URL to embed the image or use the path to a new file
+    const dataUrl = `data:image/jpeg;base64,${resizedImage.toString('base64')}`;
+    //OR create/save the image to public folder and use relative path
+    const resizedImagePath = '/public/images/resized.jpg'
+    await fs.writeFile(resizedImagePath, resizedImage);
+    
+
+    return NextResponse.rewrite(new URL('/image-page?image='+ resizedImagePath, req.url)); //redirect to page with image URL
   } catch (error) {
-    res.status(500).send(error.message);
+    console.error('Error processing image:', error);
+    return new NextResponse("Image processing failed", { status: 500 });
   }
 }
 ```
 
-**Fixing the Problem Step-by-Step:**
-
-The solution is to avoid using `next/image` directly within server-side contexts. Instead, you should generate necessary image information (like URLs or paths) on the server and send that data to the client for rendering.  The client-side code will then use `next/image` to display the images.
-
-**Corrected Code:**
+**3.  Use the prepared URL in your page component:**
 
 ```javascript
-// pages/api/image.js (Corrected)
-export default async function handler(req, res) {
-  try {
-    const imageUrl = "/images/my-image.jpg"; // Or fetch from a database/external source
-    const imageWidth = 300;
-    const imageHeight = 200;
-    const imageAlt = "My Image";
-
-    res.status(200).json({ imageUrl, imageWidth, imageHeight, imageAlt });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-}
-
-
-// pages/index.js (Client-side rendering)
+// pages/image-page.js
 import Image from 'next/image';
+import { useRouter } from 'next/router';
 
-export default function Home({ imageData }) {
+export default function ImagePage() {
+  const router = useRouter();
+  const imageUrl = router.query.image;
+
   return (
     <div>
-      <Image src={imageData.imageUrl} width={imageData.imageWidth} height={imageData.imageHeight} alt={imageData.imageAlt} />
+      {imageUrl && (
+          <Image src={imageUrl} alt="Resized Image" width={300} height={300} />
+      )}
     </div>
   );
 }
 
-
-// pages/index.js (Fetching data)
-export async function getStaticProps() {
-  const res = await fetch('/api/image');
-  const imageData = await res.json();
-
-  return {
-    props: { imageData },
-  };
-}
 ```
 
 **Explanation:**
 
-The corrected code separates image handling into two parts:
-
-1. **Server-side (API Route):** The API route `/api/image`  no longer attempts to render the image directly using `next/image`.  Instead, it only retrieves the image URL, dimensions, and alt text. This data is then sent as a JSON response.
-
-2. **Client-side (Page Component):** The client-side component fetches the image data from the API route.  Only *after* receiving this data, it uses `next/image` to render the image. This ensures that `next/image` is used within a browser context, where it functions as intended.
-
+The example above demonstrates how to use `sharp` to resize the image within the middleware and then pass the optimized URL to the page component.  The key is separating the image manipulation (server-side) from the image rendering (client-side).  This approach ensures proper behavior and avoids the errors associated with using `next/image` in inappropriate contexts.  Using a data URL avoids a separate image file if you want to keep things simpler.
 
 
 **External References:**
 
-* [Next.js Image Optimization](https://nextjs.org/docs/basic-features/image-optimization) - Official Next.js documentation on image optimization.
-* [Next.js API Routes](https://nextjs.org/docs/api-routes/introduction) -  Documentation on creating API routes in Next.js.
-* [Next.js Middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware) - Documentation on using Middleware in Next.js.
+* [Next.js Middleware documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Next.js Image Component documentation](https://nextjs.org/docs/basic-features/image-optimization)
+* [Sharp image processing library](https://sharp.pixelplumbing.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

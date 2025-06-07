@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `404 Not Found` Errors Gracefully
+Handling `Next/Image` Errors in Next.js Middleware
