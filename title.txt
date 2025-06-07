@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Not Found` Errors in API Routes
+Creating a CSS-only Expanding Card with a Subtle Reveal
