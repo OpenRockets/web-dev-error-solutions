@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `getHeader` Errors with `Request.headers.get()`
+Handling `Redirect()` Issues in Next.js Middleware

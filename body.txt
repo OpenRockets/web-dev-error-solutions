@@ -1,78 +1,68 @@
 
-## Description of the Error
-
-A common error when working with Next.js Middleware involves attempting to access request headers using the `Request.headers` object incorrectly.  The `Request.headers` object in Next.js Middleware doesn't directly offer a `.get()` method like you might find in other environments (e.g., Node.js's `http` module). Attempting to use `Request.headers.get('authorization')`  will result in a runtime error or unexpected behavior.  The correct approach is to use the `headers.get()` method from the `Headers` object which is a property of `Request`.
-
-## Code: Fixing Step-by-Step
-
-Let's say you're trying to authenticate users based on an `Authorization` header in your middleware.  Here's how you'd do it incorrectly and then the correct approach:
+This document addresses a common problem developers encounter when using the `Redirect()` function within Next.js Middleware: unexpected redirect behavior or failures to redirect correctly.  This often stems from misunderstandings about how middleware operates and interacts with the request lifecycle.
 
 
-**Incorrect Approach:**
+**Description of the Error:**
 
-```javascript
-// pages/api/middleware.js
-export function middleware(req, res) {
-  const authHeader = req.headers.get('authorization'); // Incorrect!
+The error isn't a specific error message, but rather a range of behaviors. You might see:
 
-  if (!authHeader) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
+* **No redirect:** The middleware runs, but the expected redirect doesn't happen, and the user remains on the original page.
+* **Incorrect redirect:** The redirect goes to the wrong URL or behaves unexpectedly.
+* **Infinite redirect loop:**  The middleware continually redirects, resulting in a browser error.
 
-  // ...rest of your authentication logic...
-}
 
-export const config = {
-  matcher: ['/protected/:path*'], // Protect routes under /protected
-};
-```
+**Code Example and Step-by-Step Fix:**
 
-**Correct Approach:**
+Let's say we're building a feature where only authenticated users can access `/dashboard`.  A naive implementation might look like this (incorrect):
 
 ```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server';
+// middleware.js
+import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  const authHeader = req.headers.get('authorization'); // Correct way!
+  const token = req.cookies.get('auth_token')
 
-
-  if (!authHeader) {
-    return NextResponse.redirect(new URL('/login', req.url));
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url))
   }
-
-  // ...rest of your authentication logic...  Example below:
-  const token = authHeader.substring('Bearer '.length); // Assuming Bearer token
-
-  // Verify token here.  This is a placeholder!  Replace with actual validation.
-  if (!isValidToken(token)) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-
-  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/protected/:path*'], // Protect routes under /protected
-};
-
-function isValidToken(token) {
-  // Replace with your actual token verification logic
-  // This example just checks for a specific token for demonstration
-  return token === 'YOUR_SECRET_TOKEN';
+  matcher: '/dashboard',
 }
 ```
 
-## Explanation
+This *might* seem correct, but it often fails due to how `req.url` works within middleware.  `req.url` contains the *original* requested URL, *not* the URL after any previous redirects.  If the user tries to access `/dashboard` while not logged in, it will perpetually redirect from `/dashboard` to `/login` and back, creating an infinite loop.
 
-The key difference is accessing the `get()` method on the `req.headers` object, which is of type `Headers`.  The `req.headers` object is not directly a `Headers` object but rather has the `Headers` object as a property. The `Headers` object then has the `get` method that retrieves the value for a given header.
+Here's the corrected version:
+
+```javascript
+// middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const token = req.cookies.get('auth_token')
+
+  if (!token) {
+    const loginUrl = new URL('/login', req.nextUrl) //Use req.nextUrl instead of req.url
+    return NextResponse.redirect(loginUrl)
+  }
+}
+
+export const config = {
+  matcher: '/dashboard',
+}
+```
+
+**Explanation:**
+
+The crucial change is replacing `req.url` with `req.nextUrl`.  `req.nextUrl` reflects the URL after any rewriting or redirection steps that may have already occurred in the middleware chain. Using this ensures that the redirect target is calculated correctly, preventing the infinite redirect loop.
 
 
-## External References
+**External References:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware) -  Official documentation for Next.js Middleware.
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction) -  Information on API routes, which often interact with middleware.
-* [MDN Web Docs: Headers](https://developer.mozilla.org/en-US/docs/Web/API/Headers) -  Detailed information about the `Headers` API.
+* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/api-reference/middleware](https://nextjs.org/docs/app/api-reference/middleware) (Refer to the sections on `NextResponse.redirect` and how middleware operates)
+* **Next.js Request Object:** [https://nextjs.org/docs/app/api-reference/request-object](https://nextjs.org/docs/app/api-reference/request-object) (Understand the differences between `req.url` and `req.nextUrl`)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
