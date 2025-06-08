@@ -1,74 +1,80 @@
 
-This document details a CSS-only solution for creating an expanding card effect.  The card expands vertically when hovered over, revealing additional content.  This effect is achieved using purely CSS, without relying on JavaScript.  We'll leverage CSS transitions and the `:hover` pseudo-class.
+This document addresses a common error encountered when using Next.js Middleware: `Error: Request aborted`.  This typically occurs when a redirect is initiated within middleware, but the response is prematurely terminated before the redirect can complete.  This often happens due to timing issues or improper handling of asynchronous operations within the middleware function.
 
-**Description of the Styling:**
 
-The card consists of a container div with a fixed height. Inside, a second div contains the main content, initially visible. Below this, a third div contains the expandable content, initially hidden. On hover, we increase the height of the container using a CSS transition for a smooth animation.
+## Description of the Error
 
-**Full Code:**
+The `Error: Request aborted` error in Next.js Middleware manifests when a redirect is attempted (using `nextResponse.redirect()`), but the underlying request is cancelled before the redirect can be fully processed.  The client may receive a blank page, a timeout error, or an incomplete response. This is frequently tied to issues related to asynchronous operations, improper handling of promises, or attempts to send additional data after a redirect has been initiated.
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  width: 300px;
-  height: 150px; /* Initial height */
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  overflow: hidden; /* Hide content that overflows */
-  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+## Step-by-Step Code Fix
+
+Let's illustrate this with an example.  Imagine a middleware function that attempts to redirect based on an asynchronous authentication check:
+
+
+**Problematic Code:**
+
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server';
+
+export function middleware(req) {
+  const isAuthenticated = new Promise((resolve) => {
+    setTimeout(() => resolve(false), 100); // Simulate async auth check
+  });
+
+  isAuthenticated.then((authenticated) => {
+    if (!authenticated) {
+      nextResponse.redirect(new URL('/login', req.url));
+    }
+  });
 }
 
-.card:hover {
-  height: 300px; /* Height on hover */
-}
-
-.card-content {
-  padding: 15px;
-}
-
-.expandable-content {
-  overflow: hidden;
-  height: 0; /* Initially hidden */
-  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
-}
-
-.card:hover .expandable-content {
-  height: 150px; /* Height on hover */
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-content">
-    <h2>Card Title</h2>
-    <p>This is some initial content.</p>
-  </div>
-  <div class="expandable-content">
-    <p>This is the expandable content that appears on hover.  It can be as long as you need it to be.</p>
-  </div>
-</div>
-
-</body>
-</html>
+export const config = {
+  matcher: ['/'],
+};
 ```
 
-**Explanation:**
+This code is flawed because `nextResponse.redirect()` is called *within* the `then` block of a promise.  If the `setTimeout` takes longer than the server's timeout, the request will be aborted before the redirect happens.
 
-* **`.card`:** This class styles the main card container.  `overflow: hidden;` ensures that the expandable content doesn't initially overflow the card.  `transition: height 0.3s ease-in-out;` sets up a smooth transition for the height change on hover.
-* **`.card:hover`:**  This selector targets the card when the mouse hovers over it, increasing its height to reveal the hidden content.
-* **`.expandable-content`:** This class styles the initially hidden content.  `height: 0;` makes it invisible, and `transition: height 0.3s ease-in-out;` ensures smooth transition.
-* **`.card:hover .expandable-content`:** This selector targets the expandable content when the mouse hovers over the card, setting its height to reveal it.
+**Corrected Code:**
+
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server';
+
+export async function middleware(req) {
+  const isAuthenticated = await new Promise((resolve) => {
+    setTimeout(() => resolve(false), 100); // Simulate async auth check
+  });
+
+  if (!isAuthenticated) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/'],
+};
+```
+
+**Explanation of Changes:**
+
+1. **`async` keyword:** The `middleware` function is now declared as `async`. This allows us to use the `await` keyword.
+2. **`await` keyword:** We use `await` to pause execution until the promise `isAuthenticated` resolves. This ensures the redirect only happens after the authentication check is complete.
+3. **`return` statement:** Crucially, `NextResponse.redirect()` is now wrapped in a `return` statement. This ensures the response is properly sent to the client.  The original code was attempting to execute code after the response was already committed.
+
+## External References
+
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware) - Official documentation on Next.js Middleware.
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction) - Information on API routes, which are related to middleware and can also encounter similar issues.
+* [Understanding Promises in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) - A helpful resource to understand asynchronous JavaScript.
 
 
-**Links to Resources to Learn More:**
+## Explanation
 
-* [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* [CSS-Tricks](https://css-tricks.com/) (A great resource for CSS techniques)
+The core issue is the asynchronous nature of the authentication check.  Middleware functions need to handle asynchronous operations correctly to avoid premature termination of requests. Using `async/await` allows you to handle asynchronous operations in a more synchronous style, preventing race conditions and ensuring your response (the redirect) is successfully sent before the request is closed.  Always `return` the `NextResponse` object from your middleware function to ensure proper response handling.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
