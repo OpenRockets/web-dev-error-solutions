@@ -1,1 +1,1 @@
-Handling `Error: Unexpected token < in JSON at position 0` in Next.js API Routes
+Creating a CSS-only Expanding Card
