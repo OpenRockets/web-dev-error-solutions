@@ -1,3 +1,5 @@
+# 🐞 Handling `next/navigation` Issues in Next.js Middleware
+
 
 This document addresses a common problem developers encounter when using `next/navigation` within Next.js Middleware, specifically the inability to directly use navigation functions like `redirect` within the middleware context.  While middleware is excellent for manipulating requests before rendering, its environment lacks the client-side context needed for the navigation helpers.  This results in errors like `Error: You can only use the next/navigation functions within a component` or unexpected behavior.
 
