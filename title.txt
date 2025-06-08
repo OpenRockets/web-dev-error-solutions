@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers` in a non-standard way
+Creating a CSS-Only Expanding Card

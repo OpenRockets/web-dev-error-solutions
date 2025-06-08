@@ -1,77 +1,86 @@
 
-This document addresses a common issue developers encounter when working with Next.js Middleware: manipulating response headers in a way that isn't fully compatible with the Next.js API and its expectations.  Specifically, this example tackles a scenario where attempting to set headers directly using `res.setHeader` within middleware leads to unexpected behavior or errors, particularly when dealing with redirects.
+This document details a CSS-only solution for creating an expanding card effect.  The card expands vertically to reveal hidden content when clicked.  This example uses only CSS3, no JavaScript is required.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-When using `res.setHeader` within a Next.js Middleware function to set custom headers before a redirect, the headers might not be correctly applied to the redirected response. This can manifest as missing headers in the final response received by the client, resulting in functionality relying on those headers (like CORS) to fail.  The error might not be explicitly thrown but rather observed as missing functionality or incorrect behavior on the client-side.
+The card is built using a simple `div` with nested elements for the card's header and body.  The key to the animation lies in the use of `max-height` and transitions.  Initially, the card body has a very low `max-height`, hiding its content.  On hover or click, the `max-height` is changed to a larger value (or `auto`), allowing the content to expand. The transition property ensures a smooth animation.
 
-**Code Example (Illustrative Problem):**
 
-```javascript
-// pages/api/middleware.js
-export function middleware(req, res) {
-  // Incorrect way to set headers before redirect
-  res.setHeader('Custom-Header', 'middleware-value'); 
-  res.redirect('/about'); 
+**Full Code:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden; /* Hide content that overflows */
+  transition: max-height 0.3s ease-in-out; /* Smooth transition */
+  cursor: pointer; /* Indicate that the card is clickable */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-// pages/about.js
-export default function AboutPage() {
-  const customHeader = typeof window !== 'undefined' ? window.localStorage.getItem('customHeader') : null;
-  return (
-    <div>
-      <h1>About Us</h1>
-      {customHeader && <p>Custom Header: {customHeader}</p>}
-    </div>
-  );
-}
-```
-
-In this code, we're *trying* to set a custom header within Middleware before redirecting.  However, this approach is not guaranteed to work reliably as `res.redirect` might override or ignore the manually set headers. The Client-Side Javascript (in `pages/about.js`) will not receive `customHeader`.
-
-
-**Step-by-Step Fix:**
-
-The correct approach is to utilize the `NextResponse` object to manage headers and redirects effectively:
-
-```javascript
-// pages/api/middleware.js (Corrected)
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const res = NextResponse.redirect(new URL('/about', req.url));
-  res.headers.set('Custom-Header', 'middleware-value');
-  return res;
+.card-header {
+  background-color: #4CAF50;
+  color: white;
+  padding: 15px;
+  font-weight: bold;
 }
 
-// pages/about.js (Adjusted to access headers)
-export default function AboutPage() {
-  const customHeader = typeof window !== 'undefined' ? document.querySelector('meta[name="customHeader"]').content : null;
-
-  return (
-    <div>
-      <h1>About Us</h1>
-      <meta name="customHeader" content="" /> {/* added this meta tag */}
-      {customHeader && <p>Custom Header: {customHeader}</p>}
-    </div>
-  );
+.card-body {
+  padding: 15px;
+  max-height: 0; /* Initially hidden */
+  overflow: hidden; /* Hide content that overflows */
+  transition: max-height 0.3s ease-in-out; /* Smooth transition */
 }
+
+.card:hover .card-body,
+.card.expanded .card-body {
+  max-height: 500px; /* Expand to this height on hover or when expanded */
+}
+
+.card.expanded {
+    border: 2px solid #4CAF50; /* Add a border to indicate expansion */
+
+}
+
+</style>
+</head>
+<body>
+
+<div class="card" onclick="this.classList.toggle('expanded')">
+  <div class="card-header">
+    Card Title
+  </div>
+  <div class="card-body">
+    <p>This is the card body content.  This text will be hidden initially and expand when the card is clicked.  Add as much content as you like to test the animation.</p>
+    <p>More content here... </p>
+    <p>Even more content!</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
 
 **Explanation:**
 
-1. **Import `NextResponse`:** We import the `NextResponse` object which provides the proper API for handling responses in Next.js Middleware.
-2. **Use `NextResponse.redirect`:** Instead of `res.redirect`, we use `NextResponse.redirect` to create a `NextResponse` object representing the redirect. This object allows for proper header management.
-3. **Set Headers using `res.headers.set`:**  We use `res.headers.set('Custom-Header', 'middleware-value')` to set the header correctly within the `NextResponse` object.  This ensures that the header is properly included in the redirect response.
-4. **Return the `NextResponse` object:** It's crucial to return the `NextResponse` object from the middleware function to send the response including the header and redirection.
-5. **Access Header on Client-Side:**  We now access the custom header through meta tags in the client-side, a more reliable approach since the middleware directly controls the response's headers.
+* **`.card`**: This class styles the overall card container.  `overflow: hidden;` prevents content from overflowing before the expansion. The `transition` property is crucial for the animation.
+* **`.card-header`**: Styles the card header.
+* **`.card-body`**: This is where the magic happens. The `max-height: 0;` initially hides the content.  The `transition` property ensures a smooth animation.
+* **`.card:hover .card-body`**: This styles the card body when hovering over the card.  `max-height: 500px;` sets the expanded height. Adjust this value as needed.
+* **`.card.expanded .card-body`**: This handles the expanded state when clicked.
+* **`onclick="this.classList.toggle('expanded')"`:** This JavaScript code (minimal!) toggles the `expanded` class on the card when clicked. This class helps visually indicates the expanded state with the border.
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [Next.js Middleware documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse API Reference](https://nextjs.org/docs/app/api-reference/server-runtime/next-response)
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs - CSS max-height:** [https://developer.mozilla.org/en-US/docs/Web/CSS/max-height](https://developer.mozilla.org/en-US/docs/Web/CSS/max-height)
 
 
-**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
