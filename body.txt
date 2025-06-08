@@ -1,70 +1,84 @@
 
-This document details a CSS-only solution to create an expanding card effect.  The card expands vertically to reveal hidden content when hovered over.  This effect is achieved purely with CSS, making it lightweight and efficient. We'll be using standard CSS3 properties.
+This document addresses a common issue developers encounter when building APIs within Next.js:  returning a 404 (Not Found) response correctly from API routes.  Improperly handling 404s can lead to confusing error messages for clients and difficulty debugging.
 
 
-**Description of the Styling:**
+**Description of the Error:**
 
-The styling relies primarily on transitions and the `max-height` property.  The card starts with a constrained `max-height`, hiding its inner content. On hover, the `max-height` is changed to allow the content to expand, and the transition property smoothly animates this change. We'll also add some basic styling for visual appeal.
+When a request to a Next.js API route doesn't match any defined route handler, the default behavior might not be a clear and consistent 404 response.  Instead, you might see a generic error, a server-side error, or even an unexpected response.  This can make it challenging for client-side applications to handle the error gracefully.
 
 
-**Full Code:**
+**Code Example: Incorrect & Correct Implementations**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f2f2f2;
-  border-radius: 8px;
-  overflow: hidden; /* Hide content that overflows */
-  transition: max-height 0.3s ease-in-out; /* Smooth transition */
-  max-height: 100px; /* Initially hidden content */
+
+**Incorrect:**  (Simply letting the route handler fail silently)
+
+```javascript
+// pages/api/data/[id].js
+
+export default function handler(req, res) {
+  const id = req.query.id;
+  // Missing error handling if id is invalid or data is not found
+  const data = fetchData(id); // fetchData might throw an error or return undefined
+  res.status(200).json(data); 
 }
 
-.card:hover {
-  max-height: 300px; /* Expand on hover */
+function fetchData(id) {
+  // Simulates fetching data; might fail
+  if (id === '1') {
+    return { message: 'Data found' };
+  } else {
+      // Throws no error, silently returns undefined
+      return undefined;
+  }
+}
+```
+
+
+**Correct:** (Explicitly handling the 404 scenario)
+
+```javascript
+// pages/api/data/[id].js
+
+export default function handler(req, res) {
+  const id = req.query.id;
+  try {
+    const data = fetchData(id);
+    if (!data) {
+      return res.status(404).json({ message: 'Data not found' });
+    }
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 }
 
-.card-content {
-  padding: 15px;
+function fetchData(id) {
+  // Simulates fetching data.  Return null if data not found.
+  if (id === '1') {
+    return { message: 'Data found' };
+  } else {
+      return null;
+  }
 }
-
-.card-title {
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-content">
-    <h2 class="card-title">Expanding Card</h2>
-    <p>This is some example text inside the expanding card.  You can add as much content as you need.  This is just a demonstration.</p>
-    <p>More text here to demonstrate the expansion effect.  Notice how smoothly the card expands when hovered over.</p>
-  </div>
-</div>
-
-</body>
-</html>
 ```
 
 
 **Explanation:**
 
-* **`.card`:** This class defines the basic card styling, including background color, border radius, and importantly, the `overflow: hidden;` property (to prevent content from spilling outside the card's boundaries) and the `transition` property (which dictates the animation speed and timing function). The initial `max-height` keeps the content hidden.
-* **`.card:hover`:** This selector targets the card when the mouse hovers over it.  The `max-height` is increased to reveal the full content.
-* **`.card-content` and `.card-title`:** These classes provide basic styling for the content within the card.
+The corrected code implements robust error handling:
 
-The magic happens with the interplay of `max-height` and `transition`. The `transition` smoothly animates the change in `max-height`, creating the expanding effect.  You can adjust the `max-height` values and the `transition` duration to fine-tune the animation to your liking.
+1. **`try...catch` block:** This handles potential errors during the data fetching process (`fetchData`).  A 500 (Internal Server Error) is returned if an exception occurs.
+
+2. **Explicit 404 check:**  If `fetchData` returns `null` (or undefined, depending on how you design your data fetching), the code explicitly sends a 404 response with a user-friendly message.
+
+3. **Clear Error Messages:**  The responses (both 404 and 500) include informative JSON messages, which are easier for client-side applications to parse and display to the user.
 
 
-**Resources to Learn More:**
+**External References:**
 
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs - CSS max-height:** [https://developer.mozilla.org/en-US/docs/Web/CSS/max-height](https://developer.mozilla.org/en-US/docs/Web/CSS/max-height)
+* [Next.js API Routes documentation](https://nextjs.org/docs/api-routes/introduction)
+* [HTTP Status Codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
