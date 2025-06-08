@@ -1,77 +1,75 @@
 
-This document addresses a common error encountered when using Next.js Middleware:  `Error: NextResponse.redirect() called outside a middleware`. This error arises when you attempt to use `NextResponse.redirect()` from a location within your Next.js application where it's not supported.  `NextResponse.redirect()` is specifically designed for use within middleware functions.
+This document details a CSS-only solution for creating an expanding card effect.  The card expands to reveal more content when hovered over, providing a clean and engaging user experience without JavaScript. This example uses pure CSS3, but similar effects could be achieved with frameworks like Tailwind CSS.
+
+**Description of the Styling:**
+
+This effect relies on CSS transitions and the `:hover` pseudo-class.  The card starts with a smaller height. On hover, the height transitions to a larger value, revealing the hidden content.  We use a smooth transition for a polished look.  We also add some subtle shadow effects to enhance the visual appeal.
 
 
-**Description of the Error:**
+**Full Code:**
 
-The error message `Error: NextResponse.redirect() called outside a middleware` clearly indicates that you're trying to use the `NextResponse.redirect()` method from a place other than a middleware function. This method is part of the Next.js API for manipulating responses within the middleware lifecycle, and attempting to use it elsewhere will result in this error.
-
-
-**Code Example Demonstrating the Error and its Fix:**
-
-Let's illustrate this with an example. Suppose you have a `pages/api/redirect.js` file (an API route, not a middleware):
-
-```javascript
-// pages/api/redirect.js (INCORRECT - will throw the error)
-import { NextResponse } from 'next/server';
-
-export function POST(req) {
-  return NextResponse.redirect(new URL('/about', req.url));
-}
-```
-
-This code will throw the error because it's trying to use `NextResponse.redirect()` within an API route, not a middleware.
-
-**Step-by-step Fix:**
-
-To correctly redirect, you must move the redirection logic into a middleware function.  Here's how to do it:
-
-1. **Create a middleware file:** Create a file named `middleware.js` (or any filename ending in `.js`) inside the `pages` directory.
-
-2. **Import necessary modules:**
-
-```javascript
-// pages/middleware.js
-import { NextResponse } from 'next/server'
-```
-
-3. **Implement the redirection logic:**
-
-```javascript
-// pages/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const url = req.nextUrl.clone();
-
-  // Check if the request path matches a specific route
-  if (req.nextUrl.pathname === '/api/redirect') {
-    url.pathname = '/about'; //Redirect to /about
-    return NextResponse.redirect(url);
-  }
-
-
-  return NextResponse.next();
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide content that overflows */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+  height: 100px; /* Initial height */
 }
 
-export const config = {
-  matcher: '/api/redirect', // only match /api/redirect route
-};
+.card:hover {
+  height: 250px; /* Height on hover */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Increased shadow on hover */
+}
+
+.card-content {
+  padding: 15px;
+}
+
+.card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card-text {
+    line-height: 1.6;
+}
+
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">Expanding Card</h2>
+    <p class="card-text">This is a sample text within the expanding card.  This text is initially hidden and only revealed when the card is hovered over. You can add as much text as needed.  This demonstrates the use of CSS transitions to create an engaging user interface element.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
-
-Now, any request to `/api/redirect` will be intercepted by the middleware and redirected to `/about`.
-
 
 **Explanation:**
 
-The key difference lies in the context.  Middleware functions execute *before* a request reaches the page or API route, allowing you to modify the request or response.  API routes and page components execute *after* the middleware has had a chance to process the request. Using `NextResponse` in the correct context (Middleware) is crucial for this to work.  The `matcher` property in the `config` object is essential; it tells Next.js which paths the middleware should intercept. Without it, the middleware could potentially intercept and interfere with other parts of your application.
+* **`.card`:** This class styles the main card container. `overflow: hidden;` prevents the hidden content from spilling out before the transition. The `transition` property specifies that the `height` should smoothly change over 0.3 seconds using an ease-in-out timing function.
+* **`.card:hover`:** This styles the card when the mouse hovers over it. The `height` is increased, revealing the hidden content. The box-shadow is also intensified to provide visual feedback.
+* **`.card-content`, `.card-title`, `.card-text`:** These classes style the inner content of the card for better readability and organization.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+* **Understanding Box-Shadow:** [CSS-Tricks - Box Shadow](https://css-tricks.com/almanac/properties/b/box-shadow/)
 
 
-**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

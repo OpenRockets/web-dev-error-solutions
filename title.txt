@@ -1,1 +1,1 @@
-Handling `Error: NextResponse.redirect() called outside a middleware` in Next.js Middleware
+Creating a CSS-only Expanding Card
