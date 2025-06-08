@@ -1,85 +1,88 @@
 
-This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered over, revealing hidden content.  We'll utilize pure CSS3, avoiding JavaScript for a lightweight and efficient implementation.
+This document addresses a common error encountered when working with Next.js Middleware: `TypeError: Cannot read properties of undefined (reading 'pathname')`. This error typically arises when attempting to access the `pathname` property of the `req` object within middleware before it's properly defined.  This often happens when the middleware tries to access request details too early in the process, before Next.js has fully populated the request object.
 
 
-## Description of the Styling
+**Description of the Error:**
 
-The card uses a simple layout with two main sections: the front (visible initially) and the back (hidden initially).  The expansion is achieved using transitions on `max-height` and `opacity`. The `overflow: hidden` property on the container ensures a smooth expansion.  We'll use a subtle background color change on hover to enhance the visual effect.
+The `TypeError: Cannot read properties of undefined (reading 'pathname')` error indicates that the JavaScript engine is trying to read the `pathname` property from an undefined `req` object. This means the `req` object, which usually contains information about the incoming HTTP request, is not yet initialized when your middleware attempts to access it.
 
 
-## Full Code
+**Scenario:**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: 0.3s ease-in-out; /* Smooth transition */
-  width: 300px;
+Let's imagine you're building authentication middleware. A common approach is to check if a user is logged in based on the presence of an authentication token in a cookie or in the request headers. If the middleware attempts this check before the request is fully processed, it will throw the aforementioned error.
+
+
+**Problem Code (Incorrect):**
+
+```javascript
+// pages/api/middleware.js
+export function middleware(req, res) {
+  const pathname = req.nextUrl.pathname; // Error occurs here!
+
+  if (pathname === '/admin') {
+    // Check for authentication token
+    const token = req.cookies.authToken;
+    if (!token) {
+      res.redirect('/login');
+    }
+  }
 }
 
-.card:hover {
-  background-color: #ddd;
-  cursor: pointer; /* Indicate interactivity */
-}
-
-.card-front {
-  padding: 20px;
-}
-
-.card-back {
-  padding: 20px;
-  opacity: 0;
-  max-height: 0;
-  transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out;
-  overflow: hidden; /* Hide content initially */
-}
-
-.card:hover .card-back {
-  opacity: 1;
-  max-height: 200px; /* Adjust as needed */
-}
-
-.card h2 {
-  margin-top: 0;
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-front">
-    <h2>Card Title</h2>
-    <p>Click or hover to expand.</p>
-  </div>
-  <div class="card-back">
-    <h2>More Details</h2>
-    <p>This is the expanded content of the card. You can add any content you like here.</p>
-  </div>
-</div>
-
-</body>
-</html>
+export const config = {
+  matcher: ['/admin/:path*'],
+};
 ```
 
 
-## Explanation
+**Step-by-Step Fix:**
 
-* **`.card`:**  This class styles the overall card container.  `overflow: hidden` is crucial for hiding the content of `.card-back` initially.  The `transition` property enables smooth animations.
-* **`.card-front` and `.card-back`:** These classes style the front and back sides of the card, respectively.
-* **`.card:hover .card-back`:**  This selector targets the `.card-back` element only when the parent `.card` element is hovered.  We change the `opacity` and `max-height` to reveal the hidden content.
-* **Transitions:** The `transition` property on both `.card` and `.card-back` ensures smooth changes in background color, opacity, and height.
+1. **Use `Request` Object:** The core issue lies in accessing `req.nextUrl.pathname` directly. Instead, we need to leverage the `Request` object to ensure the request is fully initialized. This object provides a more robust way to access request details within the middleware context.
+
+2. **Asynchronous Operations:**  Middleware functions should be asynchronous to handle potential delays in data fetching. This ensures the request object is properly populated before the pathname is accessed.
+
+3. **Await `nextUrl`:** `nextUrl` is a Promise, so it needs to be awaited to get its value.
+
+**Corrected Code:**
+
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export async function middleware(req) {
+  const url = req.nextUrl.clone(); // Clone the URL to avoid modifying the original
+  const pathname = url.pathname;
+
+  if (pathname === '/admin') {
+    const token = req.cookies.get('authToken'); // Assuming you're using cookies
+
+    if (!token) {
+      url.pathname = '/login';  // Redirect to login page
+      return NextResponse.rewrite(url); // Use NextResponse for redirects
+    }
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/admin/:path*'],
+};
+```
 
 
-## Resources to Learn More
+**Explanation:**
 
-* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **CSS-Tricks:** [https://css-tricks.com/](https://css-tricks.com/) (Search for "card hover effects" or similar)
+* We now use `req.nextUrl.clone()` to create a copy of the URL object, preventing unintended modifications of the original request.
+* We await the resolution of `req.nextUrl` to ensure its properties are available.
+* We use `NextResponse.rewrite()` to perform redirects.  `res.redirect()` is not available in middleware.
+* We use `req.cookies.get('authToken')` for accessing the cookie, which is a more robust way than accessing `req.cookies` directly, especially when dealing with multiple cookies.
+
+
+**External References:**
+
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/api-routes/middleware)
+* [NextResponse API](https://nextjs.org/docs/api-reference/next/server#nextresponse)
+* [Working with Cookies in Next.js](https://nextjs.org/docs/app/building-your-application/routing/middleware#working-with-cookies)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

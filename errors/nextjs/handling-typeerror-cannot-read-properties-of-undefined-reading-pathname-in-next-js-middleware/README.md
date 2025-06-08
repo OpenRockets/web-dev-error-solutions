@@ -1,77 +1,91 @@
-# 🐞 Handling "TypeError: Cannot read properties of undefined (reading 'pathname')" in Next.js Middleware
+# 🐞 Handling `TypeError: Cannot read properties of undefined (reading 'pathname')` in Next.js Middleware
 
 
-This document addresses a common error encountered when working with Next.js Middleware: `"TypeError: Cannot read properties of undefined (reading 'pathname')"`. This error typically arises when accessing the `req.nextUrl.pathname` property within middleware before it's properly defined.  This often happens due to incorrect middleware placement or attempting to access properties before the request is fully processed.
+This document addresses a common error encountered when working with Next.js Middleware: `TypeError: Cannot read properties of undefined (reading 'pathname')`. This error typically arises when attempting to access the `pathname` property of the `req` object within middleware before it's properly defined.  This often happens when the middleware tries to access request details too early in the process, before Next.js has fully populated the request object.
 
 
-## Description of the Error
+**Description of the Error:**
 
-The error message `"TypeError: Cannot read properties of undefined (reading 'pathname')"` signifies that the `req.nextUrl` object, specifically its `pathname` property, is undefined when your middleware attempts to access it.  This prevents your middleware from correctly interpreting the URL and executing its intended logic.
+The `TypeError: Cannot read properties of undefined (reading 'pathname')` error indicates that the JavaScript engine is trying to read the `pathname` property from an undefined `req` object. This means the `req` object, which usually contains information about the incoming HTTP request, is not yet initialized when your middleware attempts to access it.
 
 
-## Code Example & Step-by-Step Fix
+**Scenario:**
 
-Let's assume we have middleware that tries to redirect requests based on the pathname:
+Let's imagine you're building authentication middleware. A common approach is to check if a user is logged in based on the presence of an authentication token in a cookie or in the request headers. If the middleware attempts this check before the request is fully processed, it will throw the aforementioned error.
 
-**Problematic Code (middleware.js):**
+
+**Problem Code (Incorrect):**
 
 ```javascript
-// middleware.js
-export function middleware(req) {
-  if (req.nextUrl.pathname === '/old-page') {
-    return NextResponse.redirect(new URL('/new-page', req.url))
+// pages/api/middleware.js
+export function middleware(req, res) {
+  const pathname = req.nextUrl.pathname; // Error occurs here!
+
+  if (pathname === '/admin') {
+    // Check for authentication token
+    const token = req.cookies.authToken;
+    if (!token) {
+      res.redirect('/login');
+    }
   }
 }
 
 export const config = {
-  matcher: ['/old-page'],
+  matcher: ['/admin/:path*'],
 };
 ```
 
-This code will throw the error because `req.nextUrl` might not be fully populated when the middleware function first executes.
 
-**Corrected Code (middleware.js):**
+**Step-by-Step Fix:**
+
+1. **Use `Request` Object:** The core issue lies in accessing `req.nextUrl.pathname` directly. Instead, we need to leverage the `Request` object to ensure the request is fully initialized. This object provides a more robust way to access request details within the middleware context.
+
+2. **Asynchronous Operations:**  Middleware functions should be asynchronous to handle potential delays in data fetching. This ensures the request object is properly populated before the pathname is accessed.
+
+3. **Await `nextUrl`:** `nextUrl` is a Promise, so it needs to be awaited to get its value.
+
+**Corrected Code:**
 
 ```javascript
-// middleware.js
-import { NextResponse } from 'next/server';
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
 
-export function middleware(req) {
-  const url = req.nextUrl.clone(); // Create a clone to avoid modifying the original request
+export async function middleware(req) {
+  const url = req.nextUrl.clone(); // Clone the URL to avoid modifying the original
+  const pathname = url.pathname;
 
-  if (url.pathname === '/old-page') {
-    url.pathname = '/new-page'; // Modify the pathname of the cloned URL
-    return NextResponse.rewrite(url); // Use rewrite instead of redirect for better caching
+  if (pathname === '/admin') {
+    const token = req.cookies.get('authToken'); // Assuming you're using cookies
+
+    if (!token) {
+      url.pathname = '/login';  // Redirect to login page
+      return NextResponse.rewrite(url); // Use NextResponse for redirects
+    }
   }
 
-  return NextResponse.next(); // Ensure a response is always returned
+  return NextResponse.next();
 }
 
-
 export const config = {
-  matcher: ['/old-page'],
+  matcher: ['/admin/:path*'],
 };
 ```
 
-**Explanation of Changes:**
 
-1. **Import `NextResponse`:**  We explicitly import `NextResponse` to ensure proper access to the necessary functions for redirecting or rewriting responses.
-2. **Clone `req.nextUrl`:** We create a clone of `req.nextUrl` using the `.clone()` method. This is crucial. Modifying the original `req.nextUrl` can lead to unexpected behaviour.  We operate on the clone, leaving the original request untouched.
-3. **Use `url.pathname`:** We now access the pathname from the cloned `url` object, guaranteeing it's defined.
-4. **`NextResponse.rewrite`:** We've switched from `NextResponse.redirect` to `NextResponse.rewrite`. This is generally preferred for better caching behavior, especially when handling internal URL changes.
-5. **`NextResponse.next()`:**  This line is crucial.  It ensures that if the condition (`url.pathname === '/old-page'`) is false, the middleware still returns a response.  Failing to return a response can lead to unexpected errors.
+**Explanation:**
 
-
-## External References
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse)
-* [Understanding Request Objects in Next.js](https://nextjs.org/docs/app/building-your-application/requests) (search for relevant sections on request objects within the larger documentation)
+* We now use `req.nextUrl.clone()` to create a copy of the URL object, preventing unintended modifications of the original request.
+* We await the resolution of `req.nextUrl` to ensure its properties are available.
+* We use `NextResponse.rewrite()` to perform redirects.  `res.redirect()` is not available in middleware.
+* We use `req.cookies.get('authToken')` for accessing the cookie, which is a more robust way than accessing `req.cookies` directly, especially when dealing with multiple cookies.
 
 
-## Explanation
+**External References:**
 
-The core issue is the asynchronous nature of the request handling within Next.js Middleware.  The `req.nextUrl` object is populated as part of the request processing pipeline. If you try to access it too early, before the pipeline has completed populating it, you'll encounter the `undefined` error. Cloning `req.nextUrl` allows you to work with a copy that you're guaranteed to be able to modify without interfering with the overall request handling.  Always ensure your middleware functions return a `NextResponse` object, regardless of the conditions within your logic.
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/api-routes/middleware)
+* [NextResponse API](https://nextjs.org/docs/api-reference/next/server#nextresponse)
+* [Working with Cookies in Next.js](https://nextjs.org/docs/app/building-your-application/routing/middleware#working-with-cookies)
+
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
