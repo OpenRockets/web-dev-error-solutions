@@ -1,78 +1,74 @@
 
-This document addresses a common problem encountered when using Next.js Middleware to redirect requests based on dynamic paths.  The issue arises when trying to construct the redirect URL using variables extracted from the request, and the resulting URL is incorrectly formatted or leads to unexpected behavior.
+This document details a CSS-only solution for creating an expanding card effect.  The card expands vertically when hovered over, revealing additional content.  This effect is achieved using purely CSS, without relying on JavaScript.  We'll leverage CSS transitions and the `:hover` pseudo-class.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The error isn't a specific error message, but rather a consequence of incorrect URL construction within a redirect in middleware. This leads to redirects that don't work as expected, often resulting in a loop or an incorrect page being displayed. This is frequently seen when using dynamic segments in your route paths.  For instance, if you attempt to redirect `/product/[id]` to `/product/[id]/details` improperly, the `[id]` segment might be misinterpreted or lost.
+The card consists of a container div with a fixed height. Inside, a second div contains the main content, initially visible. Below this, a third div contains the expandable content, initially hidden. On hover, we increase the height of the container using a CSS transition for a smooth animation.
 
+**Full Code:**
 
-**Code Example: Incorrect Implementation**
-
-Let's say we want to redirect all requests to `/product/[id]` to `/product/[id]/details` using middleware.  This incorrect approach often fails:
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const url = req.nextUrl.clone();
-  const segments = req.nextUrl.pathname.split('/');
-
-  if (segments[1] === 'product' && segments.length > 2) {
-    const productId = segments[2]; //Potentially problematic if segments has less than 3 parts.
-    url.pathname = `/product/${productId}/details`;
-    return NextResponse.redirect(url);
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 300px;
+  height: 150px; /* Initial height */
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden; /* Hide content that overflows */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
 }
 
-export const config = {
-  matcher: '/product/:path*',
-};
-```
-
-This code has a flaw: it doesn't handle edge cases (e.g., the URL being just `/product` ) leading to errors. The `productId` might not be correctly extracted or the URL might be malformed.
-
-**Fixing Step-by-Step:**
-
-1. **Robust Path Extraction:** Use a more robust method to extract the `productId`, handling cases where the path doesn't follow the expected format. We will use a regular expression:
-
-2. **Safe URL Construction:**  Use the `NextResponse.rewrite` method for more predictable URL handling.  This avoids issues associated with directly manipulating the `nextUrl` object.
-
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const { pathname } = req.nextUrl;
-  const match = pathname.match(/^\/product\/([^\/]+)$/); // Regular expression to extract productId
-
-  if (match) {
-    const productId = match[1];
-    return NextResponse.rewrite(new URL(`/product/${productId}/details`, req.url));
-  }
-  return NextResponse.next(); // Proceed with original request if no match.
+.card:hover {
+  height: 300px; /* Height on hover */
 }
 
-export const config = {
-  matcher: '/product/:path*',
-};
+.card-content {
+  padding: 15px;
+}
+
+.expandable-content {
+  overflow: hidden;
+  height: 0; /* Initially hidden */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+}
+
+.card:hover .expandable-content {
+  height: 150px; /* Height on hover */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h2>Card Title</h2>
+    <p>This is some initial content.</p>
+  </div>
+  <div class="expandable-content">
+    <p>This is the expandable content that appears on hover.  It can be as long as you need it to be.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
-
-This improved version uses a regular expression to safely extract the product ID, and `NextResponse.rewrite` to create a new URL correctly.  The `return NextResponse.next();` statement ensures that requests that don't match the pattern are processed normally, preventing unexpected redirects.
-
 
 **Explanation:**
 
-The original code failed because it directly manipulated the `nextUrl` object, which can be prone to errors if the URL structure isn't strictly adhered to.  Using a regular expression ensures that we only attempt a redirect if the URL matches our expected pattern.  `NextResponse.rewrite`  provides a more reliable method for constructing and redirecting to a new URL.  It also handles edge cases gracefully, preventing errors.
+* **`.card`:** This class styles the main card container.  `overflow: hidden;` ensures that the expandable content doesn't initially overflow the card.  `transition: height 0.3s ease-in-out;` sets up a smooth transition for the height change on hover.
+* **`.card:hover`:**  This selector targets the card when the mouse hovers over it, increasing its height to reveal the hidden content.
+* **`.expandable-content`:** This class styles the initially hidden content.  `height: 0;` makes it invisible, and `transition: height 0.3s ease-in-out;` ensures smooth transition.
+* **`.card:hover .expandable-content`:** This selector targets the expandable content when the mouse hovers over the card, setting its height to reveal it.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server/next-response)
-* [JavaScript Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_expressions)
-
+* [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* [CSS-Tricks](https://css-tricks.com/) (A great resource for CSS techniques)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
