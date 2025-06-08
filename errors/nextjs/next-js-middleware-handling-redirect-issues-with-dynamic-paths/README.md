@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Redirect` Issues with Dynamic Paths
+
 
 This document addresses a common problem encountered when using Next.js Middleware to redirect requests based on dynamic paths.  The issue arises when trying to construct the redirect URL using variables extracted from the request, and the resulting URL is incorrectly formatted or leads to unexpected behavior.
 

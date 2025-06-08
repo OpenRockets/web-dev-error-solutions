@@ -1,1 +1,1 @@
-Handling "TypeError: Cannot read properties of undefined (reading 'pathname')" in Next.js Middleware
+Next.js Middleware: Handling `Redirect` Issues with Dynamic Paths
