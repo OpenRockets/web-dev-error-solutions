@@ -1,3 +1,5 @@
+# 🐞 Handling `Error: You cannot `await` a value in the `getServerSideProps` function` in Next.js
+
 
 ## Description of the Error
 
