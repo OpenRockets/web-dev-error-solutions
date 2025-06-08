@@ -3,60 +3,88 @@
 
 ## Description of the Error
 
-A common issue when working with Next.js Middleware is incorrectly manipulating the `headers` object within the `Response` object.  Specifically, attempting to directly modify the `headers` property often results in unexpected behavior or errors.  This is because the `headers` object in the `Response` isn't a mutable plain JavaScript object; it's an instance with specific methods for modification. Trying to assign properties directly (e.g., `response.headers.set('X-Custom-Header', 'value')`) will not work as expected, and might lead to silent failures or your headers not being set properly.
+A common issue when working with Next.js Middleware is incorrectly modifying the `headers` object within the `Response` object.  Middleware allows you to modify the request/response cycle before a page is rendered, but attempting to directly manipulate the `headers` property can lead to unexpected behavior or errors.  Specifically, you might find that modifications don't persist or that you receive runtime errors indicating the `headers` object is immutable.
 
+This often happens when developers try to directly assign or modify header values like this:
+
+```javascript
+// Incorrect approach
+export function middleware(req) {
+  const res = NextResponse.next();
+  res.headers.set('X-Custom-Header', 'some value'); // This will likely throw an error
+  return res;
+}
+```
 
 ## Step-by-Step Code Fix
 
-Let's assume we want to add a custom header `X-Custom-Header` with the value `my-custom-value` to the response in our middleware.  The incorrect and correct approaches are demonstrated below:
+The correct way to modify response headers in Next.js Middleware involves using the `NextResponse.rewrite()` or `NextResponse.redirect()` methods, or updating the headers during the `NextResponse` object creation.
 
-**Incorrect Approach:**
+
+**Method 1: Using `NextResponse` constructor**
+
+This is the most straightforward approach, setting the header directly when you create the `NextResponse` object.
 
 ```javascript
-// pages/api/middleware.js
-export function middleware(req, res) {
-  const response = NextResponse.next();
-  response.headers.set('X-Custom-Header', 'my-custom-value'); // INCORRECT
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const url = req.nextUrl.clone(); // create a copy to avoid modifying original URL
+  const response = new NextResponse(null, {
+    headers: {
+      'X-Custom-Header': 'some value',
+      'Cache-Control': 'public, max-age=31536000',
+    },
+  });
   return response;
 }
 ```
 
-**Correct Approach:**
+**Method 2:  Using `NextResponse.rewrite()` for maintaining the original request**
+
+If you need to rewrite the request to a different URL while setting headers, use `NextResponse.rewrite()`:
 
 ```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
 
-export function middleware(req, res) {
-  const response = NextResponse.next();
+export function middleware(req) {
+    const url = req.nextUrl.clone(); // create a copy to avoid modifying original URL
+    url.pathname = '/new-page'; // change the pathname
+    return NextResponse.rewrite(url, {
+        headers: {
+            'X-Custom-Header': 'some value from rewrite',
+        }
+    });
+}
+```
 
-  // Correct way to add headers: Using the `headers` method of NextResponse.
-  const updatedResponse = new NextResponse(response.body, {
-    headers: {
-      ...response.headers,
-      'X-Custom-Header': 'my-custom-value',
-    },
-  });
+**Method 3: Using `NextResponse.redirect()` for redirection**
 
-  return updatedResponse;
+If you need to redirect the user while adding headers, utilize `NextResponse.redirect()`:
+
+```javascript
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+    return NextResponse.redirect(new URL('/redirected-page', req.url), {
+        headers: {
+            'X-Custom-Header': 'some value from redirect',
+            'Location': '/redirected-page' // Important for redirection. This is added automatically if you don't specify it.
+        }
+    });
 }
 ```
 
 
-**Explanation of the Fix:**
+## Explanation
 
-The correct approach uses the `NextResponse` constructor to create a *new* `Response` object.  We use the spread syntax (`...response.headers`) to copy all existing headers from the original `response` and then add our custom header.  This ensures that all headers are correctly handled and that our custom header is included.  Directly manipulating the `headers` property of the original `response` object won't persist the change.
+Directly manipulating the `headers` property of a `NextResponse` object after it has been created is not supported. The `NextResponse` object is immutable after creation. The methods described above correctly manage header additions and manipulations within the response lifecycle.  Using the constructor allows us to set headers during the response's initialization.  `NextResponse.rewrite()` and `NextResponse.redirect()` maintain the appropriate HTTP behaviors while integrating header modifications.
+
 
 ## External References
 
-* **Next.js API Routes and Middleware Documentation:** [https://nextjs.org/docs/app/api-routes/introduction](https://nextjs.org/docs/app/api-routes/introduction)  (Look for sections on Middleware and Response objects)
-* **MDN Web Docs - Response Object:** [https://developer.mozilla.org/en-US/docs/Web/API/Response](https://developer.mozilla.org/en-US/docs/Web/API/Response) (For a broader understanding of the `Response` object in the browser context)
-* **Next.js Server-Side Rendering:** [https://nextjs.org/docs/basic-features/pages](https://nextjs.org/docs/basic-features/pages) (Understanding how middleware interacts with rendering)
-
-
-## Summary
-
-Remember to use the `NextResponse` constructor to create a new response object with the updated headers, rather than directly modifying the `headers` property of the existing response. This ensures that your header changes are correctly applied.
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/api-routes/middleware)
+* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
