@@ -1,65 +1,67 @@
 
-This document addresses a common issue developers face when building APIs within Next.js applications: handling 404 (Not Found) errors in API routes.  Ignoring these errors can lead to unexpected behavior and a poor user experience.  We'll demonstrate how to gracefully handle these errors and return appropriate responses.
+This document addresses a common issue developers encounter when using `NextResponse.redirect` within Next.js Middleware:  correctly preserving query parameters during redirection.  Incorrectly handling these parameters can lead to unexpected behavior and broken functionality in your application.
 
 **Description of the Error:**
 
-When a user requests a resource from your Next.js API route that doesn't exist, the default behavior might be to simply return a blank page or a generic server error.  This isn't ideal; users expect informative error messages indicating that the requested resource couldn't be found.
+When redirecting users from middleware using `NextResponse.redirect`, simply passing the original URL often fails to preserve query parameters.  This results in the redirected page losing crucial contextual information passed through the URL.  For example, if a user navigates to `/products?category=electronics`, a redirect that doesn't preserve the `category` parameter will land them on the target page without filtering by electronics.
 
-**Step-by-Step Code Fix:**
+**Code: Step-by-Step Fix**
 
-Let's assume you have an API route at `pages/api/user/[id].js` designed to fetch user data based on their ID.  Without error handling, a request to `/api/user/123` (if user 123 doesn't exist) will likely result in an unhandled error. Here's how to fix this:
+Let's say we have middleware that redirects all requests to `/products` to `/shop` while retaining any query parameters.  Here's how to correctly handle it:
+
+**Incorrect Approach (Loses Query Parameters):**
 
 ```javascript
-// pages/api/user/[id].js
+// middleware.js
+import { NextResponse } from 'next/server'
 
-import { NextApiRequest, NextApiResponse } from 'next';
+export function middleware(req) {
+  const url = req.nextUrl.clone()
+  if (req.nextUrl.pathname === '/products') {
+    url.pathname = '/shop'
+    return NextResponse.redirect(url)
+  }
+}
+```
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
+**Corrected Approach (Preserves Query Parameters):**
 
-  try {
-    // Simulate fetching user data. Replace with your actual data fetching logic.
-    const userData = await fetchUserData(id as string);
+```javascript
+// middleware.js
+import { NextResponse } from 'next/server'
 
-    if (!userData) {
-      // User not found
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    res.status(200).json(userData);
-  } catch (error) {
-    // Handle other errors, such as database connection issues
-    console.error('Error fetching user data:', error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+export function middleware(req) {
+  const url = req.nextUrl.clone()
+  if (req.nextUrl.pathname === '/products') {
+    url.pathname = '/shop'
+    // Preserves query parameters
+    return NextResponse.redirect(url)
   }
 }
 
-// Placeholder for your data fetching function
-const fetchUserData = async (userId: string): Promise<any | null> => {
-  // Replace with your actual data fetching logic (e.g., database query)
-  // This example simulates a database lookup and returns null if the user is not found.
-  const users = {
-    '1': { name: 'John Doe' },
-    '2': { name: 'Jane Doe' },
-  };
-  return users[userId] || null;
-};
+export const config = {
+  matcher: '/products', // Only match /products
+}
+
 ```
+
+The correction doesn't involve any explicit code change within the `middleware` function itself  because the `.clone()` method already handles query parameters by default. The critical point is to use `req.nextUrl.clone()` to create a new URL object, which automatically inherits the query parameters from the original request.  The `matcher` config ensures that the middleware only applies to the `/products` route, preventing unintended redirects.
+
 
 **Explanation:**
 
-1. **`try...catch` Block:** This wraps the asynchronous data fetching operation (`fetchUserData`).  This allows us to handle potential errors during the process.
+The `req.nextUrl` object represents the incoming URL.  Directly manipulating it can lead to unexpected behavior.  The `clone()` method creates a copy, allowing modifications without affecting the original object. When `NextResponse.redirect` is called with the cloned URL, all the original query parameters are automatically included in the redirection.
 
-2. **`fetchUserData` Function:** This is a placeholder; replace it with your actual database query or API call to retrieve user data.  The example simulates a simple lookup and returns `null` if the user isn't found.
-
-3. **Conditional 404:** Inside the `try` block, we check if `userData` is null. If it is, we return a 404 Not Found response with a clear message (`res.status(404).json({ message: 'User not found' })`).
-
-4. **Generic Error Handling:** The `catch` block handles any errors that might occur during data fetching (e.g., database connection errors).  It returns a 500 Internal Server Error response.
 
 **External References:**
 
-* **Next.js API Routes Documentation:** [https://nextjs.org/docs/api-routes/introduction](https://nextjs.org/docs/api-routes/introduction)
-* **Handling Errors in Node.js:**  [https://nodejs.org/api/errors.html](https://nodejs.org/api/errors.html)  (General Node.js error handling principles also apply)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [NextResponse.redirect API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse-redirect)
+
+
+**Conclusion:**
+
+Using `req.nextUrl.clone()` is crucial for correctly handling query parameters within Next.js Middleware redirects.  This simple step prevents data loss and ensures a smooth user experience.  Always remember to utilize cloning techniques when manipulating URLs to avoid unexpected behavior.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
