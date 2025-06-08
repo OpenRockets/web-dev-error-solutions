@@ -1,3 +1,5 @@
+# 🐞 Handling `Redirect` Errors in Next.js Middleware
+
 
 This document addresses a common issue developers encounter when using `Redirect` within Next.js Middleware:  unexpected behavior or errors when attempting to redirect based on certain conditions.  This often manifests as redirects not working as expected, or encountering 500 server errors.
 
