@@ -1,73 +1,80 @@
 
-This document addresses a common issue encountered when working with Next.js Middleware: the `Request Not Found` error. This error typically occurs when middleware attempts to access a route that doesn't exist, leading to a failed request.  It's particularly problematic because it can be difficult to debug, especially when middleware is involved in complex routing scenarios.
+This document details the creation of an expanding card effect using only CSS.  The card expands on hover, revealing hidden content with a smooth transition.  We'll leverage CSS transitions and transforms to achieve this effect without any JavaScript.
 
-## Description of the Error
+## Description of the Styling
 
-The `Request Not Found` error in Next.js middleware manifests as a 404 error in the browser or a similar error in your logs. It indicates that the middleware function tried to access a route (often implicitly through `next.nextUrl.pathname`) that wasn't found by the Next.js router.  This often happens because of typos in the path, incorrect usage of wildcards (`*`), or issues with the overall routing configuration of your application.  The error message itself may not always be very specific, making debugging challenging.
+The card will start in a collapsed state.  On hover, it will smoothly expand to reveal additional content positioned below the initial visible section. The expansion will be accompanied by a subtle scaling effect to enhance the visual appeal. We’ll also use a simple box-shadow to add depth.
 
-## Fixing the Error: Step-by-Step Code Example
+## Full Code
 
-Let's assume you have middleware that attempts to redirect users based on a path, but contains a typo:
-
-**Problematic Middleware (`middleware.js`):**
-
-```javascript
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const url = req.nextUrl.clone();
-  if (url.pathname === '/profle') { // Typo: 'profle' instead of 'profile'
-    url.pathname = '/login';
-    return NextResponse.rewrite(url);
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 300px;
+  height: 150px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide content that overflows */
+  transition: transform 0.3s ease-in-out, height 0.3s ease-in-out; /* Smooth transition */
 }
 
-export const config = {
-  matcher: ['/profle', '/profile', '/login'], // Note: This incorrectly includes 'profle'
+.card:hover {
+  transform: scale(1.05); /* Subtle scaling effect */
+  height: 300px; /* Expand on hover */
 }
+
+.card-content {
+  padding: 20px;
+}
+
+.card-content-hidden {
+  height: 0; /* Initially hidden content */
+  overflow: hidden; /* Hide overflow of hidden content */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height */
+}
+
+.card:hover .card-content-hidden {
+    height: 150px; /* Reveal hidden content on hover */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h3>This is the visible content</h3>
+    <p>Some text here...</p>
+  </div>
+  <div class="card-content card-content-hidden">
+    <h3>This is the hidden content</h3>
+    <p>This content will reveal on hover.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
-
-This code will cause a `Request Not Found` error if a user attempts to access `/profle`.
-
-**Corrected Middleware (`middleware.js`):**
-
-```javascript
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const url = req.nextUrl.clone();
-  if (url.pathname === '/profile') {  // Corrected typo
-    const isLoggedIn = checkIfLoggedIn(req); // Placeholder for authentication check
-    if (!isLoggedIn) {
-      url.pathname = '/login';
-      return NextResponse.redirect(url); // Use redirect for better UX
-    }
-  }
-}
-
-// Placeholder for authentication logic
-function checkIfLoggedIn(req) {
-    // Add your authentication logic here, e.g., checking for a session cookie.
-    return false; // Example: Not logged in initially
-}
-
-export const config = {
-  matcher: ['/profile', '/login'], // Removed incorrect path
-}
-```
-
-This corrected version fixes the typo in the pathname and removes the incorrect entry from the `matcher` array.  It also demonstrates best practice by using `NextResponse.redirect()` instead of `NextResponse.rewrite()`, leading to a better user experience.  A placeholder for authentication logic is included to demonstrate a more realistic scenario.
-
 
 ## Explanation
 
-The `Request Not Found` error is solved by carefully examining the paths used in the middleware's `matcher` and the path comparisons within the middleware function itself.  Double-check for typos, ensure the wildcard character (`*`) is used correctly if necessary, and make sure the paths match the actual routes in your application.  Using `console.log(req.nextUrl.pathname)` within your middleware can be helpful for debugging path issues. Additionally, using  `NextResponse.redirect()` for user-facing redirects is generally preferred over `NextResponse.rewrite()`.
+* **`.card`**: This class styles the main card container. `overflow: hidden;` is crucial to prevent the hidden content from peeking out before the hover effect.  The `transition` property is used for smooth animations.
+* **`.card:hover`**: This styles the card when the mouse hovers over it.  `transform: scale(1.05);` provides the subtle scaling effect.  `height: 300px;` increases the height of the card to reveal hidden content.
+* **`.card-content`**:  Styles the visible content area.
+* **`.card-content-hidden`**:  Styles the initially hidden content. `height: 0;` and `overflow: hidden;` ensure the content is hidden until the hover effect. The transition allows for smooth height changes.
+* **`.card:hover .card-content-hidden`**: This targets the hidden content specifically when the card is hovered, smoothly changing its `height` to reveal the content.
 
-## External References
 
-* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/building-your-application/routing/middleware](https://nextjs.org/docs/app/building-your-application/routing/middleware)  This provides comprehensive information on configuring and using middleware.
-* **Next.js API Routes Documentation:** [https://nextjs.org/docs/api-routes/introduction](https://nextjs.org/docs/api-routes/introduction) (Useful for context, even if not directly related to the error)
-* **NextResponse Documentation:** [https://nextjs.org/docs/api-reference/next/server#nextresponse](https://nextjs.org/docs/api-reference/next/server#nextresponse) (For understanding the differences between `rewrite` and `redirect`)
+## Resources to Learn More
+
+* **MDN Web Docs on CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks (various articles on CSS effects):** [https://css-tricks.com/](https://css-tricks.com/)
+
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
