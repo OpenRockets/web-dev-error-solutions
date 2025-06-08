@@ -1,1 +1,1 @@
-Dealing with `next/dynamic` Import Errors in Next.js Middleware
+Creating a CSS-Only Circular Progress Bar
