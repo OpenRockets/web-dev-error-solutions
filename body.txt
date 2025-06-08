@@ -1,116 +1,102 @@
 
-This document addresses a common `TypeError` encountered when using Next.js Middleware, specifically when attempting to access properties of the `req.cookies` object before verifying its existence.  This often occurs when trying to determine a user's locale based on cookies set in a previous request.
-
-**Description of the Error:**
-
-The error `TypeError: Cannot read properties of undefined (reading 'locale')` in Next.js Middleware arises when your code tries to access a property (in this case, `locale`) of the `req.cookies` object, but `req.cookies` itself is undefined. This happens because cookies might not be present in every request, particularly if it's the user's first visit to your application.  Accessing a property of an undefined object results in this error.
+This document details a CSS-only solution to create an expanding card effect.  The card expands vertically when hovered over, revealing hidden content.  We'll achieve this using pure CSS3, avoiding JavaScript for a lightweight and performant solution.
 
 
-**Code (Problematic):**
+**Description of the Styling:**
 
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const locale = req.cookies.locale; // ERROR: req.cookies might be undefined!
-  const res = NextResponse.next();
-  res.cookies.set('locale', locale); // This also fails if cookies are undefined
-  return res;
-}
-```
-
-**Code (Fixed Step-by-Step):**
+The card utilizes a combination of CSS transitions, transforms, and pseudo-elements (`::before` and `::after`) to create the animation. The `::before` pseudo-element is used to create the expanding section which reveals hidden content. The height of the card changes on hover, smoothly revealing the hidden content thanks to the transition.
 
 
-**Step 1: Check for the Existence of `req.cookies`**
+**Full Code:**
 
-We'll use optional chaining (`?.`) to safely access the `locale` property only if `req.cookies` exists.
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const locale = req.cookies?.locale; // Safe access using optional chaining
-  // ... rest of the code
-}
-```
-
-**Step 2: Handle the Case Where `locale` is Undefined**
-
-If `locale` is undefined, we need to provide a default value. Otherwise, our code might fail later when setting the cookie.
-
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const locale = req.cookies?.locale || 'en'; // Default to 'en' if undefined
-  const res = NextResponse.next();
-  res.cookies.set('locale', locale); // This is still not safe as res.cookies can be undefined
-  return res;
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 300px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden; /* Hide content that extends beyond the card boundaries */
+  transition: height 0.3s ease-in-out; /* Smooth height transition */
 }
 
-```
-
-**Step 3:  Handle Undefined `res.cookies`**
-
-Similarly, `res.cookies` might be undefined depending on the `NextResponse` object. Let's handle this case safely as well:
-
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const locale = req.cookies?.locale || 'en';
-  const res = NextResponse.next();
-
-  //Safely set cookie
-  if (res.cookies) {
-    res.cookies.set('locale', locale);
-  }
-  return res;
+.card:hover {
+  height: 350px; /* Expand height on hover */
 }
-```
 
-**Step 4: (Optional)  More Robust Handling with a Function**
+.card-content {
+  padding: 20px;
+}
 
-For cleaner code, let's encapsulate the cookie handling within a function:
-
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-function setCookieSafely(res, name, value) {
-  if (res.cookies) {
-    res.cookies.set(name, value);
-  }
+.card-header {
+  background-color: #ddd;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
 }
 
 
-export function middleware(req) {
-  const locale = req.cookies?.locale || 'en';
-  const res = NextResponse.next();
-  setCookieSafely(res, 'locale', locale);
-  return res;
+.card::before {
+  content: "";
+  display: block;
+  height: 250px; /* Height of the hidden content */
+  background-color: white;
+  transition: height 0.3s ease-in-out; /* Ensures smooth expansion */
+  overflow: hidden; /* hides the content initially */
+  
 }
+
+.card:hover::before{
+  height: 0; /*Collapses on hover to show hidden content*/
+}
+
+.hidden-content {
+  padding: 10px;
+  opacity: 0; /* Hidden initially, shown by the height transition */
+  transition: opacity 0.3s ease-in-out; /* Smooth opacity transition */
+}
+
+.card:hover .hidden-content {
+  opacity: 1; /* Shows hidden content on hover */
+}
+
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">Card Title</div>
+  <div class="card-content">
+    <p>Some initial content</p>
+  </div>
+  <div class="hidden-content">
+    <p>This is the hidden content that appears on hover.</p>
+    <p>More hidden content here.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
 
 **Explanation:**
 
-The key improvements are the use of optional chaining (`?.`) and explicit checks for undefined values.  Optional chaining prevents errors by short-circuiting the access if the left-hand side is null or undefined.  The explicit checks ensure that we don't try to access properties of undefined objects.  The function in Step 4 promotes code reusability and readability.
+*   **`transition` property:**  Smoothly animates changes to the `height` and `opacity` properties over 0.3 seconds using an ease-in-out timing function.
+*   **`::before` pseudo-element:**  Creates an overlay that initially covers the hidden content.  Its height changes on hover, revealing the hidden content.
+*   **`overflow: hidden`:** Prevents the expanding content from overflowing the card boundaries, creating a clean effect.
+*   **`height` manipulation:** The height of the card and the pseudo element are manipulated on hover to create the expanding effect.
+*   **`opacity` transition:**  Ensures the hidden content fades in smoothly on hover.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [JavaScript Optional Chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
+*   [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+*   [MDN Web Docs - CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+*   [CSS-Tricks (General CSS resources)](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

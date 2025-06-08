@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `TypeError: Cannot read properties of undefined (reading 'locale')`
+Creating a CSS-only Expanding Card
