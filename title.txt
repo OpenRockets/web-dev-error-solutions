@@ -1,1 +1,1 @@
-Handling `Error: You cannot `await` a value in the `getServerSideProps` function` in Next.js
+Next.js Middleware: Handling `Error: Middleware response is not a Response object`

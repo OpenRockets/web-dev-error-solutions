@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: Middleware response is not a Response object`
+
 
 This document addresses a common error encountered when working with Next.js Middleware: `Error: Middleware response is not a Response object`.  This error occurs when your middleware function doesn't return a valid `Response` object, preventing the middleware from properly handling requests.
 
