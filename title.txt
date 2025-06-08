@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `redirect` Issues with Dynamic Routes
+Dealing with `Error: Invalid Hook Call` in Next.js Components

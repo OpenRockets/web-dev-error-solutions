@@ -1,3 +1,5 @@
+# 🐞 Dealing with `Error: Invalid Hook Call` in Next.js Components
+
 
 This document addresses a common error developers encounter when using hooks within Next.js components: the `Error: Invalid hook call` error.  This typically occurs when hooks are used incorrectly, such as outside of a functional component or within a conditional statement that might not always execute.
 
