@@ -1,1 +1,1 @@
-Handling `TypeError: Cannot read properties of undefined (reading 'pathname')` in Next.js Middleware
+Dealing with `TypeError: Cannot read properties of undefined (reading 'map')` in Next.js Middleware
