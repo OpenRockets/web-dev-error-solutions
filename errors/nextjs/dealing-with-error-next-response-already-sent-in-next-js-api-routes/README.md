@@ -1,3 +1,5 @@
+# 🐞 Dealing with `Error: Next Response already sent` in Next.js API Routes
+
 
 This document addresses a common error encountered when developing API routes in Next.js:  `Error: Next Response already sent`. This typically occurs when you attempt to send multiple responses from a single API route handler.  Next.js's API routes expect a single response to be sent.  Attempting to send multiple responses – either explicitly or implicitly through multiple calls to `res.send`, `res.json`, `res.status`, or similar methods – leads to this error.
 
