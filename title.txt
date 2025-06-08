@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Error: Route is defined twice`
+Creating a CSS-only Expanding Card
