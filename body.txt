@@ -1,86 +1,75 @@
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This example utilizes CSS3 properties for its functionality.
+This document addresses a common error encountered when working with Next.js Middleware: the "headers already sent" error. This error typically occurs when you attempt to set headers in your middleware after data has already been sent to the client, often due to unintended output before the `Response.rewrite()` or `Response.redirect()` calls.
 
-**Description of the Styling:**
+**Description of the Error:**
 
-This technique leverages the `clip-path` property to create a circular mask that reveals a portion of a larger circle.  By manipulating the `clip-path`'s `circle()` function with a dynamically calculated radius, we simulate the progress bar's movement.  The background circle provides the track, while a foreground circle, masked by the `clip-path`, represents the progress.  The percentage is visually displayed using a pseudo-element.
+The "headers already sent" error manifests as a 500 Internal Server Error in your browser.  The server-side logs will usually indicate that the response headers have already been sent before your middleware attempted to modify them (e.g., through a `Response.setHeader()` call).  This prevents the middleware from properly redirecting or rewriting the response.
 
+**Scenario:**
 
-**Full Code:**
+Let's consider a middleware function intended to redirect unauthenticated users to the login page.  The error arises if there's any unintended output (even whitespace or a stray `console.log`) before the `Response.redirect()` call.
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
-.progress-ring {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  position: relative;
+**Code with the Error (Illustrative):**
+
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  console.log("Middleware is running") // This seemingly harmless line can cause the error!
+  const token = req.cookies.get('token')
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
+  
+  return NextResponse.next()
 }
 
-.progress-ring__circle {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background-color: #ddd; /* Track color */
-  position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+export const config = {
+  matcher: ['/protected/:path*'], // Only run middleware for protected paths
+}
+```
+
+**Step-by-Step Fix:**
+
+1. **Identify Unintended Output:** Carefully review your middleware function, particularly focusing on code executed *before* the `NextResponse.redirect()` or `NextResponse.rewrite()` call.  Look for any accidental `console.log` statements, whitespace errors (e.g., extra newlines at the beginning of the file), or even unintentional calls to `res.send()` or `res.json()` if you’re mistakenly mixing API Route style with Middleware.
+
+2. **Remove/Comment Out Suspect Code:** Comment out or delete any suspicious code sections to isolate the source of the problem. Test after each removal to pinpoint the culprit.
+
+3. **Ensure Proper `NextResponse` Usage:**  Always use `NextResponse` functions (such as `NextResponse.redirect`, `NextResponse.rewrite`, and `NextResponse.next()`) to modify and return the response.  Avoid using `Response` from Node.js directly within Next.js Middleware.  This is crucial because Next.js Middleware's `Response` object is different and expects this structure.
+
+
+**Corrected Code:**
+
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const token = req.cookies.get('token')
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
+
+  return NextResponse.next()
 }
 
-.progress-ring__circle::before {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background-color: #4CAF50; /* Progress color */
-  clip-path: circle(50% at 50% 50%); /* Initial clip-path */
-  transform: rotate(-90deg); /* Start at top */
-  transition: clip-path 0.5s ease; /* Smooth animation */
+export const config = {
+  matcher: ['/protected/:path*'],
 }
-
-.progress-ring--progress-75 .progress-ring__circle::before {
-  clip-path: circle(75% at 50% 50%);
-}
-
-.progress-ring__percentage {
-  position: absolute;
-  font-size: 2em;
-  color: white;
-}
-</style>
-</head>
-<body>
-
-<div class="progress-ring progress-ring--progress-75">
-  <div class="progress-ring__circle">
-    <div class="progress-ring__percentage">75%</div>
-  </div>
-</div>
-
-
-</body>
-</html>
 ```
 
 **Explanation:**
 
-* **`progress-ring`**: This class sets the overall size and shape.
-* **`progress-ring__circle`**: This creates the background circle (track).  The `::before` pseudo-element creates the foreground circle (progress).
-* **`clip-path: circle(50% at 50% 50%);`**: This creates the circular mask. The percentage controls the radius, effectively determining how much of the circle is visible.  The `at` coordinates specify the center.
-* **`transform: rotate(-90deg);`**: This rotates the circle to start at the top.
-* **`.progress-ring--progress-75`**: This class demonstrates how to dynamically change the progress by adjusting the `clip-path` radius.  You would replace this with JavaScript or server-side code to dynamically adjust the percentage.
+The corrected code removes the `console.log` statement, which was causing the unintended output that led to the "headers already sent" error.  By ensuring that only `NextResponse` methods are used to manipulate the response, we guarantee compatibility with Next.js Middleware's internal workings.
 
+**External References:**
 
-**Links to Resources to Learn More:**
-
-* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **CSS-Tricks - `clip-path` examples:** [https://css-tricks.com/clipping-masking-css/](https://css-tricks.com/clipping-masking-css/)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction) (Helpful for understanding the differences between API routes and middleware.)
+* [Next.js Error Handling](https://nextjs.org/docs/app/building-your-application/handling-errors) (Provides general guidance on debugging errors in Next.js.)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
