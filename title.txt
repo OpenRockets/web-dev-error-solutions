@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `getServerSideProps` Data in `getStaticProps`
+Creating a CSS-Only Circular Progress Bar
