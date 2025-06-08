@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Error: Request aborted` during redirects
+Creating a CSS-Only Expanding Card
