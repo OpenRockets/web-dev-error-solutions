@@ -1,1 +1,1 @@
-Handling `Redirect` Errors in Next.js Middleware
+Next.js Middleware: Handling `getServerSideProps` Conflicts with `redirect`
