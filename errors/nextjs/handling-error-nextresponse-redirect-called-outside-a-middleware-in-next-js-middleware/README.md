@@ -1,3 +1,5 @@
+# 🐞 Handling `Error: NextResponse.redirect() called outside a middleware` in Next.js Middleware
+
 
 This document addresses a common error encountered when using Next.js Middleware:  `Error: NextResponse.redirect() called outside a middleware`. This error arises when you attempt to use `NextResponse.redirect()` from a location within your Next.js application where it's not supported.  `NextResponse.redirect()` is specifically designed for use within middleware functions.
 

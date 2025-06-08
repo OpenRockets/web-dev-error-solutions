@@ -1,1 +1,1 @@
-Handling 404 Errors in Next.js API Routes
+Handling `Error: NextResponse.redirect() called outside a middleware` in Next.js Middleware
