@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `UnhandledPromiseRejectionWarning` in `next/server`
+
 
 This document addresses a common issue encountered when using Next.js Middleware, specifically the dreaded `UnhandledPromiseRejectionWarning` within the `next/server` context.  This warning, while not always immediately fatal, often masks underlying problems that can lead to unpredictable behavior and silent failures in your application.  It commonly arises when a promise within your middleware function rejects without being properly handled.
 
