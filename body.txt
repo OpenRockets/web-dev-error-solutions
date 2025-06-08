@@ -1,75 +1,105 @@
 
-This document addresses a common error developers encounter when using Next.js Middleware: attempting to set headers after a redirect has been initiated using `nextResponse.redirect`.  The `headers.set` method will not work after a redirect call.  This causes issues when you try to set cookies or other headers which are dependent upon the redirection.
+This document addresses a common error developers encounter when working with Next.js Middleware: the "Response already sent" error. This error typically occurs when you attempt to modify the response object multiple times within a single middleware function, often due to improperly structured `if` statements or asynchronous operations.
 
 
 **Description of the Error:**
 
-When you try to set headers using `nextResponse.headers.set()` after calling `nextResponse.redirect()`, you'll likely encounter no visible error, but the headers will simply not be set.  Your intended changes, such as setting a cookie after redirecting a user to a different page, will be ignored.  Debugging this can be tricky, as the console might not show a clear error message.
+The "Response already sent" error in Next.js Middleware means that the response to the client has already been committed, and any further attempts to modify it (e.g., setting headers, redirecting, etc.) will result in this error. This usually happens when multiple `res.redirect()` or `res.end()` calls are executed, potentially within conditional statements or asynchronous functions without proper handling.
 
 
-**Code: Problematic Example**
+**Example Scenario and Step-by-Step Fix:**
 
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const res = NextResponse.next();
-  res.headers.set('X-Custom-Header', 'some-value');  //this will be ignored
-  if (req.cookies.auth_token){
-    return res
-  } else {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-}
-
-export const config = {
-  matcher: '/',
-}
-```
-
-In this example, the `X-Custom-Header` will only be set if authentication cookie exists. If the cookie isn't present, the redirect happens *before* the header is set rendering it ineffective.
+Let's say we have a middleware function that checks for authentication and redirects unauthenticated users:
 
 
-**Code: Step-by-Step Fix**
-
-1. **Conditional Header Setting:** Move the header setting *before* the redirect condition. This ensures the header is set before any redirect occurs.
-
-2. **Early Return:** Ensure an early return if the header is the sole task of the middleware
-
+**Problematic Code:**
 
 ```javascript
 // pages/api/middleware.js
 import { NextResponse } from 'next/server'
 
 export function middleware(req) {
-  const res = NextResponse.next();
-  if (req.cookies.auth_token){
-      res.headers.set('X-Custom-Header', 'some-value'); // Set header if authenticated
-      return res;
-  } else {
+  const token = req.cookies.get('token');
+
+  if (!token) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
+
+  // Further checks or modifications to the response...  (This will fail if the above redirect is executed)
+  const response = NextResponse.next();
+  response.headers.set('X-Custom-Header', 'value'); // This line causes the error if the if statement above executes
+  return response;
 }
 
 export const config = {
-  matcher: '/',
+  matcher: ['/profile'], // This applies middleware to the /profile route only.
 }
 ```
 
-This revised code sets the header only if the authentication cookie exists, which is before the redirect happens.  If redirection is necessary the header will still be set and sent to the client if authentication has been successful.
+**Explanation of the Problem:**
+
+The problem lies in the fact that if `!token` is true, the `NextResponse.redirect()` call immediately sends a response to the client.  Any subsequent code, such as setting headers in the `response` object, will try to modify a response that has already been sent, leading to the error.
 
 
-**Explanation:**
+**Step-by-Step Fix:**
 
-The key is understanding the execution order. `nextResponse.redirect()` immediately terminates the middleware's response. Any code after the redirect call won't be executed, rendering attempts to set headers ineffective. By setting the headers before the redirect condition, you ensure they're applied before the redirection process begins.
+1. **Early Exit:** The most straightforward solution is to use an early return statement to prevent further execution of the middleware function once a response has been sent.  This ensures that only one response is ever sent.
 
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const token = req.cookies.get('token');
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+
+  const response = NextResponse.next();
+  response.headers.set('X-Custom-Header', 'value');
+  return response;
+}
+
+export const config = {
+  matcher: ['/profile'],
+}
+```
+
+2. **Conditional Logic within a Single Response:**  If you need more complex logic, ensure all response modifications are done within a single `NextResponse` object before returning it.
+
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const token = req.cookies.get('token');
+  let response;
+
+  if (!token) {
+    response = NextResponse.redirect(new URL('/login', req.url));
+  } else {
+    response = NextResponse.next();
+    response.headers.set('X-Custom-Header', 'value');
+  }
+  return response;
+}
+
+export const config = {
+  matcher: ['/profile'],
+}
+```
 
 **External References:**
 
 * [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse)
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
 
 
-**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+**Explanation of the Fix:**
+
+Both solutions above ensure that only a single response is generated and sent to the client. The early return prevents further code execution after a response has been generated. The conditional logic approach within a single `NextResponse` object prevents multiple responses from being sent.  Choosing the best solution depends on the complexity of your middleware logic.
+
+
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 

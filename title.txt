@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers.set` Errors in `redirect`
+Next.js Middleware: Handling `Response already sent` Error
