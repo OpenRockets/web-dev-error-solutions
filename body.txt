@@ -1,79 +1,82 @@
 
-This document addresses a common error encountered when working with Next.js Middleware: `TypeError: Cannot read properties of undefined (reading 'pathname')`.  This usually happens when you try to access the `req.nextUrl.pathname` property before it's properly defined within the middleware function.
+This document details the creation of an expanding card effect using only CSS.  No JavaScript is required.  The effect involves a card that expands vertically when hovered over, revealing hidden content.  We'll achieve this using CSS transitions and transforms.
 
-**Description of the Error:**
 
-The error message `TypeError: Cannot read properties of undefined (reading 'pathname')` indicates that the `req.nextUrl` object, specifically its `pathname` property, is undefined when your middleware attempts to access it.  This typically occurs because the middleware is triggered before Next.js has fully processed the request and populated the `nextUrl` object with the necessary information.
+**Description of the Styling:**
 
-**Scenario:**
+The card will have a basic structure: a container holding a header and a content section.  The content section will initially be hidden using `max-height: 0;` and `overflow: hidden;`. On hover, we'll use a CSS transition to smoothly increase the `max-height` to allow the content to become visible.  A subtle transform will be added for visual appeal.
 
-Let's say you're trying to redirect users based on their URL path within your middleware:
 
-```javascript
-// pages/api/middleware.js (incorrect implementation)
-export function middleware(req, res) {
-  const pathname = req.nextUrl.pathname; // Error happens here!
+**Full Code:**
 
-  if (pathname === '/dashboard') {
-    if (!req.cookies.authToken) {
-      return NextResponse.redirect(new URL('/login', req.url));
-    }
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f2f2f2;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide overflowing content */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+  width: 300px;
 }
 
-export const config = {
-  matcher: ['/dashboard'],
-};
-```
-
-
-**Step-by-Step Fix:**
-
-1. **Import `NextResponse`:**  Ensure you import `NextResponse` from `next/server`.
-
-2. **Use `NextRequest`'s `nextUrl`:** Access the `pathname` via the `nextUrl` property of the `req` object (which is a `NextRequest` object). Note that direct use of `req.url` will not solve the problem.
-
-3. **Handle undefined cases:** Employ optional chaining (`?.`) or nullish coalescing (`??`) to gracefully handle cases where `req.nextUrl` might still be unexpectedly undefined. A fallback value is crucial for avoiding runtime crashes.
-
-**Corrected Code:**
-
-```javascript
-// pages/api/middleware.js (correct implementation)
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const pathname = req.nextUrl.pathname;
-  if (!pathname) {
-    // Handle cases where pathname might be undefined (extra precaution)
-    return NextResponse.rewrite(new URL('/', req.url));
-  }
-
-  if (pathname.startsWith('/dashboard')) {
-    if (!req.cookies.get('authToken')) {
-      return NextResponse.redirect(new URL('/login', req.url));
-    }
-  }
+.card:hover {
+  transform: translateY(-5px); /*Slight lift on hover*/
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
 }
 
-export const config = {
-  matcher: ['/dashboard/:path*'], // More robust matcher
-};
+.card-header {
+  background-color: #333;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+
+.card-content {
+  max-height: 0; /* Initially hidden */
+  overflow: hidden;
+  transition: max-height 0.3s ease; /* Smooth height transition */
+  padding: 15px;
+}
+
+.card:hover .card-content {
+  max-height: 200px; /* Height on hover, adjust as needed */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">Card Title</div>
+  <div class="card-content">
+    <p>This is the content of the expanding card.  It's initially hidden and will smoothly appear when you hover over the card.</p>
+    <p>Add more content here as needed.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
+
 
 **Explanation:**
 
-The corrected code utilizes optional chaining (`?.`) and the `startsWith` method for safer pathname handling. It adds a check for the `pathname` itself being undefined to handle edge cases that might not be directly related to the initial problem but could still lead to the same error. This additional check adds an extra layer of resilience, and the `startsWith` method ensures the redirect is triggered for all paths beginning with `/dashboard`, addressing a potential issue with the original matcher.
+* **`.card`:** Styles the main card container, setting background, border radius, box shadow, and crucial transitions for smooth animations.
+* **`.card:hover`:**  Applies styles specifically when the card is hovered over (the `translateY` creates a subtle lift effect).
+* **`.card-header`:** Styles the header section.
+* **`.card-content`:**  Crucially, `max-height: 0;` and `overflow: hidden;` initially hide the content.  The transition on `max-height` controls the animation.
+* **`.card:hover .card-content`:** When hovering over the card,  `max-height` is increased to reveal the content.  Adjust `200px` to control the final expanded height.
 
-The revised `matcher` in the `config` object is more inclusive than the initial one. Using `/dashboard/:path*` ensures that all routes under `/dashboard` (e.g., `/dashboard`, `/dashboard/settings`, `/dashboard/profile`) are correctly handled by the middleware.  The original `/dashboard` would only match `/dashboard` exactly.
 
+**Links to Resources to Learn More:**
 
-**External References:**
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)
-* [NextResponse Documentation](https://nextjs.org/docs/app/api-reference/server-api-utils/next-response)
-
-This improved solution addresses the core problem and provides more robust error handling, preventing the `TypeError` and ensuring smoother functionality of the middleware.
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks:** [https://css-tricks.com/](https://css-tricks.com/) (Search for "CSS transitions" or "CSS animations")
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
