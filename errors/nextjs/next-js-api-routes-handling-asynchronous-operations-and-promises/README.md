@@ -1,3 +1,5 @@
+# 🐞 Next.js API Routes: Handling Asynchronous Operations and Promises
+
 
 This document addresses a common issue developers encounter when working with asynchronous operations within Next.js API routes:  returning a Promise that isn't properly handled, leading to unexpected errors or incomplete responses.
 
