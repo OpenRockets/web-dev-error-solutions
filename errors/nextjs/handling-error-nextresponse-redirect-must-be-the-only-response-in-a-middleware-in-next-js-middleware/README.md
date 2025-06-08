@@ -1,3 +1,5 @@
+# 🐞 Handling `Error: NextResponse.redirect() must be the only response in a middleware` in Next.js Middleware
+
 
 This document addresses a common error encountered when working with Next.js Middleware: `Error: NextResponse.redirect() must be the only response in a middleware`. This error occurs when you attempt to perform additional actions after calling `NextResponse.redirect()` within your middleware function.  Middleware functions are designed to perform a single action, either redirecting or continuing the request to the next handler.  Attempting to do both results in this error.
 

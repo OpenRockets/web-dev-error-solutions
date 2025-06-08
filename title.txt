@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers already sent` Errors
+Handling `Error: NextResponse.redirect() must be the only response in a middleware` in Next.js Middleware
