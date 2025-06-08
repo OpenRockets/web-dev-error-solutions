@@ -1,92 +1,84 @@
 
-This document addresses a common error encountered when attempting to import modules from `next/server` within Next.js API routes.  This error arises because `next/server` is specifically designed for Edge runtime environments (like Middleware and the App Router), and is not available in the Node.js environment used for API routes.
+This document details the creation of a circular progress bar using only CSS. No JavaScript is required.  We'll leverage CSS's `conic-gradient` function for a clean and efficient solution. This example uses plain CSS; adapting it to Tailwind CSS is straightforward (explained in the code section).
 
-**Description of the Error:**
+**Description of the Styling:**
 
-You might encounter an error similar to this when importing functions or components from `next/server` within an API route:
+The progress bar is created using a single `<div>` element.  The visual effect is achieved using a combination of `border-radius`, `conic-gradient`, and `transform` properties. The `conic-gradient` creates the circular gradient, representing the progress. The percentage of the circle filled is dynamically controlled by rotating the gradient using `transform: rotate()`.
 
-```bash
-Error: Cannot find module 'next/server' ...
-```
+**Full Code (Plain CSS):**
 
-or a more descriptive error pointing to a specific component or function you are trying to import.
-
-**Step-by-Step Code Fix:**
-
-The solution involves separating your code into appropriate locations depending on the functionality. You can't use `next/server` in an API route.  Let's assume you're trying to use a function from `next/server` that you'd rather reuse across your app,  including API routes.
-
-
-**Original (Problematic) Code (Illustrative Example):**
-
-```javascript
-// pages/api/data.js
-import { NextRequest, NextResponse } from 'next/server'; // Incorrect import for API Routes
-
-export default async function handler(req, res) {
-  // ... some logic potentially using NextRequest/NextResponse (invalid here) ...
-  const response = new NextResponse('Hello from API route!'); // Error here!
-  res.status(200).json({ message: 'Data from API route' });  //This part would have to be uncommented in the correct example.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #f0f0f0 0%,
+    #f0f0f0 calc(100% - var(--progress)),
+    #4CAF50 calc(100% - var(--progress)),
+    #4CAF50 100%
+  );
 }
+</style>
+</head>
+<body>
+
+<div class="progress-ring" style="--progress: 75%;"></div>
+
+</body>
+</html>
 ```
 
+**Full Code (with Tailwind CSS):**
 
-**Corrected Code:**
-
-1. **Create a reusable module:** Move the logic that requires `next/server`  to a separate module which will be used in both your Middleware and API routes. This module will avoid any `next/server` dependencies.
-
-```javascript
-// utils/dataHelper.js
-export async function fetchData() {
-  //Your API call logic here.  
-  const response = await fetch('https://api.example.com/data'); //Replace with your API
-  const data = await response.json();
-  return data;
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar with Tailwind</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<style>
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(
+    gray-300 0%,
+    gray-300 calc(100% - var(--progress)),
+    green-500 calc(100% - var(--progress)),
+    green-500 100%
+  );
 }
-```
+</style>
+</head>
+<body>
 
+<div class="progress-ring w-32 h-32 rounded-full" style="--progress: 75%;"></div>
 
-2. **Import and use in your API Route:**
-
-```javascript
-// pages/api/data.js
-import { fetchData } from '@/utils/dataHelper';
-
-export default async function handler(req, res) {
-  const data = await fetchData();
-  res.status(200).json(data);
-}
-```
-
-3. **Use in your Middleware (if applicable):**  You *can* use `next/server` in your Middleware.
-
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server';
-import { fetchData } from '@/utils/dataHelper';
-
-export function middleware(req) {
-  const data = fetchData(); //Async/Await would be required here.
-  // ... use data from fetchData ...
-  // const res = NextResponse.redirect(new URL('/success', req.url))
-
-}
-
-export const config = {
-  matcher: ['/about'], // Example matcher
-};
+</body>
+</html>
 
 ```
-
 
 **Explanation:**
 
-The error stems from incompatible module usage. `next/server` is built for the Edge Runtime and is not available within the Node.js context of API routes. By separating concerns, using functions that don't depend on edge specific modules in a shared utility, and then importing them correctly, we resolve this issue.  The API route now correctly uses a standard Node.js fetch call instead of the edge runtime `NextResponse`.
+* **`width` and `height`:**  Sets the size of the progress ring.
+* **`border-radius: 50%;`:** Creates a perfect circle.
+* **`conic-gradient()`:** This is the key. It creates a circular gradient.  The parameters define the colors and their positions.  `calc(100% - var(--progress))` dynamically calculates the end point of the lighter color based on the `--progress` custom property.
+* **`--progress` Custom Property:** This CSS variable allows us to easily change the progress percentage by adjusting its value (e.g., `style="--progress: 50%;"` for 50% progress).  This makes it very easy to dynamically update the progress from JavaScript if needed (although not required for this example).
+* **Tailwind Integration:** The Tailwind CSS version uses Tailwind's utility classes (`w-32`, `h-32`, `rounded-full`) instead of inline styles for width, height, and border-radius.  The colors are also replaced with Tailwind color names.
 
-**External References:**
 
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Next.js `next/server` Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware) - Note the context restrictions.
+**Links to Resources to Learn More:**
+
+* **MDN Web Docs on `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **CSS Tricks (general CSS learning):** [https://css-tricks.com/](https://css-tricks.com/)
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
