@@ -1,13 +1,11 @@
-# 🐞 Creating a CSS-Only Circular Progress Bar
+# 🐞 Creating a CSS-only Circular Progress Bar
 
 
-This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This example leverages CSS3's `conic-gradient` for a clean and efficient solution.
-
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required!  We'll leverage CSS's `clip-path` property and some clever calculations to achieve this effect. This example uses plain CSS but could easily be adapted to a CSS framework like Tailwind CSS.
 
 **Description of the Styling:**
 
-This technique uses a `conic-gradient` to create the circular progress bar. The gradient starts at the top and sweeps clockwise, with the percentage controlled by a custom property (`--progress`). The background circle is created using a simple `border-radius`.  We use `::before` pseudo-element to create the actual progress indicator.
-
+The circular progress bar is created using a single `<div>` element.  We use a background circle and an overlay circle. The overlay is clipped using a circular `clip-path` to reveal only a portion of the background, representing the progress. The progress is controlled by a CSS variable (`--progress`) which can be easily adjusted.  The styling includes appropriate colors, shadows, and sizing for visual appeal.
 
 **Full Code:**
 
@@ -17,77 +15,68 @@ This technique uses a `conic-gradient` to create the circular progress bar. The 
 <head>
 <title>CSS Circular Progress Bar</title>
 <style>
-  .progress-ring {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    background-color: #f0f0f0; /* Light gray background */
-    border: 5px solid #ddd; /* Light gray border */
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+.progress-ring {
+  --progress: 75; /* Adjust this value to change the progress (0-100)*/
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: #f0f0f0; /* Background color */
+  position: relative;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2); /* Add a subtle shadow */
+}
 
-  .progress-ring::before {
-    content: "";
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: inherit;
-    background-image: conic-gradient(
-      #4CAF50 0deg var(--progress, 50%),  /* Green progress */
-      #ddd 0deg); /* Light gray background */
-    transform-origin: center;
-    transform: rotate(-90deg);
-    z-index: 1;
-  }
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  background: #4CAF50; /* Progress bar color */
+  border-radius: 50%;
+  clip-path: circle(50% at 50% 50%); /*The clipping magic*/
+  /*The rotation is based on the percentage using calc*/
+  transform: rotate(calc(var(--progress) * 3.6deg)) ;
+}
 
-  .percentage {
-    position: absolute;
-    z-index: 2;
-    font-size: 1.2em;
-    color: #333;
-  }
+.progress-ring::after{
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  border-radius: 50%;
+  border: 5px solid #4CAF50;
+  pointer-events: none;
+}
+
 </style>
 </head>
 <body>
 
-  <div class="progress-ring" style="--progress: 75%;">
-    <span class="percentage">75%</span>
-  </div>
-
-  <div class="progress-ring" style="--progress: 30%;">
-    <span class="percentage">30%</span>
-  </div>
-
-  <div class="progress-ring" style="--progress: 90%;">
-    <span class="percentage">90%</span>
-  </div>
-
+<div class="progress-ring"></div>
 
 </body>
 </html>
 ```
 
-
 **Explanation:**
 
-*   **`conic-gradient`:** This is the core of the effect. It creates a gradient that sweeps around a circle. `#4CAF50` is the color of the progress, and `#ddd` is the background color. `var(--progress)` dynamically sets the percentage of the circle filled with the green color.
-
-*   **`transform: rotate(-90deg)`:** This rotates the gradient so that 0% starts at the top.
-
-*   **Custom Property (`--progress`):** This allows easy adjustment of the progress value by simply changing the style attribute.
-
-*   **Pseudo-element `::before`:** This creates the visual layer for the progress bar on top of the background circle.
-
-* **`.percentage`:** This class styles the percentage value displayed at the center of the progress ring.
+* **`--progress` variable:** This custom property controls the percentage of the progress bar.  It's multiplied by `3.6deg` (360 degrees / 100) to calculate the rotation angle.
+* **`::before` pseudo-element:** This creates the filled portion of the progress bar.  The `clip-path: circle()` creates a circular mask, and `transform: rotate()` rotates it to show the progress.
+* **`::after` pseudo-element:** This creates the outline ring.
+* **`calc()` function:** Used to dynamically calculate the rotation angle based on the `--progress` variable.
 
 
 **Links to Resources to Learn More:**
 
-*   [MDN Web Docs - conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
-*   [CSS Tricks - conic-gradient](https://css-tricks.com/almanac/properties/c/conic-gradient/) (Search for conic-gradient on their site for relevant articles)
+* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS-Tricks - `clip-path`:** [https://css-tricks.com/clipping-masking-css/](https://css-tricks.com/clipping-masking-css/)  (Search for `clip-path` examples)
+* **Understanding CSS Variables (Custom Properties):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
