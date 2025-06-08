@@ -1,106 +1,75 @@
 # 🐞 Next.js Middleware: Handling `TypeError: Cannot read properties of undefined (reading 'locale')`
 
 
-This document addresses a common `TypeError` encountered when using Next.js Middleware, specifically when accessing the `req.headers` object and attempting to read properties that might be undefined, like `req.headers.locale`.  This often happens when the header simply isn't present in the incoming request.
+This document addresses a common error encountered when using Next.js Middleware, specifically when attempting to access locale information from the request object before it's properly populated.  This often happens when trying to redirect based on locale preferences early in the middleware chain.
 
-**Description of the Error:**
 
-The error message `TypeError: Cannot read properties of undefined (reading 'locale')` indicates that you're trying to access the `locale` property of `req.headers`, but `req.headers` itself is either `null` or `undefined`. This usually occurs because the request doesn't include a `locale` header.  Attempting to read a property from an undefined object results in this error.
+## Description of the Error
 
-**Code Example (Problem):**
+The error `TypeError: Cannot read properties of undefined (reading 'locale')` arises when your middleware attempts to access `req.locale` or a similar property within the request object (`req`) before Next.js has fully processed the request and assigned the locale information. This typically occurs when the middleware runs too early in the pipeline, before Next.js's i18n (internationalization) features have had a chance to extract and set the locale.
+
+
+## Code and Fixing Steps
+
+Let's assume you have a middleware file (`middleware.js` or `middleware.ts`) aiming to redirect users to a specific locale based on their browser's preferred language:
+
+
+**Problematic Code:**
 
 ```javascript
-// pages/api/middleware.js
-export default function middleware(req, res) {
-  const locale = req.headers.locale; // Potential error here!
+// middleware.js (INCORRECT)
+import { NextResponse } from 'next/server'
 
-  if (locale === 'en') {
-    // ...logic for English locale...
-  } else if (locale === 'es') {
-    // ...logic for Spanish locale...
-  } else {
-    // ...default locale...
+export function middleware(req) {
+  const locale = req.locale; // ERROR: req.locale might be undefined here!
+  if (locale === 'es') {
+    return NextResponse.redirect(new URL('/es', req.url))
   }
-
-  // ...rest of your middleware...
+  // ...other logic...
 }
-
 ```
 
-**Step-by-Step Code Fix:**
+**Corrected Code:**
 
-1. **Optional Chaining (?.)**: The most elegant solution uses optional chaining (`?.`) to safely access the `locale` property.  If `req.headers` is undefined or null, the expression short-circuits and evaluates to `undefined` instead of throwing an error.
+This issue can be fixed by ensuring the `req.locale` is available. This often means waiting for the i18n pipeline to complete, or using the `NextRequest` object properly:
 
-   ```javascript
-   // pages/api/middleware.js
-   export default function middleware(req, res) {
-     const locale = req.headers?.locale; // Optional chaining
+```javascript
+// middleware.js (CORRECTED)
+import { NextResponse } from 'next/server'
 
-     if (locale === 'en') {
-       // ...logic for English locale...
-     } else if (locale === 'es') {
-       // ...logic for Spanish locale...
-     } else {
-       // ...default locale...
-     }
+export function middleware(req) {
+  const url = req.nextUrl;
+  const locale = url.locale; // Access locale from NextRequest's nextUrl
 
-     // ...rest of your middleware...
-   }
-   ```
+  if (locale === 'es') {
+    return NextResponse.redirect(new URL('/es', req.url))
+  }
+  // ... other logic ...
 
-2. **Nullish Coalescing (??)**:  After obtaining the locale using optional chaining, we can use the nullish coalescing operator (`??`) to provide a default value if `locale` is `null` or `undefined`.
+}
+export const config = {
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+}
+```
 
-   ```javascript
-   // pages/api/middleware.js
-   export default function middleware(req, res) {
-     const locale = req.headers?.locale ?? 'en'; // Default to 'en'
+**Explanation of the fix:**
 
-     if (locale === 'en') {
-       // ...logic for English locale...
-     } else if (locale === 'es') {
-       // ...logic for Spanish locale...
-     } else {
-       // ...default locale...
-     }
-
-     // ...rest of your middleware...
-   }
-   ```
-
-3. **Explicit Check**: A more verbose but equally effective approach involves explicitly checking if `req.headers` and `req.headers.locale` exist before accessing them.
-
-   ```javascript
-   // pages/api/middleware.js
-   export default function middleware(req, res) {
-     let locale = 'en'; // Default locale
-
-     if (req.headers && req.headers.locale) {
-       locale = req.headers.locale;
-     }
-
-     if (locale === 'en') {
-       // ...logic for English locale...
-     } else if (locale === 'es') {
-       // ...logic for Spanish locale...
-     } else {
-       // ...default locale...
-     }
-
-     // ...rest of your middleware...
-   }
-   ```
+Instead of directly accessing `req.locale`, we now access the `locale` property from `req.nextUrl`.  The `req.nextUrl` object is properly populated with locale information at the point the middleware is invoked, even at earlier stages in the request processing pipeline. This method reliably retrieves the user's locale without encountering the `undefined` error.
 
 
-**Explanation:**
-
-Optional chaining and nullish coalescing are powerful JavaScript features that make your code more concise and robust. They help prevent errors by gracefully handling situations where properties might be missing.  The explicit check provides the same functionality but is more verbose.  Choose the method that best suits your coding style and project needs.
+The `config.matcher` ensures the middleware does not interfere with static assets or API routes.
 
 
-**External References:**
+## External References
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Optional Chaining (?.) in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
-* [Nullish Coalescing Operator (??) in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing_operator)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware): The official Next.js documentation on Middleware.
+* [Next.js Internationalization (i18n) Documentation](https://nextjs.org/docs/app/building-your-application/i18n-internationalization): The official Next.js documentation on i18n.
+* [Next.js Routing](https://nextjs.org/docs/app/routing): NextJS Routing Documentation.
+
+
+## Explanation
+
+The core problem lies in the timing of accessing the `req.locale`.  Middleware runs *before* Next.js has completely processed the request and assigned the locale.  By using `req.nextUrl.locale`, we access the locale information after it has been correctly assigned by the Next.js routing system, thereby avoiding the `undefined` error.  Using `config.matcher` correctly prevents the middleware from being unnecessarily applied to routes and file paths which are not pertinent to the context of the error.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
