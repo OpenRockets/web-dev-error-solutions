@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers` in a non-standard way
+
 
 This document addresses a common issue developers encounter when working with Next.js Middleware: manipulating response headers in a way that isn't fully compatible with the Next.js API and its expectations.  Specifically, this example tackles a scenario where attempting to set headers directly using `res.setHeader` within middleware leads to unexpected behavior or errors, particularly when dealing with redirects.
 

@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `NextResponse.redirect()` in API Routes
+Next.js Middleware: Handling `headers` in a non-standard way
