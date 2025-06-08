@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `redirect()` within `async` functions and preserving headers
+
 
 ## Description of the Error
 

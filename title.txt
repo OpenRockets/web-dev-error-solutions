@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `getServerSideProps` and `redirect` Conflicts
+Next.js Middleware: Handling `redirect()` within `async` functions and preserving headers
