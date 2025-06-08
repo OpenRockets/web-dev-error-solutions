@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `not-found` Responses and Redirects
+Next.js Middleware: Handling `getServerSideProps` and `redirect` Conflicts
