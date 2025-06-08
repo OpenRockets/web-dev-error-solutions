@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `NextResponse.redirect` Issues with External Redirects
+
 
 This document addresses a common problem developers encounter when using `NextResponse.redirect` within Next.js Middleware:  redirects to external domains not working as expected.  This often manifests as a redirect loop or the redirect simply not functioning correctly.
 
