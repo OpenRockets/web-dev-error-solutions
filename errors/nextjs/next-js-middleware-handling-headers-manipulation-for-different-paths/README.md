@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers` manipulation for different paths
+
 
 This document addresses a common issue developers encounter when using Next.js Middleware: correctly manipulating headers based on the requested path.  Improperly configured middleware can lead to unexpected behavior, such as incorrect caching or CORS issues across different parts of your application.  This example focuses on setting custom headers for specific routes.
 

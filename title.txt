@@ -1,1 +1,1 @@
-Debugging "Headers already sent" Error in Next.js API Routes
+Next.js Middleware: Handling `headers` manipulation for different paths
