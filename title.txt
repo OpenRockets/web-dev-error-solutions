@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `Request aborted` Errors During Redirects
+Handling 404 Errors in Next.js API Routes
