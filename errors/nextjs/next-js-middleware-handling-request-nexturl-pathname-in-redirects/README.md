@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `request.nextUrl.pathname`  in Redirects
+
 
 This document addresses a common issue developers encounter when using Next.js Middleware to perform redirects based on the original request URL.  Specifically, it tackles situations where manipulating `request.nextUrl.pathname` doesn't correctly reflect in the final redirect URL.
 
