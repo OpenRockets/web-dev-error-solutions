@@ -1,88 +1,88 @@
 
-## Description of the Error
+This document details how to create an expanding card effect using only CSS.  This effect involves a card that expands to reveal more content when hovered over. We'll use CSS transitions and transforms for a smooth animation.  No JavaScript is required.
 
-A common issue when working with Next.js Middleware is incorrectly modifying the `headers` object within the `Response` object.  Middleware allows you to modify the request/response cycle before a page is rendered, but attempting to directly manipulate the `headers` property can lead to unexpected behavior or errors.  Specifically, you might find that modifications don't persist or that you receive runtime errors indicating the `headers` object is immutable.
+**Description of the Styling:**
 
-This often happens when developers try to directly assign or modify header values like this:
+The card utilizes a simple structure: a container div holding an image and a content section.  The key is applying CSS transitions to `transform` and `box-shadow` properties to create the expanding effect and a subtle shadow change on hover. We'll style the card initially to be compact, then use the `:hover` pseudo-class to trigger the expansion.
 
-```javascript
-// Incorrect approach
-export function middleware(req) {
-  const res = NextResponse.next();
-  res.headers.set('X-Custom-Header', 'some value'); // This will likely throw an error
-  return res;
+**Full Code:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 200px;
+  height: 150px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide content that overflows */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth transition */
 }
+
+.card:hover {
+  transform: scale(1.1); /* Expand on hover */
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2); /* Increased shadow on hover */
+  cursor: pointer; /* Indicate interactivity */
+}
+
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.8); /* Slightly translucent background */
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0; /* Initially hidden */
+  overflow: hidden;
+  transition: height 0.3s ease-in-out;
+}
+
+.card:hover .card-content {
+  height: 100px; /* Reveal content on hover */
+}
+
+.card-title {
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <img src="https://via.placeholder.com/200x150" alt="Card Image">
+  <div class="card-content">
+    <h3 class="card-title">Card Title</h3>
+    <p>Some card content here.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-## Step-by-Step Code Fix
+**Explanation:**
 
-The correct way to modify response headers in Next.js Middleware involves using the `NextResponse.rewrite()` or `NextResponse.redirect()` methods, or updating the headers during the `NextResponse` object creation.
+*   **Transitions:** The `transition` property smoothly animates changes to the `transform` and `box-shadow` properties over 0.3 seconds.
+*   **Transforms:** The `transform: scale(1.1);` in the `:hover` selector enlarges the card on hover.
+*   **Box Shadow:**  The `box-shadow` property adds a subtle shadow, enhanced on hover.
+*   **Card Content Reveal:** The `card-content` initially has `height: 0;` and then expands on hover using `height: 100px;`.
+*   **Overflow:** `overflow: hidden;` prevents content from spilling outside the card.
 
+**Resources to Learn More:**
 
-**Method 1: Using `NextResponse` constructor**
-
-This is the most straightforward approach, setting the header directly when you create the `NextResponse` object.
-
-```javascript
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const url = req.nextUrl.clone(); // create a copy to avoid modifying original URL
-  const response = new NextResponse(null, {
-    headers: {
-      'X-Custom-Header': 'some value',
-      'Cache-Control': 'public, max-age=31536000',
-    },
-  });
-  return response;
-}
-```
-
-**Method 2:  Using `NextResponse.rewrite()` for maintaining the original request**
-
-If you need to rewrite the request to a different URL while setting headers, use `NextResponse.rewrite()`:
-
-```javascript
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-    const url = req.nextUrl.clone(); // create a copy to avoid modifying original URL
-    url.pathname = '/new-page'; // change the pathname
-    return NextResponse.rewrite(url, {
-        headers: {
-            'X-Custom-Header': 'some value from rewrite',
-        }
-    });
-}
-```
-
-**Method 3: Using `NextResponse.redirect()` for redirection**
-
-If you need to redirect the user while adding headers, utilize `NextResponse.redirect()`:
-
-```javascript
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-    return NextResponse.redirect(new URL('/redirected-page', req.url), {
-        headers: {
-            'X-Custom-Header': 'some value from redirect',
-            'Location': '/redirected-page' // Important for redirection. This is added automatically if you don't specify it.
-        }
-    });
-}
-```
-
-
-## Explanation
-
-Directly manipulating the `headers` property of a `NextResponse` object after it has been created is not supported. The `NextResponse` object is immutable after creation. The methods described above correctly manage header additions and manipulations within the response lifecycle.  Using the constructor allows us to set headers during the response's initialization.  `NextResponse.rewrite()` and `NextResponse.redirect()` maintain the appropriate HTTP behaviors while integrating header modifications.
-
-
-## External References
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/api-routes/middleware)
-* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse)
+*   **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+*   **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+*   **CSS-Tricks:** Search for "CSS hover effects" on [https://css-tricks.com/](https://css-tricks.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
