@@ -1,82 +1,70 @@
 
-This document details the creation of a circular progress bar using only CSS. No JavaScript is required. This example utilizes CSS variables (custom properties) for easy customization.
+This document addresses a common problem encountered when using Next.js Middleware with dynamic routes and redirects.  The issue arises when attempting to redirect based on dynamic route segments which are not properly accessed within the Middleware function.  This often leads to unexpected behavior, failing redirects, or even runtime errors.
 
-**Description of the Styling:**
+**Description of the Error:**
 
-The progress bar is created using two concentric circles. The outer circle acts as the background, while the inner circle represents the progress.  The inner circle's arc length is dynamically controlled using the `stroke-dasharray` and `stroke-dashoffset` properties.  CSS variables allow us to easily change the size, colors, and progress percentage.
+You might encounter this problem if your middleware attempts to redirect based on a dynamic route parameter (`[id]`, `[slug]`, etc.) but the `req.nextUrl.pathname` doesn't correctly reflect the dynamic segment.  Instead of redirecting as expected based on the dynamic path, the redirect might fail or redirect to an unintended location.  This usually manifests as the user being stuck on the initial page, receiving an unexpected redirect, or encountering a 500 Internal Server Error.
 
-**Full Code:**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
-  .progress-ring {
-    --size: 100; /* Size of the circle */
-    --stroke-width: 10; /* Width of the circle stroke */
-    --progress: 75; /* Percentage progress (0-100) */
-    --color: #007bff; /* Color of the progress */
+**Code Example and Step-by-Step Fix:**
 
-    width: var(--size);
-    height: var(--size);
-    position: relative;
+Let's assume we have a blog with dynamic posts using `pages/blog/[slug].js`. We want middleware to redirect any requests to `/blog/old-post` to `/blog/updated-post`.  The naive, and incorrect, approach might look like this:
+
+
+**Incorrect Code:**
+
+```javascript
+// middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  if (req.nextUrl.pathname === '/blog/old-post') {
+    return NextResponse.redirect(new URL('/blog/updated-post', req.url))
   }
+}
 
-  .progress-ring svg {
-    transform: rotate(-90deg); /* Start at the top */
-  }
-
-  .progress-ring circle {
-    stroke-width: var(--stroke-width);
-    stroke-linecap: round; /* Rounded ends */
-    fill: transparent;
-    cx: 50%;
-    cy: 50%;
-    r: calc((var(--size) - var(--stroke-width)) / 2);
-  }
-
-  .progress-ring .progress-background {
-    stroke: #ccc; /* Background color */
-  }
-
-  .progress-ring .progress-foreground {
-    stroke: var(--color);
-    stroke-dasharray: calc(2 * 3.14159 * ((var(--size) - var(--stroke-width)) / 2));
-    stroke-dashoffset: calc(2 * 3.14159 * ((var(--size) - var(--stroke-width)) / 2) * (1 - var(--progress) / 100));
-  }
-</style>
-</head>
-<body>
-
-<div class="progress-ring">
-  <svg width="100%" height="100%">
-    <circle class="progress-background" r="45" />
-    <circle class="progress-foreground" r="45" />
-  </svg>
-</div>
-
-</body>
-</html>
+export const config = {
+  matcher: '/blog/:path*',
+}
 ```
+
+This code fails because the `req.nextUrl.pathname` in the middleware always reflects the incoming request path before any dynamic routing is processed by Next.js.  Therefore, it won't correctly match the dynamic `[slug]` segment.
+
+
+**Corrected Code:**
+
+To fix this, we need to access the dynamic segment from `req.nextUrl.pathname` and compare it correctly.  Then we can perform the conditional redirect.
+
+
+```javascript
+// middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const { pathname } = req.nextUrl;
+  const slug = pathname.split('/').pop(); // Extract slug
+
+  if (slug === 'old-post') {
+    return NextResponse.redirect(new URL('/blog/updated-post', req.url))
+  }
+}
+
+export const config = {
+  matcher: '/blog/:path*',
+}
+```
+
 
 **Explanation:**
 
-* **CSS Variables:**  The use of `--size`, `--stroke-width`, `--progress`, and `--color` makes it incredibly easy to customize the appearance of the progress bar.  Simply change the values of these variables to adjust the size, colors, and percentage.
-
-* **`stroke-dasharray` and `stroke-dashoffset`:** These are the key CSS properties that create the progress effect. `stroke-dasharray` sets the total length of the dash, which is calculated as the circumference of the circle. `stroke-dashoffset` controls how much of the dash is hidden, effectively revealing the progress arc.
-
-* **`transform: rotate(-90deg)`:** This rotates the SVG circle so that the progress starts at the top, rather than the right side.
-
-* **`stroke-linecap: round`:** This creates smoothly rounded ends for the progress arc.
-
-**Links to Resources to Learn More:**
-
-* **MDN Web Docs on SVG:** [https://developer.mozilla.org/en-US/docs/Web/SVG](https://developer.mozilla.org/en-US/docs/Web/SVG)
-* **MDN Web Docs on CSS Variables:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
-* **Understanding `stroke-dasharray` and `stroke-dashoffset`:** [Search for tutorials on these properties on sites like CSS-Tricks or YouTube.]
+The corrected code extracts the `slug` from the `pathname` by splitting the path and taking the last element. Now, the comparison correctly checks if the dynamic segment matches 'old-post'. This will guarantee the expected redirect behavior, ensuring your users reach the intended page.  The `matcher` in the `config` object ensures the middleware only applies to paths under `/blog`.
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**External References:**
+
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware) -  The official documentation for Next.js Middleware.
+* [Next.js Routing](https://nextjs.org/docs/routing) - General documentation on Next.js routing.
+* [NextResponse Object](https://nextjs.org/docs/api-reference/next/server#nextresponse) -  Details on the `NextResponse` object.
+
+**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
 
