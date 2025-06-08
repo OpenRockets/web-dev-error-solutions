@@ -1,72 +1,59 @@
 
-This document addresses a common issue developers encounter when using Next.js Middleware: inconsistencies in the `headers` object returned by middleware functions depending on the environment (development vs. production).  Specifically, the problem manifests as certain headers being present in development but missing in production, leading to unexpected behavior on your site.  This usually stems from differences in how the development server and production deployment handle environment variables and header manipulation.
+This document details how to create an expanding card effect using only CSS.  No JavaScript is required!  This effect is achieved using CSS transitions and the `:hover` pseudo-class to smoothly expand a card when the user's mouse hovers over it.  We'll use plain CSS for simplicity, but the concept can easily be adapted to frameworks like Tailwind CSS.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The problem occurs when middleware modifies the `headers` object using values pulled from environment variables or conditional logic that behaves differently across environments.  For example, a header might be added in development but not in production because an environment variable isn't set in the production environment, or a conditional statement evaluates differently due to variations in environment variables or configuration. This can result in errors such as CORS issues, incorrect caching behavior, or authentication failures in production.
+The card will have a base state with a certain width and height. Upon hovering, the card will smoothly expand to a larger width and height.  We'll also add a subtle shadow for visual enhancement.  The transition will be applied to the `transform` property (for scaling) and the `box-shadow` property for a more polished effect.
 
 
-**Code Example (Problematic):**
+**Full Code:**
 
-```javascript
-// pages/api/middleware.js
-export function middleware(req, res) {
-  const customHeaderValue = process.env.CUSTOM_HEADER || 'default-value';
-  if (customHeaderValue !== 'default-value'){
-    res.setHeader('X-Custom-Header', customHeaderValue);
-  }
-  return NextResponse.next();
+```css
+.card {
+  width: 200px;
+  height: 150px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth transition */
+  overflow: hidden; /* Hide content overflow during expansion */
 }
 
-export const config = {
-  matcher: '/about/:path*',
-}
-```
-
-In this example, if `CUSTOM_HEADER` isn't defined in your production environment (which is common if not properly configured), the `if` condition fails, and the header `X-Custom-Header` is never set, potentially causing issues.
-
-
-**Step-by-Step Fix:**
-
-1. **Ensure Environment Variables are Properly Set:**  Verify that all environment variables used in your middleware are correctly defined in both your development and production environments.  For Vercel deployments, this involves setting environment variables in your project settings. For other deployments (e.g., Netlify, AWS), consult their respective documentation.
-
-2. **Use Default Values Strategically:** Provide default values for environment variables in your middleware to handle cases where the variables might be missing. This ensures consistent behavior across environments.
-
-
-3. **Improved Middleware Code:**
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req, res) {
-  const customHeaderValue = process.env.CUSTOM_HEADER || 'default-value'; // Default value provided
-
-  //Always set the header, even with a default value.  This guarantees consistency.
-  res.setHeader('X-Custom-Header', customHeaderValue); 
-
-  return NextResponse.next();
+.card:hover {
+  transform: scale(1.1); /* Expand by 10% */
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2); /* Increased shadow on hover */
 }
 
-export const config = {
-  matcher: '/about/:path*',
+.card-content {
+  padding: 10px;
+  text-align: center;
 }
 ```
 
-4. **Robust Conditional Logic:** If you're using conditional logic based on environment variables, ensure your logic handles all possible scenarios gracefully.  Consider using a logging mechanism to track the values of environment variables in both development and production to understand any discrepancies.
+**HTML Structure (Example):**
 
-5. **Testing:** Thoroughly test your middleware in both development and staging environments to verify that the headers are set correctly and consistently before deploying to production.
+To use the CSS, you'll need some basic HTML:
 
+```html
+<div class="card">
+  <div class="card-content">
+    <h2>Card Title</h2>
+    <p>Some card content goes here.</p>
+  </div>
+</div>
+```
 
 **Explanation:**
 
-The primary reason for this issue is the difference in how environment variables are handled in development and production.  Development environments often have different default values or lack specific variables that are essential in production.  By providing default values and ensuring that the necessary environment variables are defined in both environments, you eliminate the inconsistency.  Consistent header management is crucial for ensuring a consistent user experience and the proper functioning of your application across all environments.
+* **`.card`:** This class defines the base styles for the card, including its size, background color, border radius, and initial box shadow.  The `transition` property is crucial; it specifies that the `transform` and `box-shadow` properties should smoothly transition over 0.3 seconds when their values change.  `overflow: hidden;` prevents content from spilling outside the card during expansion.
+* **`.card:hover`:** This pseudo-class applies styles *only* when the mouse hovers over the element with the class `.card`. The `transform: scale(1.1);` increases the card's size by 10% in both dimensions. The `box-shadow` is also increased to create a more pronounced shadow effect.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Vercel Environment Variables](https://vercel.com/docs/concepts/projects/environment-variables)  (or equivalent documentation for your deployment platform)
+* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS-Tricks:** Search for "CSS hover effects" on [https://css-tricks.com/](https://css-tricks.com/) for more advanced examples and techniques.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
