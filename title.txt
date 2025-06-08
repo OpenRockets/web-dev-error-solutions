@@ -1,1 +1,1 @@
-Dealing with `revalidate` Issues in Next.js Middleware
+Creating a CSS-only Expanding Card with a Subtle Reveal
