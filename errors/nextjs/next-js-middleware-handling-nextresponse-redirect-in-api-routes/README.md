@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `NextResponse.redirect()` in API Routes
+
 
 This document addresses a common issue developers encounter when attempting to use `NextResponse.redirect()` within Next.js API routes.  While `NextResponse` is designed for middleware, using it directly in API routes leads to errors because API routes are designed for data fetching and manipulation, not for redirecting the client.
 
