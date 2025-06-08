@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: Route is defined twice`
+
 
 This document addresses a common error encountered when working with Next.js Middleware: the `Error: Route is defined twice` error.  This typically occurs when you accidentally define the same middleware route multiple times, either explicitly or implicitly through conflicting configurations.
 
