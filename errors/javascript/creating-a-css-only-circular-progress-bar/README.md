@@ -1,12 +1,12 @@
 # 🐞 Creating a CSS-Only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required!  This example utilizes CSS variables (custom properties) for easy customization.
+This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This example leverages CSS3's `conic-gradient` for a clean and efficient solution.
 
 
 **Description of the Styling:**
 
-The progress bar is created using a combination of a circle and a rotated arc. The circle acts as the base, while the arc represents the filled portion of the progress bar.  CSS variables control the size, color, and progress percentage, allowing for simple adjustments.  The key trick involves using `transform: rotate()` on a pseudo-element to create the arc.  The `stroke-dasharray` and `stroke-dashoffset` properties are used to control the length of the visible arc.
+This technique uses a `conic-gradient` to create the circular progress bar. The gradient starts at the top and sweeps clockwise, with the percentage controlled by a custom property (`--progress`). The background circle is created using a simple `border-radius`.  We use `::before` pseudo-element to create the actual progress indicator.
 
 
 **Full Code:**
@@ -17,46 +17,54 @@ The progress bar is created using a combination of a circle and a rotated arc. T
 <head>
 <title>CSS Circular Progress Bar</title>
 <style>
-.progress-ring {
-  --size: 100px;
-  --stroke-width: 10px;
-  --progress: 75; /* Adjust this value to change the progress */
-  --color: #007bff;
+  .progress-ring {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #f0f0f0; /* Light gray background */
+    border: 5px solid #ddd; /* Light gray border */
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-  width: var(--size);
-  height: var(--size);
-  position: relative;
-}
+  .progress-ring::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background-image: conic-gradient(
+      #4CAF50 0deg var(--progress, 50%),  /* Green progress */
+      #ddd 0deg); /* Light gray background */
+    transform-origin: center;
+    transform: rotate(-90deg);
+    z-index: 1;
+  }
 
-.progress-ring svg {
-  transform: rotate(-90deg); /* Start the arc from the top */
-}
-
-.progress-ring circle {
-  stroke-width: var(--stroke-width);
-  stroke: #ccc; /* Unfilled circle color */
-  fill: transparent;
-  cx: 50%;
-  cy: 50%;
-  r: calc((var(--size) - var(--stroke-width)) / 2);
-}
-
-.progress-ring circle.progress {
-  stroke: var(--color);
-  stroke-dasharray: calc(2 * 3.14159 * ((var(--size) - var(--stroke-width)) / 2));
-  stroke-dashoffset: calc(2 * 3.14159 * ((var(--size) - var(--stroke-width)) / 2) * (1 - var(--progress) / 100));
-  transition: stroke-dashoffset 0.5s ease; /* Add a smooth transition */
-}
+  .percentage {
+    position: absolute;
+    z-index: 2;
+    font-size: 1.2em;
+    color: #333;
+  }
 </style>
 </head>
 <body>
 
-<div class="progress-ring">
-  <svg width="100%" height="100%">
-    <circle class="progress" cx="50%" cy="50%" r="45" />
-    <circle cx="50%" cy="50%" r="45" />
-  </svg>
-</div>
+  <div class="progress-ring" style="--progress: 75%;">
+    <span class="percentage">75%</span>
+  </div>
+
+  <div class="progress-ring" style="--progress: 30%;">
+    <span class="percentage">30%</span>
+  </div>
+
+  <div class="progress-ring" style="--progress: 90%;">
+    <span class="percentage">90%</span>
+  </div>
+
 
 </body>
 </html>
@@ -65,19 +73,21 @@ The progress bar is created using a combination of a circle and a rotated arc. T
 
 **Explanation:**
 
-* **CSS Variables:**  Using `--size`, `--stroke-width`, `--progress`, and `--color` makes customization incredibly easy.  Just change the variable values to alter the appearance.
-* **SVG Circle:** An SVG `<circle>` element is used to create the circular path. Two circles are used; one for the background and one for the progress.
-* **`stroke-dasharray`:** This property defines the total length of the dash (the circumference of the circle).
-* **`stroke-dashoffset`:** This property defines the offset of the dash, allowing us to control the visible portion of the arc.  The calculation ensures the correct offset based on the progress percentage.
-* **`transform: rotate(-90deg)`:** This rotates the SVG so the progress starts from the top, rather than the right.
-* **Transition:** The `transition` property creates a smooth animation when the progress value changes.
+*   **`conic-gradient`:** This is the core of the effect. It creates a gradient that sweeps around a circle. `#4CAF50` is the color of the progress, and `#ddd` is the background color. `var(--progress)` dynamically sets the percentage of the circle filled with the green color.
+
+*   **`transform: rotate(-90deg)`:** This rotates the gradient so that 0% starts at the top.
+
+*   **Custom Property (`--progress`):** This allows easy adjustment of the progress value by simply changing the style attribute.
+
+*   **Pseudo-element `::before`:** This creates the visual layer for the progress bar on top of the background circle.
+
+* **`.percentage`:** This class styles the percentage value displayed at the center of the progress ring.
 
 
 **Links to Resources to Learn More:**
 
-* **MDN Web Docs - CSS Variables:** [https://developer.mozilla.org/en-US/docs/Web/CSS/--*](https://developer.mozilla.org/en-US/docs/Web/CSS/--*)
-* **MDN Web Docs - SVG `<circle>` element:** [https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle)
-* **MDN Web Docs - `stroke-dasharray` and `stroke-dashoffset`:** [https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray)
+*   [MDN Web Docs - conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+*   [CSS Tricks - conic-gradient](https://css-tricks.com/almanac/properties/c/conic-gradient/) (Search for conic-gradient on their site for relevant articles)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
