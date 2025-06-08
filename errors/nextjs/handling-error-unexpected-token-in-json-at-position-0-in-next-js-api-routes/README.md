@@ -1,3 +1,5 @@
+# 🐞 Handling `Error: Unexpected token < in JSON at position 0` in Next.js API Routes
+
 
 This document addresses a common error encountered when developing API routes in Next.js: `Error: Unexpected token < in JSON at position 0`.  This error typically arises when your API route returns HTML or a non-JSON response, while the client expects JSON. This often happens due to incorrect error handling, unintended rendering, or mismatched client-side expectations.
 
