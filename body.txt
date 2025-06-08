@@ -1,69 +1,87 @@
 
-This document addresses a common error encountered when working with Next.js Middleware: `Error: Middleware response is not a Response object`.  This error occurs when your middleware function doesn't return a valid `Response` object, preventing the middleware from properly handling requests.
+This document details how to create a circular progress bar using only CSS.  No JavaScript required! This uses techniques applicable to both standard CSS and Tailwind CSS (though the example is in standard CSS for broader applicability).
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The error message `Error: Middleware response is not a Response object` explicitly states the problem.  Your middleware function, designed to intercept and modify requests before they reach the page component or API route, isn't returning an object of the type `Response`. This is crucial because Next.js relies on the `Response` object to understand how to handle the request (e.g., redirecting, setting headers, modifying the response body).  The middleware will fail if it returns `undefined`, `null`, a plain JavaScript object, or a promise that doesn't resolve to a `Response` object.
+This technique leverages the `clip-path` property along with a rotated circle to create the visual effect of a progress bar.  A background circle represents the full circle, and a foreground circle, clipped using `clip-path`, represents the filled portion.  Rotating the foreground circle allows us to animate the progress.  The percentage is controlled by a CSS variable, making it easily adjustable.
 
+**Full Code:**
 
-**Step-by-Step Code Fix:**
-
-Let's assume you have a middleware function that attempts to redirect based on authentication status:
-
-**Incorrect Middleware:**
-
-```javascript
-// pages/api/middleware.js
-export function middleware(req) {
-  const isAuthenticated = checkAuthentication(req); // Your authentication logic
-
-  if (!isAuthenticated) {
-    return { redirect: { destination: '/login', permanent: false } }; // INCORRECT!
-  }
-}
-```
-
-This code is flawed because it returns a plain JavaScript object instead of a `Response` object.  This will result in the error.
-
-**Corrected Middleware:**
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const isAuthenticated = checkAuthentication(req); // Your authentication logic
-
-  if (!isAuthenticated) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-
-  return NextResponse.next(); // Continue to the original request
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.circular-progress {
+  width: 150px;
+  height: 150px;
+  position: relative;
 }
 
-
-//Helper function (replace with your actual authentication logic)
-function checkAuthentication(req) {
-  const token = req.cookies.get('token'); //Example - Replace with your token retrieval
-  return !!token; //Return true if token exists, false otherwise
+.circular-progress .circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 5px solid #ccc; /* Background circle */
 }
 
+.circular-progress .circle-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 5px solid #4CAF50; /* Foreground circle */
+  clip-path: polygon(50% 50%, 0% 0%); /* Initial clip */
+  transform: rotate(calc(var(--progress) * 3.6deg)); /* Rotate for progress */
+  transition: transform 0.5s ease; /* Smooth animation */
+}
+
+/* Example usage with different progress values */
+.progress-50 .circle-progress {--progress: 50;}
+.progress-75 .circle-progress {--progress: 75;}
+.progress-100 .circle-progress {--progress: 100;}
+</style>
+</head>
+<body>
+
+<h1>CSS Circular Progress Bar</h1>
+
+<div class="circular-progress progress-50">
+  <div class="circle"></div>
+  <div class="circle-progress"></div>
+</div>
+
+<div class="circular-progress progress-75">
+  <div class="circle"></div>
+  <div class="circle-progress"></div>
+</div>
+
+<div class="circular-progress progress-100">
+  <div class="circle"></div>
+  <div class="circle-progress"></div>
+</div>
+
+
+</body>
+</html>
 ```
 
 **Explanation:**
 
-The corrected version utilizes `NextResponse` from `next/server`. This object provides methods for creating valid `Response` objects.  `NextResponse.redirect()` creates a redirect response, and `NextResponse.next()` allows the request to proceed to the intended destination.  Crucially, we're using `new URL('/login', req.url)` to construct a properly formatted URL for the redirect, ensuring it's relative to the original request's URL.
-
-**External References:**
-
-* **Next.js Middleware Documentation:** [https://nextjs.org/docs/app/api-routes/middleware](https://nextjs.org/docs/app/api-routes/middleware)  (Check for the most updated documentation as it frequently changes)
-* **NextResponse API Reference:**  (You'll find this within the Next.js documentation linked above.  Look for the section on `NextResponse`.)
+* **`--progress` variable:** This CSS custom property controls the percentage of the progress bar.  It's multiplied by `3.6deg` (360 degrees / 100) to calculate the rotation angle.
+* **`clip-path: polygon(50% 50%, 0% 0%);`:** This initially clips the foreground circle to a triangle.  The rotation then reveals the filled portion.
+* **`transform: rotate(calc(var(--progress) * 3.6deg));`:** This rotates the foreground circle based on the `--progress` variable.
+* **`transition`:** This provides a smooth animation when the progress value changes.
 
 
-**Summary:**
+**Links to Resources to Learn More:**
 
-The key to avoiding the `Error: Middleware response is not a Response object` is to always return a valid `Response` object from your middleware function.  Use `NextResponse` to create these responses, ensuring your middleware behaves as intended.  Remember to handle both success and failure scenarios (e.g., redirection vs. continuing the request).
-
+* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS Tricks on Circular Progress Bars:** (Search for "CSS Circular Progress Bar" on CSS Tricks for various approaches)
+* **Understanding CSS Variables (Custom Properties):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
