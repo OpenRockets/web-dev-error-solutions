@@ -1,72 +1,75 @@
 
-This document details how to create an expanding card effect using only CSS.  No JavaScript is required! This utilizes CSS transitions and transforms to achieve a smooth and visually appealing animation.
-
-**Description of the Styling:**
-
-This example creates a card that expands vertically when hovered over.  The expansion reveals hidden content below the initial card.  The styling uses a combination of `transition`, `transform`, and `max-height` properties to control the animation and size of the card.  We also leverage some basic box-shadow and padding for visual enhancement.
+This document addresses a common error encountered when working with Next.js Middleware: the `Headers already sent` error.  This error typically arises when you attempt to modify the HTTP response headers after they've already been sent to the client.  This often happens due to unintended multiple calls to `next.NextResponse.redirect` or similar methods.
 
 
-**Full Code:**
+## Description of the Error
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Expanding Card</title>
-<style>
-.card {
-  background-color: #f2f2f2;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Hide content that overflows */
-  padding: 15px;
-  transition: max-height 0.3s ease-in-out; /* Smooth transition */
-  max-height: 100px; /* Initial height */
+The `Headers already sent` error in Next.js middleware manifests as a server-side error. You'll see an error message similar to this in your logs:  `Headers already sent` or `Cannot set headers after they are sent to the client`. This indicates that your middleware function is attempting to modify the response headers after the response has begun to be sent to the browser.  This usually prevents the page from loading correctly.
+
+
+## Code Example & Fix:  Incorrect Middleware
+
+Let's consider a scenario where we want to redirect users to a login page if they're not authenticated.  Here's an example of middleware code that *incorrectly* handles this, leading to the `Headers already sent` error:
+
+
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const token = req.cookies.get('token');
+
+  if (!token) {
+    // Incorrect - multiple redirects can cause the error
+    return NextResponse.redirect(new URL('/login', req.url))
+    return NextResponse.rewrite(new URL('/login', req.url)); // Another redirect attempt
+  }
 }
 
-.card:hover {
-  max-height: 300px; /* Expanded height on hover */
-}
-
-.card-content {
-  /* Content within the card */
-}
-
-.card-title{
-  font-weight:bold;
-}
-
-</style>
-</head>
-<body>
-
-<div class="card">
-  <h2 class="card-title">Card Title</h2>
-  <div class="card-content">
-    <p>This is some example text that will be revealed when you hover over the card.</p>
-    <p>More text here to demonstrate the expansion effect. You can add as much content as you like!</p>
-  </div>
-</div>
-
-</body>
-</html>
+export const config = {
+  matcher: ['/protected/:path*'], // Match routes starting with /protected
+};
 ```
 
-**Explanation:**
-
-* **`.card`:** This class styles the main card element.  `overflow: hidden;` prevents content from spilling outside the card boundaries during the transition.  `transition: max-height 0.3s ease-in-out;` defines the transition property, specifying that the `max-height` property will change smoothly over 0.3 seconds using an ease-in-out timing function.  `max-height: 100px;` sets the initial height of the card.
-
-* **`.card:hover`:** This styles the card when the mouse hovers over it.  `max-height: 300px;` sets the expanded height of the card.  The transition defined in the `.card` class will automatically animate this height change.
+This code attempts *two* redirects.  The first `NextResponse.redirect` already sends headers, making the subsequent `NextResponse.rewrite` attempt invalid, causing the `Headers already sent` error.
 
 
-* **`.card-content`:** This class styles the content within the card; you can adjust this as needed for your layout.
+## Step-by-Step Fix
+
+1. **Remove Redundant Redirects/Rewrites:** The primary solution is to ensure that you have only *one* `NextResponse` call that modifies the response. Remove any extra `redirect`, `rewrite`, or `json` calls after the initial response modification.
+
+2. **Correct Middleware:**  Here's the corrected middleware function:
+
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  const token = req.cookies.get('token');
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url));  //Only one redirect
+  }
+}
+
+export const config = {
+  matcher: ['/protected/:path*'], // Match routes starting with /protected
+};
+```
+
+This revised code only contains one redirect, preventing the `Headers already sent` error.  Choose `redirect` or `rewrite` based on whether you want to preserve the original URL or not in the browser's history.
 
 
-**Resources to Learn More:**
+## Explanation
 
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS-Tricks:**  Search for "CSS transitions" or "CSS card hover effects" on [https://css-tricks.com/](https://css-tricks.com/) for more advanced examples.
+The `Headers already sent` error is fundamentally a consequence of violating HTTP protocol rules. Once your server starts sending the HTTP response headers, it cannot change them. The `NextResponse` object in Next.js middleware allows modifying headers and performing redirects; however, only one such operation is permitted per middleware execution.
+
+
+## External References
+
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
+* [Understanding HTTP Headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
