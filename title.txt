@@ -1,1 +1,1 @@
-Handling 404 Errors in Next.js API Routes
+Handling `NextResponse.redirect` Issues in Next.js Middleware
