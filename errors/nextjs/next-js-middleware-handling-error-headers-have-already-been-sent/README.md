@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `Error: Headers have already been sent`
+
 
 This document addresses a common error encountered when working with Next.js Middleware:  `Error: Headers have already been sent`.  This error typically occurs when you attempt to send headers to the client multiple times within a single middleware function.  This is often because the middleware unintentionally sends data, or other middleware/APIs has already sent the response.
 

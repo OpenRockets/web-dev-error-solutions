@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `request.nextUrl.pathname`  in Redirects
+Next.js Middleware: Handling `Error: Headers have already been sent`
