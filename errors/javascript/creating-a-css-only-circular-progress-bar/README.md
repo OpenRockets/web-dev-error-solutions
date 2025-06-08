@@ -1,13 +1,15 @@
 # 🐞 Creating a CSS-Only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS. No JavaScript is required.  We'll leverage CSS's `conic-gradient` function for a clean and efficient solution. This example uses plain CSS; adapting it to Tailwind CSS is straightforward (explained in the code section).
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required!  This example utilizes CSS variables (custom properties) for easy customization.
+
 
 **Description of the Styling:**
 
-The progress bar is created using a single `<div>` element.  The visual effect is achieved using a combination of `border-radius`, `conic-gradient`, and `transform` properties. The `conic-gradient` creates the circular gradient, representing the progress. The percentage of the circle filled is dynamically controlled by rotating the gradient using `transform: rotate()`.
+The progress bar is created using a combination of a circle and a rotated arc. The circle acts as the base, while the arc represents the filled portion of the progress bar.  CSS variables control the size, color, and progress percentage, allowing for simple adjustments.  The key trick involves using `transform: rotate()` on a pseudo-element to create the arc.  The `stroke-dasharray` and `stroke-dashoffset` properties are used to control the length of the visible arc.
 
-**Full Code (Plain CSS):**
+
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
@@ -16,71 +18,66 @@ The progress bar is created using a single `<div>` element.  The visual effect i
 <title>CSS Circular Progress Bar</title>
 <style>
 .progress-ring {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background: conic-gradient(
-    #f0f0f0 0%,
-    #f0f0f0 calc(100% - var(--progress)),
-    #4CAF50 calc(100% - var(--progress)),
-    #4CAF50 100%
-  );
+  --size: 100px;
+  --stroke-width: 10px;
+  --progress: 75; /* Adjust this value to change the progress */
+  --color: #007bff;
+
+  width: var(--size);
+  height: var(--size);
+  position: relative;
+}
+
+.progress-ring svg {
+  transform: rotate(-90deg); /* Start the arc from the top */
+}
+
+.progress-ring circle {
+  stroke-width: var(--stroke-width);
+  stroke: #ccc; /* Unfilled circle color */
+  fill: transparent;
+  cx: 50%;
+  cy: 50%;
+  r: calc((var(--size) - var(--stroke-width)) / 2);
+}
+
+.progress-ring circle.progress {
+  stroke: var(--color);
+  stroke-dasharray: calc(2 * 3.14159 * ((var(--size) - var(--stroke-width)) / 2));
+  stroke-dashoffset: calc(2 * 3.14159 * ((var(--size) - var(--stroke-width)) / 2) * (1 - var(--progress) / 100));
+  transition: stroke-dashoffset 0.5s ease; /* Add a smooth transition */
 }
 </style>
 </head>
 <body>
 
-<div class="progress-ring" style="--progress: 75%;"></div>
+<div class="progress-ring">
+  <svg width="100%" height="100%">
+    <circle class="progress" cx="50%" cy="50%" r="45" />
+    <circle cx="50%" cy="50%" r="45" />
+  </svg>
+</div>
 
 </body>
 </html>
 ```
 
-**Full Code (with Tailwind CSS):**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar with Tailwind</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<style>
-.progress-ring {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background: conic-gradient(
-    gray-300 0%,
-    gray-300 calc(100% - var(--progress)),
-    green-500 calc(100% - var(--progress)),
-    green-500 100%
-  );
-}
-</style>
-</head>
-<body>
-
-<div class="progress-ring w-32 h-32 rounded-full" style="--progress: 75%;"></div>
-
-</body>
-</html>
-
-```
 
 **Explanation:**
 
-* **`width` and `height`:**  Sets the size of the progress ring.
-* **`border-radius: 50%;`:** Creates a perfect circle.
-* **`conic-gradient()`:** This is the key. It creates a circular gradient.  The parameters define the colors and their positions.  `calc(100% - var(--progress))` dynamically calculates the end point of the lighter color based on the `--progress` custom property.
-* **`--progress` Custom Property:** This CSS variable allows us to easily change the progress percentage by adjusting its value (e.g., `style="--progress: 50%;"` for 50% progress).  This makes it very easy to dynamically update the progress from JavaScript if needed (although not required for this example).
-* **Tailwind Integration:** The Tailwind CSS version uses Tailwind's utility classes (`w-32`, `h-32`, `rounded-full`) instead of inline styles for width, height, and border-radius.  The colors are also replaced with Tailwind color names.
+* **CSS Variables:**  Using `--size`, `--stroke-width`, `--progress`, and `--color` makes customization incredibly easy.  Just change the variable values to alter the appearance.
+* **SVG Circle:** An SVG `<circle>` element is used to create the circular path. Two circles are used; one for the background and one for the progress.
+* **`stroke-dasharray`:** This property defines the total length of the dash (the circumference of the circle).
+* **`stroke-dashoffset`:** This property defines the offset of the dash, allowing us to control the visible portion of the arc.  The calculation ensures the correct offset based on the progress percentage.
+* **`transform: rotate(-90deg)`:** This rotates the SVG so the progress starts from the top, rather than the right.
+* **Transition:** The `transition` property creates a smooth animation when the progress value changes.
 
 
 **Links to Resources to Learn More:**
 
-* **MDN Web Docs on `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
-* **CSS Tricks (general CSS learning):** [https://css-tricks.com/](https://css-tricks.com/)
-* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
+* **MDN Web Docs - CSS Variables:** [https://developer.mozilla.org/en-US/docs/Web/CSS/--*](https://developer.mozilla.org/en-US/docs/Web/CSS/--*)
+* **MDN Web Docs - SVG `<circle>` element:** [https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle)
+* **MDN Web Docs - `stroke-dasharray` and `stroke-dashoffset`:** [https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

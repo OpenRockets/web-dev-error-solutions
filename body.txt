@@ -1,80 +1,81 @@
 
-This document addresses a common error encountered when using Next.js Middleware: `Error: Request aborted`.  This typically occurs when a redirect is initiated within middleware, but the response is prematurely terminated before the redirect can complete.  This often happens due to timing issues or improper handling of asynchronous operations within the middleware function.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required!  This example utilizes CSS variables (custom properties) for easy customization.
 
 
-## Description of the Error
+**Description of the Styling:**
 
-The `Error: Request aborted` error in Next.js Middleware manifests when a redirect is attempted (using `nextResponse.redirect()`), but the underlying request is cancelled before the redirect can be fully processed.  The client may receive a blank page, a timeout error, or an incomplete response. This is frequently tied to issues related to asynchronous operations, improper handling of promises, or attempts to send additional data after a redirect has been initiated.
-
-## Step-by-Step Code Fix
-
-Let's illustrate this with an example.  Imagine a middleware function that attempts to redirect based on an asynchronous authentication check:
+The progress bar is created using a combination of a circle and a rotated arc. The circle acts as the base, while the arc represents the filled portion of the progress bar.  CSS variables control the size, color, and progress percentage, allowing for simple adjustments.  The key trick involves using `transform: rotate()` on a pseudo-element to create the arc.  The `stroke-dasharray` and `stroke-dashoffset` properties are used to control the length of the visible arc.
 
 
-**Problematic Code:**
+**Full Code:**
 
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server';
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  --size: 100px;
+  --stroke-width: 10px;
+  --progress: 75; /* Adjust this value to change the progress */
+  --color: #007bff;
 
-export function middleware(req) {
-  const isAuthenticated = new Promise((resolve) => {
-    setTimeout(() => resolve(false), 100); // Simulate async auth check
-  });
-
-  isAuthenticated.then((authenticated) => {
-    if (!authenticated) {
-      nextResponse.redirect(new URL('/login', req.url));
-    }
-  });
+  width: var(--size);
+  height: var(--size);
+  position: relative;
 }
 
-export const config = {
-  matcher: ['/'],
-};
-```
-
-This code is flawed because `nextResponse.redirect()` is called *within* the `then` block of a promise.  If the `setTimeout` takes longer than the server's timeout, the request will be aborted before the redirect happens.
-
-**Corrected Code:**
-
-```javascript
-// pages/api/middleware.js
-import { NextResponse } from 'next/server';
-
-export async function middleware(req) {
-  const isAuthenticated = await new Promise((resolve) => {
-    setTimeout(() => resolve(false), 100); // Simulate async auth check
-  });
-
-  if (!isAuthenticated) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-
-  return NextResponse.next();
+.progress-ring svg {
+  transform: rotate(-90deg); /* Start the arc from the top */
 }
 
-export const config = {
-  matcher: ['/'],
-};
+.progress-ring circle {
+  stroke-width: var(--stroke-width);
+  stroke: #ccc; /* Unfilled circle color */
+  fill: transparent;
+  cx: 50%;
+  cy: 50%;
+  r: calc((var(--size) - var(--stroke-width)) / 2);
+}
+
+.progress-ring circle.progress {
+  stroke: var(--color);
+  stroke-dasharray: calc(2 * 3.14159 * ((var(--size) - var(--stroke-width)) / 2));
+  stroke-dashoffset: calc(2 * 3.14159 * ((var(--size) - var(--stroke-width)) / 2) * (1 - var(--progress) / 100));
+  transition: stroke-dashoffset 0.5s ease; /* Add a smooth transition */
+}
+</style>
+</head>
+<body>
+
+<div class="progress-ring">
+  <svg width="100%" height="100%">
+    <circle class="progress" cx="50%" cy="50%" r="45" />
+    <circle cx="50%" cy="50%" r="45" />
+  </svg>
+</div>
+
+</body>
+</html>
 ```
 
-**Explanation of Changes:**
 
-1. **`async` keyword:** The `middleware` function is now declared as `async`. This allows us to use the `await` keyword.
-2. **`await` keyword:** We use `await` to pause execution until the promise `isAuthenticated` resolves. This ensures the redirect only happens after the authentication check is complete.
-3. **`return` statement:** Crucially, `NextResponse.redirect()` is now wrapped in a `return` statement. This ensures the response is properly sent to the client.  The original code was attempting to execute code after the response was already committed.
+**Explanation:**
 
-## External References
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware) - Official documentation on Next.js Middleware.
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction) - Information on API routes, which are related to middleware and can also encounter similar issues.
-* [Understanding Promises in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) - A helpful resource to understand asynchronous JavaScript.
+* **CSS Variables:**  Using `--size`, `--stroke-width`, `--progress`, and `--color` makes customization incredibly easy.  Just change the variable values to alter the appearance.
+* **SVG Circle:** An SVG `<circle>` element is used to create the circular path. Two circles are used; one for the background and one for the progress.
+* **`stroke-dasharray`:** This property defines the total length of the dash (the circumference of the circle).
+* **`stroke-dashoffset`:** This property defines the offset of the dash, allowing us to control the visible portion of the arc.  The calculation ensures the correct offset based on the progress percentage.
+* **`transform: rotate(-90deg)`:** This rotates the SVG so the progress starts from the top, rather than the right.
+* **Transition:** The `transition` property creates a smooth animation when the progress value changes.
 
 
-## Explanation
+**Links to Resources to Learn More:**
 
-The core issue is the asynchronous nature of the authentication check.  Middleware functions need to handle asynchronous operations correctly to avoid premature termination of requests. Using `async/await` allows you to handle asynchronous operations in a more synchronous style, preventing race conditions and ensuring your response (the redirect) is successfully sent before the request is closed.  Always `return` the `NextResponse` object from your middleware function to ensure proper response handling.
+* **MDN Web Docs - CSS Variables:** [https://developer.mozilla.org/en-US/docs/Web/CSS/--*](https://developer.mozilla.org/en-US/docs/Web/CSS/--*)
+* **MDN Web Docs - SVG `<circle>` element:** [https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle)
+* **MDN Web Docs - `stroke-dasharray` and `stroke-dashoffset`:** [https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
