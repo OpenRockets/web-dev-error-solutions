@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `UnhandledPromiseRejectionWarning` in `next/server`
+Next.js Middleware: Handling `headers` inconsistencies across different environments

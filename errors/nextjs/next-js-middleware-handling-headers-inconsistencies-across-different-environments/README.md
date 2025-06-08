@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers` inconsistencies across different environments
+
 
 This document addresses a common issue developers encounter when using Next.js Middleware: inconsistencies in the `headers` object returned by middleware functions depending on the environment (development vs. production).  Specifically, the problem manifests as certain headers being present in development but missing in production, leading to unexpected behavior on your site.  This usually stems from differences in how the development server and production deployment handle environment variables and header manipulation.
 
