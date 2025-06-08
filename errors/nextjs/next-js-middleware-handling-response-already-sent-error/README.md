@@ -1,76 +1,89 @@
 # 🐞 Next.js Middleware: Handling `Response already sent` Error
 
 
-This document addresses a common error encountered when working with Next.js Middleware: the "Response already sent" error. This typically occurs when you attempt to modify the response object multiple times within the middleware function, leading to conflicting actions.  The browser receives the response before the middleware completes its intended processing, resulting in the error.
-
+This document addresses a common error encountered when working with Next.js Middleware: the "Response already sent" error. This typically occurs when you attempt to modify the response object multiple times within the same middleware function, or when middleware and API routes interact unexpectedly.
 
 ## Description of the Error
 
-The `Response already sent` error in Next.js Middleware usually manifests as a server-side error. It indicates that your middleware function has already sent a response to the client, preventing subsequent modifications to the response object.  This is often caused by accidentally calling `next()` or returning a response more than once.
+The `Response already sent` error in Next.js Middleware indicates that the response to the client has already been committed before your middleware attempts to further modify it.  This often leads to a server-side error, preventing the intended functionality from executing.  The exact error message may vary slightly depending on the specific scenario, but the core problem remains the same: you're trying to write to a response stream that's already closed.
+
+## Scenario:  Middleware redirect conflicting with API route
+
+Let's consider a scenario where you have middleware designed to redirect unauthenticated users and an API route that needs to return data regardless of authentication. Incorrectly structured middleware can interfere with the API route response.
 
 
-## Code Example and Fixing Steps
+## Step-by-Step Code Fix
 
-Let's assume we have middleware attempting to redirect users based on a condition, but inadvertently sends a response twice.
+Let's assume we have a Next.js application with the following:
 
-**Problem Code:**
+**`middleware.js` (Incorrect Implementation):**
 
 ```javascript
-// pages/api/middleware.js
-export function middleware(req, res) {
-  if (req.headers.authorization === 'invalid-token') {
-    res.writeHead(307, { Location: '/login' });
-    res.end(); // <--- This line causes the problem if next() is called after.
-    console.log("First response sent")
-    next(); // <-- attempts to modify the response again AFTER already sent.  ERROR
+import { NextResponse } from 'next/server';
+
+export function middleware(req) {
+  const token = req.cookies.get('token');
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', req.url));
   }
-  else{
-    console.log("no redirection needed")
+
+  // This will cause an error if the request goes to an API route
+  return NextResponse.json({ message: 'Authenticated' });
+}
+
+export const config = {
+  matcher: ['/api/:path*', '/about'], // Matches api routes and /about
+};
+```
+
+**`pages/api/data.js` (API Route):**
+
+```javascript
+export default function handler(req, res) {
+  res.status(200).json({ data: 'Some data' });
+}
+```
+
+The problem lies in the middleware's `return NextResponse.json(...)` statement.  If a request targets the `/api/data` route, the middleware attempts to send a JSON response *before* the API route can send its own.  This leads to the `Response already sent` error.
+
+**Corrected `middleware.js`:**
+
+```javascript
+import { NextResponse } from 'next/server';
+
+export function middleware(req) {
+  const token = req.cookies.get('token');
+  const url = req.nextUrl.clone(); // Create a clone to avoid modifying original
+
+  if (!token && !req.nextUrl.pathname.startsWith('/api')) { // only redirect if not API route
+    url.pathname = '/login';
+    return NextResponse.rewrite(url); // Use rewrite for cleaner redirects
   }
 }
 
 export const config = {
-  matcher: ['/profile'],
-}
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'], //This regex will improve the matcher to avoid conflicting with API routes
+};
 ```
 
-**Step-by-Step Fix:**
+**Explanation of Changes:**
 
-1. **Identify the redundant response:** The primary issue lies in the `res.end()` call in the `if` block. After this, attempting to call `next()` results in the error.
-
-
-2. **Conditional Response:**  Instead of using `res.end()` and `next()` separately, use a conditional return statement that determines whether to redirect or call `next()`  to proceed to the next middleware function or page handler.
-
-
-**Corrected Code:**
-
-```javascript
-// pages/api/middleware.js
-export function middleware(req, res, next) {
-  if (req.headers.authorization === 'invalid-token') {
-    return res.writeHead(307, { Location: '/login' }); //Correct: single response handling
-  }
-    console.log("no redirection needed")
-  next();
-}
-
-export const config = {
-  matcher: ['/profile'],
-}
-```
-
-This corrected code ensures only one response is sent to the client. If the authorization header is invalid, a redirect is initiated.  Otherwise, `next()` is called to allow processing to continue to the next middleware function (if any) or the page handler.
-
-
-## Explanation
-
-The `Response already sent` error highlights the importance of controlling the flow of responses in Next.js Middleware.  Each middleware function has the responsibility of either modifying the response and sending it directly to the client, or calling `next()` to pass control to the next middleware in the chain or the actual page handler.  Mixing these two approaches within a single middleware function without proper conditional logic will invariably result in the error.
+1. **Conditional Logic:** We added a condition `!req.nextUrl.pathname.startsWith('/api')` to check if the request is *not* to an API route. Only if it's not an API route and the token is missing will the redirect happen.
+2. **`NextResponse.rewrite()`:** Instead of `NextResponse.redirect()`, we use `NextResponse.rewrite()`. This is generally preferred for middleware as it maintains the original URL in the browser's address bar (avoiding unexpected behavior).  `NextResponse.redirect()` changes the URL in the browser.
+3. **Improved `matcher` config:** We use a more robust regex to ensure only the appropriate paths are matched by the middleware. This is essential to prevent conflicts with other parts of your application like static files or the API routes.
 
 
 ## External References
 
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware) - The official documentation on Next.js Middleware.
-* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction) - For understanding API routes, which are closely related to middleware in terms of response handling.
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
+* [Understanding NextResponse](https://nextjs.org/docs/app/building-your-application/routing/middleware#nextresponse)
+
+
+## Explanation
+
+The key takeaway is that middleware should carefully consider what type of response it sends.  For modifying the behavior (e.g., redirecting), `NextResponse.rewrite()` is usually preferable. When working with API routes, middleware should only intervene if it needs to alter the request's behavior before it reaches the API route (e.g., authentication checks) and should not send a response directly unless absolutely necessary, and even then, make sure that it does not interfere with subsequent API route requests.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
