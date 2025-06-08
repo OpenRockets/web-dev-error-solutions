@@ -1,1 +1,1 @@
-Handling `next/navigation` Issues in Next.js Middleware
+Creating a CSS-Only Expanding Card with a Hover Effect
