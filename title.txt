@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `NextResponse.redirect()` Errors in Edge Runtime
+Creating a CSS-Only Expanding Card
