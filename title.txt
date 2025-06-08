@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `next/server` Import Errors
+Creating a CSS-only Expanding Card with a subtle Reveal
