@@ -1,67 +1,103 @@
 
-This document addresses a common issue developers encounter when using `NextResponse.redirect` within Next.js Middleware:  correctly preserving query parameters during redirection.  Incorrectly handling these parameters can lead to unexpected behavior and broken functionality in your application.
+This document details a CSS-only solution to create an expanding card effect.  No JavaScript is required. This uses pure CSS3 techniques.
 
-**Description of the Error:**
 
-When redirecting users from middleware using `NextResponse.redirect`, simply passing the original URL often fails to preserve query parameters.  This results in the redirected page losing crucial contextual information passed through the URL.  For example, if a user navigates to `/products?category=electronics`, a redirect that doesn't preserve the `category` parameter will land them on the target page without filtering by electronics.
+## Description of the Styling
 
-**Code: Step-by-Step Fix**
+The effect creates a simple card that, on hover, expands to reveal more content. This is achieved using transitions, pseudo-elements, and clever manipulation of the card's dimensions and content visibility.  The expansion is smooth and visually appealing.
 
-Let's say we have middleware that redirects all requests to `/products` to `/shop` while retaining any query parameters.  Here's how to correctly handle it:
 
-**Incorrect Approach (Loses Query Parameters):**
+## Full Code
 
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server'
-
-export function middleware(req) {
-  const url = req.nextUrl.clone()
-  if (req.nextUrl.pathname === '/products') {
-    url.pathname = '/shop'
-    return NextResponse.redirect(url)
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  width: 200px;
+  height: 150px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  overflow: hidden; /* Hide the expanding content initially */
+  transition: height 0.3s ease-in-out; /* Smooth transition for height change */
+  position: relative; /* Needed for absolute positioning of the pseudo-element */
 }
+
+.card:hover {
+  height: 300px; /* Expanded height on hover */
+}
+
+.card-content {
+  padding: 10px;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+  opacity: 0; /* Initially hidden */
+  transition: opacity 0.3s ease-in-out; /* Smooth transition for opacity */
+}
+
+.card:hover::before {
+  opacity: 1; /* Show overlay on hover */
+}
+
+.card-title {
+  font-weight: bold;
+}
+
+.card-expanded-content {
+  display: none; /* Initially hidden */
+  padding: 10px;
+}
+
+.card:hover .card-expanded-content {
+  display: block; /* Show on hover */
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-content">
+    <h3 class="card-title">Card Title</h3>
+    <p>Some initial content.</p>
+  </div>
+  <div class="card-expanded-content">
+    <p>This is the expanded content that appears on hover.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**Corrected Approach (Preserves Query Parameters):**
 
-```javascript
-// middleware.js
-import { NextResponse } from 'next/server'
+## Explanation
 
-export function middleware(req) {
-  const url = req.nextUrl.clone()
-  if (req.nextUrl.pathname === '/products') {
-    url.pathname = '/shop'
-    // Preserves query parameters
-    return NextResponse.redirect(url)
-  }
-}
+* **`card` class:**  Sets basic dimensions, background, border radius, and importantly, `overflow: hidden` to initially clip any content beyond the card's boundaries. The `transition` property ensures smooth animations.  `position: relative` is crucial for positioning the pseudo-element.
 
-export const config = {
-  matcher: '/products', // Only match /products
-}
+* **`card:hover`:**  Increases the height of the card on hover, triggering the transition.
 
-```
+* **`card::before`:**  This pseudo-element creates a semi-transparent overlay that appears on hover.  Its opacity transition provides a smooth fade-in effect.
 
-The correction doesn't involve any explicit code change within the `middleware` function itself  because the `.clone()` method already handles query parameters by default. The critical point is to use `req.nextUrl.clone()` to create a new URL object, which automatically inherits the query parameters from the original request.  The `matcher` config ensures that the middleware only applies to the `/products` route, preventing unintended redirects.
+* **`.card-expanded-content`:** This div holds the content that expands.  `display: none` initially hides it, while `display: block` on hover makes it visible.
+
+This combination of CSS techniques creates an elegant expanding card effect without the need for JavaScript.
 
 
-**Explanation:**
+## Links to Resources to Learn More
 
-The `req.nextUrl` object represents the incoming URL.  Directly manipulating it can lead to unexpected behavior.  The `clone()` method creates a copy, allowing modifications without affecting the original object. When `NextResponse.redirect` is called with the cloned URL, all the original query parameters are automatically included in the redirection.
-
-
-**External References:**
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [NextResponse.redirect API Reference](https://nextjs.org/docs/api-reference/next/server#nextresponse-redirect)
-
-
-**Conclusion:**
-
-Using `req.nextUrl.clone()` is crucial for correctly handling query parameters within Next.js Middleware redirects.  This simple step prevents data loss and ensures a smooth user experience.  Always remember to utilize cloning techniques when manipulating URLs to avoid unexpected behavior.
+* **CSS Transitions:**  [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
+* **CSS Pseudo-elements:** [MDN Web Docs - CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* **CSS `overflow` property:** [MDN Web Docs - CSS overflow](https://developer.mozilla.org/en-US/docs/Web/CSS/overflow)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
