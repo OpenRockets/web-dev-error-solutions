@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `NextResponse.redirect` Issues with External Redirects
+Creating a CSS-Only Expanding Card
