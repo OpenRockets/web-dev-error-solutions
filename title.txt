@@ -1,1 +1,1 @@
-Dealing with `Error: Next Response already sent` in Next.js API Routes
+Next.js Middleware: Handling `next/server` Import Errors
