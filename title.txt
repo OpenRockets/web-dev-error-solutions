@@ -1,1 +1,1 @@
-Dealing with `Error: request aborted` in Next.js API Routes
+Next.js Middleware: Handling `next/font` Issues in `getServerSideProps`
