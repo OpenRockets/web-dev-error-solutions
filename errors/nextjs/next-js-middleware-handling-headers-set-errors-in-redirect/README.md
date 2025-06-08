@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `headers.set` Errors in `redirect`
+
 
 This document addresses a common error developers encounter when using Next.js Middleware: attempting to set headers after a redirect has been initiated using `nextResponse.redirect`.  The `headers.set` method will not work after a redirect call.  This causes issues when you try to set cookies or other headers which are dependent upon the redirection.
 
