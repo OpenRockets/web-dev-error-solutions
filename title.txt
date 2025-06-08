@@ -1,1 +1,1 @@
-Dealing with `Error: Invalid Hook Call` in Next.js Components
+Creating a CSS-only Expanding Card with a Reveal Effect
