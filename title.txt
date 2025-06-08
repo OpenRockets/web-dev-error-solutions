@@ -1,1 +1,1 @@
-Dealing with `TypeError: Cannot read properties of undefined (reading 'map')` in Next.js Middleware
+Creating a Pure CSS Circular Progress Bar

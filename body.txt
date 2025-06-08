@@ -1,117 +1,80 @@
 
-This document addresses a common error encountered when working with Next.js Middleware: `TypeError: Cannot read properties of undefined (reading 'map')`. This typically arises when attempting to iterate over an array or object that hasn't been properly fetched or initialized before being accessed within the middleware.  The error points to a `map()` call, but could be replaced by other array methods like `filter` or `reduce`, indicating that the problem lies in the data being processed, not the method itself.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required! This technique leverages CSS's `conic-gradient` function and some clever calculations to create a dynamic and visually appealing progress indicator.
 
-**Scenario:** Let's say you're building middleware to redirect users based on their role fetched from a database.  If the fetch fails or returns `undefined`, the `map()` call in your middleware will throw this error.
 
-**Erroneous Code:**
+## Description of the Styling
 
-```javascript
-// pages/api/getUserRole.js (Example API Route)
-export default async function handler(req, res) {
-  // Simulate fetching user role (replace with your actual logic)
-  if (Math.random() < 0.5) {
-    res.status(200).json({ role: 'admin' });
-  } else {
-    res.status(200).json(null); //Simulates a potential failure scenario
-  }
+This progress bar is a circle divided into two sections: a filled section representing the progress and an unfilled section. The filled section uses a `conic-gradient` to create a circular arc of a specified color. The size and color of the progress bar are easily customizable through CSS variables.
+
+
+## Full Code
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+:root {
+  --progress-bar-size: 100px;
+  --progress-bar-color: #007bff;
+  --progress-bar-background: #f0f0f0;
+  --progress: 75; /* Percentage of progress (0-100) */
 }
 
-
-// middleware.js
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const url = req.nextUrl.clone();
-
-  return fetch(`http://localhost:3000/api/getUserRole`, {
-      method: 'GET'
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data && data.role) {
-      const roles = [data.role] //This line is crucial: it handles null cases elegantly.
-      const adminPages = roles.map(role => role === 'admin' && '/admin'); //Error occurs here if data.role is undefined
-      const filteredPages = adminPages.filter(page => page); //Filters out falsy values
-      console.log('Admin pages: ', filteredPages)
-      if (filteredPages.includes(url.pathname)) {
-          if(req.cookies.isLoggedIn) {
-              return NextResponse.next();
-          } else {
-              url.pathname = '/login';
-              return NextResponse.rewrite(url);
-          }
-      }
-    }
-
-    //Default response. This will be hit when no admin role is detected.
-    return NextResponse.next();
-  })
-  .catch(error => {
-    console.error("Error fetching user role:", error);
-    // Handle the error appropriately (e.g., log it, return a 500)
-    return NextResponse.next();
-  });
+.progress-ring {
+  width: var(--progress-bar-size);
+  height: var(--progress-bar-size);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 
-export const config = {
-  matcher: ['/admin/:path*'],
-};
+.progress-ring::before {
+  content: '';
+  position: absolute;
+  width: var(--progress-bar-size);
+  height: var(--progress-bar-size);
+  background: conic-gradient(
+    var(--progress-bar-color) calc(var(--progress) * 1%),
+    var(--progress-bar-background) calc(var(--progress) * 1%)
+  );
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.progress-ring::after {
+  content: attr(data-progress) '%';
+  position: absolute;
+  z-index: 2;
+  font-size: 14px;
+  color: #333;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-ring" data-progress="75"></div>
+
+</body>
+</html>
 ```
 
 
-**Corrected Code (Step-by-Step):**
+## Explanation
 
-1. **Handle potential null or undefined data:** The primary issue is the potential for `data` or `data.role` to be `undefined` or `null`.  We need to check for this before attempting to access properties.
+* **CSS Variables:**  The `:root` element defines custom CSS variables for easy customization of the progress bar's size, colors, and progress percentage.
+* **`conic-gradient`:** This function is crucial.  It creates a circular gradient.  `calc(var(--progress) * 1%)` dynamically calculates the angle of the filled arc based on the `--progress` variable.
+* **Pseudo-elements `::before` and `::after`:** `::before` creates the circular progress ring itself using the `conic-gradient`.  `::after` overlays the percentage value on top.
+* **Data Attribute:** The percentage is set using the `data-progress` attribute on the `.progress-ring` element, making it easy to update dynamically if needed (though this example is static).
 
-2. **Default to an empty array:** If `data` is null or undefined, we need to ensure that we're not trying to iterate through a null value. Instead, initialise an empty array in case there's no role. This provides a safe base for the subsequent `map` and `filter` operations.
 
+## Links to Resources to Learn More
 
-
-```javascript
-// middleware.js (Corrected)
-import { NextResponse } from 'next/server';
-
-export function middleware(req) {
-  const url = req.nextUrl.clone();
-
-  return fetch(`http://localhost:3000/api/getUserRole`, {
-      method: 'GET'
-  })
-  .then(res => res.json())
-  .then(data => {
-    const roles = data?.role ? [data.role] : []; // Handle null or undefined data gracefully.
-    const adminPages = roles.map(role => role === 'admin' && '/admin');
-    const filteredPages = adminPages.filter(page => page);
-    if (filteredPages.includes(url.pathname)) {
-        if(req.cookies.isLoggedIn) {
-            return NextResponse.next();
-        } else {
-            url.pathname = '/login';
-            return NextResponse.rewrite(url);
-        }
-    }
-    return NextResponse.next();
-  })
-  .catch(error => {
-    console.error("Error fetching user role:", error);
-    return NextResponse.next(); // Or handle the error more robustly (e.g., return 500)
-  });
-}
-
-export const config = {
-  matcher: ['/admin/:path*'],
-};
-```
-
-**Explanation:**
-
-The corrected code uses optional chaining (`?.`) to safely access `data.role`.  If `data` is `null` or `undefined`, `data?.role` will evaluate to `undefined` without throwing an error. The ternary operator then creates an empty array `[]` if there is no role and will assign a single element array containing the role otherwise. This ensures that `roles` is always an array, preventing the `TypeError`. The `filter` method then safely removes any `falsey` values generated by the map function before attempting to execute the `includes` method.
-
-**External References:**
-
-* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Optional Chaining in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
-* [Next.js API Routes](https://nextjs.org/docs/api-routes/introduction)
+* **MDN Web Docs - `conic-gradient()`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
+* **CSS Tricks - Gradients:** [https://css-tricks.com/css-gradients/](https://css-tricks.com/css-gradients/) (A broader overview of CSS gradients, including conic gradients)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
