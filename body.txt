@@ -1,91 +1,67 @@
 
-This document details how to create a circular progress bar using only CSS.  No JavaScript is required! This example leverages CSS3's `conic-gradient` for a clean and efficient solution.
+This document addresses a common issue developers encounter when using Next.js Middleware:  incorrect handling of `not-found` responses and unintended redirects.  Improperly configured middleware can lead to unexpected 404 errors or redirect loops, negatively impacting the user experience.
 
+**Description of the Error:**
 
-**Description of the Styling:**
+The problem arises when middleware attempts to redirect to a non-existent route or fails to handle a `not-found` scenario gracefully.  This often manifests as a redirect loop (the middleware continuously redirects without reaching a valid page) or a persistent 404 error, even if the requested resource might exist through a different path.  This is especially tricky because the error might not surface immediately, becoming apparent only under specific conditions or after deployment.
 
-This technique uses a `conic-gradient` to create the circular progress bar. The gradient starts at the top and sweeps clockwise, with the percentage controlled by a custom property (`--progress`). The background circle is created using a simple `border-radius`.  We use `::before` pseudo-element to create the actual progress indicator.
+**Code Example and Step-by-Step Fix:**
 
+Let's imagine a scenario where we have a middleware intended to redirect all requests to `/blog` to `/articles`. However, if `/blog` itself doesn't exist, the redirect will fail, leading to a redirect loop or a 404.
 
-**Full Code:**
+**Incorrect Middleware:**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
-  .progress-ring {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    background-color: #f0f0f0; /* Light gray background */
-    border: 5px solid #ddd; /* Light gray border */
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  if (req.nextUrl.pathname.startsWith('/blog')) {
+    return NextResponse.redirect(new URL('/articles', req.url))
   }
+}
 
-  .progress-ring::before {
-    content: "";
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: inherit;
-    background-image: conic-gradient(
-      #4CAF50 0deg var(--progress, 50%),  /* Green progress */
-      #ddd 0deg); /* Light gray background */
-    transform-origin: center;
-    transform: rotate(-90deg);
-    z-index: 1;
-  }
-
-  .percentage {
-    position: absolute;
-    z-index: 2;
-    font-size: 1.2em;
-    color: #333;
-  }
-</style>
-</head>
-<body>
-
-  <div class="progress-ring" style="--progress: 75%;">
-    <span class="percentage">75%</span>
-  </div>
-
-  <div class="progress-ring" style="--progress: 30%;">
-    <span class="percentage">30%</span>
-  </div>
-
-  <div class="progress-ring" style="--progress: 90%;">
-    <span class="percentage">90%</span>
-  </div>
-
-
-</body>
-</html>
+export const config = {
+  matcher: '/blog/:path*'
+}
 ```
 
+This middleware will cause a redirect loop if the user directly accesses `/blog` (or any path starting with `/blog`) because there's no actual `/blog` page to begin with.  The only way out will be to manually stop the browser.
+
+**Corrected Middleware:**
+
+```javascript
+// pages/api/middleware.js
+import { NextResponse } from 'next/server'
+
+export function middleware(req) {
+  if (req.nextUrl.pathname.startsWith('/blog')) {
+    return NextResponse.redirect(new URL('/articles' + req.nextUrl.pathname.substring('/blog'.length), req.url));
+  }
+}
+
+export const config = {
+  matcher: '/blog/:path*'
+}
+```
 
 **Explanation:**
 
-*   **`conic-gradient`:** This is the core of the effect. It creates a gradient that sweeps around a circle. `#4CAF50` is the color of the progress, and `#ddd` is the background color. `var(--progress)` dynamically sets the percentage of the circle filled with the green color.
+The improved version addresses the issue by understanding that `/blog` might not be an existing page. Instead of a simple redirect to `/articles`, it now redirects to `/articles` *plus* the remaining path from the original URL. This handles cases where users access `/blog/post-one` and redirects it correctly to `/articles/post-one`. If `/blog` itself is accessed, it's correctly redirected to `/articles`
 
-*   **`transform: rotate(-90deg)`:** This rotates the gradient so that 0% starts at the top.
+**Additional Considerations:**
 
-*   **Custom Property (`--progress`):** This allows easy adjustment of the progress value by simply changing the style attribute.
+* **`not-found` handling:**  Always include a check within your middleware to handle cases where the target of a redirect doesn't exist.  You can accomplish this using conditional logic and returning a `NextResponse.notFound()` if necessary.
 
-*   **Pseudo-element `::before`:** This creates the visual layer for the progress bar on top of the background circle.
+* **Matcher Configuration:** Carefully define your `matcher` in the `config` object.  An overly broad matcher can lead to unintended consequences.
 
-* **`.percentage`:** This class styles the percentage value displayed at the center of the progress ring.
+* **Testing:** Thoroughly test your middleware with various scenarios, including edge cases and potential errors, to ensure its robustness.
 
 
-**Links to Resources to Learn More:**
+**External References:**
 
-*   [MDN Web Docs - conic-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/conic-gradient)
-*   [CSS Tricks - conic-gradient](https://css-tricks.com/almanac/properties/c/conic-gradient/) (Search for conic-gradient on their site for relevant articles)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [NextResponse API Reference](https://nextjs.org/docs/api-reference/next/server/next-response)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
