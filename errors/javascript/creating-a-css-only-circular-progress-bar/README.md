@@ -1,11 +1,12 @@
 # 🐞 Creating a CSS-Only Circular Progress Bar
 
 
-This document details the creation of a circular progress bar using only CSS. No JavaScript is required. This example utilizes CSS variables (custom properties) for easy customization.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This example utilizes CSS3 properties for its functionality.
 
 **Description of the Styling:**
 
-The progress bar is created using two concentric circles. The outer circle acts as the background, while the inner circle represents the progress.  The inner circle's arc length is dynamically controlled using the `stroke-dasharray` and `stroke-dashoffset` properties.  CSS variables allow us to easily change the size, colors, and progress percentage.
+This technique leverages the `clip-path` property to create a circular mask that reveals a portion of a larger circle.  By manipulating the `clip-path`'s `circle()` function with a dynamically calculated radius, we simulate the progress bar's movement.  The background circle provides the track, while a foreground circle, masked by the `clip-path`, represents the progress.  The percentage is visually displayed using a pseudo-element.
+
 
 **Full Code:**
 
@@ -15,49 +16,55 @@ The progress bar is created using two concentric circles. The outer circle acts 
 <head>
 <title>CSS Circular Progress Bar</title>
 <style>
-  .progress-ring {
-    --size: 100; /* Size of the circle */
-    --stroke-width: 10; /* Width of the circle stroke */
-    --progress: 75; /* Percentage progress (0-100) */
-    --color: #007bff; /* Color of the progress */
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  position: relative;
+}
 
-    width: var(--size);
-    height: var(--size);
-    position: relative;
-  }
+.progress-ring__circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #ddd; /* Track color */
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-  .progress-ring svg {
-    transform: rotate(-90deg); /* Start at the top */
-  }
+.progress-ring__circle::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #4CAF50; /* Progress color */
+  clip-path: circle(50% at 50% 50%); /* Initial clip-path */
+  transform: rotate(-90deg); /* Start at top */
+  transition: clip-path 0.5s ease; /* Smooth animation */
+}
 
-  .progress-ring circle {
-    stroke-width: var(--stroke-width);
-    stroke-linecap: round; /* Rounded ends */
-    fill: transparent;
-    cx: 50%;
-    cy: 50%;
-    r: calc((var(--size) - var(--stroke-width)) / 2);
-  }
+.progress-ring--progress-75 .progress-ring__circle::before {
+  clip-path: circle(75% at 50% 50%);
+}
 
-  .progress-ring .progress-background {
-    stroke: #ccc; /* Background color */
-  }
-
-  .progress-ring .progress-foreground {
-    stroke: var(--color);
-    stroke-dasharray: calc(2 * 3.14159 * ((var(--size) - var(--stroke-width)) / 2));
-    stroke-dashoffset: calc(2 * 3.14159 * ((var(--size) - var(--stroke-width)) / 2) * (1 - var(--progress) / 100));
-  }
+.progress-ring__percentage {
+  position: absolute;
+  font-size: 2em;
+  color: white;
+}
 </style>
 </head>
 <body>
 
-<div class="progress-ring">
-  <svg width="100%" height="100%">
-    <circle class="progress-background" r="45" />
-    <circle class="progress-foreground" r="45" />
-  </svg>
+<div class="progress-ring progress-ring--progress-75">
+  <div class="progress-ring__circle">
+    <div class="progress-ring__percentage">75%</div>
+  </div>
 </div>
+
 
 </body>
 </html>
@@ -65,19 +72,17 @@ The progress bar is created using two concentric circles. The outer circle acts 
 
 **Explanation:**
 
-* **CSS Variables:**  The use of `--size`, `--stroke-width`, `--progress`, and `--color` makes it incredibly easy to customize the appearance of the progress bar.  Simply change the values of these variables to adjust the size, colors, and percentage.
+* **`progress-ring`**: This class sets the overall size and shape.
+* **`progress-ring__circle`**: This creates the background circle (track).  The `::before` pseudo-element creates the foreground circle (progress).
+* **`clip-path: circle(50% at 50% 50%);`**: This creates the circular mask. The percentage controls the radius, effectively determining how much of the circle is visible.  The `at` coordinates specify the center.
+* **`transform: rotate(-90deg);`**: This rotates the circle to start at the top.
+* **`.progress-ring--progress-75`**: This class demonstrates how to dynamically change the progress by adjusting the `clip-path` radius.  You would replace this with JavaScript or server-side code to dynamically adjust the percentage.
 
-* **`stroke-dasharray` and `stroke-dashoffset`:** These are the key CSS properties that create the progress effect. `stroke-dasharray` sets the total length of the dash, which is calculated as the circumference of the circle. `stroke-dashoffset` controls how much of the dash is hidden, effectively revealing the progress arc.
-
-* **`transform: rotate(-90deg)`:** This rotates the SVG circle so that the progress starts at the top, rather than the right side.
-
-* **`stroke-linecap: round`:** This creates smoothly rounded ends for the progress arc.
 
 **Links to Resources to Learn More:**
 
-* **MDN Web Docs on SVG:** [https://developer.mozilla.org/en-US/docs/Web/SVG](https://developer.mozilla.org/en-US/docs/Web/SVG)
-* **MDN Web Docs on CSS Variables:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
-* **Understanding `stroke-dasharray` and `stroke-dashoffset`:** [Search for tutorials on these properties on sites like CSS-Tricks or YouTube.]
+* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS-Tricks - `clip-path` examples:** [https://css-tricks.com/clipping-masking-css/](https://css-tricks.com/clipping-masking-css/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

@@ -1,90 +1,86 @@
 
-This document addresses a common error encountered when working with Next.js Middleware: the "headers already sent" error. This usually happens when you attempt to send headers to the response multiple times, often stemming from a mismatch between your middleware and the underlying request handling.
+This document details the creation of a circular progress bar using only CSS.  No JavaScript is required. This example utilizes CSS3 properties for its functionality.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-The `headers already sent` error in Next.js Middleware (and generally in Node.js) indicates that the HTTP response headers have already been sent to the client, and a subsequent attempt to modify them (e.g., setting more headers, changing the status code) is invalid. This typically results in a server-side error and a broken user experience.  The error message itself might vary slightly depending on your server environment, but the core problem remains the same.
+This technique leverages the `clip-path` property to create a circular mask that reveals a portion of a larger circle.  By manipulating the `clip-path`'s `circle()` function with a dynamically calculated radius, we simulate the progress bar's movement.  The background circle provides the track, while a foreground circle, masked by the `clip-path`, represents the progress.  The percentage is visually displayed using a pseudo-element.
 
-**Scenario:**
 
-Let's say you have middleware that redirects users based on certain conditions and also sets custom headers. If you accidentally send headers within the redirection logic *and* later try to set more headers, it will trigger this error.
+**Full Code:**
 
-**Code demonstrating the Error (Incorrect):**
-
-```javascript
-// pages/api/middleware.js
-export function middleware(req, res) {
-  if (req.method === 'GET' && req.url === '/') {
-    res.setHeader('X-Custom-Header', 'initial value'); // First header set
-    res.redirect('/dashboard'); // Redirection starts response
-    res.setHeader('Another-Header', 'this will fail'); // Attempt after redirection
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>CSS Circular Progress Bar</title>
+<style>
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  position: relative;
 }
 
-export const config = {
-  matcher: ['/']
+.progress-ring__circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #ddd; /* Track color */
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
+.progress-ring__circle::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #4CAF50; /* Progress color */
+  clip-path: circle(50% at 50% 50%); /* Initial clip-path */
+  transform: rotate(-90deg); /* Start at top */
+  transition: clip-path 0.5s ease; /* Smooth animation */
+}
+
+.progress-ring--progress-75 .progress-ring__circle::before {
+  clip-path: circle(75% at 50% 50%);
+}
+
+.progress-ring__percentage {
+  position: absolute;
+  font-size: 2em;
+  color: white;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-ring progress-ring--progress-75">
+  <div class="progress-ring__circle">
+    <div class="progress-ring__percentage">75%</div>
+  </div>
+</div>
+
+
+</body>
+</html>
 ```
-
-This code will fail because `res.redirect` implicitly starts sending the response, preventing further header modifications with `res.setHeader`.
-
-
-**Step-by-Step Code Fix:**
-
-1. **Consolidate Header Setting:**  Instead of setting headers after the redirect, set them *before*.
-
-
-```javascript
-// pages/api/middleware.js
-export function middleware(req, res) {
-  if (req.method === 'GET' && req.url === '/') {
-    res.setHeader('X-Custom-Header', 'initial value');
-    res.setHeader('Another-Header', 'this works now');
-    res.redirect('/dashboard');
-  }
-}
-
-export const config = {
-  matcher: ['/']
-}
-```
-
-2. **Conditional Header Setting (More Robust):**  For more complex scenarios, use a boolean flag to track whether headers have already been sent.
-
-
-```javascript
-// pages/api/middleware.js
-export function middleware(req, res) {
-  let headersSent = false;
-  if (req.method === 'GET' && req.url === '/') {
-    if (!headersSent) {
-      res.setHeader('X-Custom-Header', 'initial value');
-      res.setHeader('Another-Header', 'this is safe');
-      headersSent = true;
-    }
-    res.redirect('/dashboard');
-  }
-}
-
-export const config = {
-  matcher: ['/']
-}
-```
-
 
 **Explanation:**
 
-The key to avoiding the "headers already sent" error is to ensure that all header modifications happen *before* any part of the response body is sent to the client. `res.redirect`, `res.end`, `res.write`, and similar methods implicitly begin the response process. Any header changes after these operations will cause the error.  The second fix with `headersSent` is a more defensive approach, suitable for cases with complex logic where header setting might happen in multiple places.
+* **`progress-ring`**: This class sets the overall size and shape.
+* **`progress-ring__circle`**: This creates the background circle (track).  The `::before` pseudo-element creates the foreground circle (progress).
+* **`clip-path: circle(50% at 50% 50%);`**: This creates the circular mask. The percentage controls the radius, effectively determining how much of the circle is visible.  The `at` coordinates specify the center.
+* **`transform: rotate(-90deg);`**: This rotates the circle to start at the top.
+* **`.progress-ring--progress-75`**: This class demonstrates how to dynamically change the progress by adjusting the `clip-path` radius.  You would replace this with JavaScript or server-side code to dynamically adjust the percentage.
 
-**External References:**
 
-* [Next.js Middleware documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
-* [Node.js HTTP Response Object](https://nodejs.org/api/http.html#http_class_http_serverresponse) (Understanding how the underlying response object works)
+**Links to Resources to Learn More:**
 
-
-**Conclusion:**
-
-The "headers already sent" error in Next.js middleware is usually a simple oversight. By carefully organizing your code to set headers before starting the response process (using redirects or writing to the response body), you can easily prevent this common issue.
+* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS-Tricks - `clip-path` examples:** [https://css-tricks.com/clipping-masking-css/](https://css-tricks.com/clipping-masking-css/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
