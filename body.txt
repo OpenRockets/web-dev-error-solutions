@@ -1,81 +1,72 @@
 
-This document details the creation of a circular progress bar using only CSS.  No JavaScript is required!  We'll leverage CSS's `clip-path` property and some clever calculations to achieve this effect. This example uses plain CSS but could easily be adapted to a CSS framework like Tailwind CSS.
+This document addresses a common `TypeError: Cannot read properties of undefined (reading 'locale')` error encountered when working with Next.js Middleware, specifically when accessing request headers or cookies within the middleware function.  This error typically arises when trying to access properties of an object (`req.headers` or `req.cookies`) before they've been properly populated or if they're unexpectedly undefined.
 
-**Description of the Styling:**
+**Description of the Error:**
 
-The circular progress bar is created using a single `<div>` element.  We use a background circle and an overlay circle. The overlay is clipped using a circular `clip-path` to reveal only a portion of the background, representing the progress. The progress is controlled by a CSS variable (`--progress`) which can be easily adjusted.  The styling includes appropriate colors, shadows, and sizing for visual appeal.
+The error message `TypeError: Cannot read properties of undefined (reading 'locale')` indicates that you're attempting to access the `locale` property from an object that is undefined.  This often happens in Next.js Middleware when accessing request headers (like `Accept-Language` to determine the user's preferred locale) before the request headers have been fully parsed by Next.js.  The `req` object might not yet contain the necessary properties.
 
-**Full Code:**
+**Code Example (Problem):**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>CSS Circular Progress Bar</title>
-<style>
-.progress-ring {
-  --progress: 75; /* Adjust this value to change the progress (0-100)*/
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background: #f0f0f0; /* Background color */
-  position: relative;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2); /* Add a subtle shadow */
+```javascript
+// pages/api/middleware.js
+export default function middleware(req, res) {
+  const locale = req.headers['accept-language']; // Error occurs here if headers aren't available yet
+
+  // ... further logic based on locale ...
+  if(locale){
+    res.setHeader('Locale', locale);
+  }
+  res.end();
 }
-
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  background: #4CAF50; /* Progress bar color */
-  border-radius: 50%;
-  clip-path: circle(50% at 50% 50%); /*The clipping magic*/
-  /*The rotation is based on the percentage using calc*/
-  transform: rotate(calc(var(--progress) * 3.6deg)) ;
-}
-
-.progress-ring::after{
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  background-color: transparent;
-  border-radius: 50%;
-  border: 5px solid #4CAF50;
-  pointer-events: none;
-}
-
-</style>
-</head>
-<body>
-
-<div class="progress-ring"></div>
-
-</body>
-</html>
 ```
+
+**Step-by-Step Code Fix:**
+
+1. **Check for Undefined:** The most straightforward solution is to check if the `req.headers` object is defined and if it contains the `accept-language` property before accessing it.  Use optional chaining (`?.`) and nullish coalescing (`??`) operators for concise error handling:
+
+```javascript
+// pages/api/middleware.js
+export default function middleware(req, res) {
+  const locale = req.headers['accept-language']?.split(',')[0]?.split(';')[0] ?? 'en'; // Use default if undefined
+
+  // ... further logic based on locale ...
+    res.setHeader('Locale', locale);
+  res.end();
+}
+
+```
+
+2. **Conditional Logic:**  Alternatively, wrap the locale-dependent logic in a conditional statement:
+
+```javascript
+// pages/api/middleware.js
+export default function middleware(req, res) {
+  if (req.headers && req.headers['accept-language']) {
+    const locale = req.headers['accept-language'].split(',')[0].split(';')[0];
+    // ... further logic based on locale ...
+    res.setHeader('Locale', locale);
+  } else {
+    // Handle the case where 'accept-language' is missing
+    console.log('Accept-Language header not found');
+    res.setHeader('Locale', 'en'); //or another default
+  }
+  res.end();
+}
+```
+
 
 **Explanation:**
 
-* **`--progress` variable:** This custom property controls the percentage of the progress bar.  It's multiplied by `3.6deg` (360 degrees / 100) to calculate the rotation angle.
-* **`::before` pseudo-element:** This creates the filled portion of the progress bar.  The `clip-path: circle()` creates a circular mask, and `transform: rotate()` rotates it to show the progress.
-* **`::after` pseudo-element:** This creates the outline ring.
-* **`calc()` function:** Used to dynamically calculate the rotation angle based on the `--progress` variable.
+The improved code uses optional chaining (`?.`) to safely access nested properties.  If `req.headers` or the `'accept-language'` property is undefined, the expression short-circuits, avoiding the error. The nullish coalescing operator (`??`) provides a default value (`'en'`) if `req.headers['accept-language']` is null or undefined.  The `.split()` methods handle potential multiple languages in the header. The conditional logic version explicitly checks for the existence of `req.headers['accept-language']` before attempting to use it.
 
 
-**Links to Resources to Learn More:**
+**External References:**
 
-* **MDN Web Docs - `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **CSS-Tricks - `clip-path`:** [https://css-tricks.com/clipping-masking-css/](https://css-tricks.com/clipping-masking-css/)  (Search for `clip-path` examples)
-* **Understanding CSS Variables (Custom Properties):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+* [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
+* [Next.js API Routes Documentation](https://nextjs.org/docs/api-routes/introduction)
+* [JavaScript Optional Chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
+* [JavaScript Nullish Coalescing Operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing_operator)
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
 
