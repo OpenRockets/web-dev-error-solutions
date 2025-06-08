@@ -1,1 +1,1 @@
-Debugging "ReferenceError: process is not defined" in Next.js API Routes
+Next.js Middleware: Handling `NextResponse.redirect()` Errors in Edge Runtime

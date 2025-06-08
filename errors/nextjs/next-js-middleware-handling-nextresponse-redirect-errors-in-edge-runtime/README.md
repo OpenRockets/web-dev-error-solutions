@@ -1,3 +1,5 @@
+# 🐞 Next.js Middleware: Handling `NextResponse.redirect()` Errors in Edge Runtime
+
 
 This document addresses a common error developers encounter when using `NextResponse.redirect()` within Next.js Middleware running in the Edge runtime.  The error typically manifests as a 500 Internal Server Error or unexpected behavior, often stemming from incorrect usage of the `NextResponse` object or incompatible redirects.
 
