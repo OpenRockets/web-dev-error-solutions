@@ -1,3 +1,5 @@
+# 🐞 Dealing with `revalidate` Issues in Next.js Middleware
+
 
 This document addresses a common problem developers encounter when using the `revalidate` option in Next.js Middleware: unexpected caching behavior leading to stale data being served.  This issue primarily affects situations where data changes more frequently than the `revalidate` value specifies.
 

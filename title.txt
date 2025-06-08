@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `TypeError: data.map is not a function` in API Routes
+Dealing with `revalidate` Issues in Next.js Middleware
