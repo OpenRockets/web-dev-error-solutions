@@ -1,1 +1,1 @@
-Next.js Middleware: Handling `headers already sent` Error
+Debugging "ReferenceError: process is not defined" in Next.js API Routes
