@@ -1,1 +1,1 @@
-Creating a CSS-Only Circular Progress Bar
+Handling "TypeError: Cannot read properties of undefined (reading 'pathname')" in Next.js Middleware
