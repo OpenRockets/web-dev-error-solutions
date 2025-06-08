@@ -1,3 +1,5 @@
+# 🐞 Dealing with `next/dynamic` Import Errors in Next.js Middleware
+
 
 ## Description of the Error
 
