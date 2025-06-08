@@ -282,5 +282,6 @@
   "jwilm",
   "jwasham",
   "jklepatch",
-  "jupyter"
+  "jupyter",
+  "jwasham"
 ]
