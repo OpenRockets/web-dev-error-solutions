@@ -1,3 +1,5 @@
+# 🐞 Next.js API Routes: Handling Large Responses and Avoiding `ERR_HTTP_HEADERS_SENT`
+
 
 ## Description of the Error
 
