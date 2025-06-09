@@ -1,1 +1,1 @@
-Overcoming the "Too Many Indexes" Problem in MongoDB
+Overcoming "Too Many Queries in Parallel" Errors in MongoDB
