@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's `Write Concern Error: w: 'majority' timeout`
+
 
 ## Description of the Error
 

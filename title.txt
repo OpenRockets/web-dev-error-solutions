@@ -1,1 +1,1 @@
-CSS Challenge:  3D Rotating Cube
+Overcoming MongoDB's `Write Concern Error: w: 'majority' timeout`
