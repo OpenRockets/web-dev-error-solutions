@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Navigation Bar with Tailwind CSS
+
 
 This challenge involves creating a responsive navigation bar using Tailwind CSS. The navbar should be sticky at the top, adapt to different screen sizes, and feature a hamburger menu for smaller screens.  The styling will incorporate a modern, clean aesthetic.
 
