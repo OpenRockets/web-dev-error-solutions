@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Social Media Card
+
 
 This challenge involves creating a responsive social media card using CSS. The card should adapt its layout seamlessly to different screen sizes, maintaining a clean and visually appealing design.  We'll be using pure CSS (no CSS frameworks like Tailwind for this example, to focus on fundamental CSS concepts).
 
