@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Responsive Navigation Bar with a Hamburger Menu
+
 
 This challenge involves creating a responsive navigation bar that adapts to different screen sizes using CSS.  For smaller screens, it will utilize a hamburger menu icon to toggle the visibility of the navigation links.  We'll implement this using pure CSS (no JavaScript).
 
