@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's "Too Many Indexes" Error
+
 
 ## Description of the Error
 
