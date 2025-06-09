@@ -1,129 +1,81 @@
 
-This challenge involves creating a responsive pricing table using CSS.  The goal is to design a clean, visually appealing table that adapts seamlessly to different screen sizes. We'll use a combination of CSS Grid and media queries for responsiveness.  This example will use standard CSS3, but the concepts could easily be adapted to Tailwind CSS.
+## Description of the Error
+
+A common problem in MongoDB is having too many indexes. While indexes are crucial for query performance, an excessive number can significantly impact write operations and overall database performance.  Adding indexes improves read speed but slows down write speed, so you need to balance it.  Too many indexes lead to slower insert, update, and delete operations because MongoDB needs to update all relevant indexes whenever a document changes.  This can manifest as slow application performance, increased latency, and ultimately, application unresponsiveness, especially under high write load.  MongoDB might even throw errors related to exceeding resource limits if the index overhead becomes too large.
+
+## Fixing the Problem Step-by-Step
+
+This example focuses on identifying and removing unnecessary indexes.  The exact solution will depend on your specific application and query patterns.  We'll use the `mongosh` shell.
+
+**Step 1: Identify Unused Indexes:**
+
+First, we need to identify which indexes are not being utilized.  MongoDB doesn't automatically tell you which are unused; you must analyze your query logs and application usage. This is often done through monitoring tools or by examining slow query logs.  Let's assume we've identified `index_name_to_remove_1` and `index_name_to_remove_2` as candidates for removal in the `myCollection` collection within the `myDatabase` database.
+
+**Step 2: Drop Unnecessary Indexes (using `mongosh`):**
 
 
-**Description of the Styling:**
+```javascript
+// Connect to your MongoDB instance
+const client = new MongoClient("mongodb://localhost:27017"); // Replace with your connection string
 
-The pricing table will have three columns representing different pricing plans (Basic, Premium, Elite). Each plan will have a title, a list of features, a price, and a call-to-action button. The design will utilize clean typography, subtle shadows, and a consistent color scheme to create a professional and user-friendly experience.  The table will be responsive, stacking vertically on smaller screens.
+async function dropIndexes() {
+  try {
+    await client.connect();
+    const db = client.db("myDatabase"); // Replace with your database name
+    const collection = db.collection("myCollection"); // Replace with your collection name
 
-**Full Code:**
+    //Drop specific Indexes
+    await collection.dropIndex("index_name_to_remove_1");
+    await collection.dropIndex("index_name_to_remove_2");
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Responsive Pricing Table</title>
-<style>
-body {
-  font-family: sans-serif;
-}
-
-.pricing-table {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
-  grid-gap: 20px;
-  padding: 20px;
-}
-
-.plan {
-  border: 1px solid #ccc;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.plan h2 {
-  margin-top: 0;
-}
-
-.plan ul {
-  list-style: none;
-  padding: 0;
-}
-
-.plan li {
-  margin-bottom: 10px;
-}
-
-.plan .price {
-  font-size: 1.5em;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.plan button {
-  background-color: #4CAF50;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-/* Media query for smaller screens */
-@media (max-width: 768px) {
-  .pricing-table {
-    grid-template-columns: 1fr; /* Stack columns vertically */
+    console.log("Indexes dropped successfully!");
+  } finally {
+    await client.close();
   }
 }
-</style>
-</head>
-<body>
 
-<div class="pricing-table">
-  <div class="plan">
-    <h2>Basic</h2>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-    </ul>
-    <p class="price">$9/month</p>
-    <button>Sign Up</button>
-  </div>
-  <div class="plan">
-    <h2>Premium</h2>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
-    </ul>
-    <p class="price">$19/month</p>
-    <button>Sign Up</button>
-  </div>
-  <div class="plan">
-    <h2>Elite</h2>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
-      <li>Feature 6</li>
-    </ul>
-    <p class="price">$29/month</p>
-    <button>Sign Up</button>
-  </div>
-</div>
+dropIndexes().catch(console.dir);
 
-</body>
-</html>
+
 ```
 
-**Explanation:**
+**Step 3: Verify Index Removal:**
 
-* **CSS Grid:**  The `grid-template-columns` property creates a responsive grid layout. `repeat(auto-fit, minmax(300px, 1fr))` ensures that columns adjust based on screen size, fitting as many as possible with a minimum width of 300px.
-* **Media Queries:** The `@media` query targets screens smaller than 768px, changing the grid to stack columns vertically for better mobile viewing.
-* **Styling:**  The CSS styles the table elements (headings, lists, buttons, etc.) for visual appeal and consistency.
+After dropping the indexes, verify the change using the `listIndexes()` method:
+
+```javascript
+// Connect to your MongoDB instance (same as above)
+async function listIndexesAfterDrop() {
+    try {
+        await client.connect();
+        const db = client.db("myDatabase");
+        const collection = db.collection("myCollection");
+        const indexes = await collection.listIndexes().toArray();
+        console.log("Indexes after dropping:");
+        console.dir(indexes);
+    } finally {
+        await client.close();
+    }
+}
+
+listIndexesAfterDrop().catch(console.dir)
+```
+
+**Step 4 (Optional):  Analyze Query Performance:**
+
+After removing the indexes, monitor your application's performance to confirm the improvement in write operations.  You might use MongoDB's profiling features or monitoring tools to track query execution times.
 
 
-**Links to Resources to Learn More:**
+## Explanation
 
-* **CSS Grid Layout:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
-* **CSS Media Queries:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
-* **Learn CSS:** [https://www.freecodecamp.org/learn/responsive-web-design/](https://www.freecodecamp.org/learn/responsive-web-design/)
+The "too many indexes" problem stems from the trade-off between read and write performance.  Every index added consumes storage space and increases the overhead for write operations (inserts, updates, deletes) because MongoDB must update all relevant indexes with every document modification.  While indexes speed up read queries by allowing MongoDB to avoid full collection scans, excessively many indexes can negate this benefit.  Removing unused indexes directly reduces this overhead, improving write performance. Identifying unused indexes is crucial and often requires careful analysis of query patterns.
+
+
+## External References
+
+* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
+* **MongoDB Performance Monitoring:** [https://www.mongodb.com/docs/manual/administration/monitoring/](https://www.mongodb.com/docs/manual/administration/monitoring/)
+* **Understanding Index Usage:** [Consider adding a relevant blog post or tutorial link here; many are available online]
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
