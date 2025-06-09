@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Responsive Image Card with Hover Effect
+
 
 This challenge focuses on creating a responsive image card using CSS.  The card will feature a background image, overlaid text, and a subtle hover effect that changes the opacity of the overlay. We'll use plain CSS3 for this example, avoiding any CSS frameworks like Tailwind for clarity.
 
