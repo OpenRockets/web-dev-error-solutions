@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Responsive Image Gallery with Tailwind CSS
+
 
 This challenge involves creating a responsive image gallery using Tailwind CSS. The gallery will display images in a grid layout, adapting to different screen sizes.  We'll focus on clean styling and efficient use of Tailwind's utility classes.
 

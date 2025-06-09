@@ -1,1 +1,1 @@
-Overcoming the "Too Many Indexes" Problem in MongoDB
+CSS Challenge: Responsive Image Gallery with Tailwind CSS
