@@ -1,1 +1,1 @@
-Overcoming the "Too Many Connections" Error in MongoDB
+Overcoming the "Collection Not Found" Error in MongoDB

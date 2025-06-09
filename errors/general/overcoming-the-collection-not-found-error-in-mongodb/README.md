@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Collection Not Found" Error in MongoDB
+
 
 This document details a common error encountered when working with MongoDB: the "Collection Not Found" error.  This typically occurs when your application attempts to interact with a collection that doesn't exist in the specified database.
 
