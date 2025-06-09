@@ -1,1 +1,1 @@
-Overcoming "Too Many Indexes" in MongoDB
+Overcoming MongoDB's "Too Many Writes" Error During High-Volume Inserts
