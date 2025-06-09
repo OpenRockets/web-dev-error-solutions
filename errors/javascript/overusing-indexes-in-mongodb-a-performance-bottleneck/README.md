@@ -1,3 +1,5 @@
+# 🐞 Overusing Indexes in MongoDB: A Performance Bottleneck
+
 
 This document addresses a common performance issue in MongoDB: overusing indexes. While indexes significantly speed up queries, excessive or poorly designed indexes can negatively impact write performance and database size.  This can lead to slower application speeds and increased infrastructure costs.
 
