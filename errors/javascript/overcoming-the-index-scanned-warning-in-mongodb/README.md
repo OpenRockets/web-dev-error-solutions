@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Index Scanned" Warning in MongoDB
+
 
 ## Description of the Error
 
