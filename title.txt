@@ -1,1 +1,1 @@
-Overcoming MongoDB's "Cannot use $inc with a non-numeric value" Error
+Overcoming MongoDB's "too many open files" Error
