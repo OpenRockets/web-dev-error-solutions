@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Responsive Navigation Bar with Tailwind CSS
+
 
 This challenge involves creating a responsive navigation bar using Tailwind CSS.  The navigation bar should be horizontally aligned on larger screens and vertically stacked on smaller screens (mobile). It will include a logo on the left, navigation links in the center, and a button on the right. The styling should be clean and modern.
 
