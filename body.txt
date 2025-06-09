@@ -1,80 +1,58 @@
 
-This challenge focuses on creating a visually appealing card with a subtle 3D effect using only CSS.  We'll achieve this using box-shadow, transforms, and transitions to create a realistic and engaging card design. This example uses plain CSS, but could easily be adapted to use a CSS framework like Tailwind CSS.
+## Description of the Error
 
+One common issue MongoDB developers encounter is having too many indexes on a collection. While indexes significantly speed up queries, an excessive number can lead to performance degradation during write operations (inserts, updates, deletes).  This is because every write operation must update all relevant indexes, and with too many, this update process becomes a bottleneck, slowing down the entire database.  This can manifest as slow application performance, especially noticeable during periods of high write activity.  The MongoDB profiler might reveal that index operations are consuming a disproportionate amount of time.
 
-**Description of the Styling:**
+## Full Code of Fixing Step by Step
 
-The card will have a clean, modern look with a subtle 3D effect created through a combination of techniques:
+This example focuses on identifying and removing unnecessary indexes using the MongoDB shell.  Assume our collection is named `products` and we suspect index bloat.
 
-* **Box-shadow:**  Multiple box-shadows are layered to create depth and a soft, light-source-like effect.
-* **Transform:**  A slight `translateZ()` transform is used to give the card a sense of depth and separation from the background.
-* **Transition:**  Transitions are added to the `transform` and `box-shadow` properties to create a smooth animation when the card is hovered over.
-* **Color Palette:**  A simple, muted color palette is employed to maintain a clean and uncluttered aesthetic.
+**Step 1: List Existing Indexes**
 
+First, we need to see what indexes currently exist:
 
-**Full Code:**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>3D-like Card</title>
-<style>
-.card {
-  width: 300px;
-  height: 200px;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2),
-              -5px -5px 10px rgba(255, 255, 255, 0.3); /*Double Box Shadow*/
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  transform: translateZ(2px); /* Adds depth */
-}
-
-.card:hover {
-  transform: translateZ(5px);
-  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.3),
-              -10px -10px 20px rgba(255, 255, 255, 0.4);
-}
-
-.card-content {
-  padding: 20px;
-  text-align: center;
-}
-
-.card-title {
-  font-size: 1.5em;
-  margin-bottom: 10px;
-}
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-content">
-    <h2 class="card-title">My 3D Card</h2>
-    <p>This is a sample card with a 3D effect created using CSS.</p>
-  </div>
-</div>
-
-</body>
-</html>
+```javascript
+use your_database_name; // Replace with your database name
+db.products.getIndexes();
 ```
 
+This command will return a list of all indexes on the `products` collection, showing their keys, uniqueness, and other properties.  Carefully examine this list.
 
-**Explanation:**
+**Step 2: Identify Unnecessary Indexes**
 
-* The `.card` class styles the main card element.  The `box-shadow` property creates the 3D effect. Notice the use of two shadows, one darker and one lighter, to simulate light and shadow.
-* The `transition` property ensures smooth animations on hover.
-* The `.card:hover` styles apply when the mouse hovers over the card, increasing the `translateZ` value and adjusting the box shadow for a more pronounced effect.
-* The `.card-content` class styles the inner content of the card.
+Analyze the output from Step 1. Look for indexes that:
 
-**Links to Resources to Learn More:**
+* **Are rarely used:**  Use the MongoDB profiler (`db.setProfilingLevel(2)`) to monitor query performance and identify indexes that aren't frequently used in queries.  Run some representative queries against your database.
+* **Are redundant:** Check if multiple indexes cover similar query patterns.  If one index effectively serves the purpose of multiple others, remove the redundant ones.
+* **Are overly broad:** Indexes on multiple fields might be too general if queries rarely use all of those fields together.
 
-* **MDN Web Docs - CSS Box Shadow:** [https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow](https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow)
-* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **MDN Web Docs - CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs) (If you wanted to implement this using Tailwind)
+
+**Step 3: Remove Unnecessary Indexes**
+
+Once you've identified unnecessary indexes, you can remove them using `db.products.dropIndex()`.  Replace `<index_name>` with the name of the index (you'll see these names in the output from `getIndexes()`).  For example:
+
+```javascript
+db.products.dropIndex("myCompoundIndex_1"); // Example - replace with your index name
+db.products.dropIndex({ "field1": 1, "field2": -1 }); // Example - removing an index by key pattern
+
+```
+
+You can also drop indexes by specifying their key pattern instead of their name. The `dropIndex()` command using the key pattern will drop all indexes matching that exact key pattern.
+
+
+**Step 4: Verify the change**
+
+After dropping indexes, run `db.products.getIndexes()` again to confirm that the unwanted indexes have been removed.   Monitor your application's performance to ensure that write operations have improved.
+
+## Explanation
+
+The "too many indexes" problem stems from the trade-off between read and write performance. Indexes significantly accelerate read operations by reducing the amount of data MongoDB needs to scan. However, every write operation requires updating all affected indexes, adding overhead.  Having too many indexes amplifies this overhead, potentially negating the performance gains from individual indexes.  Strategic index selection is crucial: only index fields used frequently in queries, and strive for minimal redundancy.  Regularly reviewing and optimizing your indexes is a vital part of MongoDB database administration.
+
+## External References
+
+* [MongoDB Documentation on Indexes](https://www.mongodb.com/docs/manual/indexes/)
+* [MongoDB Performance Tuning](https://www.mongodb.com/docs/manual/performance/)
+* [MongoDB Profiler](https://www.mongodb.com/docs/manual/reference/method/db.setProfilingLevel/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
