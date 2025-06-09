@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Animated Expanding Card with Tailwind CSS
+
 
 This challenge focuses on creating an animated expanding card using Tailwind CSS.  The card will have a subtle hover effect, expanding slightly on mouseover to reveal more details.  This example demonstrates the use of Tailwind's utility classes for responsive design and animations, avoiding the need for extensive custom CSS.
 
