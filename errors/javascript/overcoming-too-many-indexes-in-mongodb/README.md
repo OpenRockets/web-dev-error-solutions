@@ -1,3 +1,5 @@
+# 🐞 Overcoming "Too Many Indexes" in MongoDB
+
 
 This document addresses a common MongoDB performance problem: having too many indexes. While indexes are crucial for query optimization, an excessive number can significantly degrade write performance and increase storage space.  This problem falls under the category of MongoDB Database and Index management.
 
