@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's "Cannot use $inc with a non-numeric value" Error
+
 
 ## Description of the Error
 
