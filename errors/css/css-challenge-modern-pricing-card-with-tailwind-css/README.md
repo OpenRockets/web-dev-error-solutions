@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Modern Pricing Card with Tailwind CSS
+
 
 This challenge focuses on creating a clean and modern pricing card using Tailwind CSS. The goal is to build a visually appealing card that clearly displays pricing information and encourages user engagement.  We'll leverage Tailwind's utility classes for rapid development and consistent styling.
 
