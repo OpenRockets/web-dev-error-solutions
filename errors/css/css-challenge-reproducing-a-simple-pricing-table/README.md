@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Reproducing a Simple Pricing Table
+
 
 This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll aim for a design that's visually appealing and adapts well to different screen sizes. While this example doesn't explicitly use Tailwind CSS (to keep the code more concise and easier to understand for beginners), the principles are readily applicable to Tailwind's utility-first approach.
 
