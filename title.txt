@@ -1,1 +1,1 @@
-Overcoming MongoDB's `Write Concern Error: w: 'majority' timeout`
+MongoDB: Overuse of Indexes Leading to Performance Degradation
