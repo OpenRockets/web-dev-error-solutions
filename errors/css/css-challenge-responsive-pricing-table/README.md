@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Pricing Table
+
 
 This challenge involves creating a responsive pricing table using CSS.  The goal is to design a clean, visually appealing table that adapts seamlessly to different screen sizes. We'll use a combination of CSS Grid and media queries for responsiveness.  This example will use standard CSS3, but the concepts could easily be adapted to Tailwind CSS.
 
