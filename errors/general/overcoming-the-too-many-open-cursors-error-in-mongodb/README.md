@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Too Many Open Cursors" Error in MongoDB
+
 
 **Description of the Error:**
 
