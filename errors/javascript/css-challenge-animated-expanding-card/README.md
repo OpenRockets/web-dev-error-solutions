@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Animated Expanding Card
+
 
 This challenge focuses on creating an animated expanding card using CSS.  The card will have a subtle hover effect, expanding slightly when the mouse hovers over it and shrinking back to its original size when the mouse leaves.  We'll use pure CSS3 for this, avoiding JavaScript for a cleaner and more performant solution.  The styling will be clean and modern, suitable for a variety of applications.
 
