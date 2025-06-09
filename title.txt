@@ -1,1 +1,1 @@
-CSS Challenge:  Multi-level Nested Ordered List with Styling
+Overcoming the "Too Many Indexes" Problem in MongoDB
