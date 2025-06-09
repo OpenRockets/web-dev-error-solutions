@@ -1,1 +1,1 @@
-Overcoming the "Too Many Keys Specified" Error in MongoDB Compound Indexes
+Overcoming the "Too Many Indexes" Problem in MongoDB
