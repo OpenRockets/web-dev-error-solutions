@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Pricing Table with Tailwind CSS
+
 
 This challenge focuses on building a responsive pricing table using Tailwind CSS.  The goal is to create a clean, visually appealing table that adapts seamlessly to different screen sizes.  We'll utilize Tailwind's utility classes to streamline the styling process.
 
