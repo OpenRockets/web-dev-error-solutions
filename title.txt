@@ -1,1 +1,1 @@
-Handling `next/image` Errors in Next.js API Routes
+Creating a CSS-Only Expanding Card
