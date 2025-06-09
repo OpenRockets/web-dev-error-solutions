@@ -1,1 +1,1 @@
-CSS Challenge:  Reproducing a Simple Pricing Table
+Overcoming the "Too Many Indexes" Problem in MongoDB
