@@ -1,1 +1,1 @@
-CSS Challenge: Responsive Navigation Bar with a Hamburger Menu
+Overcoming MongoDB's "Too Many Open Files" Error
