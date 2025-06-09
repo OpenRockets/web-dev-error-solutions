@@ -1,1 +1,1 @@
-CSS Challenge:  Multi-level Nested Navigation
+Overcoming the "Too Many Indexes" Problem in MongoDB
