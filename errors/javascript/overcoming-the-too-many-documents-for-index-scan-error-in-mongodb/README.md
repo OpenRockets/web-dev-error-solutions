@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Too Many Documents for Index Scan" Error in MongoDB
+
 
 ## Description of the Error
 
