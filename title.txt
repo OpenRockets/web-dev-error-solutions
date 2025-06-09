@@ -1,1 +1,1 @@
-Overusing Indexes in MongoDB: A Performance Bottleneck
+Overcoming MongoDB's "Too Many Indexes" Error in Sharded Clusters
