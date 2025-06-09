@@ -83,8 +83,7 @@
 </p>
 <ol>
   <li>Fork this repository.</li>
-  <li>Create a new branch for your contribution.</li>
-  <li>Add your solution following our <a href="https://github.com/OpenRockets/web-dev-error-solutions/blob/main/CONTRIBUTING.md">Contribution Guidelines</a> and the defined <a href="https://github.com/OpenRockets/web-dev-error-solutions/blob/main/TEMPLATE.md">Template</a>.</li>
+  <li>Add your solution following our <a href="https://github.com/OpenRockets/web-dev-error-solutions/blob/main/contributing.md">Contribution Guidelines</a> and the defined <a href="https://github.com/OpenRockets/web-dev-error-solutions/blob/main/template.md">Template</a>.</li>
   <li>Submit a Pull Request. Our maintainers will review your submission.</li>
 </ol>
 <p>
