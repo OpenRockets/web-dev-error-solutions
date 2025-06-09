@@ -1,1 +1,1 @@
-Overcoming MongoDB's `$inc` Operator Limitation with Atomic Operations on Embedded Documents
+CSS Challenge:  Responsive Navigation Bar with a Subtle Hover Effect

@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Navigation Bar with a Subtle Hover Effect
+
 
 This challenge involves creating a responsive navigation bar that smoothly adapts to different screen sizes and incorporates a subtle hover effect on menu items.  We'll be using CSS3 for styling.
 
