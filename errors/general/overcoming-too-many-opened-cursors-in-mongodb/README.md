@@ -1,3 +1,5 @@
+# 🐞 Overcoming "Too Many Opened Cursors" in MongoDB
+
 
 This document addresses a common MongoDB problem: the "too many opened cursors" error.  This typically occurs when your application opens many cursors for database queries but fails to close them properly, leading to resource exhaustion on the MongoDB server.
 
