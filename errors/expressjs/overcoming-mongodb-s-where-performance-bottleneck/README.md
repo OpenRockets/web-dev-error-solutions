@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's `$where` Performance Bottleneck
+
 
 ## Description of the Error
 
