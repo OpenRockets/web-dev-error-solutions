@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Stylish Accordion with Tailwind CSS
+
 
 This challenge involves creating a stylish accordion using Tailwind CSS.  The accordion will have multiple sections, each with a clickable header that reveals or hides its corresponding content.  We'll focus on creating a clean, modern look using Tailwind's utility classes for efficient and responsive styling.
 
