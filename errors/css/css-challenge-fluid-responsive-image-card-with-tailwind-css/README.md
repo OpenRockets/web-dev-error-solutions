@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Fluid, Responsive Image Card with Tailwind CSS
+
 
 This challenge involves creating a responsive image card using Tailwind CSS. The card should adapt gracefully to different screen sizes, maintaining a visually appealing aspect ratio for the image.  We'll focus on clean, semantic HTML and concise Tailwind classes for styling.
 
