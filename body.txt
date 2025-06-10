@@ -1,64 +1,57 @@
 
-## Description of the Error
+This challenge focuses on creating an animated card that expands on hover, revealing more information. We'll use Tailwind CSS for rapid styling and smooth transitions.  This example leverages Tailwind's utility classes for a concise and efficient solution.
 
-A common problem in MongoDB, especially in rapidly growing applications, is having too many indexes.  While indexes are crucial for query performance, an excessive number can severely impact write performance.  Adding too many indexes can lead to significant slowdowns during insert, update, and delete operations because MongoDB needs to update all affected indexes every time a document is modified.  This can manifest as slow application response times, increased latency, and ultimately, application instability. The MongoDB server may also return errors related to exceeding resource limits during index creation or maintenance.
 
-## Fixing the Problem: Step-by-Step Code and Explanation
+## Description of the Styling
 
-This example focuses on identifying and removing unnecessary indexes, focusing on compound indexes that might be redundant.
+The card will be initially compact, displaying only a title and a small image. On hover, the card smoothly expands vertically, revealing a longer description and a "Learn More" button.  The animation will be subtle and user-friendly.  We'll utilize Tailwind's transition and transform properties for the animation.
 
-**Step 1: Identify Redundant Indexes**
 
-Use the `db.collection.getIndexes()` method to list all indexes on a specific collection. Analyze the indexes for redundancy.  Look for cases where one index covers the query patterns of another (or a subset of another).
+## Full Code
 
-```javascript
-// Connect to your MongoDB database
-use myDatabase;
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expanding Card</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
 
-// Select the collection
-db.myCollection.getIndexes()
+  <div class="container mx-auto p-8">
+    <div class="max-w-sm bg-white rounded-lg shadow-md overflow-hidden transition duration-300 ease-in-out transform hover:scale-105">
+      <img class="w-full h-48 object-cover" src="https://via.placeholder.com/350x150" alt="Card Image">
+      <div class="p-4">
+        <h2 class="text-xl font-bold text-gray-800 mb-2">Card Title</h2>
+        <p class="text-gray-600 text-sm hidden transition-all duration-300 h-0 overflow-hidden group-hover:h-auto group-hover:text-base">
+          This is a longer description of the card content.  It will only appear when the user hovers over the card.  This allows for a clean and uncluttered initial view.  You can customize the content to your liking!
+        </p>
+        <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded hidden transition-all duration-300 group-hover:block">Learn More</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
 ```
-
-This will output a JSON array showing all indexes on `myCollection`.  Examine the `key` field of each index document to identify potential redundancy. For example, if you have indexes like `{"fieldA": 1, "fieldB": 1}` and `{"fieldA": 1}`, the second index is likely redundant as the first already covers queries on `fieldA`.
-
-**Step 2: Remove Redundant Indexes**
-
-Once you've identified redundant indexes, remove them using the `db.collection.dropIndex()` method. Replace `<indexName>` with the actual name of the index (obtained from `getIndexes()`).
-
-```javascript
-// Drop the redundant index
-db.myCollection.dropIndex("redundantIndexName_1");
-
-//Or, drop index using the key specification
-db.myCollection.dropIndex({"fieldA": 1});
-```
-
-
-**Step 3: Monitor Performance**
-
-After removing indexes, carefully monitor the performance of your application. Use MongoDB's monitoring tools (e.g., `db.currentOp()`, the MongoDB Compass profiling tools, or your application's logging) to assess the impact of the changes on both query and write performance.  You might need to iterate on this process, removing more indexes if necessary.
-
-
-**Step 4 (Optional): Consider Index Optimization**
-
-After removing redundant indexes, it’s beneficial to review the remaining indexes.  Consider:
-
-* **Multikey Indexes:** Are they being used efficiently? Overuse can lead to performance issues.
-* **Sparse Indexes:** Are they necessary?  Sparse indexes only index documents that meet a certain condition, which might be unnecessary in many cases.
-* **Compound Indexes:** Ensure they are ordered according to your most frequent query patterns (most selective fields first).
 
 ## Explanation
 
-Having too many indexes leads to increased write overhead because each write operation must update all relevant indexes. This overhead can dramatically slow down write performance, especially with frequent updates or inserts.  Identifying and removing redundant indexes is a crucial step in optimizing your MongoDB database.  The process involves carefully examining existing indexes, understanding their usage patterns, and removing those that are not contributing to performance gains.
+* **`container mx-auto p-8`:** Centers the card horizontally and adds padding.
+* **`max-w-sm`:** Sets a maximum width for the card.
+* **`bg-white rounded-lg shadow-md`:** Styles the card with a white background, rounded corners, and a shadow.
+* **`overflow-hidden`:** Prevents the content from overflowing.
+* **`transition duration-300 ease-in-out transform hover:scale-105`:**  Adds a smooth scaling transition on hover.
+* **`hidden transition-all duration-300 h-0 overflow-hidden group-hover:h-auto group-hover:text-base`:** This hides the description initially.  `group-hover` applies styles when hovering over the parent (.group) div, revealing the description on hover and increasing font size.
+* **`hidden transition-all duration-300 group-hover:block`:** This hides the button initially and displays it on hover.
 
+## Links to Resources to Learn More
 
-## External References
-
-* [MongoDB Documentation on Indexes](https://www.mongodb.com/docs/manual/indexes/)
-* [MongoDB Documentation on `db.collection.getIndexes()`](https://www.mongodb.com/docs/manual/reference/method/db.collection.getIndexes/)
-* [MongoDB Documentation on `db.collection.dropIndex()`](https://www.mongodb.com/docs/manual/reference/method/db.collection.dropIndex/)
-* [Understanding Index Optimization in MongoDB](https://www.mongodb.com/blog/post/understanding-index-optimization-in-mongodb) (This might require searching for a relevant blog post on the MongoDB website as URLs can change)
-
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs/](https://tailwindcss.com/docs/)
+* **MDN Web Docs (CSS Transitions):** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **MDN Web Docs (CSS Transforms):** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
