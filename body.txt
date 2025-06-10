@@ -1,87 +1,119 @@
 
-## Description of the Error
+This challenge focuses on creating a responsive navigation bar using CSS (specifically CSS3) that features a subtle hover effect on the navigation links.  We'll achieve responsiveness using media queries and the hover effect using transitions.  No JavaScript is required.
 
-The "too many connections" error in MongoDB arises when your application attempts to establish more connections to the MongoDB server than the server is configured to handle.  This typically manifests as a connection timeout or a specific error message indicating that the maximum connection limit has been reached.  This can cripple your application, preventing any further interaction with the database.  The issue is often exacerbated by poorly managed connections—connections that are not properly closed after use.
+**Description of the Styling:**
 
-## Causes
+The navigation bar will be a simple horizontal bar at the top of the page.  On larger screens (above 768px), the navigation links will be displayed inline. On smaller screens, the navigation links will stack vertically, revealing themselves via a hamburger menu.  The hover effect will subtly change the background color of the links on hover.
 
-Several factors can contribute to this error:
+**Full Code:**
 
-* **Insufficient `maxPoolSize` setting:** Your MongoDB driver might be configured with a `maxPoolSize` (or similar setting depending on your driver) that's too low for your application's needs.
-* **Leaked Connections:**  Applications might fail to properly close database connections after they are finished using them. This leads to a gradual accumulation of open connections until the limit is exceeded.
-* **High concurrency:**  A sudden spike in concurrent requests to the database can overwhelm the server if the `maxConnections` limit on the server is too low.
-* **Long-running queries:**  Queries that take an extended period to complete hold onto connections, reducing the pool of available connections for other operations.
-
-
-## Fixing the Error: Step-by-Step Code Example (using Node.js with the MongoDB Driver)
-
-This example assumes you are using the official Node.js MongoDB driver.
-
-**1.  Increase the `maxPoolSize` in your driver configuration:**
-
-```javascript
-const { MongoClient } = require('mongodb');
-
-const uri = "mongodb://localhost:27017/?retryWrites=true&w=majority"; // Replace with your connection string
-
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverApi: ServerApiVersion.v1, // Add this line for newer versions of the driver
-  maxPoolSize: 100 // Increased the pool size. Adjust as needed.
-});
-
-
-async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    // Establish and verify connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Connected successfully to server");
-
-    // Your database operations here...
-    const db = client.db('mydatabase');
-    const collection = db.collection('mycollection');
-
-    // ...Your code to interact with MongoDB...
-
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responsive Navigation Bar</title>
+<style>
+  body {
+    font-family: sans-serif;
+    margin: 0;
   }
-}
-run().catch(console.dir);
 
+  nav {
+    background-color: #333;
+    overflow: hidden;
+  }
+
+  nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  nav li {
+    float: left;
+    padding: 14px 16px;
+  }
+
+  nav li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+  }
+
+  nav li a:hover {
+    background-color: #ddd; /* Subtle background change on hover */
+    color: black;
+  }
+
+  /* Responsive navigation for smaller screens */
+  @media screen and (max-width: 768px) {
+    nav ul {
+      float: none;
+      text-align: center;
+    }
+
+    nav li {
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+    }
+
+    nav li a {
+        display: block;
+    }
+
+    /* Hamburger menu styles (optional, can be replaced with a JS solution for accessibility) */
+    .hamburger {
+      display: block;
+      cursor: pointer;
+      padding: 10px;
+      background: #333;
+      color: white;
+      border: none;
+      font-size: 20px;
+      float: right;
+    }
+
+
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <ul>
+    <li><a href="#">Home</a></li>
+    <li><a href="#">About</a></li>
+    <li><a href="#">Services</a></li>
+    <li><a href="#">Contact</a></li>
+      <button class="hamburger">&#9776;</button>
+  </ul>
+</nav>
+
+
+</body>
+</html>
 ```
 
-**2.  Ensure proper connection closure:**
 
-Make absolutely certain that `client.close()` is called within a `finally` block (as shown above) to guarantee that connections are released even if errors occur.  Avoid using `try...catch` without a `finally` block to close the connection in your database interaction code.
+**Explanation:**
 
-**3.  Optimize Queries:**
-
-Review your database queries for performance bottlenecks.  Slow queries hold connections longer, reducing the number of available connections. Optimize queries using indexes appropriately.
-
-**4.  Increase MongoDB Server's `maxConnections`:**
-
-If the problem persists after adjusting the client-side `maxPoolSize`, you might need to increase the `maxConnections` setting on your MongoDB server. This is done through the MongoDB configuration files (`mongod.conf`). Consult the MongoDB documentation for the specifics on modifying this setting based on your setup.
-
-**5.  Connection Pool Monitoring:**
-
-Implement monitoring to track active connections. This helps identify potential leaks and predict when the connection limit might be reached.  Tools like MongoDB Compass or dedicated monitoring systems can provide this functionality.
+* **Basic Styling:** The basic structure of the navigation bar is created using unordered lists (`<ul>`) and list items (`<li>`).  `float: left;` arranges the items horizontally.
+* **Hover Effect:** The `transition` property smoothly animates the background color change on hover.
+* **Responsiveness:** The `@media` query targets screens smaller than 768px.  Inside the media query, we change the `float` property of the list items to `none` and use `text-align: center;` to stack them vertically.  A simple hamburger icon is added as a button for mobile, which you would likely enhance with JavaScript for proper menu functionality.
+* **Optional Hamburger Menu Implementation:** The provided example uses a simple button for the hamburger icon. For better accessibility and usability on mobile, consider implementing a proper hamburger menu using JavaScript.
 
 
 
-## Explanation
+**Links to Resources to Learn More:**
 
-The "too many connections" error arises from a mismatch between the number of connections your application attempts to create and the server's capacity to handle them. Increasing `maxPoolSize` allows your application to maintain more concurrent connections.  However, this is not a silver bullet; proper connection management through consistently closing connections is crucial.  Overly large `maxPoolSize` values can also put strain on the database server.  It's usually best to start with a reasonable increase and monitor the impact.  Increasing the server's `maxConnections` directly affects the server's resource capacity, which might require server upgrades.
-
-## External References
-
-* **MongoDB Driver Documentation (Node.js):** [https://www.mongodb.com/docs/drivers/node/current/](https://www.mongodb.com/docs/drivers/node/current/)
-* **MongoDB Configuration Options:** [https://www.mongodb.com/docs/manual/reference/configuration-options/](https://www.mongodb.com/docs/manual/reference/configuration-options/)
-* **Troubleshooting Connection Issues:** [https://www.mongodb.com/docs/manual/tutorial/troubleshoot-connection-problems/](https://www.mongodb.com/docs/manual/tutorial/troubleshoot-connection-problems/)
+* **CSS3 Selectors:** [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **Responsive Web Design Basics:** [Google Web Fundamentals - Responsive Web Design](https://developers.google.com/web/fundamentals/design-and-ux/responsive/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
