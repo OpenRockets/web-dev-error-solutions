@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Dynamically Sized Card Grid with Tailwind CSS
+
 
 This challenge involves creating a responsive card grid using Tailwind CSS. The grid should dynamically adjust the number of columns based on the screen size, ensuring cards always maintain a consistent aspect ratio and spacing.  We'll aim for a clean, modern aesthetic.
 
