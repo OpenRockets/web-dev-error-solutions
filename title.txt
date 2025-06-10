@@ -1,1 +1,1 @@
-Overcoming MongoDB's "Index not found" Error in CRUD Operations
+Overcoming the "Slow Query" Problem in MongoDB Due to Missing Indexes
