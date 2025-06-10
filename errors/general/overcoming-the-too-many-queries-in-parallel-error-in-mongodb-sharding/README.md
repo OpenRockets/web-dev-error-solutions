@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Too Many Queries in Parallel" Error in MongoDB Sharding
+
 
 ## Description of the Error
 

@@ -1,1 +1,1 @@
-CSS Challenge: Responsive Navigation Bar with a Subtle Hover Effect
+Overcoming the "Too Many Queries in Parallel" Error in MongoDB Sharding
