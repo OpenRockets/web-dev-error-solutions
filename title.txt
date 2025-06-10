@@ -1,1 +1,1 @@
-Overcoming the "Cannot Use $lookup with Array of Objects" Error in MongoDB Aggregation
+MongoDB: Overuse of Indexes Leading to Performance Degradation
