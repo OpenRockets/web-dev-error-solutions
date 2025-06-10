@@ -1,1 +1,1 @@
-CSS Challenge:  Fluid, Responsive Image Card with Tailwind CSS
+Overcoming the "Cannot Use $lookup with Array of Objects" Error in MongoDB Aggregation

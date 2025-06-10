@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Cannot Use $lookup with Array of Objects" Error in MongoDB Aggregation
+
 
 ## Description of the Error
 
