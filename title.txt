@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Pricing Table with Tailwind CSS
+Overcoming the "Too Many Documents in a Single Collection" Problem in MongoDB
