@@ -1,1 +1,1 @@
-Overcoming "too many indexes" Error in MongoDB
+Overcoming the "Cannot use $inc operator with a string field" Error in MongoDB

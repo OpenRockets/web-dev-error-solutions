@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Cannot use $inc operator with a string field" Error in MongoDB
+
 
 This document addresses a common MongoDB error encountered when attempting to increment a field using the `$inc` operator, specifically when that field is of the wrong data type (string instead of a number).
 
