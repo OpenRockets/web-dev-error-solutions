@@ -1,13 +1,15 @@
 # 🐞 Overcoming the "Too Many Open Cursors" Error in MongoDB
 
 
-**Description of the Error:**
+## Description of the Error
 
-The "Too Many Open Cursors" error in MongoDB arises when a client application maintains an excessive number of open cursors without closing them properly.  Each cursor represents an open connection to a MongoDB query result set.  If the number of open cursors surpasses the server's configured limit (typically controlled by `wiredTigerCursorCacheSizeMB`), MongoDB will reject further connection attempts or requests, resulting in this error.  This is particularly common in long-running applications that fail to release cursors after data processing.
+The "Too Many Open Cursors" error in MongoDB arises when a client application holds onto database cursors for an extended period without closing them. This typically happens when loops iterate through large datasets, fetching documents one by one without properly releasing the cursor resources.  MongoDB has a limit on the number of open cursors per connection, and exceeding this limit leads to the error, preventing further database operations.  This can severely impact application performance and availability.
 
-**Code Example (Illustrative Python with pymongo):**
+## Step-by-Step Code Fix (Python Example)
 
-This example demonstrates incorrect cursor handling, leading to the error:
+This example demonstrates how to avoid the "Too Many Open Cursors" error using Python's `pymongo` driver.  We'll focus on correctly handling cursors when iterating through a large collection.
+
+**Incorrect Code (Leads to the Error):**
 
 ```python
 import pymongo
@@ -16,23 +18,12 @@ client = pymongo.MongoClient("mongodb://localhost:27017/")
 db = client["mydatabase"]
 collection = db["mycollection"]
 
-# Incorrect cursor handling: cursor is never closed
-for document in collection.find({}):
-    # Process document
-    print(document)
+for doc in collection.find({}):  # Incorrect: Keeps cursor open for entire loop
+    # Process each document
+    print(doc)
 
-# Client is not closed, potentially keeping other resources open
-# ... more code ...
+client.close()
 ```
-
-**Step-by-Step Fix:**
-
-1. **Explicitly Close Cursors:**  The most crucial step is to ensure each cursor is explicitly closed after use.  This releases the server-side resources.
-
-2. **Use `with` Statements (Context Managers):**  Python's `with` statement provides an elegant way to guarantee resource cleanup, even in case of exceptions.
-
-3. **Close the Client Connection:**  Finally, close the `MongoClient` connection when it's no longer needed. This releases all associated resources, including any remaining open cursors.
-
 
 **Corrected Code:**
 
@@ -44,25 +35,51 @@ db = client["mydatabase"]
 collection = db["mycollection"]
 
 try:
-    with collection.find({}) as cursor: # Uses context manager for automatic closure
-        for document in cursor:
-            # Process document
-            print(document)
-except pymongo.errors.PyMongoError as e:
-    print(f"An error occurred: {e}")
+    cursor = collection.find({}) #Get the cursor
+    for doc in cursor:
+        # Process each document
+        print(doc)
+    cursor.close() #Explicitly close the cursor
+except pymongo.errors.ServerSelectionTimeoutError as e:
+    print(f"Server Selection Timeout Error: {e}")
+except pymongo.errors.ConnectionFailure as e:
+    print(f"Connection Failure: {e}")
+except Exception as e:
+    print(f"An unexpected error occurred: {e}")
 finally:
-    client.close() # Ensures client is closed even if errors occur
+    client.close() #Always ensure to close the client at the end
 
 ```
 
-**Explanation:**
+**Explanation of Correction:**
 
-The corrected code utilizes a `with` statement to manage the cursor. The `cursor` object is automatically closed when the `with` block exits, regardless of whether the loop completes successfully or an exception is raised. The `finally` block guarantees that the `client` connection is closed, preventing resource leaks.  This prevents the accumulation of open cursors, thus resolving the "Too Many Open Cursors" error.
+1. **Explicit Cursor Closing:** The crucial change is adding `cursor.close()` after the loop. This explicitly releases the cursor resources back to the MongoDB server.
 
-**External References:**
+2. **Error Handling:** The `try...except...finally` block ensures that the client connection is closed (`client.close()`) even if errors occur during processing. This is good practice for robust code.
 
-* **MongoDB Documentation on Cursors:** [https://www.mongodb.com/docs/manual/tutorial/query-documents/](https://www.mongodb.com/docs/manual/tutorial/query-documents/)  (Look for sections on cursor management)
-* **pymongo Documentation:** [https://pymongo.readthedocs.io/en/stable/](https://pymongo.readthedocs.io/en/stable/) (Search for cursor handling and connection management)
+
+## Explanation
+
+The core issue is resource management.  Each cursor consumes resources on both the client and server.  Without explicit closing, the client accumulates many open cursors, eventually exhausting the server's limit.  The `cursor.close()` call is essential for releasing these resources promptly and preventing the error.
+
+The efficient way to process large datasets is typically to fetch documents in batches using the `batch_size` parameter of the `find()` method:
+
+```python
+cursor = collection.find({}, batch_size=1000) #Fetch in batches of 1000
+for doc in cursor:
+  #Process the document
+  print(doc)
+cursor.close()
+```
+
+This reduces the number of open cursors at any given time, improving both performance and preventing the error more effectively than processing one document at a time.
+
+
+## External References
+
+* **pymongo Documentation:** [https://pymongo.readthedocs.io/en/stable/](https://pymongo.readthedocs.io/en/stable/)  (Consult the section on cursors for detailed information.)
+* **MongoDB Documentation on Cursors:** [https://www.mongodb.com/docs/manual/tutorial/iterate-with-cursors/](https://www.mongodb.com/docs/manual/tutorial/iterate-with-cursors/) (For general information on cursors and their management.)
+* **MongoDB Driver Specifications (choose the relevant driver):** (Look for documentation related to cursor management for your specific driver)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
