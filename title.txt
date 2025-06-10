@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Image Gallery with Tailwind CSS
+Overcoming MongoDB's "Too Many Connections" Error
