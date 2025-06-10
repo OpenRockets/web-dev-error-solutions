@@ -1,1 +1,1 @@
-CSS Challenge: Responsive Navigation Bar with Subtle Animations
+Overcoming the "Too Many Indexes" Problem in MongoDB
