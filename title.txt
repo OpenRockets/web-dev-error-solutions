@@ -1,1 +1,1 @@
-Overusing MongoDB Indexes: A Performance Bottleneck
+Overcoming MongoDB's "too many open files" Error
