@@ -1,1 +1,1 @@
-Overcoming MongoDB's "too many open files" error
+Overcoming the "Too Many Open Files" Error in MongoDB
