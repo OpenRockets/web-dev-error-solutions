@@ -1,1 +1,1 @@
-Overcoming the "Too Many Connections" Error in MongoDB
+CSS Challenge:  A Responsive Navigation Bar with a Subtle Hover Effect
