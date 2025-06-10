@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Image Gallery with CSS Grid
+
 
 This challenge involves creating a responsive image gallery using CSS Grid.  The goal is to display a series of images in a visually appealing and adaptable layout that rearranges itself gracefully across different screen sizes. We'll be using plain CSS (no preprocessors like Sass or Less, and no frameworks like Tailwind CSS for this example to focus on core Grid concepts).
 

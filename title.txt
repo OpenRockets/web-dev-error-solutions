@@ -1,1 +1,1 @@
-MongoDB: Overuse of Indexes Leading to Performance Degradation
+CSS Challenge:  Responsive Image Gallery with CSS Grid
