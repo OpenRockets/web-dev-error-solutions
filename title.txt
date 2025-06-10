@@ -1,1 +1,1 @@
-CSS Challenge: Recreate a Simple Pricing Table
+Overusing MongoDB Indexes: A Performance Bottleneck
