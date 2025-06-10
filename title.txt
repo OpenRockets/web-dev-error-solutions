@@ -1,1 +1,1 @@
-CSS Challenge:  Animated Expanding Card with Tailwind CSS
+Overcoming the "Too Many Indexes" Problem in MongoDB
