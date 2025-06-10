@@ -1,1 +1,1 @@
-Overcoming the "Too Many Indexes" Problem in MongoDB
+Overcoming MongoDB's `$lookup` Performance Bottlenecks in Aggregation Pipelines
