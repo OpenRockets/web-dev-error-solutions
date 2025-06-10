@@ -1,1 +1,1 @@
-MongoDB: Overusing Indexes and Performance Degradation
+CSS Challenge: Responsive Navigation Bar with a Subtle Hover Effect
