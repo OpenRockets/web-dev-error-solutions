@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Multi-level Nested List with Stylish Accordion
+
 
 This challenge focuses on styling a multi-level nested list to create an accordion-like effect using CSS.  Each list item will initially only show its title, and clicking the title will reveal its sub-items. We'll achieve this using CSS only, without JavaScript. This example utilizes CSS variables for easier customization.
 
