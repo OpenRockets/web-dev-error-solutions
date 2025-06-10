@@ -1,107 +1,106 @@
 # 🐞 CSS Challenge: Recreate a Simple Pricing Table
 
 
-This challenge involves creating a clean and responsive pricing table using CSS.  We'll focus on a straightforward design, easily adaptable to different styles and complexity levels.  This example uses plain CSS, but could be easily adapted to use Tailwind CSS (see notes below).
-
+This challenge involves creating a clean and responsive pricing table using CSS. We'll focus on a simple design, easily adaptable to different styles and complexities.  This example uses plain CSS;  adapting it to Tailwind would be a straightforward exercise of replacing the CSS classes with their Tailwind equivalents.
 
 **Description of the Styling:**
 
-The pricing table will contain three columns representing different pricing plans (Basic, Pro, and Premium). Each column will include a plan name, a price, a list of features, and a call-to-action button. The table will be responsive, adapting its layout to different screen sizes.  We'll aim for a clean, modern aesthetic with clear visual hierarchy.
+The pricing table will feature three columns representing different pricing plans (e.g., Basic, Pro, Premium). Each column will have a header (plan name), a list of features, a price, and a call to action button.  The table will be responsive, adjusting its layout for different screen sizes. We'll aim for a clean, modern aesthetic using a combination of colors, shadows, and borders.
 
 **Full Code (CSS):**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Pricing Table</title>
-<style>
+```css
 body {
   font-family: sans-serif;
 }
 
 .pricing-table {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
+  grid-gap: 20px;
   padding: 20px;
 }
 
-.pricing-plan {
-  border: 1px solid #ccc;
+.plan {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   text-align: center;
 }
 
-.pricing-plan h2 {
-  margin-top: 0;
+.plan h2 {
+  margin-bottom: 10px;
 }
 
-.pricing-plan .price {
-  font-size: 2em;
+.plan ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 10px;
+}
+
+.plan li {
+  margin-bottom: 5px;
+}
+
+.plan .price {
+  font-size: 24px;
   font-weight: bold;
   margin-bottom: 10px;
 }
 
-.pricing-plan ul {
-  list-style: none;
-  padding: 0;
-}
-
-.pricing-plan ul li {
-  margin-bottom: 5px;
-}
-
-.pricing-plan button {
-  background-color: #4CAF50;
-  border: none;
+.plan button {
+  background-color: #007bff;
   color: white;
+  border: none;
   padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 10px 0;
-  cursor: pointer;
   border-radius: 5px;
+  cursor: pointer;
 }
-</style>
+```
+
+**HTML (Example):**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pricing Table</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-<div class="pricing-table">
-  <div class="pricing-plan">
-    <h2>Basic</h2>
-    <p class="price">$9/month</p>
-    <ul>
-      <li>1 User</li>
-      <li>5 GB Storage</li>
-      <li>Basic Support</li>
-    </ul>
-    <button>Sign Up</button>
+  <div class="pricing-table">
+    <div class="plan">
+      <h2>Basic</h2>
+      <ul>
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+      </ul>
+      <p class="price">$9/month</p>
+      <button>Sign Up</button>
+    </div>
+    <div class="plan">
+      <h2>Pro</h2>
+      <ul>
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+      </ul>
+      <p class="price">$19/month</p>
+      <button>Sign Up</button>
+    </div>
+    <div class="plan">
+      <h2>Premium</h2>
+      <ul>
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+        <li>Feature 4</li>
+      </ul>
+      <p class="price">$29/month</p>
+      <button>Sign Up</button>
+    </div>
   </div>
-  <div class="pricing-plan">
-    <h2>Pro</h2>
-    <p class="price">$49/month</p>
-    <ul>
-      <li>5 Users</li>
-      <li>50 GB Storage</li>
-      <li>Priority Support</li>
-    </ul>
-    <button>Sign Up</button>
-  </div>
-  <div class="pricing-plan">
-    <h2>Premium</h2>
-    <p class="price">$99/month</p>
-    <ul>
-      <li>Unlimited Users</li>
-      <li>Unlimited Storage</li>
-      <li>Dedicated Support</li>
-    </ul>
-    <button>Sign Up</button>
-  </div>
-</div>
-
 </body>
 </html>
 ```
@@ -109,25 +108,14 @@ body {
 
 **Explanation:**
 
-The CSS uses `grid` for layout, making it responsive and easy to manage.  Classes are used to target specific elements, allowing for easy styling modifications.  The `auto-fit` keyword in `grid-template-columns` ensures the columns adjust to the available space.  Each plan is contained within a `div` with the class `pricing-plan`.  This structure allows for clean separation of concerns and easy maintenance.
-
-
-**Adapting to Tailwind CSS:**
-
-Tailwind CSS would simplify this further.  Instead of writing custom CSS, you'd use Tailwind's utility classes. For example:
-
-```html
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-  <!-- Pricing plan divs using Tailwind classes here -->
-</div>
-```
+The CSS uses a grid layout for responsiveness.  The `grid-template-columns` property with `repeat(auto-fit, minmax(300px, 1fr))` ensures that the columns adjust based on the screen size.  Each plan is styled individually using classes.  Box shadows and rounded corners add visual appeal.  The HTML provides a basic structure for the table, which can be easily customized.
 
 
 **Links to Resources to Learn More:**
 
-* **CSS Grid:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
-* **Tailwind CSS:** [https://tailwindcss.com/](https://tailwindcss.com/)
-* **Responsive Web Design:** [https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design](https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design)
+* **CSS Grid Layout:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
+* **CSS Box Model:** [https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing)
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs) (If you choose to implement with Tailwind)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

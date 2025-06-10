@@ -1,1 +1,1 @@
-MongoDB: Overuse of `$in` Operator Leading to Performance Issues
+CSS Challenge: Recreate a Simple Pricing Table
