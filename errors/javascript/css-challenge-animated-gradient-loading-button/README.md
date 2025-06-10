@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Animated Gradient Loading Button
+
 
 This challenge involves creating a visually appealing loading button using CSS gradients and animations. The button will smoothly transition between a vibrant gradient background and a solid color while displaying a loading spinner.  This example utilizes CSS3, but could easily be adapted to a framework like Tailwind CSS.
 
