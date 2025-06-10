@@ -1,1 +1,1 @@
-CSS Challenge:  Animated Social Media Icons
+Overcoming the "Too Many Indexes" Problem in MongoDB
