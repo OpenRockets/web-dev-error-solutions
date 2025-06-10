@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's "Index Created but Not Used" Issue
+
 
 This document addresses a common problem encountered when working with MongoDB indexes: the index is successfully created, yet the query still performs poorly because MongoDB doesn't utilize it. This often stems from subtle discrepancies between the query and the index definition.
 
