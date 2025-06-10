@@ -1,76 +1,83 @@
 
-## Description of the Error
+This challenge focuses on building a responsive pricing table using Tailwind CSS. The table will display three different pricing plans (Basic, Pro, and Premium) with their respective features and prices.  The design emphasizes clarity, readability, and responsiveness across various screen sizes.
 
-A common problem faced by MongoDB developers is slow query execution. This often stems from the absence of appropriate indexes on frequently queried fields.  Without indexes, MongoDB performs a collection scan—examining every document in the collection to find matches—which becomes incredibly inefficient as the collection grows. This results in significantly increased query times, impacting application performance and user experience.  The error itself isn't a specific error message but rather manifests as excessively long query execution times. You might observe slow response times in your application or performance monitoring tools revealing prolonged query durations.
+**Description of the Styling:**
 
-## Fixing Step-by-Step (Code Example)
+The pricing table will be structured as a card with three columns representing the different plans. Each plan will have a distinct background color (subtle variations). Key features will be listed using a bullet point list. The price will be prominently displayed, using larger font size and a different color.  The call-to-action button will be styled to be visually appealing and easily clickable.  Responsiveness ensures the table adapts gracefully to smaller screens, possibly stacking the columns vertically on mobile.
 
-Let's assume we have a collection named `products` with documents like this:
 
-```json
-{
-  "name": "Laptop",
-  "category": "Electronics",
-  "price": 1200,
-  "stock": 50
-}
+**Full Code:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing Table</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto p-8">
+    <h1 class="text-3xl font-bold mb-8 text-center">Pricing Plans</h1>
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+      <div class="flex flex-col md:flex-row">
+        <div class="p-6 border-r border-gray-200 md:w-1/3">
+          <h2 class="text-xl font-semibold mb-4">Basic</h2>
+          <p class="text-gray-700 mb-6">Perfect for individuals</p>
+          <ul class="list-disc list-inside mb-6">
+            <li>1 User</li>
+            <li>10 GB Storage</li>
+            <li>Basic Support</li>
+          </ul>
+          <p class="text-2xl font-bold text-blue-600 mb-4">$9/month</p>
+          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Sign Up
+          </button>
+        </div>
+        <div class="p-6 border-r border-gray-200 md:w-1/3 bg-gray-50">
+          <h2 class="text-xl font-semibold mb-4">Pro</h2>
+          <p class="text-gray-700 mb-6">Ideal for small teams</p>
+          <ul class="list-disc list-inside mb-6">
+            <li>5 Users</li>
+            <li>50 GB Storage</li>
+            <li>Priority Support</li>
+          </ul>
+          <p class="text-2xl font-bold text-blue-600 mb-4">$49/month</p>
+          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Sign Up
+          </button>
+        </div>
+        <div class="p-6 md:w-1/3">
+          <h2 class="text-xl font-semibold mb-4">Premium</h2>
+          <p class="text-gray-700 mb-6">Best for large organizations</p>
+          <ul class="list-disc list-inside mb-6">
+            <li>Unlimited Users</li>
+            <li>Unlimited Storage</li>
+            <li>Dedicated Support</li>
+          </ul>
+          <p class="text-2xl font-bold text-blue-600 mb-4">$99/month</p>
+          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Sign Up
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
 ```
 
-We frequently query for products based on `category` and `price`.  Without an index, this query will be slow:
+**Explanation:**
 
-```javascript
-db.products.find({ category: "Electronics", price: { $lt: 1500 } })
-```
-
-Here's how to fix this using MongoDB's `createIndex` command:
-
-**Step 1: Connect to your MongoDB instance.**  This will depend on your chosen driver (e.g., MongoDB Shell, Python's PyMongo, Node.js's MongoDB driver).  For demonstration, we'll use the MongoDB shell:
-
-```bash
-mongo
-```
-
-**Step 2: Access your database and collection.**
-
-```javascript
-use mydatabase // Replace mydatabase with your database name
-db.products.getIndexes() //Check Existing indexes (Optional)
-```
-
-**Step 3: Create the index.**  We'll create a compound index on `category` and `price` to optimize queries using both fields.  The order matters;  MongoDB will optimize queries that start with the first field in the index.
-
-```javascript
-db.products.createIndex( { category: 1, price: 1 } )
-```
-
-This command creates an ascending index (indicated by `1`). You can use `-1` for descending indexes.
+The code utilizes Tailwind CSS classes for styling.  `flex` and `flex-col`/`flex-row` control the layout, making it responsive.  `md:w-1/3` sets the width to one-third on medium screens and above, while it stacks vertically on smaller screens.  Classes like `bg-white`, `shadow-md`, `rounded-lg`, `p-6`, and others handle background, shadow, border-radius, padding, and other visual aspects. The use of utility classes makes the code concise and readable.
 
 
-**Step 4: Verify the index creation.**
+**Links to Resources to Learn More:**
 
-```javascript
-db.products.getIndexes()
-```
-
-You should now see the newly created index in the output.
-
-
-**Step 5: Retest your query.** The query should now execute significantly faster thanks to the index.
-
-```javascript
-db.products.find({ category: "Electronics", price: { $lt: 1500 } })
-```
-
-
-## Explanation
-
-Indexes in MongoDB are similar to indexes in relational databases. They are special data structures that store a subset of the data fields, ordered efficiently for fast lookups.  When a query involves indexed fields, MongoDB can quickly locate the matching documents without scanning the entire collection.  A compound index, like the one created above, speeds up queries using multiple fields in the specified order. Choosing the right index significantly impacts query performance.  Incorrectly chosen or missing indexes are the most common cause of slow query performance in MongoDB.
-
-
-## External References
-
-* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
-* **MongoDB Query Optimization:** [https://www.mongodb.com/docs/manual/reference/method/db.collection.createIndex/](https://www.mongodb.com/docs/manual/reference/method/db.collection.createIndex/)
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)  - The official documentation is an excellent resource to learn about all the utility classes.
+* **Learn CSS Grid:** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/) - While not used here extensively, understanding CSS Grid is helpful for more advanced layouts.
+* **Learn Responsive Design:** [https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design](https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design) - Understanding responsive design principles is crucial for creating websites that work well on all devices.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
