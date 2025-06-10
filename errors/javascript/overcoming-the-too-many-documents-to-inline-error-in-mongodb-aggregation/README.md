@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Too Many Documents to Inline" Error in MongoDB Aggregation
+
 
 This document addresses a common error encountered when performing aggregations in MongoDB involving large datasets: the "Too Many Documents to Inline" error.  This happens when the `$lookup` or other aggregation stages attempt to process an excessively large number of documents in memory, exceeding the system's available resources.
 
