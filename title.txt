@@ -1,1 +1,1 @@
-Overusing $in Operator in MongoDB Queries Leading to Performance Issues
+Overcoming the "Too Many Open Files" Error in MongoDB
