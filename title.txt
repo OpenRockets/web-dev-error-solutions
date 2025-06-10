@@ -1,1 +1,1 @@
-Overcoming "Too Many Indexes" Error in MongoDB
+Overcoming "Too Many Indexes" Errors in MongoDB
