@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's "Index not found" Error in CRUD Operations
+
 
 This document details a common problem developers face in MongoDB: the "Index not found" error during CRUD (Create, Read, Update, Delete) operations, specifically focusing on the read operations.  This error occurs when a query attempts to utilize an index that doesn't exist or isn't correctly configured.
 
