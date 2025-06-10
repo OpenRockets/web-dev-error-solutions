@@ -1,1 +1,1 @@
-Overcoming MongoDB's "Write Concern: Acknowledged" Limitation in High-Throughput Scenarios
+CSS Challenge: Responsive Navigation Bar with Subtle Animations

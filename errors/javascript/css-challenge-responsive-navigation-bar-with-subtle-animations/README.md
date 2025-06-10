@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Responsive Navigation Bar with Subtle Animations
+
 
 This challenge focuses on creating a responsive navigation bar using CSS (specifically CSS3) that incorporates smooth hover animations and adapts seamlessly to different screen sizes. We'll utilize a simple, clean design, focusing on the practical application of CSS properties for layout and animation.  No JavaScript is needed.
 
