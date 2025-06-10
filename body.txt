@@ -1,143 +1,67 @@
 
-This challenge focuses on creating a responsive pricing table using CSS.  We'll aim for a clean, modern design that adapts well to different screen sizes.  We'll leverage CSS Grid for layout and some simple CSS3 properties for styling.  No Tailwind CSS will be used in this example for clarity and to showcase fundamental CSS techniques.
+## Description of the Error
 
+A common problem in MongoDB is having too many indexes. While indexes dramatically speed up query performance, an excessive number can significantly degrade write performance.  Adding an index involves extra disk space and time to update the index every time a document is inserted, updated, or deleted.  This write slowdown can outweigh the benefits of faster reads, especially in write-heavy applications.  The symptoms include slow insertion and update operations, increased latency, and potentially application instability.  MongoDB itself might log warnings about slow index operations or exceeding limits on the number of indexes per collection.
 
-## Description of the Styling
+## Fixing the Problem Step-by-Step
 
-The pricing table will consist of three pricing plans: Basic, Pro, and Premium. Each plan will have a title, a list of features, a price, and a call-to-action button.  The table will be responsive, adapting gracefully to smaller screens by stacking the columns vertically.  We'll use subtle gradients and shadows to enhance the visual appeal.
+This example focuses on identifying and removing unnecessary indexes in a collection called "products".  Assume you have a MongoDB instance running and access to the `mongo` shell.
 
+**Step 1: Identify Existing Indexes**
 
-## Full Code
+Use the `db.collection.getIndexes()` command to list all indexes for your collection:
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Responsive Pricing Table</title>
-<style>
-body {
-  font-family: sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f4f4f4;
-}
-
-.pricing-table {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
-  grid-gap: 20px;
-  background-color: white;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 5px;
-}
-
-.plan {
-  text-align: center;
-  padding: 20px;
-  background: linear-gradient(to bottom right, #e6f7ff, #d0ebff); /* Subtle gradient */
-}
-
-.plan h2 {
-  color: #333;
-  margin-bottom: 10px;
-}
-
-.plan ul {
-  list-style: none;
-  padding: 0;
-}
-
-.plan li {
-  margin-bottom: 5px;
-}
-
-.plan .price {
-  font-size: 24px;
-  font-weight: bold;
-  color: #007bff;
-  margin-bottom: 15px;
-}
-
-.plan button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.plan button:hover {
-  background-color: #0069d9;
-}
-
-/* Media query for smaller screens */
-@media (max-width: 768px) {
-  .pricing-table {
-    grid-template-columns: 1fr; /* Stack columns vertically */
-  }
-}
-</style>
-</head>
-<body>
-
-<div class="pricing-table">
-  <div class="plan">
-    <h2>Basic</h2>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-    </ul>
-    <div class="price">$9.99/month</div>
-    <button>Sign Up</button>
-  </div>
-  <div class="plan">
-    <h2>Pro</h2>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
-    </ul>
-    <div class="price">$19.99/month</div>
-    <button>Sign Up</button>
-  </div>
-  <div class="plan">
-    <h2>Premium</h2>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
-      <li>Feature 6</li>
-    </ul>
-    <div class="price">$29.99/month</div>
-    <button>Sign Up</button>
-  </div>
-</div>
-
-</body>
-</html>
+```javascript
+use your_database_name; // Replace with your database name
+db.products.getIndexes();
 ```
+
+This will output a JSON array of index specifications.  Pay close attention to the `key` field which describes the indexed fields and their order.
+
+**Step 2: Analyze Index Usage**
+
+The crucial step is determining which indexes are truly necessary. MongoDB Profiler can help. Enable profiling:
+
+```javascript
+db.setProfilingLevel(2); // Level 2 profiles all operations
+```
+
+Run several queries representative of your application's usage. Then examine the profiling logs:
+
+```javascript
+db.system.profile.find({millis:{$gt:10}}).sort({ts:-1}) //Find slow queries
+```
+
+This will show you which queries executed slowly and which indexes were (or were not) used.  This reveals whether existing indexes are helpful or redundant.
+
+**Step 3: Remove Unnecessary Indexes**
+
+Based on your analysis from Step 2, identify indexes that aren't contributing significantly to query performance. Remove them using `db.collection.dropIndex()`:
+
+```javascript
+//Example: Remove an index on the 'category' field
+db.products.dropIndex("category_1");
+
+//Example: Remove a compound index on 'category' and 'price'
+db.products.dropIndex({"category": 1, "price": -1});
+```
+
+**Step 4: Monitor Performance**
+
+After removing indexes, monitor your application's performance. Use MongoDB's monitoring tools or your application's logging to track write speeds and overall responsiveness.  If performance doesn't improve or even worsens, carefully review your index selection strategy.
 
 
 ## Explanation
 
-The code uses CSS Grid to create the responsive layout. `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` ensures that the columns adapt to the available space.  The `@media` query adjusts the layout for smaller screens by stacking the columns vertically.  Other CSS is used for styling the elements, including gradients, shadows, and hover effects.
+The root cause of the "too many indexes" problem is a lack of careful planning and ongoing optimization of indexing strategy.  Adding indexes without a deep understanding of query patterns leads to unnecessary overhead. The profiling step is essential;  it provides data-driven insights into actual query performance, allowing for informed decisions about which indexes to keep and which to remove.  Removing unnecessary indexes reduces write overhead, freeing up resources for faster insertions and updates.  The focus should always be on creating a balanced system where the benefits of faster reads aren't overshadowed by slower writes.
 
 
-## Resources to Learn More
+## External References
 
-* **CSS Grid Layout:** [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
-* **CSS Media Queries:** [MDN Web Docs - Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries)
-* **CSS3 Selectors:** [MDN Web Docs - Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
+* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
+* **MongoDB Documentation on Profiling:** [https://www.mongodb.com/docs/manual/reference/method/db.setProfilingLevel/](https://www.mongodb.com/docs/manual/reference/method/db.setProfilingLevel/)
+* **Understanding Index Selection in MongoDB:** [various blog posts and articles are available on this topic - search for "MongoDB index selection best practices"]
+
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
