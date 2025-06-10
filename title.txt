@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Pricing Card with Tailwind CSS
+Overcoming MongoDB's "too many open files" error
