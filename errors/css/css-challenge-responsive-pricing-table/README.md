@@ -1,14 +1,15 @@
 # 🐞 CSS Challenge:  Responsive Pricing Table
 
 
-This challenge involves creating a responsive pricing table using CSS.  The goal is to design a clean, visually appealing table that adapts seamlessly to different screen sizes. We'll use a combination of CSS Grid and media queries for responsiveness.  This example will use standard CSS3, but the concepts could easily be adapted to Tailwind CSS.
+This challenge focuses on creating a responsive pricing table using CSS.  We'll aim for a clean, modern design that adapts well to different screen sizes.  We'll leverage CSS Grid for layout and some simple CSS3 properties for styling.  No Tailwind CSS will be used in this example for clarity and to showcase fundamental CSS techniques.
 
 
-**Description of the Styling:**
+## Description of the Styling
 
-The pricing table will have three columns representing different pricing plans (Basic, Premium, Elite). Each plan will have a title, a list of features, a price, and a call-to-action button. The design will utilize clean typography, subtle shadows, and a consistent color scheme to create a professional and user-friendly experience.  The table will be responsive, stacking vertically on smaller screens.
+The pricing table will consist of three pricing plans: Basic, Pro, and Premium. Each plan will have a title, a list of features, a price, and a call-to-action button.  The table will be responsive, adapting gracefully to smaller screens by stacking the columns vertically.  We'll use subtle gradients and shadows to enhance the visual appeal.
 
-**Full Code:**
+
+## Full Code
 
 ```html
 <!DOCTYPE html>
@@ -18,24 +19,32 @@ The pricing table will have three columns representing different pricing plans (
 <style>
 body {
   font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f4f4;
 }
 
 .pricing-table {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
   grid-gap: 20px;
+  background-color: white;
   padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
 }
 
 .plan {
-  border: 1px solid #ccc;
-  padding: 20px;
   text-align: center;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  background: linear-gradient(to bottom right, #e6f7ff, #d0ebff); /* Subtle gradient */
 }
 
 .plan h2 {
-  margin-top: 0;
+  color: #333;
+  margin-bottom: 10px;
 }
 
 .plan ul {
@@ -44,22 +53,28 @@ body {
 }
 
 .plan li {
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .plan .price {
-  font-size: 1.5em;
+  font-size: 24px;
   font-weight: bold;
-  margin-bottom: 10px;
+  color: #007bff;
+  margin-bottom: 15px;
 }
 
 .plan button {
-  background-color: #4CAF50;
+  background-color: #007bff;
   color: white;
-  padding: 10px 20px;
   border: none;
+  padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.plan button:hover {
+  background-color: #0069d9;
 }
 
 /* Media query for smaller screens */
@@ -80,7 +95,19 @@ body {
       <li>Feature 2</li>
       <li>Feature 3</li>
     </ul>
-    <p class="price">$9/month</p>
+    <div class="price">$9.99/month</div>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Pro</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+    </ul>
+    <div class="price">$19.99/month</div>
     <button>Sign Up</button>
   </div>
   <div class="plan">
@@ -91,21 +118,9 @@ body {
       <li>Feature 3</li>
       <li>Feature 4</li>
       <li>Feature 5</li>
-    </ul>
-    <p class="price">$19/month</p>
-    <button>Sign Up</button>
-  </div>
-  <div class="plan">
-    <h2>Elite</h2>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
       <li>Feature 6</li>
     </ul>
-    <p class="price">$29/month</p>
+    <div class="price">$29.99/month</div>
     <button>Sign Up</button>
   </div>
 </div>
@@ -114,18 +129,17 @@ body {
 </html>
 ```
 
-**Explanation:**
 
-* **CSS Grid:**  The `grid-template-columns` property creates a responsive grid layout. `repeat(auto-fit, minmax(300px, 1fr))` ensures that columns adjust based on screen size, fitting as many as possible with a minimum width of 300px.
-* **Media Queries:** The `@media` query targets screens smaller than 768px, changing the grid to stack columns vertically for better mobile viewing.
-* **Styling:**  The CSS styles the table elements (headings, lists, buttons, etc.) for visual appeal and consistency.
+## Explanation
+
+The code uses CSS Grid to create the responsive layout. `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` ensures that the columns adapt to the available space.  The `@media` query adjusts the layout for smaller screens by stacking the columns vertically.  Other CSS is used for styling the elements, including gradients, shadows, and hover effects.
 
 
-**Links to Resources to Learn More:**
+## Resources to Learn More
 
-* **CSS Grid Layout:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
-* **CSS Media Queries:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
-* **Learn CSS:** [https://www.freecodecamp.org/learn/responsive-web-design/](https://www.freecodecamp.org/learn/responsive-web-design/)
+* **CSS Grid Layout:** [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
+* **CSS Media Queries:** [MDN Web Docs - Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries)
+* **CSS3 Selectors:** [MDN Web Docs - Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
