@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's "Write Concern: Acknowledged" Limitation in High-Throughput Scenarios
+
 
 ## Description of the Error
 
