@@ -1,1 +1,1 @@
-CSS Challenge:  Centered, Responsive, Multi-colored Card
+Overcoming the "Too Many Indexes" Problem in MongoDB
