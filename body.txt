@@ -1,59 +1,78 @@
 
-## Description of the Error
+This challenge involves creating a card that expands when hovered over, revealing more content. We'll use CSS3 transitions and transforms to achieve the animation.  No JavaScript is required.
 
-The "Too Many Indexes" error, while not a specific MongoDB error message, describes a situation where a collection has an excessive number of indexes, leading to performance degradation.  This doesn't manifest as a single error but rather as slow query performance, increased write times, and ultimately, application instability.  MongoDB doesn't inherently limit the *number* of indexes, but the overhead of managing and utilizing them becomes unsustainable beyond a certain point.  This problem is often exacerbated by creating indexes without a clear understanding of query patterns.  Indexes consume disk space and increase the write overhead, and too many indexes can counterintuitively *slow down* query performance by making operations more complicated and reducing the effectiveness of index-based lookups.
+## Description of the Styling:
 
+The card will start with a compact size. Upon hovering, it smoothly expands horizontally, revealing additional text within.  The expansion animation should be smooth and visually appealing. We'll style the card with a clean, modern look using standard CSS properties.
 
-## Fixing Step-by-Step
+## Full Code:
 
-This example focuses on identifying and removing unnecessary indexes.  Assume we have a collection named `products` with many indexes, some potentially redundant or unused.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f2f2f2;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: transform 0.3s ease-in-out; /* Smooth transition for transform property */
+  width: 300px; /* Initial width */
+  overflow: hidden; /* Hide content that overflows initially */
+}
 
-**Step 1: Identify Existing Indexes**
+.card:hover {
+  transform: scaleX(1.5); /* Expand horizontally on hover */
+  width: 450px; /* Adjust width to match expanded state */
+}
 
-```bash
-db.products.getIndexes()
+.card-content {
+  /* Initially hidden content */
+}
+.card-content p{
+  margin-top: 0;
+}
+
+.card-title {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+.card-text {
+  font-size: 1em;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2 class="card-title">Card Title</h2>
+  <p class="card-text">This is some initial text content.</p>
+  <div class="card-content">
+    <p>This additional text content will be revealed on hover.</p>
+    <p>This is a multi-line example.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-This command lists all indexes on the `products` collection.  Examine the output carefully; look for indexes that cover similar fields or are not used frequently.
+## Explanation:
 
-**Step 2: Analyze Query Patterns**
-
-Use the MongoDB profiler (`db.system.profile.find()`) or your application logging to identify the most frequent queries against the `products` collection. This reveals which indexes are actually beneficial and which are unused. Tools like MongoDB Compass also provide query profiling capabilities.
-
-
-**Step 3: Remove Unnecessary Indexes**
-
-Once you've identified redundant or unused indexes, remove them using the `db.collection.dropIndex()` command.  Replace `<index_name>` with the actual name of the index you want to drop (obtained from `db.products.getIndexes()`).
-
-```bash
-db.products.dropIndex("<index_name>")
-```
-For example, if you had an index named `_id_1_name_1` you would use:
-
-```bash
-db.products.dropIndex("_id_1_name_1") 
-```
-
-To drop multiple indexes at once you can specify an array of index names or use a compound index specification, for example:
-
-```javascript
-db.products.dropIndexes([ { name: "_id_1_name_1" }, { key: { name: 1, price: -1 } } ])
-```
-
-**Step 4:  Monitor Performance**
-
-After removing indexes, closely monitor query performance using the profiler or your application metrics. Ensure that removing indexes hasn't negatively impacted frequently used queries.  You may need to iterate on this process, potentially adding back indexes if necessary.
+* **`.card`**: This class styles the main card element.  `transition: transform 0.3s ease-in-out;` is crucial for the smooth animation. It targets the `transform` property, specifying a 0.3-second transition with an `ease-in-out` timing function.  `overflow: hidden` prevents the initially hidden content from showing before the hover.
+* **`.card:hover`**: This styles the card when the mouse hovers over it. `transform: scaleX(1.5);` scales the card horizontally by 1.5 times, creating the expansion effect.  The width is explicitly set to ensure the expanded content is visible.
+* **`.card-content`**: This class wraps the content that is initially hidden, allowing for better control of its visibility and placement.
+* **`.card-title` and `.card-text`**: These are simply for styling the title and paragraph text within the card.
 
 
-## Explanation
+## Resources to Learn More:
 
-The core issue is balancing the benefits of indexing (faster query performance) with the costs (increased write overhead, disk space consumption, complex query planning). Too many indexes, especially those covering overlapping fields or infrequently used query patterns, lead to excessive overhead without a proportional improvement in performance. Identifying and removing unnecessary indexes is crucial for optimizing database efficiency. It's often better to have fewer, well-chosen indexes than many poorly selected ones.
-
-## External References
-
-* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
-* **MongoDB Documentation on the Profiler:** [https://www.mongodb.com/docs/manual/reference/method/db.collection.getIndexes/](https://www.mongodb.com/docs/manual/reference/method/db.collection.getIndexes/)  (Note:  This link is for `getIndexes()`,  but it is helpful to have a general page about the profiler)
-* **MongoDB Compass (GUI Tool):** [https://www.mongodb.com/products/compass](https://www.mongodb.com/products/compass)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS3 Selectors:** [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

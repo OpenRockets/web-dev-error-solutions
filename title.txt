@@ -1,1 +1,1 @@
-Overcoming "Too Many Indexes" Errors in MongoDB
+CSS Challenge:  Animated Expanding Card
