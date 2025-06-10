@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Centered, Responsive, Multi-colored Card
+
 
 This challenge focuses on creating a responsive card that is perfectly centered on the page, regardless of screen size.  The card will feature a gradient background and utilize a flexible layout to adapt to different screen dimensions. We'll use plain CSS for this example, demonstrating core concepts applicable to any CSS framework.
 
