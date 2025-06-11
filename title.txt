@@ -1,1 +1,1 @@
-Overcoming MongoDB's `$in` Operator Performance Issues with Compound Indexes
+Overcoming the "Too Many Indexes" Problem in MongoDB
