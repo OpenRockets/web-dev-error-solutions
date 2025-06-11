@@ -1,1 +1,1 @@
-CSS Challenge:  Fluid, Responsive Image Card with Tailwind CSS
+Overcoming the "Too Many Indexes" Problem in MongoDB
