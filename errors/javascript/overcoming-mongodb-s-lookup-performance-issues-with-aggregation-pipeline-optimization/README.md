@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's `$lookup` Performance Issues with Aggregation Pipeline Optimization
+
 
 ## Description of the Error
 
