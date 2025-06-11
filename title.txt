@@ -1,1 +1,1 @@
-Overusing MongoDB Indexes: Performance Bottleneck
+CSS Challenge:  Responsive Pricing Table with Tailwind CSS
