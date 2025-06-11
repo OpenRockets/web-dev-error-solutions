@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Tessellating Hexagons
+
 
 This challenge involves creating a visually appealing tessellation of hexagons using CSS. We'll achieve this using only CSS, focusing on the `::before` and `::after` pseudo-elements and transforms to create the hexagonal shape and replicate it to form the tessellation.  This example uses plain CSS; adapting it to Tailwind CSS would involve replacing the inline styles with Tailwind classes.
 
