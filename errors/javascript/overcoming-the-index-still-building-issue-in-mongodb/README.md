@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Index Still Building" Issue in MongoDB
+
 
 ## Description of the Error
 
