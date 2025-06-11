@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Image Gallery with Shadow Effects
+Overcoming the "Too Many Indexes" Problem in MongoDB
