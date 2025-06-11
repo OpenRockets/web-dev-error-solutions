@@ -1,1 +1,1 @@
-Overcoming "Too Many Indexes" Error in MongoDB
+Overcoming "too many open files" Error in MongoDB
