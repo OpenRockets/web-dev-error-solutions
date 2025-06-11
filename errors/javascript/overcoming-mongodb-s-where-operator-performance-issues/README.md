@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's `$where` Operator Performance Issues
+
 
 ## Description of the Error
 
