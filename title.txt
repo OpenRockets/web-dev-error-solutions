@@ -1,1 +1,1 @@
-Overcoming the "Too Many Queries to the Secondary" Error in MongoDB Replica Sets
+CSS Challenge: Responsive Pricing Table
