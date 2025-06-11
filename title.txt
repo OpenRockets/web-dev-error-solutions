@@ -1,1 +1,1 @@
-MongoDB Sharding: Handling Shard Key Selection Issues
+Overcoming the "Too Many Indexes" Problem in MongoDB
