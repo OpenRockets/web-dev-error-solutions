@@ -1,1 +1,1 @@
-Overcoming the "Too Many Open Files" Error in MongoDB
+Overcoming the "Too Many Keys" Error in MongoDB Compound Indexes
