@@ -1,62 +1,101 @@
 
-**Description of the Error:**
+This challenge involves creating a 3D rotating cube using only CSS.  We'll achieve the 3D effect through transforms and cleverly positioned pseudo-elements.  No JavaScript is required! This example uses CSS3 properties.
 
-A common problem in MongoDB development is creating too many indexes. While indexes significantly improve query performance, having excessive indexes can lead to several detrimental effects:
+## Description of the Styling:
 
-* **Write Performance Degradation:** Every write operation (insert, update, delete) requires updating all indexes.  Too many indexes dramatically increase the overhead of write operations, slowing down application performance.
-* **Storage Consumption:** Indexes consume disk space.  An excessive number can significantly increase storage costs and impact overall database size.
-* **Increased Maintenance:** Managing and monitoring many indexes becomes complex and time-consuming.
+The cube will be composed of six square faces, each a different color.  These faces will be arranged to give the illusion of a cube rotating smoothly on a central axis.  The rotation will be achieved using CSS animations. We'll utilize `transform: rotateX`, `rotateY`, and `transform-style: preserve-3d` to achieve the 3D perspective.
 
-This problem manifests as slow write performance and increased storage usage without a corresponding improvement in read performance.  You might not immediately see errors, but your application's overall responsiveness will suffer.
+## Full Code:
+
+```css
+.cube {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: rotate 8s linear infinite;
+}
+
+.cube div {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-color: #f00; /* Default red */
+  opacity: 0.8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 30px;
+  color: white;
+}
+
+.cube .front {
+  background-color: #f00;
+  transform: translateZ(50px);
+}
+
+.cube .back {
+  background-color: #00f;
+  transform: translateZ(-50px) rotateY(180deg);
+}
+
+.cube .right {
+  background-color: #0f0;
+  transform: rotateY(90deg) translateZ(50px);
+}
+
+.cube .left {
+  background-color: #ff0;
+  transform: rotateY(-90deg) translateZ(50px);
+}
+
+.cube .top {
+  background-color: #0ff;
+  transform: rotateX(90deg) translateZ(50px);
+}
+
+.cube .bottom {
+  background-color: #f0f;
+  transform: rotateX(-90deg) translateZ(50px);
+}
+
+@keyframes rotate {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+```
+
+And the HTML:
+
+```html
+<div class="cube">
+  <div class="front">Front</div>
+  <div class="back">Back</div>
+  <div class="right">Right</div>
+  <div class="left">Left</div>
+  <div class="top">Top</div>
+  <div class="bottom">Bottom</div>
+</div>
+```
 
 
-**Fixing Step-by-Step:**
+## Explanation:
 
-This solution focuses on identifying and removing unnecessary indexes.
+* **`transform-style: preserve-3d;`**: This is crucial. It tells the browser to render the child elements in 3D space.
+* **`translateZ()`**: This moves the faces along the z-axis, creating depth.
+* **`rotateX()` and `rotateY()`**: These rotate the faces around the x and y axes, creating the cube structure.
+* **`@keyframes rotate`**: This defines the animation, smoothly rotating the cube around the y-axis.
 
-1. **Identify Unused Indexes:**
+## Links to Resources to Learn More:
 
-   Use the `db.collection.getIndexes()` method to list all indexes on a collection.  Then, analyze your application's query patterns.  Identify indexes that are not used or are rarely used compared to their cost.
-
-   ```javascript
-   use myDatabase; // Replace myDatabase with your database name
-   db.myCollection.getIndexes() //Replace myCollection with your collection name
-   ```
-
-   This will return a list of index specifications. Pay close attention to the `key` field, which shows the indexed fields.  Analyze your application logs and query profiling to determine which indexes are actually being utilized.
-
-2. **Remove Unnecessary Indexes:**
-
-   Use the `db.collection.dropIndex()` method to remove indexes that are identified as unnecessary.  Remember to always back up your data before making changes to indexes.
-
-   ```javascript
-   use myDatabase;
-   db.myCollection.dropIndex( { "field1": 1, "field2": -1 } ); // Replace with your index specification
-   ```
-   This command removes a compound index on `field1` (ascending) and `field2` (descending).  Replace the index specification with the specific index you want to remove.  You can also drop indexes by name:
-
-   ```javascript
-   db.myCollection.dropIndex("myIndexName"); // Replace with your index name
-   ```
-
-
-3. **Optimize Existing Indexes:**
-
-   Instead of creating many simple indexes, consider creating compound indexes that cover multiple fields frequently used together in queries. This can reduce the number of indexes while still maintaining good query performance.  For example, if you often query on `field1` and `field2` together, a single compound index on `{"field1": 1, "field2": 1}` is often more efficient than separate indexes on `field1` and `field2`.
-
-4. **Monitor Performance:**
-
-   After removing or modifying indexes, monitor your database's write and read performance.  Use MongoDB's monitoring tools or profiling to ensure that your changes have improved performance and haven't introduced any new bottlenecks.
-
-**Explanation:**
-
-The key to managing indexes is balancing the benefits of improved query performance with the potential drawbacks of write performance degradation and increased storage usage. By systematically analyzing index usage, removing unnecessary indexes, and optimizing existing ones, you can achieve a more efficient and balanced database configuration.  Remember that the optimal number of indexes varies depending on your application's workload and data characteristics.
-
-**External References:**
-
-* [MongoDB Indexing Documentation](https://www.mongodb.com/docs/manual/indexes/)
-* [MongoDB Performance Tuning Guide](https://www.mongodb.com/docs/manual/administration/performance/)
-* [Understanding Index Usage with MongoDB Profiler](https://www.mongodb.com/community/blog/understanding-index-usage-with-mongodb-profiler)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **3D Transformations Tutorial:**  [Search for "CSS 3D Transformations Tutorial" on your preferred search engine for numerous tutorials.]
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
