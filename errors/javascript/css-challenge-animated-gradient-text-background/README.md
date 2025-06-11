@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Animated Gradient Text Background
+
 
 This challenge involves creating a text element with an animated gradient background that moves smoothly across the text.  We'll achieve this using CSS animations and linear gradients.  No JavaScript is required.  This example uses standard CSS3, but could easily be adapted to use Tailwind CSS classes.
 
