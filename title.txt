@@ -1,1 +1,1 @@
-CSS Challenge:  Tessellating Hexagons
+Overcoming the "Too Many Keys" Error in MongoDB Indexes
