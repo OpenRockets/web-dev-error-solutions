@@ -1,1 +1,1 @@
-Overcoming the "Too Many Open Cursors" Error in MongoDB
+CSS Challenge:  Centering a Card with Tailwind CSS
