@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Navigation Bar with a Sticky Header
+Overcoming MongoDB's "Too Many Opened Cursors" Error
