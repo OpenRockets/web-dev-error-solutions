@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Multi-column Card Layout
+
 
 This challenge focuses on creating a responsive layout of cards using CSS Grid or Flexbox. The goal is to achieve a clean and visually appealing arrangement that adapts gracefully to different screen sizes. We'll be using CSS Grid for its powerful layout capabilities.  The design will feature three cards initially displayed in a single column on smaller screens, transitioning to a two-column layout on medium-sized screens, and finally a three-column layout on larger screens. Each card will contain an image and some text.
 
