@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Navigation Bar with a Sticky Header
+
 
 This challenge involves creating a responsive navigation bar that sticks to the top of the viewport when the user scrolls down.  We'll use CSS (specifically CSS3) for styling and layout.  No JavaScript will be required.
 
