@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Image Gallery with Tailwind CSS
+MongoDB: Overuse of Indexes Leading to Performance Degradation
