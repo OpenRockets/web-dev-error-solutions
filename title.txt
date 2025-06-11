@@ -1,1 +1,1 @@
-Overcoming MongoDB's `$lookup` Performance Issues with Aggregation Pipeline Optimization
+Overcoming MongoDB's "too many indexes" Error
