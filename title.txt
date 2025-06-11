@@ -1,1 +1,1 @@
-Overcoming MongoDB's "Too Many Opened Cursors" Error
+Overcoming the "Too Many Indexes" Problem in MongoDB
