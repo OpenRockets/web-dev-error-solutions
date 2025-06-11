@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Index Not Used" Error in MongoDB
+
 
 This document addresses a common problem developers encounter when working with MongoDB indexes: queries that fail to utilize the created index, leading to performance degradation.  This frequently happens when the query structure doesn't perfectly match the index's structure.
 
