@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Navigation Bar with a Sticky Effect
+
 
 This challenge involves creating a responsive navigation bar that sticks to the top of the viewport when the user scrolls past its initial position. We'll use CSS (specifically CSS3) to achieve this.  No JavaScript will be needed.
 

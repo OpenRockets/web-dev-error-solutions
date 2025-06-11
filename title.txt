@@ -1,1 +1,1 @@
-MongoDB: Overuse of Wildcard Indexes Leading to Poor Performance
+CSS Challenge:  Responsive Navigation Bar with a Sticky Effect
