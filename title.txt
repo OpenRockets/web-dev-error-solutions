@@ -1,1 +1,1 @@
-Overusing MongoDB Indexes: Performance Bottleneck
+Overusing MongoDB Indexes: A Performance Bottleneck
