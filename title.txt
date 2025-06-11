@@ -1,1 +1,1 @@
-Overcoming the "Too Many Queries in Parallel" Error in MongoDB Sharding
+Overcoming "Too Many Open Files" Error in MongoDB
