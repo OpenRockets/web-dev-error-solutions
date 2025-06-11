@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Image Gallery with Shadow Effects
+
 
 This challenge involves creating a responsive image gallery using CSS.  We'll focus on achieving a clean layout that adapts well to different screen sizes and incorporates subtle shadow effects for visual appeal.  This example uses plain CSS; you could adapt it to use Tailwind CSS easily.
 
