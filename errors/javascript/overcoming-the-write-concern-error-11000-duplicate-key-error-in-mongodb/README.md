@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Write Concern Error: 11000 duplicate key error" in MongoDB
+
 
 This document addresses a common MongoDB error encountered during CRUD operations, specifically when inserting documents with duplicate unique keys.  This error, indicated by code `11000`, stems from a violation of a unique index constraint.
 
