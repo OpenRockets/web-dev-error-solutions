@@ -1,1 +1,1 @@
-CSS Challenge:  Animated Gradient Circle Button
+Overcoming MongoDB's `$lookup` Performance Issues with Aggregation Pipeline Optimization
