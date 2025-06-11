@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Too Many Queries in a Single Batch" Error in MongoDB
+
 
 ## Description of the Error
 
