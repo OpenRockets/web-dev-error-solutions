@@ -1,5 +1,6 @@
 <h1 width ="100%" align="left">
-  <img src="https://i.ibb.co/YB4ZZfRN/210044478.png" width="100" alt="OpenRockets" /><br>
+
+ ![ChatGPT_Image_May_10__2025__11_25_10_AM-removebg-preview](https://github.com/user-attachments/assets/2b0e24ca-76b6-4f5e-8f9d-6e6cec6eebaa)
   
   [![OpenRockets](https://img.shields.io/badge/OpenRockets-Verified%20Contributor-white?labelColor=black&style=for-the-badge&logo=Rocket&logoColor=white&link=https://www.github.com/openrockets)](https://www.github.com/openrockets)
 
