@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Navigation Bar with a Sticky Effect
+Overcoming MongoDB's "too many writes" Error in Sharded Clusters

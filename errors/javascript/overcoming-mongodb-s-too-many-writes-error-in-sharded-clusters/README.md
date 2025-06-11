@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's "too many writes" Error in Sharded Clusters
+
 
 This document addresses a common problem encountered when working with sharded MongoDB clusters: the "too many writes" error. This error typically arises when a large number of write operations target a single shard, exceeding its capacity and leading to write failures.  This can be particularly problematic during high-traffic periods or when data is unevenly distributed across shards.
 
