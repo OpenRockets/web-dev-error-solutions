@@ -1,105 +1,105 @@
 # 🐞 CSS Challenge:  3D Rotating Cube
 
 
-This challenge involves creating a 3D rotating cube using only CSS.  We'll achieve this effect using transformations and animations without any JavaScript. This example utilizes CSS3 properties.
+This challenge involves creating a 3D rotating cube using only CSS.  We'll leverage CSS transforms and animations to achieve this effect without any JavaScript.  This example uses plain CSS; adapting it to Tailwind would involve replacing the direct CSS values with Tailwind classes.
 
 **Description of the Styling:**
 
-The cube is constructed using six divs, each representing a face.  These are positioned absolutely within a parent container.  `transform-style: preserve-3d;` on the parent is crucial; it ensures that child elements are rendered in 3D space.  Each face is rotated and translated to its correct position on the cube.  Keyframes animation rotates the cube around the Y-axis continuously.
+The cube is constructed using six divs, each representing a face.  Absolute positioning and appropriate rotations are used to arrange them in a 3D cube structure.  Keyframes animation provides the rotation effect. We'll use `transform-style: preserve-3d;` on the parent container to ensure the 3D effect is correctly rendered.  Each face will have a unique background color for clarity.
 
+**Full Code (CSS):**
 
-**Full Code:**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>3D Rotating Cube</title>
-<style>
-.cube {
+```css
+.container {
   width: 200px;
   height: 200px;
   perspective: 800px; /* Adjust for perspective effect */
   transform-style: preserve-3d;
-  animation: rotation 10s linear infinite;
+  position: relative;
+  animation: rotate 10s linear infinite; /* Animate the rotation */
 }
 
 .face {
   position: absolute;
   width: 100px;
   height: 100px;
-  background-color: rgba(255,0,0,0.7); /*Example color, change as needed*/
+  background-color: lightblue; /* Default color, change for each face */
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 2em;
   color: white;
-  backface-visibility: hidden; /* Prevents back faces from showing */
+  backface-visibility: hidden; /* Prevents faces from showing through */
 }
 
 .front {
+  background-color: red;
   transform: translateZ(50px);
 }
 
 .back {
+  background-color: green;
   transform: translateZ(-50px) rotateY(180deg);
 }
 
+.right {
+  background-color: blue;
+  transform: translateX(50px) rotateY(90deg);
+}
+
+.left {
+  background-color: yellow;
+  transform: translateX(-50px) rotateY(-90deg);
+}
+
 .top {
+  background-color: purple;
   transform: translateY(-50px) rotateX(90deg);
 }
 
 .bottom {
+  background-color: orange;
   transform: translateY(50px) rotateX(-90deg);
 }
 
-.left {
-  transform: translateX(-50px) rotateY(-90deg);
-}
-
-.right {
-  transform: translateX(50px) rotateY(90deg);
-}
-
-@keyframes rotation {
+@keyframes rotate {
   from {
-    transform: rotateY(0deg);
+    transform: rotateY(0deg) rotateX(0deg);
   }
   to {
-    transform: rotateY(360deg);
+    transform: rotateY(360deg) rotateX(360deg);
   }
 }
-</style>
-</head>
-<body>
 
-<div class="cube">
+
+/*HTML Structure (required to make the CSS work):*/
+<div class="container">
   <div class="face front">Front</div>
   <div class="face back">Back</div>
+  <div class="face right">Right</div>
+  <div class="face left">Left</div>
   <div class="face top">Top</div>
   <div class="face bottom">Bottom</div>
-  <div class="face left">Left</div>
-  <div class="face right">Right</div>
 </div>
 
-</body>
-</html>
 ```
 
 **Explanation:**
 
-1. **`perspective`:**  This property on the `.cube` creates the 3D viewing perspective.  Adjust the value to change the depth effect.
-2. **`transform-style: preserve-3d;`:** This is crucial. It tells the browser to render the child elements (`faces`) in 3D space.
-3. **`transform` on each face:** Each face is translated and rotated to its correct position within the 3D space of the cube.
-4. **`backface-visibility: hidden;`:**  This prevents the back faces of the cube from being visible when rotated, creating a more realistic look.
-5. **`@keyframes rotation`:** This defines the animation that rotates the cube continuously.
+1. **`container`**: This sets up the overall cube structure. `perspective` creates the 3D effect. `transform-style: preserve-3d;` is crucial for rendering the children in 3D space.  The animation is applied here.
+
+2. **`face`**: This is a base style for each face.  `backface-visibility: hidden;` hides the back of each face when it's facing away, preventing visual artifacts.
+
+3. **Individual Face Classes (`front`, `back`, `right`, etc.)**: Each face gets its own class with specific `transform` properties to position and rotate it correctly within the 3D space. `translateZ` moves the face along the Z-axis (depth), while `rotateX` and `rotateY` rotate around the X and Y axes.
+
+4. **`@keyframes rotate`**: This defines the animation, smoothly rotating the cube around the Y and X axes over 10 seconds.
 
 
 **Links to Resources to Learn More:**
 
-* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **MDN Web Docs - CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
-* **CSS-Tricks - 3D Transforms:** (Search for "CSS 3D Transforms" on CSS-Tricks for numerous tutorials)
+* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS-Tricks on 3D Transforms:**  (Search "CSS 3D Transforms" on CSS-Tricks for numerous tutorials)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
