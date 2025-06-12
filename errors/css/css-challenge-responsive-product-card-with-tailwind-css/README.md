@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Product Card with Tailwind CSS
+
 
 This challenge involves creating a responsive product card using Tailwind CSS. The card should display a product image, title, description, price, and a "Add to Cart" button.  The layout should adapt gracefully to different screen sizes.
 
