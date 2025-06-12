@@ -1,50 +1,55 @@
 
-## Description of the Error
+This challenge involves creating an interactive card that expands when hovered over, revealing additional content. We'll use Tailwind CSS for its rapid development capabilities and ease of styling.
 
-A common mistake in MongoDB development is over-indexing. While indexes significantly speed up queries by creating sorted structures on specific fields, adding too many indexes can negatively impact write performance.  Every write operation needs to update all relevant indexes, so excessive indexing leads to slower inserts, updates, and deletes, outweighing the benefits of faster reads. This is particularly problematic in high-write environments.  You might observe slow application performance, increased latency, and even application crashes due to resource exhaustion.
+**Description of the Styling:**
 
+The card will initially display a concise title and a small image. On hover, the card will smoothly expand horizontally, revealing a longer description and potentially more details.  The animation will be smooth and visually appealing. We'll utilize Tailwind's transition utilities and the `hover` pseudo-class.
 
-## Fixing Step-by-Step
+**Full Code:**
 
-Let's assume we have a collection named `products` with fields `category`, `name`, `price`, and `description`.  We've added indexes on `category`, `name`, `price`, and a compound index on `category` and `price`.  Performance is suffering. We'll optimize by strategically removing unnecessary indexes.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expanding Card</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
 
-**Step 1: Identify Unnecessary Indexes**
+<div class="container mx-auto p-4">
+  <div class="max-w-sm bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 ease-in-out transform hover:scale-105">
+    <img class="w-full h-48 object-cover" src="https://via.placeholder.com/350x150" alt="Card Image">
+    <div class="p-4">
+      <h2 class="text-xl font-bold text-gray-800">Card Title</h2>
+      <p class="text-gray-600 text-sm mt-2 hidden group-hover:block">
+        This is a longer description that will be revealed when the card is hovered over.  You can add more details here as needed. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+      </p>
+    </div>
+  </div>
+</div>
 
-Analyze your application's query patterns.  Use the MongoDB profiler (explained below) to see which indexes are actually used and which are not.  Indexes rarely used or not used at all should be removed.  In our example, let's say profiling reveals that the index on `name` and `description` are hardly ever used because queries rarely filter by those fields directly.
-
-
-**Step 2: Remove Unnecessary Indexes**
-
-Use the `db.collection.dropIndex()` command to remove the indexes.
-
-```javascript
-// Connect to your MongoDB instance (replace with your connection string)
-use('mydatabase');
-db.products.dropIndex("name_1");  // Drops the index on 'name'
-db.products.dropIndex("description_1"); // Drops the index on 'description'
+</body>
+</html>
 ```
 
-**Step 3: Re-evaluate Compound Indexes (Optional)**
+**Explanation:**
 
-Compound indexes are indexes on multiple fields.  While efficient for queries filtering on all indexed fields, if a query only uses a subset of the indexed fields, it might be less efficient than a single-field index.  For instance, if most queries only filter on `category`, the compound index on `category` and `price` might be less beneficial than a simple index on `category`.  Removing or replacing a compound index often requires careful consideration.
-
-
-**Step 4: Monitor Performance**
-
-After removing indexes, monitor the performance of your application. Use the MongoDB profiler and performance monitoring tools to ensure that write operations have improved without significantly impacting read performance.
-
-
-
-## Explanation
-
-Indexes in MongoDB work similarly to indexes in a traditional relational database.  They create a sorted structure based on the specified field(s), enabling faster lookups. However, unlike relational databases where indexes are often managed automatically, MongoDB indexes are explicitly defined.  Over-indexing introduces write overhead due to the constant updates required across all indexes for every write. This overhead can dwarf the performance gains from faster reads, resulting in an overall performance decrease.  Proper indexing involves a balance: create indexes for frequently queried fields and avoid indexing fields that are rarely or never used in filter operations.
+* **`container mx-auto p-4`:** This centers the card and adds padding.
+* **`max-w-sm`:** Limits the card's maximum width.
+* **`bg-white rounded-lg shadow-md`:** Sets the background color, rounded corners, and shadow.
+* **`overflow-hidden`:** Prevents content from overflowing the card.
+* **`transition-transform duration-300 ease-in-out`:**  Applies a smooth transition to the transform property (scale) over 300 milliseconds.
+* **`transform hover:scale-105`:** Scales the card up slightly on hover.
+* **`group-hover:block`:** This is a crucial part. Tailwind's `group` utility allows us to apply hover states to a parent element and its children.  In this case, the description paragraph is initially hidden (`hidden`) and shown only when the parent (`div` with the class `group`) is hovered over (`group-hover:block`).
 
 
-## External References
+**Links to Resources to Learn More:**
 
-* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
-* **MongoDB Profiler:** [https://www.mongodb.com/docs/manual/reference/method/db.profile/](https://www.mongodb.com/docs/manual/reference/method/db.profile/)
-* **Understanding MongoDB Query Optimization:** [https://www.mongodb.com/blog/post/query-optimization-in-mongodb](https://www.mongodb.com/blog/post/query-optimization-in-mongodb)
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs/](https://tailwindcss.com/docs/)  - The official Tailwind CSS documentation.
+* **CSS Transitions and Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions) - MDN documentation on CSS transitions.
+* **Understanding CSS Pseudo-classes:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes) - MDN documentation on CSS pseudo-classes.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
