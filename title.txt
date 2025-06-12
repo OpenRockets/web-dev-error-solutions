@@ -1,1 +1,1 @@
-MongoDB: Overuse of $in Operator Leading to Performance Degradation
+CSS Challenge:  Animated Expanding Card

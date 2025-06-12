@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Animated Expanding Card
+
 
 This challenge involves creating a card that expands smoothly when hovered over, revealing additional content. We'll use CSS3 transitions and transforms to achieve this animation.  No external libraries or frameworks (like Tailwind) will be used to focus on core CSS concepts.
 
