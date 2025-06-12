@@ -1,85 +1,89 @@
 
-This challenge focuses on building a responsive pricing table using Tailwind CSS.  The goal is to create a clean, visually appealing table that adapts seamlessly to different screen sizes, showcasing three pricing plans with clear distinctions.
+## Description of the Error
 
-**Description of the Styling:**
-
-The pricing table will feature three columns representing different pricing plans (e.g., Basic, Pro, Premium). Each column will include a plan name, a monthly price, a list of features, and a call-to-action button.  We'll use Tailwind's utility classes for responsive design, ensuring the table remains readable on both desktop and mobile devices.  The styling will emphasize visual clarity and hierarchy, using appropriate colors, spacing, and typography.  We'll aim for a modern, clean aesthetic.
-
-**Full Code:**
-
-```html
-<div class="container mx-auto p-8">
-  <div class="bg-white shadow-md rounded-lg overflow-hidden">
-    <table class="w-full border-collapse">
-      <thead>
-        <tr>
-          <th class="p-4 bg-gray-100 text-left text-gray-600 font-medium">Plan</th>
-          <th class="p-4 bg-gray-100 text-center text-gray-600 font-medium">Price</th>
-          <th class="p-4 bg-gray-100 text-center text-gray-600 font-medium">Features</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="p-4 border-b border-gray-200">Basic</td>
-          <td class="p-4 border-b border-gray-200 text-center">$9/month</td>
-          <td class="p-4 border-b border-gray-200">
-            <ul class="list-disc list-inside">
-              <li>Feature 1</li>
-              <li>Feature 2</li>
-            </ul>
-          </td>
-        </tr>
-        <tr>
-          <td class="p-4 border-b border-gray-200">Pro</td>
-          <td class="p-4 border-b border-gray-200 text-center">$29/month</td>
-          <td class="p-4 border-b border-gray-200">
-            <ul class="list-disc list-inside">
-              <li>Feature 1</li>
-              <li>Feature 2</li>
-              <li>Feature 3</li>
-              <li>Feature 4</li>
-            </ul>
-          </td>
-        </tr>
-        <tr>
-          <td class="p-4 border-b border-gray-200">Premium</td>
-          <td class="p-4 border-b border-gray-200 text-center">$49/month</td>
-          <td class="p-4 border-b border-gray-200">
-            <ul class="list-disc list-inside">
-              <li>Feature 1</li>
-              <li>Feature 2</li>
-              <li>Feature 3</li>
-              <li>Feature 4</li>
-              <li>Feature 5</li>
-              <li>Feature 6</li>
-            </ul>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-```
+The "Too many open files" error in MongoDB typically arises when your MongoDB process attempts to open more file descriptors than the operating system allows. This can happen during high-volume operations, where many connections are established concurrently, or if your system's `ulimit` setting is too low.  The error manifests differently depending on your operating system and MongoDB version, but generally involves a message indicating a limit on open files has been reached.  This prevents new connections, leading to application failures and impacting availability.
 
 
-**Explanation:**
+## Fixing the "Too Many Open Files" Error
 
-* **`container mx-auto p-8`:** Centers the table horizontally and adds padding.
-* **`bg-white shadow-md rounded-lg overflow-hidden`:** Styles the container with a white background, shadow, rounded corners, and prevents content overflow.
-* **`w-full`:** Makes the table occupy the full width of its parent container.
-* **`border-collapse`:** Collapses the borders of table cells for a cleaner look.
-* **`p-4 bg-gray-100 text-left text-gray-600 font-medium`:** Styles the table header cells.
-* **`text-center`:** Centers text within cells.
-* **`border-b border-gray-200`:** Adds a bottom border to table rows.
-* **`list-disc list-inside`:** Styles the unordered lists within the features column.
+This fix involves increasing the operating system's limit on the number of open files. The exact steps depend on your operating system.
 
-This code uses Tailwind CSS classes for styling.  Remember to include the Tailwind CSS stylesheet in your project.
+**Linux (using `ulimit`):**
+
+1. **Identify the current limit:**
+
+   ```bash
+   ulimit -n
+   ```
+
+2. **Increase the limit (requires root privileges):**
+
+   ```bash
+   sudo ulimit -n 65535  #Set to 65535, or a higher value appropriate for your needs
+   ```
+
+   This command increases the soft limit to 65535.  This change only lasts for the current shell session.
+
+3. **Make the change permanent (for the current user):**
+
+   Edit your shell configuration file (e.g., `~/.bashrc`, `~/.bash_profile`, `~/.zshrc` depending on your shell) and add the following line:
+
+   ```bash
+   ulimit -n 65535
+   ```
+
+4. **Make the change permanent (system-wide - use with caution):**  Modify `/etc/security/limits.conf` and add a line like this (replace `mongouser` with the MongoDB user):
+
+   ```
+   mongouser   hard    nofile          65535
+   mongouser   soft    nofile          65535
+   ```
+
+5. **Reload the system configuration or restart the shell for the changes to take effect.**  (e.g., `source ~/.bashrc`).
 
 
-**Links to Resources to Learn More:**
+**macOS (using `ulimit`):**
 
-* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
-* **MDN Web Docs (CSS):** [https://developer.mozilla.org/en-US/docs/Web/CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
+The process is largely similar to Linux:
+
+1. **Identify the current limit:**
+   ```bash
+   ulimit -n
+   ```
+
+2. **Increase the limit (requires root privileges, use `sudo`):**
+   ```bash
+   sudo ulimit -n 65535
+   ```
+
+3. **Make the change permanent (requires modification of the shell configuration file, similar to Linux)**
+
+
+**Windows (using Registry Editor):**
+
+1. **Open Registry Editor:** Search for "regedit" and run as administrator.
+
+2. **Navigate to:** `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\SubSystems`
+
+3. **Modify the "Windows" key:**  Double-click the "Windows" key (under the SubSystems key), and locate the `Parameters` section. You might need to create one if it doesn't exist.
+
+4. **Add or Modify the "MaxNumberOfHandles" value:**  Add a DWORD (32-bit) value named "MaxNumberOfHandles" and set its data value to a higher number, like `65535` (or a value deemed appropriate for your system).
+
+5. **Restart the MongoDB server.**
+
+6. **Important:** Modifying the registry incorrectly can cause system instability.  Ensure you back up your registry before making changes.
+
+## Explanation
+
+The operating system maintains a limit on the number of file descriptors a process can open simultaneously.  MongoDB uses file descriptors for network connections, database files, and other operations.  When this limit is exceeded, MongoDB is unable to handle new connections or perform certain tasks, resulting in the "Too many open files" error. Increasing the limit provides more resources for MongoDB to manage connections and other operations.
+
+
+## External References
+
+* **MongoDB Documentation:** While MongoDB itself doesn't directly address this OS-level error, their documentation on connection management provides valuable context: [MongoDB Connection Management](https://www.mongodb.com/docs/manual/reference/connection-management/) (This link might need adjustments based on the current MongoDB documentation structure)
+* **Linux `ulimit` man page:** [Linux `ulimit`](https://man7.org/linux/man-pages/man1/ulimit.1.html)
+* **macOS `ulimit` man page:** [macOS `ulimit`](https://ss64.com/osx/ulimit.html)
+* **Windows Registry Editor:** [Microsoft Documentation on Registry Editor](https://learn.microsoft.com/en-us/windows/win32/reg/about-the-registry)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
