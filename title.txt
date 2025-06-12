@@ -1,1 +1,1 @@
-Overcoming the "Index Not Found" Error in MongoDB
+Overcoming the "Invalid $project field name" Error in MongoDB Aggregations
