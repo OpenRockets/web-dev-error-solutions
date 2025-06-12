@@ -1,108 +1,91 @@
 # 🐞 CSS Challenge:  Multi-level Nested Navigation Menu
 
 
-This challenge involves creating a multi-level nested navigation menu using CSS.  The goal is to create a visually appealing and user-friendly menu that expands and collapses sub-menus on hover. We'll use plain CSS for this example, focusing on fundamental CSS concepts.
-
+This challenge involves creating a multi-level nested navigation menu using CSS.  We'll achieve a clean, visually appealing design that gracefully handles nested lists, mimicking a common website feature.  We'll use plain CSS for this example, focusing on fundamental CSS properties to showcase the core concepts.
 
 **Description of the Styling:**
 
-The navigation menu will be a vertical list.  Top-level menu items will be displayed horizontally.  When a top-level item is hovered, its submenu will slide down smoothly.  Sub-submenus (and further levels) will appear similarly when their parent is hovered. The styling will employ a clean and modern aesthetic, using subtle animations for a better user experience.
-
+The navigation menu will be a vertical list.  Top-level items will have a larger font size and bold text.  Sub-menus (nested lists) will be indented and only appear when their parent list item is hovered over.  We'll utilize a subtle background color for visual distinction and appropriate padding for readability.
 
 **Full Code:**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Nested Navigation Menu</title>
-<style>
-body {
-  font-family: sans-serif;
-}
-
-.nav {
-  background-color: #f0f0f0;
-  padding: 10px;
-}
-
-.nav ul {
+```css
+ul.nav {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.nav li {
-  position: relative; /* Needed for absolute positioning of submenus */
+ul.nav li {
+  position: relative; /* Necessary for absolute positioning of submenus */
+  margin-bottom: 10px;
 }
 
-.nav a {
+ul.nav li a {
   display: block;
   padding: 10px;
   text-decoration: none;
   color: #333;
+  font-weight: bold;
 }
 
-.nav a:hover {
-  background-color: #ddd;
-}
-
-.nav ul ul {
-  position: absolute;
-  left: 100%; /* Position submenu to the right of parent */
-  top: 0;
-  display: none; /* Hidden by default */
+ul.nav li a:hover {
   background-color: #f0f0f0;
 }
 
-.nav li:hover > ul { /* Show submenu on hover */
+ul.nav li ul {
+  position: absolute;
+  left: 150px; /* Adjust as needed for indentation */
+  top: 0;
+  display: none; /* Hidden by default */
+  background-color: #eee;
+  border: 1px solid #ccc;
+}
+
+ul.nav li:hover > ul { /* Show submenu on parent hover */
   display: block;
 }
 
-
-/* Optional: Add transitions for smooth animations */
-.nav ul ul {
-  transition: all 0.3s ease;
+ul.nav li ul li a {
+  font-weight: normal; /* Submenu items are not bold */
 }
-
-</style>
-</head>
-<body>
-
-<div class="nav">
-  <ul>
-    <li><a href="#">Home</a></li>
-    <li><a href="#">About</a>
-      <ul>
-        <li><a href="#">Our Team</a></li>
-        <li><a href="#">Our Mission</a>
-          <ul>
-            <li><a href="#">Vision</a></li>
-            <li><a href="#">Values</a></li>
-          </ul>
-        </li>
-      </ul>
-    </li>
-    <li><a href="#">Services</a></li>
-    <li><a href="#">Contact</a></li>
-  </ul>
-</div>
-
-</body>
-</html>
 ```
 
+**HTML Structure (Example):**
+
+```html
+<ul class="nav">
+  <li><a href="#">Home</a></li>
+  <li><a href="#">About</a>
+    <ul>
+      <li><a href="#">Our Team</a></li>
+      <li><a href="#">Our History</a></li>
+    </ul>
+  </li>
+  <li><a href="#">Services</a>
+    <ul>
+      <li><a href="#">Web Design</a></li>
+      <li><a href="#">Web Development</a></li>
+    </ul>
+  </li>
+  <li><a href="#">Contact</a></li>
+</ul>
+```
 
 **Explanation:**
 
-The code uses nested unordered lists (`<ul>`) to structure the menu.  CSS is used to style the lists, remove the default bullet points, and position the submenus absolutely. The `:hover` pseudo-class is crucial for showing the submenus on hover.  The `transition` property adds smooth animations.  The `position: relative` on parent list items is essential for the absolute positioning of submenus to work correctly.
+* We use `position: relative` on the parent list items to allow absolute positioning of the submenus.
+* `display: none;` initially hides the submenus.
+* `:hover > ul` targets the direct child `ul` element when the parent `li` is hovered, making the submenu visible.
+* Indentation is controlled by `left` property in the submenu's CSS.
+* Background colors and borders enhance visual clarity.
 
 
 **Links to Resources to Learn More:**
 
-* **MDN Web Docs (CSS):** [https://developer.mozilla.org/en-US/docs/Web/CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)  (Comprehensive resource on all aspects of CSS)
-* **CSS-Tricks:** [https://css-tricks.com/](https://css-tricks.com/) (Great blog and resource for CSS techniques)
-* **FreeCodeCamp (CSS tutorials):** [https://www.freecodecamp.org/learn/responsive-web-design/](https://www.freecodecamp.org/learn/responsive-web-design/) (Interactive CSS lessons)
+* **CSS Selectors:**  [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)  (Essential for understanding how to target specific elements)
+* **CSS Positioning:** [MDN Web Docs - CSS Positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/position) (Understanding `position: relative` and `position: absolute` is crucial)
+* **CSS Lists:** [MDN Web Docs - CSS Lists](https://developer.mozilla.org/en-US/docs/Web/CSS/list-style) (Learn more about styling lists)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
