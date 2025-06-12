@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Too Many Queries" Error in MongoDB Sharding
+
 
 This document addresses a common performance issue encountered when working with sharded MongoDB clusters: the "too many queries" error, often stemming from inefficient query patterns against a large dataset spread across multiple shards. This isn't a specific error message itself, but rather a symptom of performance degradation and potential application failures due to query overload.
 
