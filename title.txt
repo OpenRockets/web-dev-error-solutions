@@ -1,1 +1,1 @@
-Overcoming MongoDB's `$lookup` Performance Bottlenecks with Optimized Indexing
+Overcoming "Too Many Files Open" Errors in MongoDB
