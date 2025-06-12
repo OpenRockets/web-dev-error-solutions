@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Index not used" Problem in MongoDB
+
 
 ## Description of the Error
 
