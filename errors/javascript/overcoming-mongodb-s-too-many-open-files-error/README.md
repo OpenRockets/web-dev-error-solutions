@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's "Too Many Open Files" Error
+
 
 ## Description of the Error
 
