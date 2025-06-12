@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Gradient-Bordered Card with Tailwind CSS
+
 
 This challenge focuses on creating a visually appealing card using Tailwind CSS.  The card will feature a gradient border and subtle shadow, demonstrating proficiency in using Tailwind's utility classes for styling and responsive design.
 
