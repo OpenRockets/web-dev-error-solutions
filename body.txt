@@ -1,76 +1,83 @@
 
-## Description of the Error
+This challenge focuses on styling a multi-level nested ordered list using CSS.  We'll achieve a visually appealing and easily readable hierarchy using indentation and varying list marker styles.  We'll also explore how to target specific list levels using CSS selectors. This example uses plain CSS, but the concepts are easily transferable to frameworks like Tailwind CSS.
 
-Over-indexing in MongoDB, while seemingly beneficial for query performance, can significantly degrade write performance and increase storage space consumption.  Creating too many indexes, especially compound indexes on frequently updated fields, can lead to slow insertion, update, and deletion operations.  This is because every write operation requires updating all affected indexes, making write operations slower proportionally to the number of indexes.  Additionally, excessive indexing increases the storage overhead of the collection.
 
-## Fixing Step-by-Step
+## Description of the Styling
 
-This example assumes you're using the MongoDB shell.  Adjust commands as needed for your preferred driver.
+The goal is to create a nested ordered list where:
 
-Let's say we have a collection called `products` with the following schema:
+* The top-level list items use a larger, bolder font size and a different marker style (e.g., a Roman numeral).
+* Subsequent levels use progressively smaller font sizes and different marker styles (e.g., uppercase letters, then numbers).
+* Each level is indented to clearly show the hierarchy.
+* The list has appropriate spacing and padding for readability.
 
-```javascript
-{
-  "name": String,
-  "category": String,
-  "price": Number,
-  "description": String,
-  "stock": Number
+
+## Full Code
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nested Ordered List</title>
+<style>
+ol {
+  list-style-type: upper-roman; /* Top level: Uppercase Roman numerals */
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-left: 0; /* Reset default margin */
+  padding-left: 2em; /* Add padding for indentation */
 }
+
+ol ol {
+  list-style-type: upper-alpha; /* Second level: Uppercase letters */
+  font-size: 1em;
+  margin-left: 2em; /* Increase indentation */
+  padding-left: 1.5em;
+}
+
+ol ol ol {
+  list-style-type: decimal; /* Third level: Numbers */
+  font-size: 0.9em;
+  margin-left: 2em;
+  padding-left: 1em;
+}
+</style>
+</head>
+<body>
+
+<h1>Nested List Example</h1>
+
+<ol>
+  <li>First Level Item 1</li>
+  <li>First Level Item 2
+    <ol>
+      <li>Second Level Item 1</li>
+      <li>Second Level Item 2
+        <ol>
+          <li>Third Level Item 1</li>
+          <li>Third Level Item 2</li>
+        </ol>
+      </li>
+    </ol>
+  </li>
+  <li>First Level Item 3</li>
+</ol>
+
+</body>
+</html>
 ```
-
-And we've mistakenly created several indexes:
-
-```javascript
-db.products.createIndex( { name: 1 } )
-db.products.createIndex( { category: 1 } )
-db.products.createIndex( { price: 1 } )
-db.products.createIndex( { name: 1, category: 1 } )
-db.products.createIndex( { price: 1, stock: 1 } )
-```
-
-We notice slow write operations.  To fix this:
-
-**Step 1: Analyze Index Usage**
-
-Use the `db.collection.getIndexes()` command to list all indexes on the collection:
-
-```javascript
-db.products.getIndexes()
-```
-
-This will return a list of indexes. Analyze which indexes are rarely used based on query patterns and application logs.  Tools like MongoDB Compass can help visualize index usage.
-
-**Step 2: Identify Unnecessary Indexes**
-
-From the output of `getIndexes()`, identify indexes that aren't significantly contributing to query performance. For example, if queries rarely filter by `price` and `stock` together, the index `{"price": 1, "stock": 1}` is likely unnecessary.
-
-**Step 3: Drop Unnecessary Indexes**
-
-Use the `db.collection.dropIndex()` command to remove the unnecessary indexes:
-
-```javascript
-db.products.dropIndex( { price: 1, stock: 1 } ) //Example
-db.products.dropIndex("price_1_stock_1") //Alternative using index name
-```
-
-Repeat this step for all identified unnecessary indexes.  Be cautious and only drop indexes after careful analysis.
-
-**Step 4: Monitor Performance**
-
-After dropping indexes, monitor the write performance of your application. You should observe an improvement in insertion, update, and deletion speeds.  Use MongoDB monitoring tools to track performance metrics.
 
 
 ## Explanation
 
-Indexes in MongoDB work similarly to indexes in relational databases. They improve query performance by creating a sorted structure for specific fields.  However, maintaining these sorted structures adds overhead to write operations.  When you have too many indexes, especially on frequently updated fields, the write overhead outweighs the read performance benefits.  This leads to overall performance degradation. The key is to carefully choose which indexes to create based on your most frequent query patterns.  Prioritize indexes on fields frequently used in `$eq`, `$gt`, `$lt`, etc., queries. Avoid over-indexing.
+The CSS uses nested selectors to target each level of the ordered list.  `ol` styles the top-level list. `ol ol` targets lists nested within other lists (the second level), and so on.  We use the `list-style-type` property to change the marker style for each level. `font-size` and `margin-left` control the visual hierarchy.  Adjusting padding and margins fine-tunes the spacing.
 
+## Resources to Learn More
 
-## External References
+* **MDN Web Docs - CSS Lists:** [https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type](https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type)  (Comprehensive guide to styling lists in CSS)
+* **CSS-Tricks - List Styles:** [https://css-tricks.com/almanac/properties/l/list-style/](https://css-tricks.com/almanac/properties/l/list-style/) (Practical examples and explanations)
+* **W3Schools - CSS Lists:** [https://www.w3schools.com/css/css_list.asp](https://www.w3schools.com/css/css_list.asp) (Beginner-friendly tutorial)
 
-* [MongoDB Documentation on Indexes](https://www.mongodb.com/docs/manual/indexes/)
-* [MongoDB Performance Tuning](https://www.mongodb.com/docs/manual/administration/performance/)
-* [Understanding Index Usage in MongoDB](https://www.mongodb.com/blog/post/understanding-index-usage-in-mongodb)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
