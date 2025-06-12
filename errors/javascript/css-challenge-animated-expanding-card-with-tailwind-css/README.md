@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Animated Expanding Card with Tailwind CSS
+
 
 This challenge involves creating an animated card that expands to reveal more content when clicked. We'll use Tailwind CSS for rapid styling and efficient class-based development.  The animation will be subtle and user-friendly.
 
