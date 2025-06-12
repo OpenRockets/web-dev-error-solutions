@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Building a Modern Card Component with Tailwind CSS
+
 
 This challenge focuses on creating a visually appealing and responsive product card using Tailwind CSS. The goal is to build a card that showcases product information clearly and attractively, adapting seamlessly to different screen sizes.  We'll leverage Tailwind's utility classes for rapid development and maintainable styling.
 
