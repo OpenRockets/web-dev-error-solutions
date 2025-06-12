@@ -1,71 +1,115 @@
 
-## Description of the Error
+This challenge focuses on creating a multi-level nested navigation menu using CSS. We'll aim for a clean, modern look that gracefully handles different screen sizes.  This example uses plain CSS3, but could easily be adapted to a framework like Tailwind CSS.
 
-A common mistake in MongoDB development is overusing indexes. While indexes significantly speed up queries by creating a sorted structure for specific fields, adding too many indexes can lead to performance degradation, especially during write operations.  Every index added increases the storage space required and slows down `insert`, `update`, and `delete` operations because MongoDB needs to update all affected indexes for every write.  This can severely impact application responsiveness, especially with high write loads. The symptom is usually slow write performance, even though read queries might be fast.
+## Description of the Styling:
 
-## Fixing Step-by-Step
+The navigation will be a vertically oriented menu with sub-menus appearing on hover.  The top-level items will be bold and have a background color. Sub-menu items will be indented and have a slightly lighter background.  The styling will be responsive, adapting to smaller screens by stacking the menu vertically.
 
-This example assumes you are using the MongoDB Node.js driver.  We'll focus on identifying and removing unnecessary indexes.
 
-**Step 1: Identify Existing Indexes:**
+## Full Code (CSS):
 
-First, let's list all existing indexes on a specific collection using the `mongo` shell:
+```css
+.nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
-```bash
-use myDatabase;
-db.myCollection.getIndexes()
+.nav li {
+  position: relative; /* Needed for submenus */
+}
+
+.nav li a {
+  display: block;
+  padding: 10px 20px;
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ddd;
+  transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.nav li a:hover {
+  background-color: #ddd;
+}
+
+.nav ul {
+  display: none; /* Hide submenus by default */
+  position: absolute;
+  left: 100%; /* Position submenu to the right */
+  top: 0;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  z-index: 1; /* Ensure submenu is on top */
+}
+
+.nav li:hover > ul {
+  display: block; /* Show submenu on hover */
+}
+
+.nav ul li a {
+  font-weight: normal; /* Submenu items less bold */
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #eee;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+  .nav {
+    flex-direction: column; /* Stack menu items vertically */
+  }
+  .nav li {
+    position: static; /* Remove positioning for submenus on smaller screens */
+  }
+  .nav ul {
+    position: static; /* Remove positioning for submenus on smaller screens */
+    left: 0;
+    width: 100%;
+  }
+}
 ```
 
-Replace `myDatabase` and `myCollection` with your database and collection names.  This will return a JSON array of all indexes, showing their keys and other properties.
+## Full Code (HTML):
 
-**Step 2: Analyze Query Patterns:**
-
-Review your application's code to identify the most frequent query patterns.  Focus on queries that are performance-critical.  These usually involve `find()` operations with specific filters.  For each critical query, determine which fields are used in the `$eq`, `$lt`, `$gt`, etc. operators.
-
-
-**Step 3: Identify Unnecessary Indexes:**
-
-Compare the indexes listed in Step 1 with the query patterns identified in Step 2.  Any index that doesn't significantly contribute to the speed of your frequent queries is likely unnecessary. This is subjective and requires careful consideration. For example, indexes on rarely used fields or fields with highly selective queries don't provide significant benefits compared to the write performance overhead.
-
-
-**Step 4: Remove Unnecessary Indexes (using mongo shell):**
-
-Once you've identified unnecessary indexes, remove them using the `db.myCollection.dropIndex()` method.  Replace `<index_name>` with the name of the index you want to drop. You can find the index name in the output of `db.myCollection.getIndexes()`.
-
-```bash
-use myDatabase;
-db.myCollection.dropIndex("<index_name>");
-```
-
-For example, if you have an index named `_id_1`, you would use:
-
-```bash
-use myDatabase;
-db.myCollection.dropIndex("_id_1");
-```
-
-**Step 5: Monitor Performance:**
-
-After removing indexes, carefully monitor your application's performance.  Use monitoring tools to track write times and overall database performance. You might need to iterate, adding or removing indexes based on your observation.
-
-**Step 6 (Optional): Create Compound Indexes (If Necessary):**
-
-If you have multiple queries involving combinations of fields, consider using compound indexes. These are indexes on multiple fields, optimizing queries that filter on those fields in combination.  For example, to optimize queries filtering by `productName` and `category`, use:
-
-```javascript
-db.myCollection.createIndex({ productName: 1, category: 1})
+```html
+<ul class="nav">
+  <li><a href="#">Home</a></li>
+  <li><a href="#">About</a>
+    <ul>
+      <li><a href="#">Our Mission</a></li>
+      <li><a href="#">Team</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+  </li>
+  <li><a href="#">Services</a>
+    <ul>
+      <li><a href="#">Design</a></li>
+      <li><a href="#">Development</a></li>
+    </ul>
+  </li>
+  <li><a href="#">Blog</a></li>
+</ul>
 ```
 
 
-## Explanation
+## Explanation:
 
-Over-indexing leads to a write-heavy workload and can significantly decrease the write performance of your application. Indexes consume disk space and require updates during write operations.  The goal is to create only the *necessary* indexes to optimize read performance while keeping the overhead of index maintenance manageable.  Careful analysis of query patterns and removal of underutilized indexes can significantly improve overall database performance.
+The CSS uses several key techniques:
 
-## External References
+* **List-style: none;**: Removes default bullet points from the unordered list.
+* **Position: relative/absolute**:  Enables precise positioning of the submenus relative to their parent items.
+* **Display: block;**: Makes each list item and link take up the full width of its container.
+* **:hover**:  Selects the element when the mouse hovers over it.
+* **@media (max-width: 768px)**: Applies different styles for smaller screens, making the navigation responsive.
 
-* [MongoDB Indexing Documentation](https://www.mongodb.com/docs/manual/indexes/)
-* [MongoDB Performance Tuning](https://www.mongodb.com/docs/manual/tutorial/optimize-for-performance/)
-* [Understanding MongoDB Indexes](https://www.mongodb.com/blog/post/understanding-mongodb-indexes)
+
+## Links to Resources to Learn More:
+
+* **CSS Selectors:** [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
+* **CSS Positioning:** [MDN Web Docs - CSS Positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/position)
+* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **Learn CSS Grid:** [CSS Grid Layout](https://css-tricks.com/snippets/css/complete-guide-grid/) (For alternative layout approaches)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
