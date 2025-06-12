@@ -1,71 +1,90 @@
 
-**Description of the Error:**
-
-The "too many files open" error in MongoDB arises when your MongoDB process exhausts the operating system's limit on the number of simultaneously open files. This typically happens when you have a high volume of connections, large numbers of files opened for operations (e.g., during large data imports or queries), or insufficient file descriptor limits set at the operating system level.  The error manifests differently depending on the OS, but generally involves an inability to create new connections or perform file-related operations within MongoDB.  The server might become unresponsive or crash.
-
-**Full Code of Fixing Step by Step:**
-
-This problem requires a multi-pronged approach; fixing it purely through code changes within the MongoDB application itself isn't possible. The solution involves modifying operating system settings. We'll outline the process for Linux (using `ulimit`) and macOS/BSD (using `launchctl`).  Windows requires altering settings within the system's properties.
-
-**1. Identify the Current File Descriptor Limit:**
-
-   * **Linux:**
-     ```bash
-     ulimit -n
-     ```
-   * **macOS/BSD:**
-     ```bash
-     ulimit -n
-     ```
-   * **Windows:** Open Task Manager, go to "Details," right-click on `mongod.exe` (or your MongoDB process), and check the properties. This doesn't directly show the limit but indicates the current number of open files, hinting at the problem. To adjust, look into changing the system's file descriptor limits through the registry or system properties.
-
-**2. Increase the File Descriptor Limit:**
-
-   * **Linux (Permanent):** Edit `/etc/security/limits.conf` and add a line for the MongoDB user:
-     ```
-     mongod   soft    nofile   65536
-     mongod   hard    nofile   65536
-     ```
-     (Replace `mongod` with your actual MongoDB user if different, and adjust `65536` to a suitable value.  Start with a larger number than your current limit; however, excessively large limits may have other side effects.)  Then, reload the system configuration (e.g., using `sudo sysctl -p`).  Restart the MongoDB service.
-
-   * **Linux (Temporary Session):**  Use `ulimit` before starting the MongoDB server:
-     ```bash
-     ulimit -n 65536; mongod
-     ```
-
-   * **macOS/BSD (Permanent):** Create or modify a `.plist` file (e.g., `/Library/LaunchDaemons/com.mongodb.mongod.plist`) for your MongoDB service. Add or modify the following section:
-      ```xml
-      <key>LimitFiles</key>
-      <integer>65536</integer>
-      ```
-     Reload the system configuration (`launchctl unload /Library/LaunchDaemons/com.mongodb.mongod.plist; launchctl load /Library/LaunchDaemons/com.mongodb.mongod.plist`) and restart the MongoDB service.
-
-   * **macOS/BSD (Temporary Session):** Similar to Linux's temporary method, use `ulimit -n 65536` before starting the MongoDB server.
-
-   * **Windows:**  The steps for modifying file descriptor limits on Windows are more involved and depend on your version.  Consult the Windows documentation or Microsoft support resources for detailed instructions.  It typically involves modifying registry settings.
+This challenge involves creating an animated circular progress bar using only CSS.  We'll target a specific percentage (let's say 75%) and animate the filling of the circle. This example uses only CSS, no Javascript required.  We'll leverage CSS animations and transforms to achieve the effect.
 
 
+**Description of the Styling:**
 
-**3. Restart MongoDB:**
+The progress bar consists of a circle track and a circle fill. The track is a simple circle with a border.  The fill is another circle overlaid on top, rotated to represent the progress percentage.  The animation smoothly rotates the fill circle to show the progress.  We use CSS variables (custom properties) for easy customization of colors and size.
 
-After making changes to the file descriptor limit, restart the MongoDB server to apply the changes.
 
-**4. Monitor Resource Usage:**
+**Full Code:**
 
-After the restart, monitor your server's resource usage (CPU, memory, and file descriptors) using system monitoring tools.  If the problem persists, you might need to investigate further, considering factors such as connection pooling (application-level), optimizing your queries, or even upgrading your hardware.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Circular Progress Bar</title>
+<style>
+:root {
+  --progress-size: 200px;
+  --progress-track-color: #e0e0e0;
+  --progress-fill-color: #4CAF50;
+}
 
+.progress-ring {
+  width: var(--progress-size);
+  height: var(--progress-size);
+  position: relative;
+  border-radius: 50%;
+}
+
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--progress-size);
+  height: var(--progress-size);
+  border-radius: 50%;
+  border: 10px solid var(--progress-track-color);
+  border-right-color: transparent; /*This creates the circular look*/
+}
+
+.progress-ring::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(270deg); /*Start at the top*/
+  width: var(--progress-size);
+  height: var(--progress-size);
+  border-radius: 50%;
+  border: 10px solid var(--progress-fill-color);
+  border-right-color: transparent;
+  animation: progress 2s linear forwards;
+}
+
+
+@keyframes progress {
+  to {
+    transform: translate(-50%, -50%) rotate(calc(360deg * 75% - 90deg)); /*Calculate rotation based on percentage*/
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-ring"></div>
+
+</body>
+</html>
+```
 
 **Explanation:**
 
-The root cause is the operating system preventing MongoDB from opening more files than allowed. By increasing the `nofile` (number of files) limit, we provide MongoDB with sufficient resources to handle its file operations without hitting the limit.  The choice between permanent and temporary changes depends on your setup and preferences.  Permanent changes are ideal for production environments, while temporary changes are suitable for testing or short-term solutions.  Remember to choose an appropriate limit based on your system's resources and expected workload.
+* **`--progress-size`, `--progress-track-color`, `--progress-fill-color`:** CSS variables for easy customization.
+* **`.progress-ring::before`:** Creates the track circle using a `::before` pseudo-element.  `border-right-color: transparent;` is key to making it a circular track.
+* **`.progress-ring::after`:** Creates the fill circle using a `::after` pseudo-element.  The initial `rotate(270deg)` starts the fill at the top.
+* **`@keyframes progress`:** Defines the animation. The `calc(360deg * 75% - 90deg)` calculates the rotation needed for 75% progress. The `-90deg` offset adjusts for the starting position.  Change `75%` to modify the progress percentage.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [MongoDB Documentation](https://www.mongodb.com/docs/)
-* [Linux `ulimit` Command](https://man7.org/linux/man-pages/man1/ulimit.1.html)
-* [macOS `launchctl`](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html)
-* [Windows File Descriptor Limits](Search for "Increase File Descriptor Limit Windows" on your preferred search engine - the specifics vary slightly across Windows versions)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Variables:** [MDN Web Docs - CSS Custom Properties](https://developer.mozilla.org/en-US/docs/Web/CSS/--*)
+* **Pseudo-elements:** [MDN Web Docs - Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
