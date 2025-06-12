@@ -1,46 +1,53 @@
 # 🐞 CSS Challenge: Recreate a Simple Pricing Table
 
 
-This challenge involves creating a clean and responsive pricing table using CSS. We'll focus on a simple design, easily adaptable to different styles and complexities.  This example uses plain CSS;  adapting it to Tailwind would be a straightforward exercise of replacing the CSS classes with their Tailwind equivalents.
+This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll utilize standard CSS (no framework like Tailwind is used for this example, to emphasize core CSS concepts), aiming for a visually appealing layout suitable for displaying different pricing plans.  The goal is to demonstrate mastery of flexbox and basic styling techniques.
 
-**Description of the Styling:**
 
-The pricing table will feature three columns representing different pricing plans (e.g., Basic, Pro, Premium). Each column will have a header (plan name), a list of features, a price, and a call to action button.  The table will be responsive, adjusting its layout for different screen sizes. We'll aim for a clean, modern aesthetic using a combination of colors, shadows, and borders.
+## Styling Description
 
-**Full Code (CSS):**
+The pricing table will consist of three columns representing different pricing plans (Basic, Pro, Premium). Each column will contain the plan name, a list of features, the price, and a call-to-action button.  We will use a responsive design to ensure the table adapts gracefully to different screen sizes.  The overall style will be clean and modern, using a subtle color palette.
 
-```css
+
+## Full Code
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pricing Table</title>
+<style>
 body {
   font-family: sans-serif;
 }
 
 .pricing-table {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
-  grid-gap: 20px;
-  padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .plan {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  margin: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
   padding: 20px;
   text-align: center;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
 }
 
 .plan h2 {
-  margin-bottom: 10px;
+  margin-top: 0;
 }
 
 .plan ul {
   list-style: none;
   padding: 0;
-  margin-bottom: 10px;
 }
 
 .plan li {
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
 
 .plan .price {
@@ -50,72 +57,76 @@ body {
 }
 
 .plan button {
-  background-color: #007bff;
-  color: white;
+  background-color: #4CAF50;
   border: none;
+  color: white;
   padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
   border-radius: 5px;
   cursor: pointer;
 }
-```
 
-**HTML (Example):**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Pricing Table</title>
-  <link rel="stylesheet" href="styles.css">
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .plan {
+    width: 100%;
+  }
+}
+</style>
 </head>
 <body>
-  <div class="pricing-table">
-    <div class="plan">
-      <h2>Basic</h2>
-      <ul>
-        <li>Feature 1</li>
-        <li>Feature 2</li>
-      </ul>
-      <p class="price">$9/month</p>
-      <button>Sign Up</button>
-    </div>
-    <div class="plan">
-      <h2>Pro</h2>
-      <ul>
-        <li>Feature 1</li>
-        <li>Feature 2</li>
-        <li>Feature 3</li>
-      </ul>
-      <p class="price">$19/month</p>
-      <button>Sign Up</button>
-    </div>
-    <div class="plan">
-      <h2>Premium</h2>
-      <ul>
-        <li>Feature 1</li>
-        <li>Feature 2</li>
-        <li>Feature 3</li>
-        <li>Feature 4</li>
-      </ul>
-      <p class="price">$29/month</p>
-      <button>Sign Up</button>
-    </div>
+
+<div class="pricing-table">
+  <div class="plan">
+    <h2>Basic</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+    </ul>
+    <p class="price">$9.99/month</p>
+    <button>Sign Up</button>
   </div>
+  <div class="plan">
+    <h2>Pro</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+    </ul>
+    <p class="price">$19.99/month</p>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Premium</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+    </ul>
+    <p class="price">$29.99/month</p>
+    <button>Sign Up</button>
+  </div>
+</div>
+
 </body>
 </html>
 ```
 
 
-**Explanation:**
+## Explanation
 
-The CSS uses a grid layout for responsiveness.  The `grid-template-columns` property with `repeat(auto-fit, minmax(300px, 1fr))` ensures that the columns adjust based on the screen size.  Each plan is styled individually using classes.  Box shadows and rounded corners add visual appeal.  The HTML provides a basic structure for the table, which can be easily customized.
+The code utilizes flexbox for easy layout management.  The `.pricing-table` div uses `flex-wrap: wrap` to allow the columns to wrap onto multiple lines on smaller screens.  Individual plans are styled with consistent padding, borders, and shadows.  Media queries handle responsiveness, making the table adjust to different screen sizes. The CSS is well-commented to improve understanding.
 
 
-**Links to Resources to Learn More:**
+## Links to Resources to Learn More
 
-* **CSS Grid Layout:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
-* **CSS Box Model:** [https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing)
-* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs) (If you choose to implement with Tailwind)
+* **MDN Web Docs (CSS):** [https://developer.mozilla.org/en-US/docs/Web/CSS](https://developer.mozilla.org/en-US/docs/Web/CSS) - Comprehensive resource for all things CSS.
+* **CSS-Tricks:** [https://css-tricks.com/](https://css-tricks.com/) -  A great website for CSS tutorials and articles.
+* **FreeCodeCamp:** [https://www.freecodecamp.org/](https://www.freecodecamp.org/) - Offers interactive CSS learning paths.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

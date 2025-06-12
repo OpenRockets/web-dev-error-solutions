@@ -1,78 +1,130 @@
 
-**Description of the Error:**
-
-A common problem in MongoDB arises from creating too many indexes. While indexes drastically improve query performance, an excessive number can severely impact write operations.  Adding an index involves extra disk space and time during write operations (inserts, updates, deletes).  Excessive indexing leads to:
-
-* **Slower write performance:** Each write operation needs to update all relevant indexes, resulting in significant overhead.
-* **Increased storage consumption:** Indexes themselves consume storage space. Too many indexes increase overall database size.
-* **Performance degradation during `$geoNear` queries:** If you have several indexes on the same geometry field, `$geoNear` queries will suffer.
-* **Increased complexity:** Managing a large number of indexes becomes a maintenance nightmare.
+This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll utilize standard CSS (no framework like Tailwind is used for this example, to emphasize core CSS concepts), aiming for a visually appealing layout suitable for displaying different pricing plans.  The goal is to demonstrate mastery of flexbox and basic styling techniques.
 
 
-**Code (Fixing Step-by-Step):**
+## Styling Description
 
-This example focuses on identifying and removing unnecessary indexes. We'll assume you have a collection named `products` and want to optimize its indexes.
+The pricing table will consist of three columns representing different pricing plans (Basic, Pro, Premium). Each column will contain the plan name, a list of features, the price, and a call-to-action button.  We will use a responsive design to ensure the table adapts gracefully to different screen sizes.  The overall style will be clean and modern, using a subtle color palette.
 
-**1. Identify Existing Indexes:**
 
-```bash
-db.products.getIndexes()
+## Full Code
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pricing Table</title>
+<style>
+body {
+  font-family: sans-serif;
+}
+
+.pricing-table {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.plan {
+  width: 300px;
+  margin: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+
+.plan h2 {
+  margin-top: 0;
+}
+
+.plan ul {
+  list-style: none;
+  padding: 0;
+}
+
+.plan li {
+  margin-bottom: 10px;
+}
+
+.plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.plan button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .plan {
+    width: 100%;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="pricing-table">
+  <div class="plan">
+    <h2>Basic</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+    </ul>
+    <p class="price">$9.99/month</p>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Pro</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+    </ul>
+    <p class="price">$19.99/month</p>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Premium</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+    </ul>
+    <p class="price">$29.99/month</p>
+    <button>Sign Up</button>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-This command lists all indexes on the `products` collection.  Examine the output carefully to understand which indexes are in use and their usage patterns. Look for indexes that are rarely or never used.
 
-**2. Analyze Query Logs:**
+## Explanation
 
-Using MongoDB's profiling capabilities, you can identify frequently used query patterns and which indexes are used or missed. Enabling profiling:
-
-```bash
-db.setProfilingLevel(2) //Enables profiling level 2 (slow queries)
-```
-
-After running queries, analyze the `system.profile` collection:
-
-```bash
-db.system.profile.find({ millis: { $gt: 10 } }).sort({ millis: -1 })
-```
-This shows queries that took more than 10ms.  Analyze these to see if indexes are being utilized or if new ones need to be added.  Don't forget to disable profiling afterwards:
-
-```bash
-db.setProfilingLevel(0)
-```
+The code utilizes flexbox for easy layout management.  The `.pricing-table` div uses `flex-wrap: wrap` to allow the columns to wrap onto multiple lines on smaller screens.  Individual plans are styled with consistent padding, borders, and shadows.  Media queries handle responsiveness, making the table adjust to different screen sizes. The CSS is well-commented to improve understanding.
 
 
-**3. Remove Unnecessary Indexes:**
+## Links to Resources to Learn More
 
-Once you've identified underused or redundant indexes, remove them. For example, to remove an index on the `sku` field:
-
-```javascript
-db.products.dropIndex("sku_1") //Replace "sku_1" with the actual index name
-```
-
-
-**4.  Strategically Add or Modify Indexes:**
-
-Instead of creating many indexes, focus on creating composite indexes that cover multiple fields frequently used in query filters.  For example:
-
-```javascript
-db.products.createIndex( { category: 1, price: 1 } )
-```
-
-This creates a compound index for efficient queries filtering by `category` and `price`.
-
-
-
-**Explanation:**
-
-The key is to achieve a balance.  Indexes improve read performance, but too many indexes negatively impact write performance.  By analyzing your query patterns (using profiling) and strategically selecting appropriate indexes, you can optimize your database for both read and write efficiency.  Regularly reviewing and adjusting your indexes is crucial for maintaining optimal performance.
-
-
-
-**External References:**
-
-* [MongoDB Indexing Best Practices](https://www.mongodb.com/docs/manual/core/index-optimization/)
-* [MongoDB Profiling](https://www.mongodb.com/docs/manual/tutorial/profile-operations/)
-* [Understanding Compound Indexes](https://www.mongodb.com/community/blog/compound-indexes-in-mongodb)
+* **MDN Web Docs (CSS):** [https://developer.mozilla.org/en-US/docs/Web/CSS](https://developer.mozilla.org/en-US/docs/Web/CSS) - Comprehensive resource for all things CSS.
+* **CSS-Tricks:** [https://css-tricks.com/](https://css-tricks.com/) -  A great website for CSS tutorials and articles.
+* **FreeCodeCamp:** [https://www.freecodecamp.org/](https://www.freecodecamp.org/) - Offers interactive CSS learning paths.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
