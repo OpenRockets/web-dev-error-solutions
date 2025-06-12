@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Error: $lookup failed: invalid $lookup specification" in MongoDB Aggregations
+
 
 This document addresses a common error encountered when using the `$lookup` operator in MongoDB aggregations: "Error: $lookup failed: invalid $lookup specification".  This typically arises from incorrect usage of the `$lookup` pipeline stage, which performs left outer joins between two collections.
 
