@@ -1,1 +1,1 @@
-CSS Challenge:  Gradient-Bordered Card with Tailwind CSS
+Overcoming the "Too Many Indexes" Problem in MongoDB
