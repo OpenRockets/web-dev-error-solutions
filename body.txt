@@ -1,115 +1,71 @@
 
-This challenge involves creating a 3D rotating cube using only CSS.  We'll leverage CSS transforms and animations to achieve the effect.  This example uses pure CSS; no JavaScript is required.
+## Description of the Error
+
+A common performance problem in MongoDB stems from having too many indexes. While indexes speed up queries, an excessive number can negatively impact write operations.  Adding an index incurs overhead during write operations (inserts, updates, deletes) because the index itself needs to be updated.  Too many indexes can lead to:
+
+* **Slow write performance:**  The time it takes to insert, update, or delete documents significantly increases.
+* **Increased storage space:** Indexes consume disk space, and many indexes mean significantly more storage used.
+* **Performance degradation during write-heavy workloads:** Write operations become a bottleneck, affecting overall application performance.
+
+This problem often arises from a lack of planning, adding indexes reactively without considering their long-term impact, or a failure to regularly review and remove unnecessary indexes.
 
 
-## Description of the Styling
+## Fixing the Problem Step-by-Step
 
-The goal is to create a cube that appears to rotate smoothly on its vertical axis.  We'll achieve this by using six divs, each representing a face of the cube, positioned and rotated appropriately using `transform: rotateX()` and `transform: rotateY()`.  CSS animations will handle the continuous rotation. The cube will have distinct colors for each face to clearly illustrate the 3D effect.
+This solution focuses on identifying and removing unnecessary indexes.  We'll assume you're using the MongoDB shell.  Replace `<database_name>` and `<collection_name>` with your actual database and collection names.
 
+**Step 1: Identify Existing Indexes:**
 
-## Full Code
-
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>3D Rotating Cube</title>
-<style>
-body {
-  perspective: 800px; /* Creates the 3D perspective */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f0f0f0;
-}
-
-.cube {
-  width: 200px;
-  height: 200px;
-  transform-style: preserve-3d; /* Essential for 3D transforms */
-  animation: rotate 8s linear infinite; /* Animate the rotation */
-}
-
-.face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  opacity: 0.8; /*add some transparency*/
-  background-size: cover;
-  backface-visibility: hidden; /* Prevents faces from showing through */
-}
-
-.front {
-  background-color: #f00;
-  transform: translateZ(100px);
-}
-
-.back {
-  background-color: #0f0;
-  transform: translateZ(-100px) rotateY(180deg);
-}
-
-.top {
-  background-color: #00f;
-  transform: translateY(-100px) rotateX(90deg);
-}
-
-.bottom {
-  background-color: #ff0;
-  transform: translateY(100px) rotateX(-90deg);
-}
-
-.left {
-  background-color: #0ff;
-  transform: translateX(-100px) rotateY(-90deg);
-}
-
-.right {
-  background-color: #f0f;
-  transform: translateX(100px) rotateY(90deg);
-}
-
-@keyframes rotate {
-  from {
-    transform: rotateY(0deg);
-  }
-  to {
-    transform: rotateY(360deg);
-  }
-}
-</style>
-</head>
-<body>
-<div class="cube">
-  <div class="face front"></div>
-  <div class="face back"></div>
-  <div class="face top"></div>
-  <div class="face bottom"></div>
-  <div class="face left"></div>
-  <div class="face right"></div>
-</div>
-</body>
-</html>
+```bash
+use <database_name>;
+db.<collection_name>.getIndexes();
 ```
+
+This command lists all indexes on the specified collection.  Pay close attention to the `name` and `key` fields.
+
+
+**Step 2: Analyze Query Patterns:**
+
+Review your application's query patterns.  Identify the most frequent queries and the fields they use.  This step usually involves examining application logs, monitoring tools (like MongoDB Compass), or profiling queries.  Focus on queries that are frequently executed and impact application performance.
+
+
+**Step 3: Identify Redundant or Unused Indexes:**
+
+Compare the indexes listed in Step 1 with the frequently used query patterns identified in Step 2.  Look for indexes that:
+
+* **Cover identical fields:** If multiple indexes cover the same fields in the same order, one is likely redundant.
+* **Are never used:** If an index hasn't been used in a significant period, consider removing it. You can often use the `db.collection.stats()` command to see index usage information (though it might not be perfectly accurate in all cases).
+
+
+**Step 4: Remove Unnecessary Indexes:**
+
+Once you've identified redundant or unused indexes, remove them using the `db.collection.dropIndex()` command. Replace `<index_name>` with the name of the index to be dropped (found in the output of `getIndexes()`).
+
+```bash
+db.<collection_name>.dropIndex("<index_name>");
+```
+
+For example, to drop an index named "myIndex":
+
+```bash
+db.<collection_name>.dropIndex("myIndex");
+```
+
+**Step 5: Monitor Performance:**
+
+After removing indexes, monitor your application's performance to ensure write performance improves and overall system stability is enhanced.  Use monitoring tools to track write times and database resource utilization.
 
 
 ## Explanation
 
-* **`perspective`:** This property on the `body` creates the 3D viewing space.  Adjusting this value changes the perspective.
-* **`transform-style: preserve-3d;`:** This is crucial. It ensures that child elements (the faces) are rendered in 3D space.
-* **`translateZ()`:**  Moves the faces along the z-axis to create depth.
-* **`rotateX()` and `rotateY()`:** Rotate the faces around the x and y axes to create the cube's shape.
-* **`backface-visibility: hidden;`:**  Prevents the back faces from being visible when the front faces are in front.
-* **`@keyframes rotate`:** This defines the animation that smoothly rotates the cube.
+The key to efficiently using indexes is to create only those that are absolutely necessary for frequently used query patterns.  Each index adds overhead to write operations, so unnecessary indexes introduce a significant performance penalty, especially under heavy write loads.  Regularly auditing your indexes, removing redundant ones, and aligning them with actual query patterns is essential for optimizing MongoDB performance.
 
 
-## Links to Resources to Learn More
+## External References
 
-* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **MDN Web Docs - CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
-* **CSS-Tricks - 3D Transforms:** [Search "3D Transforms" on CSS-Tricks for numerous tutorials]
+* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
+* **MongoDB Documentation on Performance:** [https://www.mongodb.com/docs/manual/reference/method/db.collection.stats/](https://www.mongodb.com/docs/manual/reference/method/db.collection.stats/) (for index stats - the information isn't always detailed)
+* **MongoDB Compass (GUI Tool):**  Provides a visual interface for managing indexes and analyzing performance. [https://www.mongodb.com/products/compass](https://www.mongodb.com/products/compass)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

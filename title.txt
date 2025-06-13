@@ -1,1 +1,1 @@
-CSS Challenge:  3D Rotating Cube with CSS Animations
+Overcoming the "Too Many Indexes" Problem in MongoDB
