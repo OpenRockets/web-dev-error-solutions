@@ -1,1 +1,1 @@
-Overcoming the "Index Scanned Too Much Data" Error in MongoDB
+Overcoming "Too many indexes" Errors in MongoDB
