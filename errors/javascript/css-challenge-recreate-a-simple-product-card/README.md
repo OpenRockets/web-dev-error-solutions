@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Recreate a Simple Product Card
+
 
 This challenge involves creating a visually appealing product card using CSS.  We'll focus on a clean, modern design utilizing only CSS (no JavaScript or image assets). This example uses plain CSS, but you could easily adapt it to use a framework like Tailwind CSS.
 
