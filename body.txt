@@ -1,76 +1,95 @@
 
-## Description of the Error
+This challenge focuses on creating a responsive pricing table using Tailwind CSS.  The goal is to build a clean, visually appealing table that adapts seamlessly to different screen sizes.  We'll use Tailwind's utility classes to style the table efficiently and ensure responsiveness.
 
-A common performance issue in MongoDB arises from inefficient use of the `$elemMatch` operator within queries, especially when dealing with arrays within embedded documents.  While `$elemMatch` is useful for querying arrays based on multiple criteria within a single array element, overusing it or using it inappropriately can prevent MongoDB from utilizing indexes effectively, resulting in slow query execution and impacting application performance. This frequently occurs when you could achieve the same outcome with more efficient query strategies.
+## Description of the Styling
 
-Imagine a collection of users where each user has an `orders` array, each containing an `orderID` and `status`.  A query using `$elemMatch` to find users with a specific order ID and status might be inefficient if there's no composite index leveraging both fields within the `orders` array. MongoDB might perform a collection scan instead of using an index.
+The pricing table will consist of three columns representing different pricing plans (e.g., Basic, Pro, Premium). Each column will include:
 
-## Fixing the Problem Step-by-Step
+*   A plan title (e.g., "Basic").
+*   A price (e.g., "$9/month").
+*   A list of features included in the plan.
+*   A call-to-action button (e.g., "Sign Up").
 
-Let's assume we have a collection named `users` with the following structure:
+The styling will incorporate:
 
-```json
-{
-  "_id": ObjectId("654321abcdef"),
-  "name": "John Doe",
-  "orders": [
-    { "orderID": "123", "status": "completed" },
-    { "orderID": "456", "status": "pending" }
-  ]
-}
+*   Clean and modern design.
+*   Responsive layout adapting to different screen sizes (using Tailwind's responsive modifiers).
+*   Clear visual separation between pricing plans.
+*   Consistent font sizes and colors.
+*   Visually appealing buttons.
+
+
+## Full Code
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Responsive Pricing Table</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+
+<div class="container mx-auto px-4 py-8">
+  <h2 class="text-3xl font-bold mb-8 text-center">Choose Your Plan</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+    <!-- Basic Plan -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h3 class="text-xl font-bold mb-4 text-center">Basic</h3>
+      <p class="text-4xl font-bold text-center mb-4">$9<span class="text-base">/month</span></p>
+      <ul class="list-disc list-inside mb-4">
+        <li>10GB Storage</li>
+        <li>1 User</li>
+        <li>Email Support</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Sign Up</button>
+    </div>
+
+    <!-- Pro Plan -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h3 class="text-xl font-bold mb-4 text-center">Pro</h3>
+      <p class="text-4xl font-bold text-center mb-4">$29<span class="text-base">/month</span></p>
+      <ul class="list-disc list-inside mb-4">
+        <li>50GB Storage</li>
+        <li>5 Users</li>
+        <li>Priority Email Support</li>
+        <li>Chat Support</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Sign Up</button>
+    </div>
+
+    <!-- Premium Plan -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h3 class="text-xl font-bold mb-4 text-center">Premium</h3>
+      <p class="text-4xl font-bold text-center mb-4">$99<span class="text-base">/month</span></p>
+      <ul class="list-disc list-inside mb-4">
+        <li>Unlimited Storage</li>
+        <li>10 Users</li>
+        <li>24/7 Support</li>
+        <li>Dedicated Account Manager</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Sign Up</button>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
 ```
-
-We want to find users with an order having `orderID: "456"` and `status: "pending"`.
-
-**Inefficient Approach (using `$elemMatch` without appropriate index):**
-
-```javascript
-db.users.find( { "orders": { $elemMatch: { "orderID": "456", "status": "pending" } } } )
-```
-
-This query might be slow because, without a proper index, it forces MongoDB to examine each element within the `orders` array for every user document.
-
-**Efficient Approach (using a compound index and optimized query):**
-
-1. **Create a Compound Index:**
-
-   The key to efficiency is to create a compound index on the `orders` array fields.  This allows MongoDB to use the index for efficient lookups.
-
-   ```javascript
-   db.users.createIndex( { "orders.orderID": 1, "orders.status": 1 } )
-   ```
-   This creates an index on `orders.orderID` (ascending) and `orders.status` (ascending). The order matters – MongoDB will use this index for queries matching this order.
-
-2. **Unwind the Array (for more complex queries or aggregations):**
-
-   For more intricate queries involving multiple operations on the `orders` array, consider using the `$unwind` aggregation pipeline operator.  While this approach might add an extra step, it can improve performance considerably compared to an inefficient `$elemMatch` query:
-
-   ```javascript
-   db.users.aggregate([
-       { $unwind: "$orders" },
-       { $match: { "orders.orderID": "456", "orders.status": "pending" } }
-   ])
-   ```
-   This first unwinds the `orders` array into separate documents and then efficiently filters based on the index.  This method is superior to `$elemMatch` for complex queries or when performing multiple operations on the array.
-
-
-**Efficient Approach (Simplified for this specific example):**  If your query is as simple as the example, you can still benefit from the index created above even without using `$unwind`, especially if you're only interested in finding documents with a matching array element:
-
-```javascript
-db.users.find( { "orders.orderID": "456", "orders.status": "pending" } )
-```
-
 
 ## Explanation
 
-The inefficiency with `$elemMatch` without a suitable compound index stems from the lack of a way for MongoDB to quickly identify documents containing the required array element.  A collection scan becomes necessary, leading to O(N) complexity (where N is the number of documents).  The compound index, however, allows MongoDB to perform a much faster index-based lookup, often resulting in O(log N) complexity. The `$unwind` approach is generally preferred for more advanced queries as it improves query performance, making it especially advantageous when dealing with multiple conditions, aggregation, or sorting within the array.
+The code utilizes Tailwind CSS's grid system (`grid grid-cols-1 md:grid-cols-3`) to create a responsive layout.  On smaller screens (mobile), the pricing plans are stacked vertically. On medium screens and larger (desktops), they are arranged in three columns.  Other Tailwind classes handle styling like background colors, shadows, spacing, text styles, and button appearance.  The code is well-structured and easy to understand thanks to Tailwind's intuitive class names.
 
 
-## External References
+## Links to Resources to Learn More
 
-* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
-* **MongoDB Documentation on `$elemMatch`:** [https://www.mongodb.com/docs/manual/reference/operator/query/elemMatch/](https://www.mongodb.com/docs/manual/reference/operator/query/elemMatch/)
-* **MongoDB Documentation on `$unwind`:** [https://www.mongodb.com/docs/manual/reference/operator/aggregation/unwind/](https://www.mongodb.com/docs/manual/reference/operator/aggregation/unwind/)
+*   **Tailwind CSS Official Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)  This is the primary resource for learning about Tailwind CSS and its utility classes.
+*   **Learn CSS Grid:** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/) (While the example uses Tailwind's grid implementation, understanding CSS Grid is beneficial.)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
