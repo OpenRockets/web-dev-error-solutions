@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Navigation Bar with a Subtle Hover Effect
+Overcoming MongoDB's `$where` Operator Performance Issues
