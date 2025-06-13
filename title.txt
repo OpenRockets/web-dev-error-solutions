@@ -1,1 +1,1 @@
-Overcoming MongoDB's `$where` Operator Performance Issues
+Overcoming the "Too Many Indexes" Problem in MongoDB
