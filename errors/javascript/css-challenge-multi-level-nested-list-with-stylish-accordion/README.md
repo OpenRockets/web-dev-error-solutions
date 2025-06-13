@@ -1,125 +1,105 @@
 # 🐞 CSS Challenge:  Multi-level Nested List with Stylish Accordion
 
 
-This challenge focuses on creating a multi-level nested list that functions as an accordion.  Each list item will have a header that, when clicked, expands or collapses its sub-list(s). We'll use CSS3 for styling and focus on creating a clean, accessible, and visually appealing design.  No JavaScript will be used for the accordion functionality; it will be achieved purely through CSS.
+This challenge focuses on creating a visually appealing multi-level nested list that utilizes an accordion effect for collapsing and expanding sub-lists. We'll use CSS3 for styling and leverage the power of the `:target` pseudo-class for the accordion functionality.  No JavaScript is required.
 
-## Description of the Styling
+**Description of the Styling:**
 
-The styling will incorporate a modern and clean aesthetic.  We'll use a subtle background color for the list, visually separate list levels through indentation and different heading styles, and use a smooth transition for the accordion effect. The open/closed state of each list item will be visually clear.
+The styling aims for a clean, modern look.  The top-level list items will have a distinct background color and padding.  Subsequent levels will be indented and use a lighter background color.  The "+" and "-" symbols will be used to indicate whether a sublist is collapsed or expanded, respectively.  The accordion effect will be achieved by using the `:target` pseudo-class to show/hide the sub-lists based on the URL hash.
 
-## Full Code (CSS Only)
-
-```css
-body {
-  font-family: sans-serif;
-  line-height: 1.6;
-}
-
-.accordion {
-  background-color: #f2f2f2;
-  padding: 10px;
-  border-radius: 5px;
-}
-
-.accordion ul {
-  list-style: none;
-  padding: 0;
-}
-
-.accordion li {
-  margin-bottom: 10px;
-}
-
-.accordion h3 {
-  cursor: pointer;
-  background-color: #ddd;
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 0;
-  transition: background-color 0.3s ease;
-}
-
-.accordion h3:hover {
-  background-color: #ccc;
-}
-
-.accordion ul li {
-  padding-left: 20px; /* Indentation for nested levels */
-}
-
-.accordion ul li ul {
-    margin-top: 0; /* Remove extra margin from nested lists*/
-}
-
-.accordion ul.collapsed {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
-
-.accordion ul:not(.collapsed) {
-  max-height: 500px; /* Adjust as needed */
-  transition: max-height 0.3s ease;
-}
-
-
-.accordion h3::before {
-  content: "\25BC"; /* Unicode for downward-pointing triangle */
-  margin-right: 5px;
-  display: inline-block;
-  transition: transform 0.3s ease;
-}
-
-.accordion ul:not(.collapsed) h3::before {
-  transform: rotate(90deg); /* Rotate triangle for expanded state */
-  content: "\25B2"; /* Unicode for upward-pointing triangle */
-
-}
-```
-
-This CSS is structured to style a standard HTML unordered list (`<ul>`) to create the accordion effect.  The `max-height` property combined with `overflow: hidden` and transitions controls the collapsing behavior. The `::before` pseudo-element adds a dynamic arrow to indicate expansion/collapse.  You can adapt the styling and max-height value according to your design preferences.
-
-
-## HTML Structure Example:
+**Full Code:**
 
 ```html
-<div class="accordion">
-  <h3>Item 1</h3>
-  <ul>
-    <li>Sub-item 1.1</li>
-    <li>Sub-item 1.2
-        <ul>
-            <li>Sub-sub-item 1.2.1</li>
-            <li>Sub-sub-item 1.2.2</li>
-        </ul>
-    </li>
-  </ul>
-  <h3>Item 2</h3>
-  <ul class="collapsed">
-    <li>Sub-item 2.1</li>
-    <li>Sub-item 2.2</li>
-  </ul>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nested List Accordion</title>
+<style>
+body { font-family: sans-serif; }
 
+ul { list-style: none; padding: 0; margin: 0; }
+
+.accordion li {
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.accordion li.active {
+  background-color: #e0e0e0;
+}
+
+.accordion li ul {
+  display: none;
+  padding-left: 20px;
+  background-color: #f8f8f8;
+}
+
+.accordion li.active > ul {
+  display: block;
+}
+
+.accordion li a {
+  text-decoration: none;
+  color: #333;
+  display: block;
+}
+
+.accordion li a::before {
+  content: "+";
+  margin-right: 5px;
+}
+
+.accordion li.active a::before {
+  content: "-";
+}
+
+.accordion li a:hover {
+  text-decoration: underline;
+}
+
+</style>
+</head>
+<body>
+
+<ul class="accordion">
+  <li>
+    <a href="#section1">Item 1</a>
+    <ul id="section1">
+      <li><a href="#section1-1">Sub-item 1.1</a></li>
+      <li><a href="#section1-2">Sub-item 1.2</a>
+        <ul id="section1-2">
+          <li><a href="#section1-2-1">Sub-sub-item 1.2.1</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <a href="#section2">Item 2</a>
+    <ul id="section2">
+      <li><a href="#section2-1">Sub-item 2.1</a></li>
+    </ul>
+  </li>
+</ul>
+
+</body>
+</html>
 ```
 
-Remember to include the CSS in a `<style>` tag in your HTML's `<head>` or in a separate CSS file linked to your HTML.  The initial `collapsed` class on some lists provides a starting state for the accordion.
+**Explanation:**
 
+1. **HTML Structure:**  The HTML uses nested unordered lists (`<ul>`) to represent the nested list structure.  Each list item `<li>` contains an anchor tag `<a>` with a `href` attribute pointing to a unique ID (`#section1`, `#section1-1`, etc.).  This ID is used for the accordion functionality.
 
-## Explanation
+2. **CSS Styling:** The CSS styles the lists, adds padding and background colors, and uses `display: none;` to initially hide the sub-lists.
 
-The key CSS properties that make the accordion work are:
+3. **Accordion Effect (`<a>`, `:target`, and `ul`):** The `:target` pseudo-class in CSS selects the element whose ID matches the current URL's fragment identifier (the part after the `#`).  When a user clicks on an anchor, the URL hash changes, and the `:target` pseudo-class dynamically shows/hides the corresponding sublist. The `a::before` pseudo-element adds the plus/minus symbol. The class `active` is added to toggle the background color.
 
-* **`max-height`:**  This controls the visible height of the list.  Setting it to 0 hides the sub-list.
-* **`overflow: hidden`:** This prevents content from overflowing the set `max-height`.
-* **`transition`:** This creates a smooth animation when the `max-height` changes.
-* **Pseudo-element `::before`:** This adds the dynamic arrow that changes direction when the list is expanded or collapsed, improving user experience.
+**Links to Resources to Learn More:**
 
-
-## Links to Resources to Learn More
-
-* **MDN Web Docs (CSS):** [https://developer.mozilla.org/en-US/docs/Web/CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)  (Comprehensive CSS reference)
-* **CSS-Tricks:** [https://css-tricks.com/](https://css-tricks.com/) (Great tutorials and articles on CSS)
+* [MDN Web Docs - CSS :target](https://developer.mozilla.org/en-US/docs/Web/CSS/:target)
+* [MDN Web Docs - CSS Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* [CSS-Tricks - CSS Accordions](https://css-tricks.com/accordion-with-css/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
