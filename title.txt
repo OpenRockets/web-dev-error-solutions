@@ -1,1 +1,1 @@
-MongoDB: Overlapping Indexes and Performance Degradation
+Overcoming the "Too Many Indexes" Problem in MongoDB
