@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB "Too Many Indexes" Error in a Sharded Cluster
+
 
 ## Description of the Error
 
