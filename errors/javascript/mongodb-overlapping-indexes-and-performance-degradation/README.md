@@ -3,69 +3,66 @@
 
 ## Description of the Error
 
-A common performance issue in MongoDB arises from creating overlapping indexes.  Overlapping indexes, where one index is a subset of another, lead to wasted storage space and increased write times.  While reads might seem unaffected initially, MongoDB's query optimizer might not always choose the most efficient index, leading to performance degradation on read operations, especially with complex queries.  This is particularly noticeable with large datasets.  The problem manifests as slow query execution times, even if appropriate indexes seem to exist.
+A common performance problem in MongoDB stems from creating overlapping indexes.  Overlapping indexes, where one index is a subset of another, lead to increased write times and unnecessary disk space consumption.  While MongoDB will choose the most appropriate index for a query, having redundant indexes can significantly slow down write operations as the database must update multiple indexes for every document insertion or modification. This can especially impact applications with high write loads, leading to noticeable performance degradation and potentially impacting application responsiveness.
 
-## Code Example & Fixing Steps (Illustrative)
 
-Let's say we have a collection named `products` with fields `category`, `subcategory`, and `price`.  We initially create two indexes:
+## Step-by-Step Code Fix
+
+Let's imagine we have a collection called `products` with the following schema:
+
+```json
+{
+  "category": "Electronics",
+  "subcategory": "Laptop",
+  "brand": "Dell",
+  "price": 1200
+}
+```
+
+We've mistakenly created two indexes:
 
 ```javascript
-// Initial (incorrect) indexes
+// First index: category, subcategory
 db.products.createIndex( { category: 1, subcategory: 1 } )
-db.products.createIndex( { category: 1 } )
+
+// Second index: category, subcategory, brand (overlapping!)
+db.products.createIndex( { category: 1, subcategory: 1, brand: 1 } )
 ```
 
-The second index (`{ category: 1 }`) is a subset of the first (`{ category: 1, subcategory: 1 }`). This is an example of overlapping indexes.  To fix this, we should remove the redundant index:
+The second index overlaps with the first; it includes all the fields of the first and adds the `brand` field.  This is redundant. To fix this, we need to drop the less efficient index (the more comprehensive one in this case)
 
-**Step 1: Identify Overlapping Indexes**
-
-Use the `db.adminCommand( { listIndexes: "products" } )` command to list all indexes on the `products` collection.  This will reveal the overlapping indexes.
-
-
-**Step 2: Drop the Redundant Index**
-
-In our example, the index ` { category: 1 } ` is redundant. We drop it using:
 
 ```javascript
-db.products.dropIndex( { category: 1 } )
+// Drop the overlapping index
+db.products.dropIndex( { category: 1, subcategory: 1, brand: 1 } )
+
+//Verify remaining indexes
+db.products.getIndexes()
 ```
 
-**Step 3: Verify the change**
-
-Re-run `db.adminCommand( { listIndexes: "products" } )` to confirm that only the necessary index remains.
+This will leave only the `category` and `subcategory` index, which is sufficient for many queries involving these two fields. If queries requiring `brand` are frequent, we can create a compound index including brand:
 
 
-**Step 4: Optimize Query Performance (Optional)**
+```javascript
+//if brand queries are frequent create a new efficient index
+db.products.createIndex( { category: 1, brand:1 } )
 
-After removing the redundant index, you might need to optimize the queries. If your queries frequently filter based on both `category` and `subcategory` while sometimes only on `category`, then a compound index like `{ category: 1, subcategory: 1 }` might be suitable.  However, if queries focusing on just `category` are common, you could consider having a separate `category` index that can improve performance for those.
+//verify indexes again.
+db.products.getIndexes()
+```
 
-
-**Revised Index Strategy (example):**
-
-Consider the frequency of your queries and choose between these strategies:
-
-* **Strategy 1 (if queries on `category` alone are infrequent):** Keep only ` { category: 1, subcategory: 1 } `.
-* **Strategy 2 (if queries on `category` alone are frequent):**  Use separate indexes: ` { category: 1 } ` and ` { category: 1, subcategory: 1 } `.
-
-This decision requires careful analysis of your application's query patterns.  Using a tool like MongoDB Compass can help visualize and profile your queries to see the index usage and make an informed decision.
 
 ## Explanation
 
-Overlapping indexes cause performance degradation because:
-
-* **Increased Storage:** MongoDB stores each index separately, wasting disk space.
-* **Slower Write Operations:** Every write operation requires updating all indexes, increasing write latency.
-* **Query Optimizer Complexity:** The query optimizer has more indexes to consider, potentially leading to less optimal query plan selection.
-
-Removing redundant indexes reduces storage requirements, speeds up write operations and simplifies the query optimizer's task.
+Overlapping indexes create redundancy. MongoDB needs to update both indexes on every write, which consumes extra time and resources. Choosing the right indexes requires careful consideration of query patterns.  Generally, you want compound indexes that cover the fields used in the `$query` part of your find operations.  Avoid creating indexes on frequently updated fields unless absolutely necessary for query performance as these updates add overhead.
 
 
 ## External References
 
 * [MongoDB Indexing Documentation](https://www.mongodb.com/docs/manual/indexes/)
-* [MongoDB Query Optimization](https://www.mongodb.com/docs/manual/tutorial/query-optimization/)
-* [MongoDB Compass](https://www.mongodb.com/products/compass)
+* [Understanding Index Selection in MongoDB](https://www.mongodb.com/blog/post/understanding-index-selection-in-mongodb)
+* [MongoDB Performance Tuning](https://www.mongodb.com/docs/manual/tutorial/optimize-for-performance/)
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
