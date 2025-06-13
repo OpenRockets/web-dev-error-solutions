@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Image Card with Tailwind CSS
+
 
 This challenge focuses on creating a responsive image card using Tailwind CSS.  The card will feature an image, a title, and a short description, all neatly arranged and adapting seamlessly to different screen sizes.  We'll leverage Tailwind's utility classes for efficient and concise styling.
 
