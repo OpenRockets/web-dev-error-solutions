@@ -1,1 +1,1 @@
-Overcoming "Exceeded Time Limit" Errors in MongoDB Aggregation Pipelines
+Overcoming the "too many indexes" problem in MongoDB
