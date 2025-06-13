@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's `$lookup` Performance Bottleneck with Proper Indexing
+
 
 ## Description of the Error
 
