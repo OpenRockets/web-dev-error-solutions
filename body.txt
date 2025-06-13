@@ -1,82 +1,115 @@
 
-## Description of the Error
-
-A common performance issue in MongoDB arises when using the `$lookup` stage in aggregation pipelines, particularly with large collections.  `$lookup` performs left outer joins, and if not optimized, it can lead to significant slowdowns or even timeouts. This is especially true when the joined collections lack appropriate indexes or when the `$lookup` operation processes a large number of documents. The symptoms often include extremely long query execution times and potentially application unresponsiveness.  The error itself isn't a specific error code but rather a performance degradation indicated by slow query times.
+This challenge involves creating a 3D rotating cube using only CSS.  We'll leverage CSS transforms and animations to achieve the effect.  This example uses pure CSS; no JavaScript is required.
 
 
-## Fixing Step-by-Step Code
+## Description of the Styling
 
-Let's assume we have two collections: `orders` and `customers`.  We want to retrieve orders and join them with customer information using `$lookup`.  Without proper optimization, this can be slow.
+The goal is to create a cube that appears to rotate smoothly on its vertical axis.  We'll achieve this by using six divs, each representing a face of the cube, positioned and rotated appropriately using `transform: rotateX()` and `transform: rotateY()`.  CSS animations will handle the continuous rotation. The cube will have distinct colors for each face to clearly illustrate the 3D effect.
 
-**Unoptimized Query:**
 
-```javascript
-db.orders.aggregate([
-  {
-    $lookup: {
-      from: "customers",
-      localField: "customerId",
-      foreignField: "_id",
-      as: "customer"
-    }
+## Full Code
+
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>3D Rotating Cube</title>
+<style>
+body {
+  perspective: 800px; /* Creates the 3D perspective */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+}
+
+.cube {
+  width: 200px;
+  height: 200px;
+  transform-style: preserve-3d; /* Essential for 3D transforms */
+  animation: rotate 8s linear infinite; /* Animate the rotation */
+}
+
+.face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8; /*add some transparency*/
+  background-size: cover;
+  backface-visibility: hidden; /* Prevents faces from showing through */
+}
+
+.front {
+  background-color: #f00;
+  transform: translateZ(100px);
+}
+
+.back {
+  background-color: #0f0;
+  transform: translateZ(-100px) rotateY(180deg);
+}
+
+.top {
+  background-color: #00f;
+  transform: translateY(-100px) rotateX(90deg);
+}
+
+.bottom {
+  background-color: #ff0;
+  transform: translateY(100px) rotateX(-90deg);
+}
+
+.left {
+  background-color: #0ff;
+  transform: translateX(-100px) rotateY(-90deg);
+}
+
+.right {
+  background-color: #f0f;
+  transform: translateX(100px) rotateY(90deg);
+}
+
+@keyframes rotate {
+  from {
+    transform: rotateY(0deg);
   }
-])
-```
-
-**Optimized Query:**
-
-1. **Create Indexes:**  The most crucial step is creating indexes on the fields involved in the join.  We need an index on `customerId` in the `orders` collection and an index on `_id` (which is usually indexed by default, but it's good practice to verify) in the `customers` collection.
-
-```javascript
-db.orders.createIndex( { customerId: 1 } )
-db.customers.createIndex( { _id: 1 } ) // Usually already indexed, but good practice to confirm
-```
-
-2. **Limit the `$lookup` Results (if possible):** If you don't need all the customer details, project only the necessary fields using a `$project` stage *before* the `$lookup`.  This significantly reduces the data processed during the join.
-
-```javascript
-db.orders.aggregate([
-  {
-    $lookup: {
-      from: "customers",
-      let: { customerId: "$customerId" },
-      pipeline: [
-        { $match: { $expr: { $eq: ["$_id", "$$customerId"] } } },
-        { $project: { _id: 1, name: 1, email: 1 } } // Only retrieve needed customer fields
-      ],
-      as: "customer"
-    }
-  },
-  { $unwind: "$customer" } // Unwind the array to get individual documents
-])
-```
-
-3. **Use `$expr` with Indexes (for complex matching):**  If your join condition is complex and involves expressions, use `$expr` to leverage indexes effectively.  Ensure that the expression within `$expr` is indexable.
-
-4. **Consider `$match` before `$lookup`:** If you have filters to apply to the `orders` collection before the join, apply them *before* the `$lookup`. This reduces the amount of data involved in the join.
-
-```javascript
-db.orders.aggregate([
-  { $match: { orderDate: { $gte: ISODate("2023-10-26T00:00:00Z") } } }, // Example filter
-  {
-    $lookup: { ... } // $lookup stage from previous example
+  to {
+    transform: rotateY(360deg);
   }
-])
+}
+</style>
+</head>
+<body>
+<div class="cube">
+  <div class="face front"></div>
+  <div class="face back"></div>
+  <div class="face top"></div>
+  <div class="face bottom"></div>
+  <div class="face left"></div>
+  <div class="face right"></div>
+</div>
+</body>
+</html>
 ```
-
-5. **Sharding (For Extremely Large Datasets):**  If the collections are exceptionally large, consider sharding to distribute the data across multiple servers, improving performance significantly.  Ensure that the sharding key aligns with the join fields for optimal performance.
 
 
 ## Explanation
 
-The performance improvements stem from leveraging MongoDB's indexing capabilities. Indexes significantly speed up data retrieval, especially when dealing with large datasets.  By creating appropriate indexes on the fields used in the `$lookup` join, MongoDB can quickly locate matching documents, drastically reducing the time required for the join operation. Limiting the fields retrieved (using `$project`) further optimizes performance by minimizing the amount of data transferred and processed.  Applying filters (`$match`) before the `$lookup` further reduces the data volume involved in the join.  Using `$expr` correctly allows the use of indexes in complex matching situations.
+* **`perspective`:** This property on the `body` creates the 3D viewing space.  Adjusting this value changes the perspective.
+* **`transform-style: preserve-3d;`:** This is crucial. It ensures that child elements (the faces) are rendered in 3D space.
+* **`translateZ()`:**  Moves the faces along the z-axis to create depth.
+* **`rotateX()` and `rotateY()`:** Rotate the faces around the x and y axes to create the cube's shape.
+* **`backface-visibility: hidden;`:**  Prevents the back faces from being visible when the front faces are in front.
+* **`@keyframes rotate`:** This defines the animation that smoothly rotates the cube.
 
 
-## External References
+## Links to Resources to Learn More
 
-* [MongoDB Aggregation Framework Documentation](https://www.mongodb.com/docs/manual/aggregation/)
-* [MongoDB Indexing Documentation](https://www.mongodb.com/docs/manual/indexes/)
-* [MongoDB $lookup Operator](https://www.mongodb.com/docs/manual/reference/operator/aggregation/lookup/)
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **MDN Web Docs - CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS-Tricks - 3D Transforms:** [Search "3D Transforms" on CSS-Tricks for numerous tutorials]
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
