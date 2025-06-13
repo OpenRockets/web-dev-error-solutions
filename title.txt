@@ -1,1 +1,1 @@
-CSS Challenge: Recreate a Simple Product Card
+Overcoming the "Index Key Pattern Violation" Error in MongoDB

@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Index Key Pattern Violation" Error in MongoDB
+
 
 This document addresses a common MongoDB indexing error: the "Index Key Pattern Violation". This error arises when you attempt to create a compound index with an existing index that has conflicting key patterns.  MongoDB prevents this to maintain efficiency and data integrity.  This typically happens when you are trying to add an index that is a subset or superset of an already existing index on the same collection.
 
