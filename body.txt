@@ -1,77 +1,57 @@
 
-This challenge focuses on styling a circular image with text overlaid in the center.  We'll achieve this using CSS, specifically utilizing techniques for centering elements both horizontally and vertically.  The styling will be responsive to different screen sizes.
+## Description of the Error
+
+Over-indexing in MongoDB can lead to significant performance degradation, despite the intention of improving query speed.  While indexes speed up queries that utilize them, creating too many indexes, or indexes on inappropriate fields, incurs a substantial overhead during write operations (inserts, updates, deletes).  Every index adds to the storage space used by the collection and requires updates whenever a document changes.  This write overhead can drastically outweigh the read performance gains, especially in high-write environments.  The symptoms might include slow insertion and update times, high disk I/O, and overall decreased database performance.
 
 
-## Description of the Styling
+## Fixing Step-by-Step
 
-The goal is to create a visually appealing component: a circular image with text positioned precisely at its center.  The text should be visible and readable even on smaller screens.  The approach leverages techniques like `border-radius`, flexbox, and potentially `text-align` for optimal centering.
+Let's assume we have a collection named `products` with fields `name` (string), `category` (string), `price` (number), `description` (string), and `stock` (number). We initially created indexes on all fields individually:
 
-
-## Full Code (CSS Only - can be easily integrated into HTML)
-
-
-```css
-.circular-image {
-  width: 200px; /* Adjust as needed */
-  height: 200px; /* Maintain aspect ratio */
-  border-radius: 50%; /* Creates the circle */
-  overflow: hidden; /* Hides any overflow from the image */
-  display: flex; /* Enables flexbox for centering */
-  justify-content: center; /* Centers horizontally */
-  align-items: center; /* Centers vertically */
-  position: relative; /* Needed for absolute positioning of text */
-}
-
-.circular-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Ensures image covers the entire circle */
-}
-
-.circular-image .overlay-text {
-  position: absolute;
-  color: white; /* Or any desired color */
-  font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Adds a subtle shadow for readability */
-  z-index:1; /* Ensures text is on top */
-}
-
-/* Responsive adjustments (optional) */
-@media (max-width: 768px) {
-  .circular-image {
-    width: 150px;
-    height: 150px;
-  }
-}
+```javascript
+// Incorrect - Over-indexing
+db.products.createIndex( { name: 1 } )
+db.products.createIndex( { category: 1 } )
+db.products.createIndex( { price: 1 } )
+db.products.createIndex( { description: 1 } )
+db.products.createIndex( { stock: 1 } )
 ```
 
-**To use this CSS:**
+This is an example of over-indexing.  We need to strategically select which indexes are truly necessary.  Let's assume the most common queries involve finding products by name or category, and occasionally filtering by price.
 
-You would embed this within `<style>` tags in your HTML file or link to a separate CSS file. Example HTML structure:
+**Step 1: Identify Frequently Used Queries**
 
-```html
-<div class="circular-image">
-  <img src="your-image.jpg" alt="Circular Image">
-  <div class="overlay-text">Your Text Here</div>
-</div>
+Analyze your application's query patterns to determine which fields are frequently used in `$eq`, `$in`, `$gt`, `$lt`, etc.  operations.   Logging and performance monitoring tools can help with this.
+
+**Step 2: Create Optimized Indexes**
+
+Based on our analysis, we will create compound indexes for better efficiency and remove unnecessary ones.
+
+```javascript
+// Correct - Optimized Indexing
+db.products.createIndex( { name: 1, category: 1 } ) // Compound index for frequent queries
+db.products.createIndex( { price: 1 } ) // Single index for price filter (if truly necessary)
+db.products.dropIndex( { description: 1 } ) // Remove index on description, if not frequently used.
+db.products.dropIndex( { stock: 1 } ) // Remove index on stock, if not frequently used.
 ```
+
+This approach creates a compound index on `name` and `category`.  This single index supports queries that filter by `name` or `name` and `category` efficiently.  We only retain the `price` index if price-based filtering is frequent enough to justify it.  Indexes on `description` and `stock` are removed, as they are deemed less important based on query analysis.
+
+**Step 3: Monitor and Adjust**
+
+Continuously monitor the database performance using tools like MongoDB Compass's profiling or server monitoring tools.  Regularly review your indexes based on observed query patterns and performance data. Add or drop indexes as needed to maintain optimal performance.
 
 
 ## Explanation
 
-* **`border-radius: 50%;`**: This is the key to creating the circular shape.  Setting the border radius to 50% of the width and height makes the element perfectly round.
-* **`overflow: hidden;`**: This prevents the image from overflowing the circular container.
-* **`display: flex; justify-content: center; align-items: center;`**: Flexbox is used for easy centering. `justify-content: center` centers the content horizontally, and `align-items: center` centers it vertically.
-* **`position: relative;` and `position: absolute;`**:  The parent container (`circular-image`) is set to `relative` to allow the absolutely positioned child element (`overlay-text`) to be positioned relative to it. This is crucial for accurate text overlaying.
-* **`object-fit: cover;`**: This ensures that the image scales to cover the entire circular area, maintaining aspect ratio.
-* **Responsive adjustments**: The `@media` query provides responsiveness by adjusting the size of the circular image based on the screen width.
+Over-indexing significantly impacts write performance because every index needs to be updated every time a document is inserted, updated, or deleted.  This extra workload can outweigh the gains in read speed, especially when the majority of queries don't use all the available indexes. Compound indexes can efficiently support multiple query patterns with a single index structure.  The key is to find a balance between faster reads and acceptable write performance. The best practice involves a careful consideration of application's query patterns to create the most effective and efficient set of indexes.
 
 
-## Links to Resources to Learn More
+## External References
 
-* **CSS Flexbox:**  [MDN Web Docs - Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
-* **CSS Positioning:** [MDN Web Docs - Positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/position)
-* **CSS `border-radius`:** [MDN Web Docs - border-radius](https://developer.mozilla.org/en-US/docs/Web/CSS/border-radius)
+* [MongoDB Indexing Documentation](https://www.mongodb.com/docs/manual/indexes/)
+* [MongoDB Performance Tuning](https://www.mongodb.com/docs/manual/administration/performance/)
+* [Understanding Compound Indexes](https://www.mongodb.com/community/blog/compound-indexes-in-mongodb)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

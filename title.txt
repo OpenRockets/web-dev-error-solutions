@@ -1,1 +1,1 @@
-CSS Challenge:  Centering a Circular Image with Text Overlay
+Overusing MongoDB Indexes: A Performance Bottleneck
