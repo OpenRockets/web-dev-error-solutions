@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Image Card with Tailwind CSS
+Overcoming the "Index Not Found" Error in MongoDB
