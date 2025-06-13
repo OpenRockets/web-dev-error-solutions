@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Modern Pricing Table with Tailwind CSS
+
 
 This challenge involves creating a clean and modern pricing table using Tailwind CSS. The table will feature three pricing plans (Basic, Pro, and Premium) with different features and pricing, clearly displayed in a visually appealing manner.  We'll leverage Tailwind's utility classes to efficiently style the table and maintain consistent design.
 
