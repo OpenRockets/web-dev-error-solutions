@@ -1,28 +1,25 @@
 # 🐞 Overcoming the "Write Concern Error" in MongoDB
 
 
-This document addresses a common issue developers encounter when working with MongoDB: write concern errors.  These errors occur when a write operation (insert, update, delete) doesn't meet the specified write concern requirements.  This usually indicates a problem with the replica set's availability or network connectivity.
-
 ## Description of the Error
 
-A write concern error typically manifests as an exception or error message indicating that the write operation didn't achieve the desired acknowledgment level.  For instance, you might see messages like:
+The "Write Concern Error" in MongoDB occurs when a write operation (insert, update, delete) doesn't meet the specified write concern settings.  Write concern dictates the level of acknowledgement required from the database before the operation is considered successful.  If the database can't meet these settings (e.g., due to network issues, replica set issues, or insufficient replication), the operation will fail with a write concern error.  This is often seen as an error message indicating that the write didn't reach the required number of replica set members or that a write acknowledged wasn't received within the timeout period.
 
-* `WriteConcernError: { writeConcernError: { code: 64, codeName: 'WriteConcernFailed', errmsg: 'Failed to satisfy write concern' } }`
-* Specific messages detailing replica set unavailability or network connectivity issues.
 
-This means that MongoDB couldn't guarantee the write operation's persistence according to the specified `w` (write acknowledgement) setting.  By default, `w:1` requires acknowledgment from the primary node, but more robust configurations demand acknowledgment from a majority (`w: 'majority'`) of the replica set members.
+## Code Example and Fixing Steps (Node.js Driver)
 
-## Fixing Step-by-Step (Code Example)
+This example demonstrates the error and its resolution using the Node.js MongoDB driver.
 
-Let's consider a scenario where we're inserting documents into a collection, and we're encountering a write concern error due to network connectivity issues within our replica set.
+**Scenario:** We're inserting documents into a collection, but the replica set isn't healthy, causing a write concern error.
 
-**Problem:**  The following code might fail intermittently:
+
+**Step 1:  The Failing Code**
 
 ```javascript
 const { MongoClient } = require('mongodb');
 
 async function insertDocument() {
-  const uri = "mongodb://user:password@host1:27017,host2:27017,host3:27017/?replicaSet=myReplicaSet";
+  const uri = "mongodb://username:password@host1:port,host2:port,host3:port/?replicaSet=myReplicaSet"; // Replace with your connection string
   const client = new MongoClient(uri);
 
   try {
@@ -30,9 +27,11 @@ async function insertDocument() {
     const db = client.db('myDatabase');
     const collection = db.collection('myCollection');
 
-    const doc = { name: "Example Document", value: 1 };
+    const doc = { name: "Example Document" };
     const result = await collection.insertOne(doc);
     console.log(`Inserted document with ID: ${result.insertedId}`);
+  } catch (err) {
+    console.error("Error inserting document:", err);
   } finally {
     await client.close();
   }
@@ -41,26 +40,30 @@ async function insertDocument() {
 insertDocument();
 ```
 
+This code uses the default write concern which might not be sufficient for a replica set.  If a replica set member is down or network connectivity is poor, this will likely fail.
 
-**Solution:** Improve the write concern settings to handle temporary network interruptions. We'll increase the `w` value and also add `wtimeoutMS`  to limit the time spent waiting for acknowledgment.
+
+**Step 2: Implementing Write Concern**
+
+To resolve this, we explicitly specify the write concern.  For example, we can specify `w: 'majority'` to ensure the write is acknowledged by a majority of the replica set members:
 
 ```javascript
 const { MongoClient } = require('mongodb');
 
 async function insertDocument() {
-  const uri = "mongodb://user:password@host1:27017,host2:27017,host3:27017/?replicaSet=myReplicaSet";
-  const client = new MongoClient(uri, {
-    writeConcern: { w: 'majority', wtimeoutMS: 5000 } //Added writeConcern options
-  });
+  const uri = "mongodb://username:password@host1:port,host2:port,host3:port/?replicaSet=myReplicaSet"; // Replace with your connection string
+  const client = new MongoClient(uri);
 
   try {
     await client.connect();
     const db = client.db('myDatabase');
     const collection = db.collection('myCollection');
 
-    const doc = { name: "Example Document", value: 1 };
-    const result = await collection.insertOne(doc);
+    const doc = { name: "Example Document" };
+    const result = await collection.insertOne(doc, { writeConcern: { w: 'majority' } }); // Added writeConcern option
     console.log(`Inserted document with ID: ${result.insertedId}`);
+  } catch (err) {
+    console.error("Error inserting document:", err);
   } finally {
     await client.close();
   }
@@ -69,20 +72,19 @@ async function insertDocument() {
 insertDocument();
 ```
 
-This improved code uses `w: 'majority'`, ensuring the write is acknowledged by a majority of the replica set members, making it more resilient to temporary network issues.  The `wtimeoutMS: 5000` option sets a 5-second timeout for the write operation, preventing indefinite blocking if the connection is unavailable.
+This modified code ensures the write is acknowledged by the majority of the replica set members before returning success. Other options for `w` include: 1 (only primary), 2 (at least 2 members), or a number representing the number of members. You can also adjust the `wtimeoutMS` option to control the timeout period.
+
 
 ## Explanation
 
-Write concern settings control the level of persistence guarantee for write operations. The `w` option specifies the number of nodes that must acknowledge the write before the operation is considered successful.  Using `w: 'majority'` provides higher data durability and fault tolerance, but it might slightly increase latency. The `wtimeoutMS` option helps prevent the application from hanging indefinitely when the write operation is delayed.
+The write concern setting ensures data durability and consistency, especially critical in replicated environments. By explicitly setting the write concern, we control the level of acknowledgement required from the database, making our application more resilient to temporary network or replica set issues.  Using `w: 'majority'` provides high availability and data safety at the cost of slightly higher latency. Choosing the appropriate `w` setting depends on the application's requirements for availability and data durability.
 
-Choosing the appropriate write concern depends on the application's requirements for data durability and availability. For critical applications, using `w: 'majority'` is generally recommended.  For less critical applications, `w: 1` might be sufficient, though more susceptible to data loss in the event of primary node failure.
 
 
 ## External References
 
 * [MongoDB Write Concern Documentation](https://www.mongodb.com/docs/manual/core/write-concern/)
-* [MongoDB Driver Documentation (Node.js)](https://www.mongodb.com/docs/drivers/node/) (Adjust link based on your chosen driver)
-* [Understanding Replica Sets in MongoDB](https://www.mongodb.com/docs/manual/replication/)
+* [Node.js MongoDB Driver Documentation](https://mongodb.github.io/node-mongodb-native/4.10/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
