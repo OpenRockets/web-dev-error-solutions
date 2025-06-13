@@ -1,65 +1,92 @@
 
 ## Description of the Error
 
-The "too many indexes" problem in MongoDB arises when a collection has an excessive number of indexes.  This doesn't necessarily mean you have *too many* in an absolute sense, but rather that the number is exceeding the optimal balance between query performance and write performance.  Having too many indexes leads to several issues:
+The "Too Many Indexes" problem in MongoDB isn't a specific error message, but rather a performance degradation issue stemming from having an excessive number of indexes on a collection. While indexes significantly speed up queries, creating too many can lead to:
 
-* **Slower write operations:** Every write operation (insert, update, delete) requires updating all indexes.  More indexes mean more overhead, resulting in significantly slower write performance.
-* **Increased storage space:** Each index consumes storage space.  Excessive indexes lead to increased storage costs and potentially impact overall database performance.
-* **Complex index management:** Maintaining a large number of indexes becomes challenging, increasing the complexity of database administration and potentially leading to errors.
+* **Slow write operations:**  Every write operation (insert, update, delete) needs to update all indexes, significantly slowing down write performance.
+* **Increased storage space:** Indexes consume storage space, potentially impacting overall database size and cost.
+* **Increased query planning time:**  The query optimizer needs more time to choose the best index from a large pool, slowing down query execution.
 
 
-## Fixing the Problem Step-by-Step
+## Code Example & Step-by-Step Fix
 
-This example focuses on identifying and removing unnecessary compound indexes.  Let's say we have a collection called `products` with several compound indexes that are no longer needed after a schema change.
+This example demonstrates identifying and removing unnecessary indexes on a collection named `products` with an overly-indexed `sku` field.  Let's assume we have indexes on `sku`, `{sku: 1, price: 1}`, and `{sku: 1, category: -1}`. We'll only need to keep the compound index `{sku: 1, price: 1}`.
 
-**Step 1: Identify Unnecessary Indexes**
+**Step 1: Identify Existing Indexes**
 
-Use the `db.products.getIndexes()` command to list all indexes on the `products` collection:
+Use the `db.products.getIndexes()` command to list all indexes:
 
 ```javascript
-use mydatabase;
+use myDatabase;
 db.products.getIndexes()
 ```
 
-This will output a JSON array of all indexes. Examine the output carefully. Look for indexes that are:
+This will return a JSON array of index specifications.  For example:
 
-* **Redundant:**  Do multiple indexes cover essentially the same query patterns?
-* **Unused:** Are there indexes that haven't been used in a significant period? You can use MongoDB monitoring tools to check index usage.
-* **Inefficient:** Are there indexes that are too broad or too specific for your typical queries?
-
-Let's assume we identify two redundant indexes: `{ category: 1, price: 1 }` and `{ category: 1, price: -1 }`. They differ only in sort order, and likely one is sufficient.
-
-**Step 2: Drop Unnecessary Indexes**
-
-Use the `db.products.dropIndex()` command to remove the redundant indexes:
-
-```javascript
-db.products.dropIndex( { category: 1, price: 1 } )
-db.products.dropIndex( { category: 1, price: -1 } )
+```json
+[
+  {
+    "v" : 2,
+    "key" : {
+      "_id" : 1
+    },
+    "name" : "_id_",
+    "ns" : "myDatabase.products"
+  },
+  {
+    "v" : 2,
+    "key" : {
+      "sku" : 1
+    },
+    "name" : "sku_1",
+    "ns" : "myDatabase.products"
+  },
+  {
+    "v" : 2,
+    "key" : {
+      "sku" : 1,
+      "price" : 1
+    },
+    "name" : "sku_1_price_1",
+    "ns" : "myDatabase.products"
+  },
+  {
+    "v" : 2,
+    "key" : {
+      "sku" : 1,
+      "category" : -1
+    },
+    "name" : "sku_1_category_-1",
+    "ns" : "myDatabase.products"
+  }
+]
 ```
 
-Verify the removal by running `db.products.getIndexes()` again.
+**Step 2: Remove Unnecessary Indexes**
 
-**Step 3: Monitor Performance**
+Based on your query patterns and analysis, remove the indexes that aren't providing significant performance benefits.  In our example, we will remove `sku_1` and `sku_1_category_-1`. We use `db.products.dropIndex()` for this:
 
-After dropping indexes, closely monitor your write and read performance. Use MongoDB monitoring tools (like the MongoDB Atlas monitoring dashboards or the `db.currentOp()` command) to check if the changes have improved performance.
 
-**Step 4: Optimize Remaining Indexes**
+```javascript
+db.products.dropIndex("sku_1");
+db.products.dropIndex("sku_1_category_-1");
+```
 
-Review your remaining indexes. Can you consolidate any further? Could you use a more efficient index design for your most frequent queries?  Consider using covered queries to minimize the amount of data MongoDB needs to retrieve.
+**Step 3: Verify Changes**
 
+Re-run `db.products.getIndexes()` to confirm the indexes have been dropped.
 
 ## Explanation
 
-The key is to strike a balance between query speed and write speed. Every index improves query performance for specific queries but degrades write performance.  Identifying and removing underused or redundant indexes reduces the overhead of write operations, improves storage efficiency, and simplifies database management.  Proper index design and regular review are crucial for maintaining optimal MongoDB performance.
+Too many indexes increase write overhead and consume more disk space. The query planner might also take longer to decide which index to use.  Careful index design is crucial.  Only create indexes needed for frequently used queries. Compound indexes can often replace multiple single-field indexes. Regularly review your indexes (especially as your data model evolves) and remove unused or redundant ones.
+
+Consider using index analysis tools provided by MongoDB or third-party monitoring solutions to identify underutilized indexes.
 
 
 ## External References
 
 * **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
-* **MongoDB Documentation on Performance:** [https://www.mongodb.com/docs/manual/administration/performance/](https://www.mongodb.com/docs/manual/administration/performance/)
-* **Understanding Index Usage:** [https://www.mongodb.com/blog/post/understanding-index-usage-in-mongodb](https://www.mongodb.com/blog/post/understanding-index-usage-in-mongodb) (Replace with a relevant blog post if you find one)
-
+* **MongoDB Performance Tuning:** [https://www.mongodb.com/docs/manual/tutorial/manage-performance/](https://www.mongodb.com/docs/manual/tutorial/manage-performance/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
