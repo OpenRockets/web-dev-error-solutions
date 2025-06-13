@@ -1,1 +1,1 @@
-null
+Overcoming the "Too Many Indexes" Problem in MongoDB
