@@ -1,176 +1,67 @@
 
-This challenge focuses on creating a responsive multi-level navigation menu using CSS.  The menu should collapse into a hamburger menu on smaller screens and smoothly expand on hover.  We'll be using CSS Grid and Flexbox for layout and styling.  This example avoids JavaScript for simplicity, relying purely on CSS.
+## Description of the Error
 
-## Description of the Styling
+One common problem developers face in MongoDB is having too many indexes. While indexes significantly speed up queries, an excessive number can lead to performance degradation, especially during write operations.  Every index consumes storage space and adds overhead during inserts, updates, and deletes.  Excessive indexing can result in slower write performance, increased storage costs, and ultimately, a less responsive application.  MongoDB's write operations must update all relevant indexes, making many indexes a bottleneck. The symptoms might include slow inserts, updates, or deletes, and high CPU usage during write operations.
 
-The navigation menu consists of a main container with a logo on the left and navigation links on the right.  On larger screens (above 768px), the menu items are displayed horizontally. On smaller screens, the menu collapses into a hamburger icon. Clicking or hovering this icon reveals the nested menu items.  Sub-menus appear on hover, maintaining a clean and intuitive user experience. The styling emphasizes a modern, clean aesthetic.
+## Fixing the Problem Step-by-Step
 
-
-## Full Code
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Responsive Multi-Level Navigation</title>
-<style>
-body {
-  font-family: sans-serif;
-  margin: 0;
-}
-
-nav {
-  background-color: #333;
-  color: #fff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-}
-
-.logo {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-}
-
-li {
-  margin-left: 20px;
-}
-
-a {
-  color: #fff;
-  text-decoration: none;
-}
-
-/* Hamburger Menu Styling */
-.hamburger {
-  display: none; /* Hidden on larger screens */
-  cursor: pointer;
-}
-
-.hamburger span {
-  display: block;
-  width: 25px;
-  height: 3px;
-  margin: 5px;
-  background-color: #fff;
-  transition: all 0.3s ease;
-}
-
-.hamburger.active span:nth-child(1) {
-  transform: rotate(45deg) translate(5px, 5px);
-}
-
-.hamburger.active span:nth-child(2) {
-  opacity: 0;
-}
-
-.hamburger.active span:nth-child(3) {
-  transform: rotate(-45deg) translate(5px, -5px);
-}
+This example demonstrates identifying and addressing excessive indexing on a collection named `products` with many unnecessary indexes.  We'll focus on using the `db.collection.stats()` command and selectively dropping unnecessary indexes.
 
 
-/* Responsive Styling */
-@media (max-width: 768px) {
-  nav ul {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background-color: #333;
-    flex-direction: column;
-  }
+**Step 1: Identify Over-Indexed Collections**
 
-  nav ul li {
-    margin: 0;
-    width: 100%;
-  }
+First, we need to identify collections with a potentially excessive number of indexes.  We use the `db.collection.stats()` command to get collection statistics, including the number of indexes.
 
-  nav ul a{
-    display:block;
-    padding: 10px;
-    text-align: center;
-  }
+```javascript
+// Connect to your MongoDB database
+use your_database_name;
 
-  nav ul.active{
-    display: flex;
-  }
-
-  .hamburger {
-    display: block;
-  }
-
-  .logo {
-    margin-right: auto;
-  }
-}
-
-/* Submenu Styling */
-.submenu {
-  display: none;
-  position: absolute;
-  left: 100%;
-  top: 0;
-  background-color: #444;
-}
-
-li:hover > .submenu {
-  display: block;
-}
-</style>
-</head>
-<body>
-
-<nav>
-  <div class="logo">My Website</div>
-  <div class="hamburger" onclick="toggleMenu()">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-  <ul id="nav-menu">
-    <li><a href="#">Home</a></li>
-    <li><a href="#">About</a>
-      <ul class="submenu">
-        <li><a href="#">Our Team</a></li>
-        <li><a href="#">Our Mission</a></li>
-      </ul>
-    </li>
-    <li><a href="#">Services</a></li>
-    <li><a href="#">Contact</a></li>
-  </ul>
-</nav>
-
-<script>
-function toggleMenu() {
-  const menu = document.getElementById('nav-menu');
-  const hamburger = document.querySelector('.hamburger');
-  menu.classList.toggle('active');
-  hamburger.classList.toggle('active');
-}
-</script>
-
-</body>
-</html>
+// Get stats for the 'products' collection
+db.products.stats();
 ```
+
+This will output a JSON document containing various statistics, including `indexSizes` (total size of all indexes) and information on individual indexes within the `indexes` array. Analyze the output to assess if the number of indexes is excessive compared to the collection's usage patterns.  A large `indexSizes` relative to the `dataSize` might indicate a problem.
+
+**Step 2: Analyze Index Usage**
+
+We need to understand which indexes are frequently used and which are seldom or never used. This often requires analyzing your application's queries using the MongoDB profiler or by examining your application logs.   The profiler will show which indexes are used for each query.  If an index isn't used, it is a candidate for removal.
+
+```javascript
+// Enable the profiler (adjust level as needed; 2 is a good starting point)
+db.setProfilingLevel(2)
+
+// ... run your application queries ...
+
+// Retrieve profiling data
+db.system.profile.find().sort({ $natural: -1 }).limit(10)  //Review recent entries
+```
+
+**Step 3: Drop Unnecessary Indexes**
+
+Once you've identified indexes with low or no usage, you can drop them using the `db.collection.dropIndex()` command.  Remember to replace `<index_name>` with the actual name of the index.  You can find the index name in the output of `db.products.getIndexes()`
+
+```javascript
+// Drop an index (replace with your index name)
+db.products.dropIndex("unnecessary_index_name_1")
+db.products.dropIndex("unnecessary_index_name_2")
+```
+
+
+**Step 4: Re-evaluate and Monitor**
+
+After dropping indexes, re-run `db.products.stats()` to check the impact on storage and index size. Continue to monitor performance metrics (write operations, CPU usage, etc.) to ensure improvements. Consider using a monitoring tool like MongoDB Compass to visualize index usage over time.
+
 
 ## Explanation
 
-The code utilizes CSS for responsiveness.  The `@media` query handles the behavior below 768px, hiding the main navigation and revealing the hamburger menu.  The hamburger menu uses CSS transitions for a smooth animation.  The `submenu` class is hidden by default and revealed on hover using the `:hover` pseudo-class.  JavaScript is used only for a simple toggle to manage the visibility of the mobile menu.
+Having too many indexes leads to increased overhead during write operations. Every write needs to update all relevant indexes, making write performance increasingly slower as the number of indexes grows.  The storage cost for indexes also increases, resulting in higher operational costs.  Careful analysis of query patterns and index usage is crucial to ensure only essential indexes are retained. Dropping unnecessary indexes reduces the write workload and storage consumption, thereby improving overall database performance.
 
-## Links to Resources to Learn More
 
-* **CSS Grid Layout:** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/)
-* **CSS Flexbox:** [https://css-tricks.com/snippets/css/a-guide-to-flexbox/](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
-* **CSS Responsive Design:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+## External References
+
+* [MongoDB Documentation: Indexes](https://www.mongodb.com/docs/manual/indexes/)
+* [MongoDB Documentation: Profiling](https://www.mongodb.com/docs/manual/tutorial/profile-operations/)
+* [MongoDB Compass](https://www.mongodb.com/products/compass)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
