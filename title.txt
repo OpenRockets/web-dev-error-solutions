@@ -1,1 +1,1 @@
-CSS Challenge: Responsive Image Gallery with CSS Grid
+Overcoming the "Too Many Open Files" Error in MongoDB
