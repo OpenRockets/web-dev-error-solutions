@@ -1,1 +1,1 @@
-Overcoming MongoDB "Too Many Indexes" Error in a Sharded Cluster
+Overcoming MongoDB's "Too Many Connections" Error
