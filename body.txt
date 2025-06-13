@@ -1,86 +1,122 @@
 
-## Description of the Error
-
-A common performance issue in MongoDB sharding arises when the chosen shard key doesn't effectively distribute data across shards.  This leads to hotspots, where a single shard becomes overloaded while others remain underutilized.  Queries that don't utilize the shard key will perform poorly as they require scanning across multiple shards, negating the benefits of sharding. This often manifests as slow query execution times, especially as the dataset grows.
+This challenge involves creating a responsive pricing table using CSS.  The table will feature three pricing plans (Basic, Pro, and Premium) with different pricing and features.  The design should be clean, modern, and adapt seamlessly to different screen sizes (desktop, tablet, and mobile).  We'll use plain CSS for this example, focusing on grid layout and media queries for responsiveness.
 
 
-## Step-by-Step Code Fix
+## Styling Description
 
-This example assumes you're using the MongoDB shell.  Adjust the connection string and database/collection names as necessary.  Let's illustrate with a scenario where we're sharding a collection of user documents based on a `country` field, but  queries often filter by `userId` which isn't part of the shard key.
+The pricing table will have a card-like design.  Each plan will be represented as a separate column within a grid container.  Key features will be displayed using a list. The design aims for visual clarity and easy comparison between plans.  Hover effects will highlight the selected plan.  Colors will be kept simple and muted to maintain a professional feel.
 
 
-**1. Identify the problematic query:**
+## Full Code
 
-First, let's assume a slow query like this:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responsive Pricing Table</title>
+<style>
+body {
+  font-family: sans-serif;
+  background-color: #f4f4f4;
+}
 
-```javascript
-db.users.find({ userId: 12345 })
+.pricing-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
+  grid-gap: 20px;
+  padding: 20px;
+}
+
+.plan {
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  transition: box-shadow 0.3s; /* For hover effect */
+}
+
+.plan:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.plan h2 {
+  margin-top: 0;
+  font-size: 1.8em;
+  color: #333;
+}
+
+.plan .price {
+  font-size: 2em;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.plan ul {
+  list-style: none;
+  padding: 0;
+}
+
+.plan li {
+  margin-bottom: 5px;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+  .pricing-table {
+    grid-template-columns: 1fr; /* Stack plans vertically on smaller screens */
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="pricing-table">
+  <div class="plan">
+    <h2>Basic</h2>
+    <p class="price">$9.99/month</p>
+    <ul>
+      <li>10GB Storage</li>
+      <li>1 User</li>
+      <li>Basic Support</li>
+    </ul>
+  </div>
+  <div class="plan">
+    <h2>Pro</h2>
+    <p class="price">$29.99/month</p>
+    <ul>
+      <li>100GB Storage</li>
+      <li>5 Users</li>
+      <li>Priority Support</li>
+    </ul>
+  </div>
+  <div class="plan">
+    <h2>Premium</h2>
+    <p class="price">$99.99/month</p>
+    <ul>
+      <li>Unlimited Storage</li>
+      <li>Unlimited Users</li>
+      <li>Dedicated Support</li>
+    </ul>
+  </div>
+</div>
+
+</body>
+</html>
 ```
-
-This query will be slow because `userId` isn't the shard key.
-
-**2. Analyze the current shard key:**
-
-Check the current shard key using the `sh.status()` command:
-
-```javascript
-sh.status()
-```
-
-This command will output the current shard configuration, including the shard key for each collection.
-
-**3. Resharding with a better key (if needed):**
-
-If the existing shard key is inadequate, you'll need to reshard. This is a significant operation that involves downtime.  **Thoroughly test this in a non-production environment before implementing it in production.**  A good shard key should distribute data evenly and be frequently used in queries.  A compound key might be necessary to address multiple filtering criteria.  For example, if you frequently filter by both `country` and `date`, consider a compound shard key: `{ country: 1, date: 1 }`
-
-**Important:**  Resharding usually involves dropping and recreating indexes. The exact steps depend on your MongoDB version and topology. You will need administrative privileges.  Here's a simplified outline (consult the official MongoDB documentation for your specific version):
-
-```javascript
-//1. Stop sharding the collection (this step requires careful planning and downtime mitigation)
-sh.stopBalancer();
-sh.unshardCluster();
-
-
-// 2. Drop the old indexes. (Replace <collection_name> with your collection name)
-db.runCommand({ dropIndexes: "<collection_name>", index: "*" })
-
-
-//3. Enable sharding again and specify the new shard key:
-
-sh.enableSharding("<your_database>");
-
-sh.shardCollection(
-    "<your_database>.<collection_name>",
-    {
-        key: { country: 1, date: 1 }, //Replace with your new shard key
-        numInitialChunks: 10 // adjust as needed. Too few chunks can lead to imbalanced data, too many are inefficient.
-    }
-);
-
-sh.startBalancer(); // Start the balancer to distribute chunks
-```
-
-**4. Add indexes for frequently queried fields:**
-
-After sharding or if the shard key is already appropriate, ensure you have indexes on fields frequently used in queries *that are not part of the shard key*.  In our example, adding an index on `userId` is crucial:
-
-```javascript
-db.users.createIndex( { userId: 1 } )
-```
-
-This will allow for efficient lookups using the `userId`.
 
 
 ## Explanation
 
-The key to efficient sharding lies in choosing an appropriate shard key. This key must be selected based on the most frequent query patterns.  Poorly chosen shard keys result in uneven data distribution, leading to hotspotting and reduced performance.  A good shard key should evenly distribute data across shards, minimizing the need to access multiple shards for a single query.  Adding secondary indexes on other frequently queried fields further optimizes performance for queries that don't directly utilize the shard key.  Resharding is a powerful, but disruptive operation, requiring careful planning and testing.  Always back up your data before performing this task.
+The code utilizes CSS Grid for layout.  `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` creates a responsive grid that adapts to different screen sizes.  `minmax(300px, 1fr)` ensures each plan column is at least 300px wide but also allows them to scale proportionally to available space. The `@media` query adjusts the layout to stack columns vertically on smaller screens.  The rest of the CSS focuses on styling the individual plans, making them visually appealing and easy to understand.
 
 
-## External References
+## Resources to Learn More
 
-* [MongoDB Sharding Documentation](https://www.mongodb.com/docs/manual/sharding/)
-* [MongoDB Sharding Best Practices](https://www.mongodb.com/blog/post/mongodb-sharding-best-practices)
-* [Understanding MongoDB Shard Keys](https://www.mongodb.com/blog/post/understanding-mongodb-shard-keys)
+* **CSS Grid Layout:**  [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
+* **CSS Media Queries:** [MDN Web Docs - Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **CSS Box Model:** [MDN Web Docs - Box Model](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

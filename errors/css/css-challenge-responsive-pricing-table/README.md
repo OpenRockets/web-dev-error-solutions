@@ -1,12 +1,12 @@
 # 🐞 CSS Challenge: Responsive Pricing Table
 
 
-This challenge focuses on creating a responsive pricing table using CSS.  The goal is to build a clean, visually appealing table that adapts seamlessly to different screen sizes. We'll use plain CSS for this example to focus on fundamental layout techniques.
+This challenge involves creating a responsive pricing table using CSS.  The table will feature three pricing plans (Basic, Pro, and Premium) with different pricing and features.  The design should be clean, modern, and adapt seamlessly to different screen sizes (desktop, tablet, and mobile).  We'll use plain CSS for this example, focusing on grid layout and media queries for responsiveness.
 
 
-## Description of the Styling
+## Styling Description
 
-The pricing table will consist of three columns representing different pricing plans (e.g., Basic, Pro, Premium). Each plan will have a title, a price, and a list of features.  The table should be centered horizontally on the page and have clear visual separation between plans.  Responsive design is key – on smaller screens, the table should stack vertically to avoid horizontal scrolling.
+The pricing table will have a card-like design.  Each plan will be represented as a separate column within a grid container.  Key features will be displayed using a list. The design aims for visual clarity and easy comparison between plans.  Hover effects will highlight the selected plan.  Colors will be kept simple and muted to maintain a professional feel.
 
 
 ## Full Code
@@ -19,30 +19,39 @@ The pricing table will consist of three columns representing different pricing p
 <style>
 body {
   font-family: sans-serif;
+  background-color: #f4f4f4;
 }
 
 .pricing-table {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
   grid-gap: 20px;
-  text-align: center;
-  margin: 20px auto; /* Center the table */
+  padding: 20px;
 }
 
 .plan {
-  border: 1px solid #ccc;
-  padding: 20px;
+  background-color: #fff;
   border-radius: 5px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  transition: box-shadow 0.3s; /* For hover effect */
+}
+
+.plan:hover {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .plan h2 {
   margin-top: 0;
+  font-size: 1.8em;
+  color: #333;
 }
 
 .plan .price {
   font-size: 2em;
   font-weight: bold;
+  color: #007bff;
   margin-bottom: 10px;
 }
 
@@ -55,11 +64,10 @@ body {
   margin-bottom: 5px;
 }
 
-
-/* Media Query for smaller screens */
+/* Media query for smaller screens */
 @media (max-width: 768px) {
   .pricing-table {
-    grid-template-columns: 1fr; /* Stack columns vertically */
+    grid-template-columns: 1fr; /* Stack plans vertically on smaller screens */
   }
 }
 </style>
@@ -71,32 +79,27 @@ body {
     <h2>Basic</h2>
     <p class="price">$9.99/month</p>
     <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
+      <li>10GB Storage</li>
+      <li>1 User</li>
+      <li>Basic Support</li>
     </ul>
   </div>
   <div class="plan">
     <h2>Pro</h2>
     <p class="price">$29.99/month</p>
     <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
+      <li>100GB Storage</li>
+      <li>5 Users</li>
+      <li>Priority Support</li>
     </ul>
   </div>
   <div class="plan">
     <h2>Premium</h2>
-    <p class="price">$49.99/month</p>
+    <p class="price">$99.99/month</p>
     <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
-      <li>Feature 6</li>
+      <li>Unlimited Storage</li>
+      <li>Unlimited Users</li>
+      <li>Dedicated Support</li>
     </ul>
   </div>
 </div>
@@ -108,14 +111,14 @@ body {
 
 ## Explanation
 
-The code uses CSS Grid for layout.  `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` creates responsive columns.  `auto-fit` ensures columns adjust to the available space, while `minmax(300px, 1fr)` sets a minimum column width of 300px and allows them to grow proportionally to fill the available space. The media query adjusts the layout for smaller screens, stacking the columns vertically.  Styling is added for visual appeal, including borders, shadows, and consistent font sizes.
+The code utilizes CSS Grid for layout.  `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` creates a responsive grid that adapts to different screen sizes.  `minmax(300px, 1fr)` ensures each plan column is at least 300px wide but also allows them to scale proportionally to available space. The `@media` query adjusts the layout to stack columns vertically on smaller screens.  The rest of the CSS focuses on styling the individual plans, making them visually appealing and easy to understand.
 
 
-## Links to Resources to Learn More
+## Resources to Learn More
 
-* **CSS Grid Layout:** [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
-* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries)
-* **Learn CSS:** [freeCodeCamp - Responsive Web Design](https://www.freecodecamp.org/learn/responsive-web-design/)
+* **CSS Grid Layout:**  [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
+* **CSS Media Queries:** [MDN Web Docs - Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **CSS Box Model:** [MDN Web Docs - Box Model](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
