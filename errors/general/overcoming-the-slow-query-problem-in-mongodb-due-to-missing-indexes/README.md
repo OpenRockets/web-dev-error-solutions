@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Slow Query" Problem in MongoDB Due to Missing Indexes
+
 
 This document addresses a common performance bottleneck in MongoDB: slow queries resulting from a lack of appropriate indexes.  We'll illustrate this with a specific scenario and provide a step-by-step solution.
 
