@@ -1,1 +1,1 @@
-Overcoming the "Too Many Indexes" Problem in MongoDB
+CSS Challenge:  Responsive Navigation Bar with a Subtle Hover Effect

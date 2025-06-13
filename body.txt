@@ -1,60 +1,117 @@
 
-## Description of the Error
+This challenge focuses on creating a responsive navigation bar using CSS (specifically CSS3) that smoothly adapts to different screen sizes and includes a subtle hover effect on menu items.  We'll avoid JavaScript for this purely CSS solution.
 
-A common problem in MongoDB, especially in larger deployments, is having too many indexes. While indexes dramatically speed up queries, excessive indexing can lead to performance degradation due to increased write operations overhead.  Write operations (inserts, updates, deletes) become slower as MongoDB must update all affected indexes.  Additionally, excessive indexes consume significant disk space.  MongoDB can become slow and unresponsive, and you might encounter errors indirectly related to this, such as slow query performance or even out-of-memory exceptions.  The symptom isn't always a clear "too many indexes" error message, but rather a general performance bottleneck impacting both read and write operations.
+**Description of the Styling:**
 
-## Fixing the Problem Step-by-Step
+The navigation bar will be a horizontal bar at the top of the page.  On larger screens, the menu items will be displayed inline.  On smaller screens (mobile), the menu will collapse into a hamburger menu icon, revealing the menu items on click.  Each menu item will have a subtle background color change on hover.
 
-This example demonstrates analyzing index usage and removing unnecessary indexes on a collection named `products`. Replace `"your_database"` and `"products"` with your actual database and collection names.
 
-**Step 1: Identify Underutilized Indexes**
+**Full Code:**
 
-Use the `db.collection.stats()` command to get statistics on your collection, including index information.  Focus on the `indexSizes` field, which shows the size of each index, and indirectly hints at usage frequency.  Frequently used indexes usually have a larger size due to more data being indexed within that collection. Indexes with significantly smaller sizes are candidates for removal.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responsive Navigation Bar</title>
+<style>
+body {
+  font-family: sans-serif;
+  margin: 0;
+}
 
-```bash
-use your_database;
-db.products.stats();
+nav {
+  background-color: #333;
+  overflow: hidden;
+}
+
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav li {
+  float: left;
+}
+
+nav a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+nav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Hamburger menu style */
+.responsive {
+  position: relative;
+  display: none;
+}
+
+.responsive .icon {
+  display: block;
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 10px;
+  cursor: pointer;
+  color: white;
+}
+
+.responsive .icon::before {
+  content: "\f0c9"; /* FontAwesome hamburger menu icon */
+  font-family: FontAwesome;
+  display: block;
+}
+
+@media screen and (max-width: 600px) {
+  nav li {
+    float: none;
+  }
+  nav a {
+    display: block;
+  }
+  .responsive {
+    display: block;
+  }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <ul>
+    <li><a href="#">Home</a></li>
+    <li><a href="#">About</a></li>
+    <li><a href="#">Services</a></li>
+    <li><a href="#">Contact</a></li>
+    <li class="responsive"><a href="javascript:void(0)" class="icon"></a></li>
+  </ul>
+</nav>
+
+<p>Some text..</p>
+
+</body>
+</html>
 ```
 
-**Step 2: Analyze Query Performance with `db.collection.explain()`**
+**Explanation:**
 
-This command is crucial.  It reveals the execution plan for a query, showing which indexes are used (or not used).  Run your most common queries (especially slow ones) with `explain()`. Look for queries that don't use an index (indicated by "COLLSCAN" in the execution plan). This might show that a specific index is unnecessary if the query isn't using it despite seemingly relevant fields.
+* **Basic Structure:**  The HTML uses an unordered list (`<ul>`) within a `nav` element for the menu.  
+* **Inline Styling (Larger Screens):** The `nav li` elements are floated left, creating the horizontal menu.
+* **Hamburger Menu (Smaller Screens):**  Media queries (`@media screen and (max-width: 600px)`) are used to adjust the styling for smaller screens.  The `float` is removed from `nav li`, and the hamburger menu icon (`responsive` class) is displayed.  The Javascript `void(0)` prevents default anchor behavior (page jump).  Note:  Font Awesome is used for the icon, you'll need to include it for this to work.
+* **Hover Effect:** The `:hover` pseudo-class is used to change the background color and text color of the menu items on hover.
 
-```javascript
-db.products.find( { price: { $gt: 100 } } ).explain();
-```
+**Resources to Learn More:**
 
-**Step 3: Remove Unnecessary Indexes**
-
-Once identified, remove indexes using `db.collection.dropIndex()`.  Always back up your database before making such changes.
-
-```javascript
-// Example: Removing an index on the 'category' field
-db.products.dropIndex( { category: 1 } );
-
-// Example: Removing a compound index
-db.products.dropIndex( { category: 1, price: -1 } );
-
-//Example: Remove all indexes except _id.  USE WITH CAUTION!
-db.products.dropIndexes() //Removes all indexes except _id
-```
-
-
-**Step 4: Monitor Performance After Removal**
-
-After removing indexes, monitor your database performance using monitoring tools or by running the same queries again with `explain()`.  You should observe improved write performance and potentially improved read performance if the removed indexes were indeed unnecessary.
-
-
-## Explanation
-
-The key to efficient indexing is to strike a balance. Too few indexes lead to slow queries, while too many indexes result in slow writes and increased storage needs. Analyzing index usage through `db.collection.stats()` and `db.collection.explain()` allows for data-driven decisions about which indexes to keep and which to remove.  Prioritize indexes on frequently queried fields, especially those used in `$gt`, `$lt`, `$eq`, etc.  Compound indexes can further optimize queries involving multiple fields. Always remove indexes incrementally and monitor the effects to avoid unexpected consequences.
-
-
-## External References
-
-* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
-* **MongoDB Documentation on `explain()`:** [https://www.mongodb.com/docs/manual/reference/method/cursor.explain/](https://www.mongodb.com/docs/manual/reference/method/cursor.explain/)
-* **MongoDB Performance Tuning:** [https://www.mongodb.com/docs/manual/administration/performance/](https://www.mongodb.com/docs/manual/administration/performance/)
+* **CSS3 Tutorial:** [MDN Web Docs CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
+* **Responsive Web Design:** [Google Web Fundamentals](https://developers.google.com/web/fundamentals/design-and-ux/responsive/)
+* **CSS Media Queries:** [MDN Web Docs Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
