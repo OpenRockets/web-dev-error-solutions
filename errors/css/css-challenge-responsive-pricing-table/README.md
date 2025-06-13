@@ -1,106 +1,75 @@
-# 🐞 CSS Challenge: Responsive Pricing Table
+# 🐞 CSS Challenge:  Responsive Pricing Table
 
 
-This challenge involves creating a responsive pricing table using CSS.  The table will feature three pricing plans (Basic, Pro, and Premium) with different pricing and features.  The design should be clean, modern, and adapt seamlessly to different screen sizes (desktop, tablet, and mobile).  We'll use plain CSS for this example, focusing on grid layout and media queries for responsiveness.
+This challenge involves creating a responsive pricing table using CSS.  We'll focus on a clean, modern design adaptable to different screen sizes.  While the specific design can vary wildly depending on the source, we'll target a common approach using flexbox and media queries for responsiveness.
 
 
-## Styling Description
+**Description of the Styling:**
 
-The pricing table will have a card-like design.  Each plan will be represented as a separate column within a grid container.  Key features will be displayed using a list. The design aims for visual clarity and easy comparison between plans.  Hover effects will highlight the selected plan.  Colors will be kept simple and muted to maintain a professional feel.
+The pricing table will consist of three pricing plans (e.g., Basic, Pro, Premium).  Each plan will have a title, a list of features, a price, and a call-to-action button.  The table will be responsive, adjusting its layout nicely on smaller screens (like mobile phones) and maintaining a clean look on larger screens (like desktops). We will use a combination of CSS and potentially Tailwind CSS for the styling.
 
 
-## Full Code
+**Full Code (using Tailwind CSS):**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Responsive Pricing Table</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <style>
-body {
-  font-family: sans-serif;
-  background-color: #f4f4f4;
-}
-
-.pricing-table {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
-  grid-gap: 20px;
-  padding: 20px;
-}
-
-.plan {
-  background-color: #fff;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  text-align: center;
-  transition: box-shadow 0.3s; /* For hover effect */
-}
-
-.plan:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.plan h2 {
-  margin-top: 0;
-  font-size: 1.8em;
-  color: #333;
-}
-
-.plan .price {
-  font-size: 2em;
-  font-weight: bold;
-  color: #007bff;
-  margin-bottom: 10px;
-}
-
-.plan ul {
-  list-style: none;
-  padding: 0;
-}
-
-.plan li {
-  margin-bottom: 5px;
-}
-
-/* Media query for smaller screens */
-@media (max-width: 768px) {
-  .pricing-table {
-    grid-template-columns: 1fr; /* Stack plans vertically on smaller screens */
+  /* Optional custom styles if needed */
+  .btn {
+    @apply px-6 py-3 rounded-md bg-blue-500 text-white hover:bg-blue-700;
   }
-}
 </style>
 </head>
-<body>
+<body class="bg-gray-100">
 
-<div class="pricing-table">
-  <div class="plan">
-    <h2>Basic</h2>
-    <p class="price">$9.99/month</p>
-    <ul>
-      <li>10GB Storage</li>
-      <li>1 User</li>
-      <li>Basic Support</li>
-    </ul>
-  </div>
-  <div class="plan">
-    <h2>Pro</h2>
-    <p class="price">$29.99/month</p>
-    <ul>
-      <li>100GB Storage</li>
-      <li>5 Users</li>
-      <li>Priority Support</li>
-    </ul>
-  </div>
-  <div class="plan">
-    <h2>Premium</h2>
-    <p class="price">$99.99/month</p>
-    <ul>
-      <li>Unlimited Storage</li>
-      <li>Unlimited Users</li>
-      <li>Dedicated Support</li>
-    </ul>
+<div class="container mx-auto p-8">
+  <h1 class="text-3xl font-bold mb-8 text-center">Choose Your Plan</h1>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+      <h2 class="text-xl font-bold mb-4">Basic</h2>
+      <ul class="mb-4">
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+      </ul>
+      <p class="text-2xl font-bold mb-4">$9/month</p>
+      <button class="btn">Sign Up</button>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+      <h2 class="text-xl font-bold mb-4">Pro</h2>
+      <ul class="mb-4">
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+        <li>Feature 4</li>
+        <li>Feature 5</li>
+      </ul>
+      <p class="text-2xl font-bold mb-4">$49/month</p>
+      <button class="btn">Sign Up</button>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+      <h2 class="text-xl font-bold mb-4">Premium</h2>
+      <ul class="mb-4">
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+        <li>Feature 4</li>
+        <li>Feature 5</li>
+        <li>Feature 6</li>
+      </ul>
+      <p class="text-2xl font-bold mb-4">$99/month</p>
+      <button class="btn">Sign Up</button>
+    </div>
+
   </div>
 </div>
 
@@ -109,16 +78,18 @@ body {
 ```
 
 
-## Explanation
+**Explanation:**
 
-The code utilizes CSS Grid for layout.  `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` creates a responsive grid that adapts to different screen sizes.  `minmax(300px, 1fr)` ensures each plan column is at least 300px wide but also allows them to scale proportionally to available space. The `@media` query adjusts the layout to stack columns vertically on smaller screens.  The rest of the CSS focuses on styling the individual plans, making them visually appealing and easy to understand.
+* **Tailwind CSS:** This example leverages Tailwind CSS for rapid UI development.  The utility classes (e.g., `grid`, `grid-cols-1`, `md:grid-cols-3`, `bg-white`, `shadow-md`, `text-xl`, etc.) handle most of the styling.  You'll need to include the Tailwind CSS CDN link in your `<head>`.
+* **Responsiveness:** The `grid` system, combined with Tailwind's responsive modifiers (e.g., `md:grid-cols-3`), ensures the table adapts well to different screen sizes.  On smaller screens (by default), the columns stack vertically; on medium screens and larger, they arrange horizontally in three columns.
+* **Structure:** The HTML uses a simple grid layout to organize the pricing plans.  Each plan is in its own `div` with its content (title, features, price, button).
 
+**Links to Resources to Learn More:**
 
-## Resources to Learn More
-
-* **CSS Grid Layout:**  [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
-* **CSS Media Queries:** [MDN Web Docs - Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
-* **CSS Box Model:** [MDN Web Docs - Box Model](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model)
+* **Tailwind CSS:** [https://tailwindcss.com/](https://tailwindcss.com/)
+* **CSS Grid:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
+* **CSS Flexbox:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout)
+* **Responsive Web Design:** [https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design](https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
