@@ -1,1 +1,1 @@
-Overcoming the "Too Many Fields in Query" Error in MongoDB
+Overcoming MongoDB's "Too Many Keys" Error in Index Creation
