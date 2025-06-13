@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Index Scanned Too Much Data" Error in MongoDB
+
 
 This document addresses a common performance issue in MongoDB: the "index scanned too much data" warning or error. This often arises when queries don't effectively utilize indexes, leading to slow query execution.  We'll focus on a scenario involving inefficient querying of a collection of product documents.
 
