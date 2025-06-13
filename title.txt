@@ -1,1 +1,1 @@
-Overcoming the "Too Many Open Files" Error in MongoDB
+Overcoming MongoDB's "Too Many Queries in Parallel" Error
