@@ -1,1 +1,1 @@
-Overcoming the "Write Concern Error" in MongoDB
+Overcoming the "too many indexes" problem in MongoDB
