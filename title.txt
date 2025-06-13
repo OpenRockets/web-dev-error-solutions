@@ -1,1 +1,1 @@
-MongoDB: Overusing Indexes Leading to Performance Degradation
+Overcoming MongoDB's `too many open files` Error
