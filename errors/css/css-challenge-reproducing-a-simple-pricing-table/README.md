@@ -1,16 +1,12 @@
 # 🐞 CSS Challenge:  Reproducing a Simple Pricing Table
 
 
-This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll aim for a design that's visually appealing and adapts well to different screen sizes. While this example doesn't explicitly use Tailwind CSS (to keep the code more concise and easier to understand for beginners), the principles are readily applicable to Tailwind's utility-first approach.
+This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll leverage standard CSS (no Tailwind this time) to build a table with three pricing plans, each highlighting key features and prices. The goal is to achieve a visually appealing layout that adapts well to different screen sizes.
+
 
 **Description of the Styling:**
 
-The pricing table will consist of three columns representing different pricing plans (e.g., Basic, Pro, Premium). Each column will have a title, a list of features, a price, and a call-to-action button. The styling will include:
-
-* **Visual separation:** Clear visual distinction between plans using borders and padding.
-* **Responsiveness:** The table should adapt gracefully to smaller screens, possibly stacking columns vertically.
-* **Consistent styling:**  Maintain a consistent look and feel across all plans.
-* **Accessibility:** Use clear semantic HTML and sufficient contrast.
+The pricing table will have a card-like appearance with rounded corners, subtle shadows, and a clear separation between the pricing plans. Each plan will be contained within a separate column, with headings for plan name, price, and features.  We will use a consistent color palette and appropriate typography for readability. Responsiveness will be achieved using media queries to adjust column widths and potentially layout at smaller screen sizes.
 
 
 **Full Code:**
@@ -27,20 +23,29 @@ body {
 
 .pricing-table {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-around;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  padding: 20px;
 }
 
 .plan {
-  width: 300px; /* Adjust as needed */
-  border: 1px solid #ccc;
-  margin: 10px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   padding: 20px;
+  margin: 10px;
+  width: 300px; /* Adjust as needed */
   text-align: center;
 }
 
 .plan h2 {
-  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
 }
 
 .plan ul {
@@ -49,26 +54,18 @@ body {
 }
 
 .plan li {
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
-.plan .price {
-  font-size: 1.5em;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
 
-.plan button {
-  background-color: #4CAF50;
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
+@media (max-width: 768px) {
+  .pricing-table {
+    flex-direction: column; /* Stack plans vertically on smaller screens */
+  }
+  .plan {
+    width: 90%; /* Occupy most of the width on smaller screens */
+    margin: 10px auto; /* Center the plans */
+  }
 }
 </style>
 </head>
@@ -77,33 +74,30 @@ body {
 <div class="pricing-table">
   <div class="plan">
     <h2>Basic</h2>
+    <div class="price">$9.99/month</div>
     <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
+      <li>10GB Storage</li>
+      <li>1 User</li>
+      <li>Basic Support</li>
     </ul>
-    <p class="price">$9/month</p>
-    <button>Sign Up</button>
-  </div>
-  <div class="plan">
-    <h2>Pro</h2>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-    </ul>
-    <p class="price">$19/month</p>
-    <button>Sign Up</button>
   </div>
   <div class="plan">
     <h2>Premium</h2>
+    <div class="price">$29.99/month</div>
     <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
+      <li>100GB Storage</li>
+      <li>5 Users</li>
+      <li>Priority Support</li>
     </ul>
-    <p class="price">$29/month</p>
-    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Enterprise</h2>
+    <div class="price">$99.99/month</div>
+    <ul>
+      <li>Unlimited Storage</li>
+      <li>Unlimited Users</li>
+      <li>Dedicated Support</li>
+    </ul>
   </div>
 </div>
 
@@ -113,14 +107,14 @@ body {
 
 **Explanation:**
 
-The CSS uses flexbox for layout, making it easy to arrange the columns and handle responsiveness.  Media queries could be added for more fine-grained control over layout at different screen sizes.  The styling is straightforward, focusing on clear visual separation and readability.
+The code utilizes flexbox for easy layout management.  The `pricing-table` div uses `flex-wrap: wrap` to allow plans to wrap onto the next line if necessary.  Media queries are employed to adjust the layout for smaller screens, switching to a vertical stack.  Classes like `plan`, `price`, and others are used for styling individual components.  The CSS focuses on visual appeal, responsiveness, and semantic clarity.
 
 
 **Links to Resources to Learn More:**
 
 * **CSS Flexbox:** [MDN Web Docs - CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
-* **CSS Grid:** [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout) (For alternative layout options)
-* **Tailwind CSS Documentation:** [Tailwind CSS Official Documentation](https://tailwindcss.com/docs) (To learn how to achieve similar results with Tailwind's utility classes)
+* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **CSS Grid (alternative layout method):** [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
