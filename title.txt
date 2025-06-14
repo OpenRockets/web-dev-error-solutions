@@ -1,1 +1,1 @@
-Overcoming MongoDB's "Exceeded time limit" Error During `find()` Operations
+CSS Challenge:  Centered, Responsive Navigation Bar

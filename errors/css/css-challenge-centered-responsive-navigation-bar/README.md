@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Centered, Responsive Navigation Bar
+
 
 This challenge focuses on creating a responsive navigation bar that remains centered horizontally across different screen sizes. We'll use CSS Grid for layout simplicity and responsiveness.
 
