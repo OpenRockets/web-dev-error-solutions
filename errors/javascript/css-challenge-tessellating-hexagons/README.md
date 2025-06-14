@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Tessellating Hexagons
+
 
 This challenge involves creating a visually appealing tessellation of hexagons using CSS.  We'll achieve this effect using only CSS, avoiding the need for images or JavaScript.  The styling will focus on creating a clean, modern design with a subtle color palette.  We'll use CSS variables for easy customization.
 
