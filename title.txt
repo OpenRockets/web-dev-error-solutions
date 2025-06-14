@@ -1,1 +1,1 @@
-Overcoming MongoDB's "Too Many Indexes" Error
+Overcoming the "Too Many Connections" Error in MongoDB
