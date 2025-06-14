@@ -1,1 +1,1 @@
-Overcoming the "Index out of range" Error in MongoDB Queries
+Overcoming the "Too Many Indexes" Problem in MongoDB
