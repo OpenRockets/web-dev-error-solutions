@@ -1,1 +1,1 @@
-MongoDB: Overuse of Indexes Leading to Performance Degradation
+Overcoming MongoDB's "Too Many Fields Specified" Error in Queries
