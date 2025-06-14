@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  The "Shimmering Card"
+
 
 This challenge focuses on creating a visually appealing card element with a subtle shimmering animation using CSS.  We'll leverage CSS gradients and animations to achieve this effect.  No JavaScript is required.  This solution uses standard CSS3; a Tailwind CSS version is possible but would be slightly less verbose.
 
