@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Responsive Multi-level Navigation Menu
+
 
 This challenge involves creating a responsive, multi-level navigation menu using CSS. The menu should collapse into a hamburger menu on smaller screens and smoothly expand on larger screens.  We'll be using CSS Grid and Flexbox for layout, ensuring the menu adapts elegantly to different screen sizes.  While Tailwind CSS could be used to speed up the process (and is highly recommended for larger projects), this example uses plain CSS for clarity.
 
