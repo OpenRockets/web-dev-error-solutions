@@ -1,1 +1,1 @@
-MongoDB: Overuse of Indexes Leading to Performance Degradation
+Overcoming MongoDB's "Exceeded time limit" Error During `find()` Operations
