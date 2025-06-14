@@ -1,1 +1,1 @@
-Overcoming the "Too Many Fields in a Query" Problem in MongoDB
+Overcoming the "Too Many Indexes" Problem in MongoDB
