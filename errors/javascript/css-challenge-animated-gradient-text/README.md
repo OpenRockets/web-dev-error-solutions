@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Animated Gradient Text
+
 
 This challenge involves creating text that smoothly transitions through a sequence of colors using CSS gradients and animations.  We'll achieve this using only CSS3, without resorting to JavaScript. The final effect will be a visually appealing and dynamic text element.
 
