@@ -1,1 +1,1 @@
-CSS Challenge: Recreate a Simple Pricing Table
+Overcoming the "Index out of range" Error in MongoDB Queries

@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Index out of range" Error in MongoDB Queries
+
 
 This document addresses a common error encountered when working with MongoDB indexes: the "Index out of range" error. This typically arises when attempting to access an element in an array using an index that doesn't exist within that array.  This often happens when processing query results or manipulating data retrieved from the database.
 
