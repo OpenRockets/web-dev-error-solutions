@@ -1,1 +1,1 @@
-CSS Challenge:  Tessellating Hexagons
+Overcoming the "Too Many Open Files" Error in MongoDB
