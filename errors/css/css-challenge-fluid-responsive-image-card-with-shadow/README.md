@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Fluid, Responsive Image Card with Shadow
+
 
 This challenge focuses on creating a responsive image card using CSS. The card should have a fluid width (adapting to the container), a subtle drop shadow, and maintain a consistent aspect ratio regardless of screen size.  We'll use pure CSS3 for this example, avoiding CSS frameworks like Tailwind for a clearer understanding of the underlying principles.
 
