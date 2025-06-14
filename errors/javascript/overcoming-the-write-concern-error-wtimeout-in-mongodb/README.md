@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Write Concern Error: WTimeout" in MongoDB
+
 
 ## Description of the Error
 
