@@ -1,3 +1,5 @@
+# 🐞 Overcoming "Too Many Keys" Error in MongoDB Indexes
+
 
 This document addresses a common issue developers encounter when working with MongoDB indexes: the "too many keys" error. This typically arises when trying to create an index with too many fields, exceeding MongoDB's internal limits.
 
