@@ -1,1 +1,1 @@
-Overcoming "Exceeded Time Limit" Errors in MongoDB Aggregation Pipelines
+Overcoming the "Too Many Open Files" Error in MongoDB
