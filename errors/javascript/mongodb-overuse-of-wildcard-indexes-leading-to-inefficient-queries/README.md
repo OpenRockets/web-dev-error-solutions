@@ -1,3 +1,5 @@
+# 🐞 MongoDB: Overuse of Wildcard Indexes Leading to Inefficient Queries
+
 
 ## Description of the Error
 

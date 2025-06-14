@@ -1,1 +1,1 @@
-MongoDB: Overusing $in Operator with Large Arrays in Queries
+MongoDB: Overuse of Wildcard Indexes Leading to Inefficient Queries
