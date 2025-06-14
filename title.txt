@@ -1,1 +1,1 @@
-CSS Challenge:  Animated Gradient Text
+Overcoming the "Too Many Indexes" Problem in MongoDB
