@@ -1,1 +1,1 @@
-CSS Challenge:  Shimmering Text Effect
+Overusing MongoDB Indexes: A Performance Bottleneck
