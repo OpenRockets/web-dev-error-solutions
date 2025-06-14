@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Collection doesn't exist" Error in MongoDB
+
 
 This document addresses a common error encountered when working with MongoDB: the "Collection doesn't exist" error. This typically occurs when your application attempts to perform a CRUD operation (Create, Read, Update, Delete) on a collection that hasn't been created yet.  This error can manifest in various ways depending on your driver (e.g., Python, Node.js, etc.), but the core issue remains the same.
 

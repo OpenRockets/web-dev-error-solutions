@@ -1,1 +1,1 @@
-Overcoming MongoDB's "Too Many Writes" Error During High-Volume Inserts
+Overcoming the "Collection doesn't exist" Error in MongoDB
