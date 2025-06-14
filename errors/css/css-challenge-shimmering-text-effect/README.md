@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Shimmering Text Effect
+
 
 This challenge focuses on creating a shimmering text effect using pure CSS.  We'll achieve this using CSS animations and gradients to simulate a subtle, light-reflective quality on the text. This effect is often used to draw attention to text or create a visually appealing loading animation.  This solution uses standard CSS3 properties; no Tailwind is required.
 
