@@ -1,12 +1,11 @@
 # 🐞 CSS Challenge:  Multi-level Nested Accordion
 
 
-This challenge involves creating a multi-level nested accordion using CSS.  The accordion will allow users to expand and collapse sections, with nested sections expanding and collapsing within their parent sections.  We'll use CSS3 for this implementation, focusing on the `details` and `summary` elements for a semantic and straightforward approach.  No JavaScript is required.
-
+This challenge involves creating a multi-level nested accordion menu using CSS.  We'll utilize only CSS for the functionality, avoiding JavaScript.  The accordion will allow users to expand and collapse sections, with nested sections properly indented and behaving accordingly.  This example will leverage standard CSS, though similar techniques can be adapted to frameworks like Tailwind CSS.
 
 **Description of the Styling:**
 
-The styling aims for a clean, modern look.  Each accordion section will have a distinct header with a plus/minus icon to indicate expansion/collapse. The nested sections will be visually indented to clearly show the hierarchical structure. We will use a simple color palette for readability.
+The accordion will have a clean and simple design. Each section will have a header that, when clicked, toggles the visibility of its content.  Nested sections will be indented visually to clearly show the hierarchy. We will use a simple color scheme for better readability and visual appeal.
 
 
 **Full Code:**
@@ -17,80 +16,96 @@ The styling aims for a clean, modern look.  Each accordion section will have a d
 <head>
 <title>Multi-Level Nested Accordion</title>
 <style>
-details {
-  border: 1px solid #ccc;
-  margin-bottom: 10px;
-}
-
-summary {
+.accordion {
+  background-color: #eee;
+  color: #333;
   cursor: pointer;
-  padding: 10px;
-  background-color: #f0f0f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  transition: 0.4s;
 }
 
-summary::before {
-  content: '+';
-  font-weight: bold;
+.active, .accordion:hover {
+  background-color: #ccc; 
 }
 
-summary[aria-expanded="true"]::before {
-  content: '-';
+.panel {
+  padding: 0 18px;
+  background-color: white;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
 }
 
-details[open] summary {
-    background-color: #e0e0e0;
+.panel.show {
+  max-height: 500px;  /* Adjust as needed */
 }
 
-details details {
+.nested-accordion {
   margin-left: 20px;
 }
 </style>
 </head>
 <body>
 
-<h1>Main Section</h1>
-<details>
-  <summary>Section 1</summary>
-  <p>Content of Section 1</p>
-  <details>
-    <summary>Subsection 1.1</summary>
-    <p>Content of Subsection 1.1</p>
-  </details>
-  <details>
-    <summary>Subsection 1.2</summary>
-    <p>Content of Subsection 1.2</p>
-    <details>
-      <summary>Subsection 1.2.1</summary>
-      <p>Content of Subsection 1.2.1</p>
-    </details>
-  </details>
-</details>
+<h2>Multi-Level Nested Accordion</h2>
 
-<h1>Another Main Section</h1>
-<details>
-  <summary>Section 2</summary>
-  <p>Content of Section 2</p>
-</details>
+<button class="accordion">Section 1
+  <div class="panel">
+    <p>Some text for Section 1.</p>
+    <button class="accordion nested-accordion">Subsection 1A
+      <div class="panel">
+        <p>Text for Subsection 1A.</p>
+      </div>
+    </button>
+    <button class="accordion nested-accordion">Subsection 1B
+      <div class="panel">
+        <p>Text for Subsection 1B.</p>
+      </div>
+    </button>
+  </div>
+</button>
+
+<button class="accordion">Section 2
+  <div class="panel">
+    <p>Some text for Section 2.</p>
+  </div>
+</button>
+
+<script>
+var acc = document.getElementsByClassName("accordion");
+var i;
+
+for (i = 0; i < acc.length; i++) {
+  acc[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var panel = this.nextElementSibling;
+    if (panel.style.maxHeight) {
+      panel.style.maxHeight = null;
+    } else {
+      panel.style.maxHeight = panel.scrollHeight + "px";
+    } 
+  });
+}
+</script>
 
 </body>
 </html>
 ```
 
-
 **Explanation:**
 
-* We leverage the native HTML5 `<details>` and `<summary>` elements.  These elements provide built-in functionality for accordions without needing JavaScript.
-* The CSS styles the appearance of the accordion sections.  The `::before` pseudo-element is used to dynamically add the plus/minus icon based on the `aria-expanded` attribute.
-* Nested `<details>` elements create the multi-level structure.  The `margin-left` property provides visual indentation for nested sections.  The styling of `details[open]` summary changes the background color when open.
+The CSS uses the `max-height` property and transitions to control the expansion and collapse animation.  The `active` class is toggled on click, changing the background color and triggering the height change.  JavaScript is used to handle the click event and toggle the `maxHeight` of the panel.  The nested accordions are styled using the `nested-accordion` class and margin to create the visual indentation.
+
 
 **Links to Resources to Learn More:**
 
-* **MDN Web Docs - `<details>` element:** [https://developer.mozilla.org/en-US/docs/Web/HTML/Element/details](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/details)
-* **CSS Tricks - Accordions:**  (Search for "CSS Accordion" on CSS Tricks for many examples and techniques)
-* **W3Schools - CSS Selectors:** [https://www.w3schools.com/css/css_selectors.asp](https://www.w3schools.com/css/css_selectors.asp) (Useful for understanding the selectors used in the CSS)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **JavaScript Event Listeners:** [MDN Web Docs - Event Listeners](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
