@@ -1,1 +1,1 @@
-CSS Challenge:  Fluid, Responsive Image Card with Shadow
+Overcoming the "Too Many Indexes" Problem in MongoDB
