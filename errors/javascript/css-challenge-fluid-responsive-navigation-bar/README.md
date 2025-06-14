@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Fluid, Responsive Navigation Bar
+
 
 This challenge focuses on creating a fluid and responsive navigation bar using CSS.  The navigation bar should adapt smoothly to different screen sizes, maintaining usability and a clean aesthetic. We'll use plain CSS (no CSS frameworks like Tailwind, Bootstrap, etc.) to demonstrate fundamental CSS principles.
 
