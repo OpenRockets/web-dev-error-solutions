@@ -1,69 +1,108 @@
 
-This document addresses a common performance issue in MongoDB related to cursor management: the "Too many queries in a cursor" error. This error typically arises when an application performs many operations (e.g., `find`) on a cursor without properly closing it, leading to resource exhaustion on the MongoDB server.
-
-**Description of the Error:**
-
-The "Too many queries in a cursor" error (though not a directly named exception in the MongoDB driver error messages, it manifests as performance degradation and potentially server-side errors) isn't a single, specific error message. Instead, it's a consequence of inefficient cursor handling.  Leaving cursors open for extended periods consumes server resources (memory and network connections). Eventually, this can lead to slowdowns, increased latency, and even server crashes, especially with many concurrent connections or large result sets.  The symptoms might include noticeably slower query times, connection timeouts, or general server instability.
+This challenge involves creating a 3D rotating cube using CSS transforms and animations.  We'll achieve this effect without any JavaScript, relying solely on CSS3 properties.  The cube will have six distinct faces, each with a different color, and will smoothly rotate continuously.
 
 
-**Code Example and Fixing Steps (Python with PyMongo):**
+## Styling Description
 
-This example demonstrates an inefficient use of cursors and shows how to correctly handle them.
+The cube is constructed using six divs, each representing a face. These divs are positioned absolutely within a parent container.  CSS transforms (`rotateX`, `rotateY`, `translateZ`) are used to position and orient each face in 3D space.  A CSS animation creates the continuous rotation effect.  We'll use a simple color scheme for each face for clarity.
 
 
-**Inefficient Code:**
+## Full Code (CSS Only)
 
-```python
-import pymongo
+```css
+.container {
+  width: 200px;
+  height: 200px;
+  perspective: 800px; /* Adjust for perspective effect */
+  position: relative;
+  margin: 50px auto;
+}
 
-client = pymongo.MongoClient("mongodb://localhost:27017/")
-db = client["mydatabase"]
-collection = db["mycollection"]
+.cube {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  transform-style: preserve-3d; /* Essential for 3D effect */
+  animation: rotate 8s linear infinite; /* Animate rotation */
+}
 
-# Inefficient: This loop opens and closes a cursor for EACH document!
-for doc in collection.find({"field": "value"}):
-    # Process each document
-    print(doc)
+.face {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  line-height: 100px; /* Center text vertically */
+  text-align: center;
+  font-size: 2em;
+  font-weight: bold;
+  backface-visibility: hidden; /* Prevents faces from appearing flipped */
+}
 
-client.close()
+.front {
+  background-color: #f00;
+  transform: translateZ(50px);
+}
+
+.back {
+  background-color: #0f0;
+  transform: translateZ(-50px) rotateY(180deg);
+}
+
+.right {
+  background-color: #00f;
+  transform: rotateY(90deg) translateZ(50px);
+}
+
+.left {
+  background-color: #ff0;
+  transform: rotateY(-90deg) translateZ(50px);
+}
+
+.top {
+  background-color: #0ff;
+  transform: rotateX(90deg) translateZ(50px);
+}
+
+.bottom {
+  background-color: #f0f;
+  transform: rotateX(-90deg) translateZ(50px);
+}
+
+@keyframes rotate {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+/*HTML Structure (example)*/
+<div class="container">
+  <div class="cube">
+    <div class="face front">Front</div>
+    <div class="face back">Back</div>
+    <div class="face right">Right</div>
+    <div class="face left">Left</div>
+    <div class="face top">Top</div>
+    <div class="face bottom">Bottom</div>
+  </div>
+</div>
 ```
 
-**Efficient Code:**
+## Explanation
 
-```python
-import pymongo
-
-client = pymongo.MongoClient("mongodb://localhost:27017/")
-db = client["mydatabase"]
-collection = db["mycollection"]
-
-try:
-    cursor = collection.find({"field": "value"})
-    for doc in cursor:
-        # Process each document
-        print(doc)
-    # Explicitly close the cursor when finished.  This is crucial!
-    cursor.close()
-except Exception as e:
-    print(f"An error occurred: {e}")
-finally:
-    # Close the connection in the finally block to ensure it's always closed
-    client.close()
-```
-
-**Explanation:**
-
-The inefficient code iterates through the results individually, opening and closing a cursor for each document. This creates significant overhead.  The efficient code, however, opens the cursor once, iterates through the results, and explicitly closes the cursor using `cursor.close()`.  Using a `try...except...finally` block guarantees the cursor and client connection are always closed, even if errors occur.   Modern drivers often include garbage collection that will eventually close inactive cursors, but relying on garbage collection is unreliable and can delay cleanup, causing performance issues.  Explicitly closing cursors is best practice.
+* **`perspective`:** This property on the container creates the 3D perspective.  Adjusting this value changes how the cube appears to recede into the distance.
+* **`transform-style: preserve-3d;`:** This is crucial. It tells the browser to render the children elements in 3D space.
+* **`backface-visibility: hidden;`:**  This prevents the back faces of the cube from being visible when they are facing away from the viewer.
+* **`transform`:** Each face uses `transform` to position itself correctly within the 3D space.  `translateZ` moves the face along the Z-axis (depth), while `rotateX` and `rotateY` rotate it around the X and Y axes.
+* **`@keyframes rotate`:** This defines the animation, smoothly rotating the cube around the Y-axis.
 
 
-**External References:**
+## Resources to Learn More
 
-* [PyMongo Documentation](https://pymongo.readthedocs.io/en/stable/):  Provides comprehensive information on using PyMongo, including cursor management.
-* [MongoDB Cursor Management](https://www.mongodb.com/docs/manual/core/cursors/):  The official MongoDB documentation on cursors and best practices.
-* [Understanding and Avoiding MongoDB Performance Bottlenecks](https://www.mongodb.com/blog/post/understanding-and-avoiding-mongodb-performance-bottlenecks): A broader discussion on MongoDB performance issues.
-
-
-**Note:** The provided code snippets use Python and the PyMongo driver.  The core concept of explicit cursor closure applies to all MongoDB drivers.  Adapt the `cursor.close()` call to the appropriate method for your specific driver.
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **MDN Web Docs - CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS-Tricks - 3D Transforms:** [Search "3D Transforms" on css-tricks.com for various tutorials]
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
