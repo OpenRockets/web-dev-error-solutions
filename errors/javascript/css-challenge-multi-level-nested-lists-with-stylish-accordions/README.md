@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Multi-level Nested Lists with Stylish Accordions
+
 
 This challenge focuses on styling nested lists to create an accordion-like effect using only CSS.  Each top-level list item will act as an accordion header, revealing or hiding its sub-levels when clicked. We'll achieve this without JavaScript, relying solely on CSS's `:target` pseudo-class and sibling selectors.  We'll aim for a clean and modern look.  This example utilizes standard CSS but could easily be adapted to Tailwind CSS by replacing the specific CSS properties with their Tailwind equivalents (e.g., `background-color` with `bg-gray-200`).
 
