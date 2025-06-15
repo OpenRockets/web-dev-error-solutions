@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Animated Circular Progress Bar with Tailwind CSS
+
 
 This challenge involves creating an animated circular progress bar using Tailwind CSS. The progress bar will be a circle that fills up gradually, representing a percentage value.  We'll leverage CSS custom properties (variables) and animations for a smooth and customizable effect.
 
