@@ -1,3 +1,5 @@
+# 🐞 Overcoming "Too Many Open Files" Errors in MongoDB
+
 
 This document addresses a common problem developers encounter when working with MongoDB: the "Too Many Open Files" error. This error typically arises when your application attempts to open more file handles than the operating system allows.  In the context of MongoDB, this can happen if you have a large number of concurrent connections or if your application doesn't properly close connections after use.
 
