@@ -1,1 +1,1 @@
-Overcoming MongoDB's "too many open files" Error
+Overcoming MongoDB's `$where` Performance Bottleneck
