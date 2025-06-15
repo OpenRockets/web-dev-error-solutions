@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  A Responsive Pricing Card with Tailwind CSS
+
 
 This challenge involves creating a responsive pricing card using Tailwind CSS. The card will feature a title, a price, a list of features, and a call-to-action button.  The design will be clean, modern, and adapt seamlessly to different screen sizes.
 
