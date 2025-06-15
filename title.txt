@@ -1,1 +1,1 @@
-MongoDB: Overuse of Indexes Leading to Performance Degradation
+CSS Challenge:  Responsive Navigation Bar with a Hamburger Menu
