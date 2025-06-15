@@ -1,1 +1,1 @@
-Overusing Indexes in MongoDB: A Performance Bottleneck
+Overcoming the "Too Many Queries" Issue in MongoDB Sharding
