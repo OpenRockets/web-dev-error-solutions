@@ -1,91 +1,64 @@
 
-This challenge involves creating a circular progress bar using only CSS. The progress bar should be centered on the page and visually represent a percentage value (we'll use 75% for this example).  We'll use CSS3 techniques to achieve this, avoiding JavaScript for a purely CSS solution.
+## Description of the Error
 
-**Description of the Styling:**
-
-The progress bar will consist of two concentric circles. The outer circle represents the full 100% and will be a light grey.  The inner circle, a semi-circle, represents the progress (75% in this example) and will be a vibrant blue. We'll use the `clip-path` property to create the semi-circular shape.  The percentage value will be displayed in the center.
+A common mistake in MongoDB development is over-indexing. While indexes significantly speed up queries by creating sorted data structures,  excessive indexing can lead to performance degradation due to increased write operations overhead.  Every write operation (insert, update, delete) requires updating all affected indexes, which can become a bottleneck if there are too many indexes, especially on frequently updated collections.  This results in slower write performance and can even impact read performance if the write contention becomes severe.  Symptoms include slow write operations and increased latency, even for simple queries.
 
 
-**Full Code:**
+## Fixing Step-by-Step
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Circular Progress Bar</title>
-<style>
-.container {
-  width: 150px;
-  height: 150px;
-  position: relative;
-  margin: 50px auto; /* Center the container */
-}
+Let's assume we have a collection called `products` with fields `name` (string), `category` (string), `price` (number), and `description` (string).  We've created indexes on `name`, `category`, `price`, and even a compound index on `category` and `price`.  This might be causing performance issues.
 
-.circle {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 5px solid lightgrey; /* Outer circle */
-  position: absolute;
-}
+**Step 1: Analyze Query Patterns**
 
-.progress {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  position: absolute;
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /* Semi-circle clip-path */
-  background-color: blue; /* Progress color */
-  transform: rotate(270deg); /* Start at the bottom */
-  transform-origin: 50% 50%; /* Rotation origin */
-}
+First, we need to identify the most frequent queries against the `products` collection using MongoDB's profiling capabilities.
 
-.percentage {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 20px;
-  font-weight: bold;
-  color: white;
-}
-
-/* Adjust for 75% progress */
-.progress-75 {
-    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-    transform: rotate(270deg) scaleY(-1) rotate(270deg);
-    /* calculate rotation based on percentage */
-    --rotation: calc(270deg + 75% * 360deg);
-    transform: rotate(var(--rotation));
-}
-</style>
-</head>
-<body>
-
-<div class="container">
-  <div class="circle">
-    <div class="progress progress-75"></div>
-    <div class="percentage">75%</div>
-  </div>
-</div>
-
-</body>
-</html>
+```bash
+db.setProfilingLevel(2); // Enable profiling level 2 (all operations)
+// ... run your application ...
+db.system.profile.find({millis: {$gt: 10}}).sort({ts: -1}).limit(10); //Check slow queries (>10ms)
+db.system.profile.find().forEach(function(x) {printjson(x)}) //display all profile entries
+db.system.profile.drop(); //Disable profiling (Important!)
 ```
 
-**Explanation:**
+This will show you which queries are taking the longest time.  Pay close attention to the queries and the fields they use.
 
-1. **Container:**  Sets up a relative positioned container for centering.
-2. **Circle:** Creates the outer circle using `border-radius`.
-3. **Progress:** Creates the inner semi-circle using `clip-path`.  The `transform: rotate` property rotates it to start from the bottom and we use `scaleY(-1)` along with `rotate(270deg)` to ensure the fill starts from 0 degrees.  The `--rotation` custom property calculates the rotation based on the percentage.
-4. **Percentage:** Positions the percentage text in the center.
-5. **progress-75:** The specific styling for the 75% progress, adjusting the `--rotation` variable.  To change the percentage, simply adjust the `75%` values within `var(--rotation)` and the `percentage` div.
 
-**Links to Resources to Learn More:**
+**Step 2: Identify Unnecessary Indexes**
 
-* **CSS `clip-path`:** [MDN Web Docs - clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Variables (Custom Properties):** [MDN Web Docs - CSS Variables](https://developer.mozilla.org/en-US/docs/Web/CSS/--* )
+Based on the profiling results, we can identify indexes that are rarely or never used. For example, if the `description` field is never used in queries, the index on `description` is unnecessary.
+
+
+**Step 3: Remove Unnecessary Indexes**
+
+Use the `db.collection.dropIndex()` command to remove the unnecessary indexes.  If, from profiling, you find that no query is ever using the index on `description`, you would remove it like this:
+
+```javascript
+db.products.dropIndex("description_1"); // Assuming the index name is "description_1" - use db.products.getIndexes() to confirm the name
+```
+
+If you are not sure about an index's actual usage, temporarily drop the index and monitor your application's performance. If the performance doesn't noticeably degrade, it is safe to remove the index permanently.
+
+
+**Step 4: Optimize Compound Indexes**
+
+Carefully consider compound indexes.  While they can be efficient, too many or poorly chosen compound indexes can negatively impact performance.  If a query requires both `category` and `price`, the compound index `{category: 1, price: 1}` is beneficial, but other combinations might be redundant.
+
+
+**Step 5: Regularly Review Indexes**
+
+Over time, application usage patterns can change. Regularly review your indexes (e.g., monthly or quarterly) and remove any that are no longer needed.  The `db.collection.getIndexes()` command shows all indexes on a collection.
+
+
+## Explanation
+
+Over-indexing leads to write contention because every write operation necessitates updating all relevant indexes. This creates a performance bottleneck, especially in high-write environments.  The write operation overhead becomes more significant than the speed-up provided by the extra indexes.  By analyzing query patterns and removing unused or unnecessary indexes, we can reduce the write overhead and improve overall database performance.  Focusing on optimizing indexes for the most frequent and critical queries is crucial.
+
+
+## External References
+
+* [MongoDB Documentation on Indexes](https://www.mongodb.com/docs/manual/indexes/)
+* [MongoDB Performance Tuning](https://www.mongodb.com/docs/manual/tutorial/manage-performance/)
+* [Understanding MongoDB Profiling](https://www.mongodb.com/docs/manual/reference/method/db.setProfilingLevel/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
