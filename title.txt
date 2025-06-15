@@ -1,1 +1,1 @@
-Overcoming MongoDB's `$where` Performance Issues
+MongoDB: Overuse of Wildcard Indexes Leading to Performance Degradation
