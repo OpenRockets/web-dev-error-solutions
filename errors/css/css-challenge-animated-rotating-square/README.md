@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Animated Rotating Square
+
 
 This challenge focuses on creating a simple, yet visually appealing, rotating square using only CSS.  We'll achieve the rotation effect using CSS animations and transitions, demonstrating fundamental animation concepts.  This example utilizes plain CSS; adapting it to Tailwind CSS is straightforward, involving replacing the inline styles with appropriate Tailwind classes.
 
