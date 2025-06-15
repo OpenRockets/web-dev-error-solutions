@@ -1,81 +1,73 @@
 
-This challenge involves creating a card that expands smoothly when hovered over, revealing additional content.  We'll use CSS3 transitions and transforms to achieve this effect.  No JavaScript is required.
+## Description of the Error
 
-**Description of the Styling:**
+The "Too Many Open Cursors" error in MongoDB arises when a client application holds onto database cursors without closing them properly.  Each open cursor consumes resources on the MongoDB server.  If too many cursors remain open, the server eventually reaches its limit, resulting in this error and potentially impacting other operations. This is often seen in applications that iterate through large result sets inefficiently or forget to explicitly close cursors when finished.
 
-The card will have a simple, clean design. When the mouse hovers over the card, it will smoothly expand horizontally, revealing a hidden section with more details.  The expansion will be accompanied by a subtle fade-in effect for the additional content. We will use a simple gradient background for visual appeal.
+## Fixing the "Too Many Open Cursors" Error: Step-by-Step Code Examples
+
+This example demonstrates the problem and its solution using Python and the `pymongo` driver.  We'll assume you already have a connection to your MongoDB database established.
 
 
-**Full Code (CSS only):**
+**Problematic Code (Python):**
 
-```css
-.card {
-  background: linear-gradient(to right, #4CAF50, #8BC34A);
-  width: 300px;
-  height: 150px;
-  border-radius: 8px;
-  overflow: hidden; /* Hide the extra content initially */
-  transition: width 0.3s ease-in-out, transform 0.3s ease-in-out; /* Smooth transitions */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Add a subtle shadow */
-  display: flex;
-  flex-direction: column; /* Align items vertically */
-  justify-content: center;
-  align-items: center; /* Center content */
-  color: white;
-  text-align: center;
-}
+```python
+import pymongo
 
-.card:hover {
-  width: 500px; /* Expand on hover */
-  transform: translateX(-100px); /* Adjust position to avoid overflowing */
-}
+# Establish connection (replace with your connection string)
+client = pymongo.MongoClient("mongodb://localhost:27017/")
+db = client["mydatabase"]
+collection = db["mycollection"]
 
-.card-content {
-  opacity: 0; /* Initially hidden */
-  transition: opacity 0.3s ease-in-out; /* Fade-in transition */
-}
+# Retrieve a large number of documents
+cursor = collection.find({})
 
-.card:hover .card-content {
-  opacity: 1; /* Fade in on hover */
-}
+# Incorrect approach: This keeps the cursor open indefinitely!
+for document in cursor:
+    # Process document...
+    print(document)
 
-.card-title {
-    font-size: 1.5em;
-    margin-bottom: 0.5em;
-}
-
-.card-description {
-    font-size: 1em;
-}
+# Connection should be closed explicitly, but cursor is still open
+client.close() 
 ```
 
-**HTML Structure (example):**
+**Corrected Code (Python):**
 
-```html
-<div class="card">
-  <h2 class="card-title">Card Title</h2>
-  <p class="card-description">Short description here.</p>
-  <div class="card-content">
-    <p>This is the additional content that appears on hover.</p>
-    <p>More details can go here.</p>
-  </div>
-</div>
+```python
+import pymongo
+
+# Establish connection (replace with your connection string)
+client = pymongo.MongoClient("mongodb://localhost:27017/")
+db = client["mydatabase"]
+collection = db["mycollection"]
+
+# Retrieve a large number of documents
+cursor = collection.find({})
+
+# Correct approach: Iterate and explicitly close the cursor
+try:
+    for document in cursor:
+        # Process document...
+        print(document)
+except Exception as e:
+    print(f"An error occurred: {e}")
+finally:
+    cursor.close()  # Ensure the cursor is closed even if an error occurs
+    client.close()
 ```
 
+**Explanation of the Fix:**
 
-**Explanation:**
-
-* **`transition` property:** This is crucial for the animation.  It specifies which properties (`width`, `transform`) will be animated, the duration (`0.3s`), and the easing function (`ease-in-out`).
-* **`transform: translateX(-100px)`:** This shifts the card to the left when expanded to prevent it from overflowing its initial container. Adjust this value based on your design.
-* **`overflow: hidden`:** Prevents the extra content from showing before hovering.
-* **`opacity` transition:** Controls the fade-in effect for the hidden content.
+The crucial change is the addition of `cursor.close()` within a `finally` block.  This guarantees the cursor is closed, even if an exception occurs during the iteration.  The `finally` block ensures that cleanup actions are always executed, regardless of how the `try` block exits.  Always close your cursors explicitly to prevent resource leaks and the "Too Many Open Cursors" error.
 
 
-**Links to Resources to Learn More:**
+## Explanation
 
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
-* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Flexbox (for layout):** [CSS-Tricks Flexbox Guide](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
+The root cause is inefficient cursor management.  MongoDB allocates resources for each open cursor.  Applications that fail to close cursors after use accumulate these resources, leading to the server's resource exhaustion.  The fix involves diligently closing cursors using the appropriate methods provided by your MongoDB driver.  Using iterators (as shown in the corrected example) can also help ensure cursors are automatically closed when the iteration completes.
+
+## External References
+
+* **MongoDB Documentation on Cursors:** [https://www.mongodb.com/docs/manual/core/cursors/](https://www.mongodb.com/docs/manual/core/cursors/) (This link provides comprehensive information about cursors in MongoDB and their management.)
+* **PyMongo Documentation:** [https://pymongo.readthedocs.io/en/stable/](https://pymongo.readthedocs.io/en/stable/) (This link contains details specific to the Python driver and its cursor handling methods.)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

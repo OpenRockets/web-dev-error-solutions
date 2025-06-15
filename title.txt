@@ -1,1 +1,1 @@
-CSS Challenge:  Animated Expanding Card
+Overcoming the "Too Many Open Cursors" Error in MongoDB
