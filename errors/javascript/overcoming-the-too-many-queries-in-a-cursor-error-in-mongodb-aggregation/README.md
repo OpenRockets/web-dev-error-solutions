@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Too Many Queries in a Cursor" Error in MongoDB Aggregation
+
 
 This document addresses a common performance issue encountered when using MongoDB aggregation pipelines: the "Too Many Queries in a Cursor" error.  This error typically arises when an aggregation pipeline generates an excessively large number of individual queries to fetch data, significantly slowing down the operation and potentially causing timeouts.  It's frequently linked to inefficient pipeline stages or overly broad queries.
 
