@@ -1,1 +1,1 @@
-CSS Challenge:  A Responsive Pricing Card with Tailwind CSS
+Overcoming "Too Many Indexes" in MongoDB
