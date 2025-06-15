@@ -1,1 +1,1 @@
-Overcoming MongoDB's `$lookup` Performance Bottlenecks with Optimized Indexing
+Overcoming the "Too Many Indexes" Problem in MongoDB
