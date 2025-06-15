@@ -1,1 +1,1 @@
-CSS Challenge:  Multi-level Nested Accordion
+Overcoming the "Error: too many open files" in MongoDB
