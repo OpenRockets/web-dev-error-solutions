@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Too Many Queries for a Single Collection" Problem in MongoDB
+
 
 ## Description of the Error
 
