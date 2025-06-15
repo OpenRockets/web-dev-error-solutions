@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's `$near` Operator Limitations with Geospatial Indexes
+
 
 ## Description of the Error
 
