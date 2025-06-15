@@ -1,110 +1,64 @@
 
-This challenge involves creating a multi-level nested accordion using CSS.  The accordion will allow users to expand and collapse sections, with subsections nested within each section.  We'll be using pure CSS3 for styling, avoiding JavaScript for the dynamic behavior.
+## Description of the Error
 
-**Description of the Styling:**
+A common problem in MongoDB stems from having too many indexes.  While indexes significantly speed up queries, an excessive number can negatively impact write performance.  Every write operation requires updating all relevant indexes, leading to slowdowns and increased resource consumption. This is particularly noticeable during high-write load scenarios.  The symptoms often include:
 
-The accordion will have a clean and modern look. Each section and subsection will be clearly delineated using borders, padding, and background colors. The section titles will be visually distinct, perhaps using a bolder font weight or a different color.  The animation of expanding and collapsing will be smooth and unobtrusive.  We'll aim for a design that's accessible and works well on different screen sizes.
-
-**Full Code:**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Nested Accordion</title>
-<style>
-body {
-  font-family: sans-serif;
-}
-
-.accordion {
-  width: 300px;
-  border: 1px solid #ccc;
-}
-
-.accordion-item {
-  border-bottom: 1px solid #ccc;
-}
-
-.accordion-header {
-  background-color: #f0f0f0;
-  padding: 10px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.accordion-content {
-  padding: 10px;
-  display: none; /* Initially hidden */
-  overflow: hidden; /* Prevents content from overflowing while animating */
-  transition: max-height 0.3s ease-out; /* Smooth animation */
-}
-
-.accordion-item.active .accordion-content {
-  display: block;
-  max-height: 500px; /* Adjust as needed */
-}
-
-/* Nested Accordion Styling */
-.nested-accordion {
-  margin-left: 20px;
-}
-
-.nested-accordion .accordion-item {
-  border-bottom: 1px solid #eee;
-}
-
-</style>
-</head>
-<body>
-
-<div class="accordion">
-  <div class="accordion-item">
-    <div class="accordion-header">Section 1</div>
-    <div class="accordion-content">
-      Content of Section 1.
-      <div class="nested-accordion">
-        <div class="accordion-item">
-          <div class="accordion-header">Subsection 1.1</div>
-          <div class="accordion-content">Content of Subsection 1.1</div>
-        </div>
-        <div class="accordion-item">
-          <div class="accordion-header">Subsection 1.2</div>
-          <div class="accordion-content">Content of Subsection 1.2</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="accordion-item">
-    <div class="accordion-header">Section 2</div>
-    <div class="accordion-content">Content of Section 2.</div>
-  </div>
-</div>
-
-<script>
-const accordionHeaders = document.querySelectorAll('.accordion-header');
-accordionHeaders.forEach(header => {
-  header.addEventListener('click', () => {
-    const item = header.parentElement;
-    item.classList.toggle('active');
-  });
-});
-</script>
+* **Slow write operations:**  Insertion, updates, and deletions take considerably longer than expected.
+* **High CPU utilization:** The MongoDB process consumes a disproportionate amount of CPU resources.
+* **Increased latency:** Queries may experience increased latency even if they utilize indexes effectively.
+* **Errors related to index creation/maintenance:**  You might encounter errors related to index creation due to resource limitations.
 
 
-</body>
-</html>
+## Fixing the Problem Step-by-Step
+
+This example focuses on identifying and removing unnecessary indexes using the `mongosh` shell.  Let's assume we've identified that the `products` collection has too many indexes.
+
+**Step 1: List all Indexes**
+
+```javascript
+use mydatabase; // Replace mydatabase with your database name
+db.products.getIndexes()
 ```
 
-**Explanation:**
+This command displays all indexes currently defined on the `products` collection. Carefully examine each index, noting the fields and the usage frequency (if available from monitoring tools).
 
-The CSS uses the `display: none;` and `max-height` properties combined with a transition for smooth animation. The JavaScript adds event listeners to the header elements to toggle the `active` class, which controls the visibility of the content.  The nested accordion structure is achieved by simply embedding another `accordion` within a section's content. The key is the use of CSS to style the nested items appropriately.
+**Step 2: Identify Unused Indexes**
 
-**Links to Resources to Learn More:**
+Determining which indexes are truly unused often requires analyzing your application's query patterns.  Tools like MongoDB Compass or profiling can be invaluable. If you have a query that is repeatedly slow without an appropriate index, that would also suggest the need for creating an index.  Identify indexes that:
 
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
-* **Accordion Pattern:** [Various articles on accordion implementations on sites like CSS-Tricks](https://css-tricks.com/) (Search for "CSS accordion")
+* **Are not used in queries:**  If an index hasn't been used for a significant period, it's a candidate for removal.
+* **Are redundant:** Multiple indexes covering similar fields may be unnecessary.  A compound index (e.g., `{ category: 1, price: -1 }`) often covers the use cases of indexes on `category` and `price` individually.
+* **Are overly specific:**  Indexes with many fields might be too specific and rarely used.
+
+**Step 3: Drop Unnecessary Indexes**
+
+Once you've identified unnecessary indexes, drop them using the following command. Replace `<index_name>` with the actual name of the index (from the output of `getIndexes()`).
+
+```javascript
+db.products.dropIndex("<index_name>")
+```
+
+For example, to drop an index named `category_1_price_1`:
+
+```javascript
+db.products.dropIndex("category_1_price_1")
+```
+
+**Step 4: Verify Index Changes**
+
+After dropping indexes, use `db.products.getIndexes()` again to verify that the unwanted indexes have been removed. Monitor write performance to ensure that the changes have improved write times and resource utilization.
+
+
+## Explanation
+
+The core reason behind this problem is a trade-off between read and write performance. Indexes optimize read operations by providing a quick lookup path, but they add overhead to write operations because the indexes must be updated with every insert, update, or delete.  Overly numerous indexes exacerbate this write overhead, making the database slower for the most common actions.  A well-structured indexing strategy balances the needs of both reads and writes.
+
+
+## External References
+
+* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
+* **MongoDB Compass:** [https://www.mongodb.com/products/compass](https://www.mongodb.com/products/compass) (A GUI tool for managing MongoDB)
+* **MongoDB Profiling:** [https://www.mongodb.com/docs/manual/reference/method/db.profilingLevel/](https://www.mongodb.com/docs/manual/reference/method/db.profilingLevel/) (For analyzing query performance)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

@@ -1,1 +1,1 @@
-CSS Challenge:  Multi-level Nested Accordion
+Overcoming the "Too Many Indexes" Problem in MongoDB
