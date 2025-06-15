@@ -1,1 +1,1 @@
-CSS Challenge: Responsive Multi-Column Card Grid
+Overcoming the "Too Many Indexes" Problem in MongoDB
