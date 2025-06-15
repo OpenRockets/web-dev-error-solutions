@@ -1,1 +1,1 @@
-Overcoming the "Too Many Indexes" Problem in MongoDB
+Overcoming MongoDB's `$inc` Operator Limitations with Large Increments
