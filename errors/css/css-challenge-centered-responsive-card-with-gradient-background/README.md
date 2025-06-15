@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Centered, Responsive Card with Gradient Background
+
 
 This challenge involves creating a visually appealing card that is centered on the page and adapts responsively to different screen sizes.  We'll use CSS (specifically CSS3) to achieve this, focusing on flexible box model and gradient backgrounds.  While Tailwind CSS could be used, this example uses plain CSS for broader applicability.
 
