@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Responsive Multi-Column Card Grid
+
 
 This challenge focuses on creating a responsive grid of cards that adjusts seamlessly across different screen sizes. We'll use CSS Grid for layout and leverage Tailwind CSS for rapid styling.  The goal is to create a visually appealing and user-friendly card layout that adapts to various devices, from large desktops to small mobile phones.
 
