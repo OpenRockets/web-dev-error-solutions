@@ -1,1 +1,1 @@
-Overcoming MongoDB's `$where` Performance Bottleneck
+MongoDB: Overusing Indexes Leading to Performance Degradation
