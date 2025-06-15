@@ -1,62 +1,95 @@
 
-## Description of the Error
+This challenge focuses on styling a multi-level nested list using CSS.  We'll achieve a visually appealing and hierarchical representation of the list items, utilizing CSS3 properties for precise control over spacing, indentation, and visual hierarchy.  We will specifically focus on creating a visually appealing nested list, without using any CSS frameworks like Tailwind.
 
-A common issue in MongoDB arises when a database has an excessive number of indexes.  While indexes dramatically improve query performance, having too many can significantly hinder write operations, leading to slower insertion, update, and deletion speeds.  This is because every write operation requires updating all relevant indexes, and the overhead of managing numerous indexes can outweigh the benefits of improved query speed.  The symptoms often include noticeably slower write performance, increased storage usage, and potentially even degraded overall database performance.  MongoDB may not explicitly throw an error, but the performance degradation is a clear indication of the problem.
 
-## Fixing the Problem: A Step-by-Step Approach
+**Description of the Styling:**
 
-This example demonstrates identifying and removing unnecessary indexes on a collection named `products` within a database called `mydatabase`.
+The goal is to create a nested list that clearly distinguishes different levels of nesting. We'll achieve this using the following techniques:
 
-**Step 1: Identify Excessive Indexes**
+* **Indentation:**  Each nested level will be progressively indented further to the right.
+* **List Markers:** Different list markers will be used for each level (e.g., circles, squares, numbers).
+* **Background Colors:**  Subtle background colors will be alternated to improve readability and highlight the hierarchy.
+* **Font Styles:**  Font sizes and weights may be adjusted to emphasize the main list items.
 
-First, let's identify the existing indexes on the `products` collection using the `db.collection.getIndexes()` method.
 
-```javascript
-use mydatabase;
-db.products.getIndexes();
+**Full Code:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nested List Styling</title>
+<style>
+ul {
+  list-style-type: circle;
+  padding: 0;
+  margin-left: 20px; /* Initial indentation */
+}
+
+ul ul {
+  list-style-type: square;
+  margin-left: 20px; /* Increased indentation for nested lists */
+}
+
+ul ul ul {
+  list-style-type: disc;
+  margin-left: 20px;  /* Further increased indentation */
+}
+
+li {
+  margin-bottom: 5px;
+}
+
+li:nth-child(even) {
+  background-color: #f2f2f2; /* Alternate background color */
+}
+
+ul > li { /* Style only the top level list items */
+    font-weight: bold;
+}
+
+</style>
+</head>
+<body>
+
+<h2>Nested List Example</h2>
+
+<ul>
+  <li>Item 1
+    <ul>
+      <li>Subitem 1.1
+        <ul>
+          <li>Sub-subitem 1.1.1</li>
+          <li>Sub-subitem 1.1.2</li>
+        </ul>
+      </li>
+      <li>Subitem 1.2</li>
+    </ul>
+  </li>
+  <li>Item 2
+    <ul>
+      <li>Subitem 2.1</li>
+      <li>Subitem 2.2</li>
+    </ul>
+  </li>
+  <li>Item 3</li>
+</ul>
+
+</body>
+</html>
 ```
 
-This will return a JSON array containing details of all indexes on the `products` collection, including their name, key, and other metadata.  Review this output to identify indexes that are rarely or never used.  Analyze your application's query patterns to determine which indexes are essential. Profiling your queries (using MongoDB's profiling tools) can help identify queries that could benefit from indexes and those that don't.
 
-**Step 2: Drop Unnecessary Indexes**
+**Explanation:**
 
-Once you've identified redundant or unused indexes, drop them using the `db.collection.dropIndex()` method.  Replace `<index_name>` with the actual name of the index you want to remove (found in the output from Step 1).  If you want to drop a compound index specified by a field combination, you need to provide the same combination as a JSON object.
-
-```javascript
-// Example: Dropping an index named "my_index"
-db.products.dropIndex("my_index");
-
-//Example: Dropping a compound index on 'category' and 'price' fields
-db.products.dropIndex({"category": 1, "price": -1});
+The CSS uses the `ul` selector to style unordered lists.  The `ul ul` and `ul ul ul` selectors target nested lists, allowing for specific styling at each level.  `list-style-type` controls the list marker type.  `margin-left` handles the indentation. `:nth-child(even)` is used for alternating background colors.  The `> li` selector targets only direct children of the `ul`, to allow for specific styling of the top level items.
 
 
-```
+**Links to Resources to Learn More:**
 
-**Step 3: Monitor Performance**
+* **MDN Web Docs - CSS Lists:** [https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type](https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type)
+* **CSS-Tricks - Lists:** [https://css-tricks.com/almanac/properties/l/list-style/](https://css-tricks.com/almanac/properties/l/list-style/)
 
-After dropping indexes, closely monitor the database's write performance.  Use MongoDB's monitoring tools or performance monitoring solutions to track write times and compare them to performance before index removal. You might also use a profiling tool to analyze query and write performance in detail.
-
-
-**Step 4 (Optional):  Create Optimized Indexes**
-
-If after removing unnecessary indexes performance is still not optimal,  consider creating carefully optimized compound indexes to target specific, frequent query patterns. Instead of creating many simple indexes, carefully design compound indexes to effectively cover multiple query conditions.
-
-```javascript
-// Example: Create a compound index for frequent queries on category and price.
-db.products.createIndex( { category: 1, price: 1 } );
-```
-
-
-## Explanation
-
-The key to resolving this problem lies in understanding the trade-off between read and write performance.  Indexes are crucial for efficient data retrieval, but excessive indexes increase the overhead of write operations.  A well-designed index strategy focuses on creating indexes only for frequently used queries and avoids creating redundant or rarely used indexes. The process of optimizing indexes is an iterative one, requiring careful analysis of query patterns and continuous monitoring of performance.
-
-
-## External References
-
-* [MongoDB Indexing Documentation](https://www.mongodb.com/docs/manual/indexes/)
-* [MongoDB Performance Tuning](https://www.mongodb.com/docs/manual/administration/performance/)
-* [MongoDB Query Profiling](https://www.mongodb.com/docs/manual/tutorial/profile-queries/)
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
