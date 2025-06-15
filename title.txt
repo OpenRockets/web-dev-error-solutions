@@ -1,1 +1,1 @@
-Overcoming the "Too Many Queries for a Single Collection" Problem in MongoDB
+Overcoming "Too Many Connections" Errors in MongoDB
