@@ -1,1 +1,1 @@
-Overcoming the "Error: too many open files" in MongoDB
+Overcoming MongoDB's "Too Many Queries in a Cursor" Error

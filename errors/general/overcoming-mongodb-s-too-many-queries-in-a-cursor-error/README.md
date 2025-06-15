@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's "Too Many Queries in a Cursor" Error
+
 
 This document addresses a common performance issue in MongoDB related to cursor management: the "Too many queries in a cursor" error. This error typically arises when an application performs many operations (e.g., `find`) on a cursor without properly closing it, leading to resource exhaustion on the MongoDB server.
 
