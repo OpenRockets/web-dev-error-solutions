@@ -1,1 +1,1 @@
-Overcoming MongoDB's `$near` Operator Limitations with Geospatial Indexes
+Overusing Indexes in MongoDB and Performance Degradation
