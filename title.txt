@@ -1,1 +1,1 @@
-Overcoming "Too Many Open Files" Errors in MongoDB
+CSS Challenge: Responsive Navigation Bar with Tailwind CSS
