@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Creating a Responsive Navigation Bar with Tailwind CSS
+
 
 This challenge focuses on building a responsive navigation bar using Tailwind CSS.  The navigation bar will adapt seamlessly to different screen sizes, showcasing the power of Tailwind's utility classes for rapid UI development.  We'll create a clean, modern design that's easy to customize.
 
