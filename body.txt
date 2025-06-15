@@ -1,139 +1,82 @@
 
-This challenge focuses on creating a responsive navigation bar that adapts to different screen sizes.  For smaller screens, it utilizes a hamburger menu icon to reveal the navigation links. We'll use CSS Grid for layout and CSS transitions for smooth animations.
+## Description of the Error
 
+A common problem encountered when sharding a MongoDB cluster involves poor shard key selection.  Choosing an inappropriate shard key can lead to significant performance degradation, uneven data distribution across shards, and ultimately, system instability.  Symptoms might include slow queries, hot shards (shards carrying a disproportionate amount of load), and increased latency. This often manifests when the chosen shard key doesn't effectively distribute data based on the query patterns of your application.  For instance, sharding on a field that has high cardinality (many unique values) but is not frequently used in queries will lead to inefficient sharding.
 
-## Description of the Styling
+## Fixing Step-by-Step
 
-The navigation bar will have a fixed width, occupying the full width of the viewport. On larger screens (say, above 768px), the navigation links will be displayed inline.  On smaller screens, the links will be hidden initially, revealed by clicking a hamburger menu icon.  The hamburger menu will transition smoothly to an "X" icon upon clicking.  The overall style will be clean and modern, with subtle animations.
+Let's assume we have a collection called `products` with the following schema:
 
-
-## Full Code
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Responsive Navigation Bar</title>
-<style>
-  body {
-    font-family: sans-serif;
-    margin: 0;
-  }
-
-  .navbar {
-    background-color: #333;
-    color: #fff;
-    display: grid;
-    grid-template-columns: auto 1fr; /* Auto width for the hamburger, rest for links */
-    align-items: center;
-    padding: 10px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000; /* Ensure it's on top */
-  }
-
-  .hamburger {
-    display: none; /* Initially hidden on larger screens */
-    cursor: pointer;
-    padding: 10px;
-  }
-
-  .hamburger span {
-    display: block;
-    width: 25px;
-    height: 3px;
-    background-color: white;
-    margin: 5px 0;
-    transition: all 0.3s ease;
-  }
-
-  .hamburger.active span:nth-child(1) {
-    transform: rotate(45deg) translate(7px, 7px);
-  }
-
-  .hamburger.active span:nth-child(2) {
-    opacity: 0;
-  }
-
-  .hamburger.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -7px);
-  }
-
-  .nav-links {
-    display: grid;
-    grid-auto-flow: column;
-    gap: 20px;
-  }
-
-  .nav-link {
-    text-decoration: none;
-    color: white;
-  }
-
-  @media (max-width: 768px) {
-    .hamburger {
-      display: block;
-    }
-
-    .nav-links {
-      display: none; /* Hide links on smaller screens */
-    }
-
-    .nav-links.active {
-      display: grid;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 100%;
-      background-color: #333;
-      grid-auto-flow: row; /* Stack links vertically */
-      padding: 10px;
-
-    }
-  }
-</style>
-</head>
-<body>
-  <nav class="navbar">
-    <div class="hamburger" onclick="toggleNav()">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-    <div class="nav-links" id="navLinks">
-      <a href="#" class="nav-link">Home</a>
-      <a href="#" class="nav-link">About</a>
-      <a href="#" class="nav-link">Services</a>
-      <a href="#" class="nav-link">Contact</a>
-    </div>
-  </nav>
-
-
-  <script>
-    function toggleNav() {
-      const hamburger = document.querySelector('.hamburger');
-      const navLinks = document.getElementById('navLinks');
-      hamburger.classList.toggle('active');
-      navLinks.classList.toggle('active');
-    }
-  </script>
-
-</body>
-</html>
+```json
+{
+  "category": "electronics",
+  "product_id": "ABC123XYZ",
+  "name": "Laptop",
+  "price": 1200,
+  "date_added": ISODate("2024-10-27T10:00:00Z")
+}
 ```
+
+Initially, the cluster was sharded using `product_id` as the shard key.  However, the majority of queries filter by `category` and `price`.  This leads to uneven data distribution and slow query performance.  We need to reshard the cluster using a more suitable shard key.
+
+**Steps:**
+
+1. **Identify the optimal shard key:** Analyze your application's query patterns.  In our example, a compound shard key of `{ category: 1, price: 1 }` would be more effective.  This distributes data based on both `category` and `price`, improving query performance for the most frequent use cases.
+
+2. **Check current sharding configuration:**
+
+```bash
+mongosh --host <mongos_host>
+db.adminCommand( { listShards: 1 } )
+db.adminCommand( { getShardDistribution: { products: 1 } } ) //To check the distribution
+```
+Replace `<mongos_host>` with the hostname of your MongoDB config server.
+
+3. **(Optional) Back up your data:** Before making significant changes to your sharding configuration, it's crucial to back up your data.
+
+4. **Disable balancer:** This prevents the balancer from moving chunks while the resharding process happens.
+
+```bash
+sh.stopBalancer()
+```
+
+5. **Create a new sharded collection using the new shard key:** (This can be avoided if you can modify your application and the process described in steps 6 and 7 is preferable.
+
+```bash
+use config
+db.collections.remove({"name": "products.products"})
+sh.shardCollection("test.products", {category: 1, price: 1});
+```
+
+6. **Migrate the data to the new sharded collection:**
+
+    a. **Create the new sharded collection**:
+
+```bash
+sh.shardCollection("databaseName.products", { category: 1, price: 1 })
+```
+
+    b. **Move chunks**:   This is usually the most time-consuming step that will require monitoring.  MongoDB's balancer will handle this automatically, but consider optimizing using commands such as `db.adminCommand({moveChunk: ...})`  for fine-grained control (not recommended unless thoroughly understood).
+
+7. **Enable balancer:** Once the migration is complete, re-enable the balancer.
+
+```bash
+sh.startBalancer()
+```
+
+8. **Monitor performance:** After resharding, carefully monitor query performance and shard distribution to ensure the new shard key improves efficiency.  Use MongoDB monitoring tools or your preferred monitoring system to track metrics such as query execution time, chunk distribution, and shard load.
+
 
 ## Explanation
 
-The code uses CSS Grid for flexible layout.  The `@media` query handles responsiveness.  The JavaScript function `toggleNav()` adds and removes the `active` class to control the visibility and animation of the hamburger menu and navigation links.  The CSS transitions create a smooth animation effect.
+Choosing the correct shard key is critical for optimal sharded cluster performance.  A well-chosen shard key ensures data is evenly distributed across shards, minimizing hot spots and improving query response times. A poor choice leads to unbalanced workloads, degraded performance, and possibly data locality issues if data ends up in one shard constantly.  Compound keys allow for sharding based on multiple fields, often providing the best flexibility and performance. The process of resharding involves moving data from the old configuration to a new one, which requires careful planning and execution to minimize downtime and data loss.
 
 
-## Links to Resources to Learn More
+## External References
 
-* **CSS Grid:** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/)
-* **CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **Responsive Web Design:** [https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design](https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design)
+* [MongoDB Sharding Documentation](https://www.mongodb.com/docs/manual/sharding/)
+* [MongoDB Sharding Best Practices](https://www.mongodb.com/blog/post/best-practices-for-mongodb-sharding)
+* [Choosing a Shard Key](https://www.mongodb.com/docs/manual/sharding/shard-key-selection/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
