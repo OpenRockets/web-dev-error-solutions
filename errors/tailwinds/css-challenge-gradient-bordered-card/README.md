@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Gradient-bordered Card
+
 
 This challenge focuses on creating a visually appealing card with a gradient border using CSS.  We'll achieve this using only CSS, specifically leveraging CSS3 gradients. No external libraries or frameworks like Tailwind CSS will be used to keep the focus on core CSS concepts.
 
