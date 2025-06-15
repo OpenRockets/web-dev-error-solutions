@@ -1,55 +1,112 @@
 
-## Description of the Error
+This challenge involves creating a 3D rotating cube using only CSS.  We'll leverage CSS transforms and animations to achieve the effect without relying on JavaScript.  This example uses standard CSS; adapting it to Tailwind would primarily involve replacing the CSS classes with their Tailwind equivalents.
 
-Over-indexing in MongoDB can lead to significant performance degradation, counterintuitively hindering rather than improving query speeds.  While indexes are crucial for efficient data retrieval, creating too many indexes or indexes on inappropriate fields can negatively impact write operations and storage space.  Write operations become slower because every write must update all relevant indexes. Excessive indexes also consume disk space and memory, leading to increased storage costs and potential performance issues.  The symptoms often manifest as slow write speeds, increased latency for insertion and updates, and bloated database size, even when queries appear fast.
+**Description of the Styling:**
 
-## Fixing Step-by-Step
-
-This example focuses on identifying and removing unnecessary indexes on a collection called `products` within a MongoDB database.  Assume we have indexes on `name`, `category`, `price`, and `description`. Let's say analysis reveals that the `description` index is rarely used.
-
-**Step 1: Identify Underutilized Indexes**
-
-Use the `db.collection.getIndexes()` method to list all indexes on the `products` collection:
+The cube is constructed using six divs, each representing a face.  These divs are absolutely positioned within a parent container.  `transform-style: preserve-3d;` is crucial on the parent to ensure that the 3D transformations are correctly applied to the child elements.  Each face is rotated and translated to its correct position in 3D space.  The `animation` property applies a continuous rotation, creating the 3D effect.  We'll use linear gradients for simple coloring of the faces.
 
 
-```javascript
-use your_database_name; // Replace with your database name
-db.products.getIndexes();
+**Full Code:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>3D Rotating Cube</title>
+<style>
+.cube {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: rotate 8s linear infinite;
+}
+
+.face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2em;
+  color: white;
+}
+
+.face.front {
+  background-color: lightblue;
+  transform: translateZ(50px);
+}
+
+.face.back {
+  background-color: lightgreen;
+  transform: translateZ(-50px) rotateY(180deg);
+}
+
+.face.right {
+  background-color: lightcoral;
+  transform: translateX(50px) rotateY(90deg);
+}
+
+.face.left {
+  background-color: lightyellow;
+  transform: translateX(-50px) rotateY(-90deg);
+}
+
+.face.top {
+  background-color: lightpink;
+  transform: translateY(-50px) rotateX(90deg);
+}
+
+.face.bottom {
+  background-color: lightgray;
+  transform: translateY(50px) rotateX(-90deg);
+}
+
+@keyframes rotate {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="cube">
+  <div class="face front">Front</div>
+  <div class="face back">Back</div>
+  <div class="face right">Right</div>
+  <div class="face left">Left</div>
+  <div class="face top">Top</div>
+  <div class="face bottom">Bottom</div>
+</div>
+
+</body>
+</html>
 ```
 
-This will output a JSON array detailing all indexes, including their names and usage statistics (if available through monitoring tools). Look for indexes with low usage based on your monitoring data or profiling. In this example, let's assume the `description` index is underutilized.
+**Explanation:**
+
+* **`transform-style: preserve-3d;`**: This is applied to the parent `.cube` element. It's essential for rendering the child elements in 3D space. Without this, the cube would appear flat.
+
+* **`translateZ()`**: This function moves the faces along the z-axis, creating depth. Positive values move the face towards the viewer, while negative values move it away.
+
+* **`rotateY()` and `rotateX()`**: These functions rotate the faces around the y-axis (vertical) and x-axis (horizontal) respectively.  This positions the faces correctly to form a cube.
+
+* **`@keyframes rotate`**: This defines the animation that rotates the cube continuously around the y-axis.
+
+* **Face Classes:** Each face has a class (e.g., `.front`, `.back`) that allows for individual styling and positioning.
 
 
-**Step 2: Drop the Unnecessary Index**
+**Links to Resources to Learn More:**
 
-Use the `db.collection.dropIndex()` method to remove the `description` index:
-
-
-```javascript
-db.products.dropIndex( { description: 1 } );
-```
-
-This command drops the index on the `description` field.  The `1` indicates ascending order; if it were a compound index, you'd specify the fields accordingly (e.g., `{ description: 1, category: -1 }`).  If you are unsure of the exact index key, you can drop by name using the index name retrieved from `db.collection.getIndexes()`.
-
-
-**Step 3: Monitor Performance**
-
-After dropping the index, carefully monitor write performance metrics using MongoDB monitoring tools or your application's logging. Observe write latency, throughput, and storage space utilization. If performance improves, the index removal was beneficial. If not, you might need to revisit your indexing strategy.
-
-
-**Step 4: Optimize Remaining Indexes (Optional)**
-
-Review the remaining indexes to ensure they are optimally designed. Consider using compound indexes for queries involving multiple fields.  Avoid over-indexing; indexes only benefit frequently queried fields. If possible, choose suitable index types (like hashed indexes for equality searches).
-
-## Explanation
-
-Over-indexing is a common pitfall.  While indexes speed up reads, they incur overhead during writes.  The cost of maintaining indexes increases linearly with the number of indexes, and this overhead can significantly outweigh the benefits if the indexes aren't heavily used.  Identifying and dropping underutilized indexes improves write performance, reduces storage space, and boosts overall database efficiency.  A carefully planned indexing strategy that focuses on frequently used query patterns is crucial for optimal MongoDB performance.
-
-## External References
-
-* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
-* **MongoDB Performance Tuning Guide:** [https://www.mongodb.com/docs/manual/administration/performance/](https://www.mongodb.com/docs/manual/administration/performance/)
-* **Monitoring MongoDB Performance:**  [https://www.mongodb.com/docs/manual/administration/monitoring/](https://www.mongodb.com/docs/manual/administration/monitoring/) (Choose the version relevant to your MongoDB setup).
+* **MDN Web Docs on CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS-Tricks on 3D Transforms:** [Search "CSS 3D Transforms" on css-tricks.com](https://css-tricks.com/)  (Many tutorials exist on this site)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

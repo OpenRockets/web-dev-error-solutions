@@ -1,1 +1,1 @@
-Overusing MongoDB Indexes: A Performance Bottleneck
+CSS Challenge:  3D Rotating Cube with CSS Animations
