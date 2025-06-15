@@ -1,12 +1,11 @@
 # 🐞 CSS Challenge:  Multi-level Nested Accordion
 
 
-This challenge involves creating a multi-level nested accordion menu using CSS.  We'll focus on a clean, modern design using only CSS (no JavaScript).  This example utilizes CSS variables for easier customization.
-
+This challenge involves creating a multi-level nested accordion using CSS.  The accordion will allow users to expand and collapse sections, with subsections nested within each section.  We'll be using pure CSS3 for styling, avoiding JavaScript for the dynamic behavior.
 
 **Description of the Styling:**
 
-The accordion will feature a hierarchical structure.  Each accordion item will have a title that, when clicked, reveals its content.  Nested accordions will be indented to clearly show the hierarchy. We aim for a visually appealing and user-friendly experience with smooth transitions.  The styling will be clean and minimal, emphasizing functionality.
+The accordion will have a clean and modern look. Each section and subsection will be clearly delineated using borders, padding, and background colors. The section titles will be visually distinct, perhaps using a bolder font weight or a different color.  The animation of expanding and collapsing will be smooth and unobtrusive.  We'll aim for a design that's accessible and works well on different screen sizes.
 
 **Full Code:**
 
@@ -16,101 +15,84 @@ The accordion will feature a hierarchical structure.  Each accordion item will h
 <head>
 <title>Nested Accordion</title>
 <style>
-:root {
-  --accordion-bg: #f0f0f0;
-  --accordion-title-bg: #ddd;
-  --accordion-title-color: #333;
-  --accordion-content-bg: #fff;
-  --accordion-content-padding: 15px;
-  --accordion-arrow-color: #555;
+body {
+  font-family: sans-serif;
 }
 
 .accordion {
-  background-color: var(--accordion-bg);
-  border-radius: 5px;
-  overflow: hidden;
+  width: 300px;
+  border: 1px solid #ccc;
 }
 
 .accordion-item {
   border-bottom: 1px solid #ccc;
 }
 
-.accordion-title {
-  background-color: var(--accordion-title-bg);
-  color: var(--accordion-title-color);
-  padding: 10px 15px;
+.accordion-header {
+  background-color: #f0f0f0;
+  padding: 10px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.accordion-title::before {
-  content: '>';
-  font-size: 14px;
-  transition: transform 0.2s ease-in-out;
-  color: var(--accordion-arrow-color);
-}
-
-.accordion-title.active::before {
-  transform: rotate(90deg);
+  font-weight: bold;
 }
 
 .accordion-content {
-  background-color: var(--accordion-content-bg);
-  padding: var(--accordion-content-padding);
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease-in-out;
+  padding: 10px;
+  display: none; /* Initially hidden */
+  overflow: hidden; /* Prevents content from overflowing while animating */
+  transition: max-height 0.3s ease-out; /* Smooth animation */
 }
 
 .accordion-item.active .accordion-content {
-  max-height: 200px; /* Adjust as needed */
+  display: block;
+  max-height: 500px; /* Adjust as needed */
 }
 
-.accordion-item.active .accordion-title{
-  background-color: #d6d6d6;
-}
-
+/* Nested Accordion Styling */
 .nested-accordion {
   margin-left: 20px;
 }
+
+.nested-accordion .accordion-item {
+  border-bottom: 1px solid #eee;
+}
+
 </style>
 </head>
 <body>
 
 <div class="accordion">
   <div class="accordion-item">
-    <div class="accordion-title">Item 1</div>
+    <div class="accordion-header">Section 1</div>
     <div class="accordion-content">
-      Content 1
-      <div class="accordion nested-accordion">
+      Content of Section 1.
+      <div class="nested-accordion">
         <div class="accordion-item">
-          <div class="accordion-title">Nested Item 1.1</div>
-          <div class="accordion-content">Nested Content 1.1</div>
+          <div class="accordion-header">Subsection 1.1</div>
+          <div class="accordion-content">Content of Subsection 1.1</div>
         </div>
         <div class="accordion-item">
-          <div class="accordion-title">Nested Item 1.2</div>
-          <div class="accordion-content">Nested Content 1.2</div>
+          <div class="accordion-header">Subsection 1.2</div>
+          <div class="accordion-content">Content of Subsection 1.2</div>
         </div>
       </div>
     </div>
   </div>
   <div class="accordion-item">
-    <div class="accordion-title">Item 2</div>
-    <div class="accordion-content">Content 2</div>
+    <div class="accordion-header">Section 2</div>
+    <div class="accordion-content">Content of Section 2.</div>
   </div>
 </div>
 
 <script>
-const accordions = document.querySelectorAll('.accordion-title');
-accordions.forEach(accordion => {
-  accordion.addEventListener('click', () => {
-    const item = accordion.parentElement;
+const accordionHeaders = document.querySelectorAll('.accordion-header');
+accordionHeaders.forEach(header => {
+  header.addEventListener('click', () => {
+    const item = header.parentElement;
     item.classList.toggle('active');
   });
 });
 </script>
+
 
 </body>
 </html>
@@ -118,18 +100,14 @@ accordions.forEach(accordion => {
 
 **Explanation:**
 
-1.  **CSS Variables:**  The `:root` selector defines CSS variables for easier customization of colors, padding, etc.
-2.  **Accordion Structure:**  The HTML uses nested `<div>` elements to represent the accordion items and their content.  The `nested-accordion` class provides visual indentation for nested accordions.
-3.  **CSS Transitions:**  `transition` property is used for smooth opening and closing of accordion content.
-4.  **JavaScript (minimal):** A small JavaScript snippet adds the click functionality to toggle the `active` class, controlling the visibility of the content.  The `max-height` CSS property is used to show/hide the content.
-5. **Styling:** The CSS handles the visual appearance of titles, backgrounds, and content using the defined variables and classes.
-
+The CSS uses the `display: none;` and `max-height` properties combined with a transition for smooth animation. The JavaScript adds event listeners to the header elements to toggle the `active` class, which controls the visibility of the content.  The nested accordion structure is achieved by simply embedding another `accordion` within a section's content. The key is the use of CSS to style the nested items appropriately.
 
 **Links to Resources to Learn More:**
 
-*   **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-*   **CSS Variables:** [MDN Web Docs - CSS Variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
-*   **Advanced CSS Techniques:**  Search for "Advanced CSS Layout Techniques" or "CSS Animations" on your favorite learning platform.
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **Accordion Pattern:** [Various articles on accordion implementations on sites like CSS-Tricks](https://css-tricks.com/) (Search for "CSS accordion")
+
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
