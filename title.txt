@@ -1,1 +1,1 @@
-CSS Challenge:  Centered, Responsive Card with Gradient Background
+Overcoming the "Too Many Indexes" Problem in MongoDB
