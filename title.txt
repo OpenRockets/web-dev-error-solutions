@@ -1,1 +1,1 @@
-CSS Challenge:  Animated Rotating Square
+MongoDB: Overusing Indexes Leads to Performance Degradation
