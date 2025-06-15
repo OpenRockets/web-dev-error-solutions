@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Responsive Navigation Bar with Submenus
+
 
 This challenge focuses on creating a responsive navigation bar with dropdown submenus using CSS.  The navigation bar should adapt smoothly to different screen sizes, ensuring a good user experience on both desktop and mobile devices. We'll use plain CSS for this example, focusing on fundamental concepts.
 
