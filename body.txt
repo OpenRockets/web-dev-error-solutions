@@ -1,71 +1,90 @@
 
-## Description of the Error
+This challenge involves creating a responsive pricing table using Tailwind CSS.  The table will feature three different pricing plans (Basic, Pro, and Enterprise), each with its own set of features and pricing.  The design should be clean, visually appealing, and adapt seamlessly to different screen sizes.  We'll leverage Tailwind's utility classes for efficient and rapid styling.
 
-A common problem in MongoDB, especially in larger applications, is having too many indexes. While indexes dramatically speed up query performance, an excessive number can lead to several performance bottlenecks:
+**Description of the Styling:**
 
-* **Slow write operations:**  Every write operation (insert, update, delete) requires updating all relevant indexes. With too many indexes, write performance can degrade significantly.
-* **Increased storage overhead:** Indexes consume disk space.  Many indexes will lead to a substantial increase in storage requirements.
-* **Slower query optimization:** The query optimizer needs to consider all indexes when choosing the best plan.  Too many options can lead to increased query planning time.
+The pricing table will be composed of three cards, each representing a pricing plan.  Each card will include:
 
-This problem often manifests itself as unexpectedly slow write speeds, increased storage costs, and queries that take longer than expected, even when indexes appear to be defined correctly.  You might see general performance degradation without any obvious errors in your logs.
+* **Plan Name:**  Displayed prominently at the top.
+* **Price:**  Clearly visible, perhaps with a currency symbol.
+* **Feature List:**  A bulleted list of included features.
+* **Button:** A call-to-action button (e.g., "Subscribe Now").
 
-
-## Fixing the "Too Many Indexes" Problem Step-by-Step
-
-This example focuses on identifying and removing unnecessary indexes.  Assume you have a `products` collection with indexes on `category`, `price`, and `name`.  Let's say performance tests indicate the index on `name` is rarely used.
+The design will utilize a consistent color scheme and spacing to maintain a clean and professional look.  Responsiveness will be achieved using Tailwind's built-in responsive modifiers.
 
 
-**Step 1: Identify Underutilized Indexes**
+**Full Code:**
 
-We'll use the MongoDB profiler to determine index usage.  Enable profiling (if not already enabled):
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Pricing Table</title>
+</head>
+<body class="bg-gray-100">
 
-```bash
-db.setProfilingLevel(2)
+<div class="container mx-auto p-8">
+  <h1 class="text-3xl font-bold text-center mb-8">Choose Your Plan</h1>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+    <!-- Basic Plan -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-bold mb-4">Basic</h2>
+      <p class="text-4xl font-bold text-blue-500 mb-4">$9<span class="text-lg">/mo</span></p>
+      <ul class="list-disc list-inside mb-4">
+        <li>10GB Storage</li>
+        <li>1 User</li>
+        <li>Basic Support</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Subscribe</button>
+    </div>
+
+    <!-- Pro Plan -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-bold mb-4">Pro</h2>
+      <p class="text-4xl font-bold text-blue-500 mb-4">$49<span class="text-lg">/mo</span></p>
+      <ul class="list-disc list-inside mb-4">
+        <li>100GB Storage</li>
+        <li>5 Users</li>
+        <li>Priority Support</li>
+        <li>Advanced Features</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Subscribe</button>
+    </div>
+
+    <!-- Enterprise Plan -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-bold mb-4">Enterprise</h2>
+      <p class="text-4xl font-bold text-blue-500 mb-4">$99<span class="text-lg">/mo</span></p>
+      <ul class="list-disc list-inside mb-4">
+        <li>Unlimited Storage</li>
+        <li>Unlimited Users</li>
+        <li>Dedicated Support</li>
+        <li>All Features</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Subscribe</button>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-Run your application for a period (e.g., a few hours) to gather profiling data.
+**Explanation:**
+
+The code uses Tailwind's grid system (`grid grid-cols-1 md:grid-cols-3`) to create a responsive layout.  On smaller screens (mobile), the cards stack vertically. On medium and larger screens (desktops), they arrange themselves in three columns.  Other Tailwind classes handle styling elements like background colors, shadows, padding, margins, text styles, and button styles.  The responsiveness is achieved through Tailwind's responsive modifiers (e.g., `md:` prefix).
 
 
-**Step 2: Analyze Profiling Data**
+**Links to Resources to Learn More:**
 
-Query the `system.profile` collection to find the usage of each index.  Look for indexes that have a very low number of uses compared to others.  For instance, this query searches for profile entries related to the `products` collection and displays their execution stats including which index was used:
-
-```javascript
-db.system.profile.find({ns: "your_database.products"}, {explain:1,ns:1, millis:1, command:1, op:1, key:1}).sort({ts:-1}).limit(100)
-```
-Replace `your_database` with the name of your database.
-
-**Step 3: Remove Unnecessary Indexes**
-
-Based on your analysis from step 2, you can identify indexes that are rarely used.  Let's say the index on `name` is rarely used. Remove it using the following command:
-
-```javascript
-db.products.dropIndex({ name: 1 })
-```
-
-**Step 4: Monitor Performance**
-
-After removing the index, monitor your application's performance (write speed, storage usage, query times) to ensure the improvement.  You may need to run more extensive performance testing to confirm the impact.
-
-
-**Step 5 (Optional): Optimize Existing Indexes**
-
-Review remaining indexes to ensure they're efficient.  For example, consider compound indexes if multiple fields are frequently used together in queries. For example, to create a compound index on `category` and `price`:
-
-```javascript
-db.products.createIndex({ category: 1, price: 1 })
-```
-
-## Explanation
-
-The key to solving "too many indexes" is to strike a balance between fast query retrieval and acceptable write performance. Removing underutilized indexes directly reduces write overhead and storage usage while potentially having a minimal impact on query speed for queries that don't rely on the removed index.  Analyzing profiling data is critical for making informed decisions on which indexes to keep and which to remove. Regularly reviewing your indexes and their usage is a crucial part of maintaining efficient MongoDB performance.
-
-
-## External References
-
-* [MongoDB Documentation on Indexing](https://www.mongodb.com/docs/manual/core/index-creation/)
-* [MongoDB Documentation on Profiling](https://www.mongodb.com/docs/manual/tutorial/profile-operations/)
-* [Understanding MongoDB Query Optimization](https://www.mongodb.com/blog/post/understanding-mongodb-query-optimization)
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
+* **Tailwind CSS Cheat Sheet:** [Numerous cheat sheets available via Google search](Search "Tailwind CSS Cheat Sheet")
+* **Learn CSS Grid:** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
