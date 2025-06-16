@@ -1,1 +1,1 @@
-CSS Challenge:  The "Shimmering Card"
+Overcoming MongoDB's "Too many open files" Error
