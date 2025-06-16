@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Navigation Bar with a Subtle Hover Effect
+Overusing MongoDB Indexes: A Performance Bottleneck
