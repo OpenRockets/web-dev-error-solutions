@@ -1,71 +1,81 @@
 
-## Description of the Error
+This challenge focuses on styling a multi-level nested ordered list using CSS.  We'll achieve a visually appealing and easily readable hierarchy using indentation and distinct styling for each level.  We'll be utilizing standard CSS for this example, but the principles can be easily adapted to frameworks like Tailwind CSS.
 
-Over-indexing in MongoDB can lead to significant performance degradation, despite the intention to improve query speeds. While indexes dramatically speed up queries that utilize them, creating too many indexes, or indexes on fields not frequently used in queries, can slow down write operations considerably.  This is because every write operation requires updating all relevant indexes, and excessive indexing increases this overhead.  This can manifest as slow insertion, update, and delete operations, ultimately impacting application performance.  The application might appear unresponsive or exhibit significant latency.  You might see slow response times even for simple write operations, and monitoring tools might reveal high write times and/or high disk I/O.
+## Description of the Styling
 
-## Fixing Step-by-Step
+The goal is to create a nested ordered list where each level is visually distinct.  We will use padding and list-style-type to create a clear hierarchy.  The first level will have a larger font size and bolder text. Subsequent levels will be progressively indented and use a different list style type.
 
-This example demonstrates fixing over-indexing in a collection called "products" with the following schema:
+## Full Code
 
-```javascript
-{
-  "productName": String,
-  "category": String,
-  "price": Number,
-  "description": String,
-  "supplier": String,
-  "stockQuantity": Number,
-  "lastUpdated": Date
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nested Ordered List</title>
+<style>
+ol {
+  list-style-type: decimal; /* Set default list style */
+  margin-left: 0; /* Reset default margin */
+  padding-left: 20px; /* Add padding for indentation */
 }
+
+ol ol {
+  list-style-type: lower-alpha; /* Different style for nested lists */
+  margin-left: 20px; /* Indent nested lists further */
+  font-size: 0.9em; /* Slightly smaller font size */
+}
+
+ol ol ol {
+    list-style-type: square; /* Different style for deeply nested lists */
+    margin-left: 20px; /* Indent even further */
+    font-size: 0.8em; /* Even smaller font size */
+    font-style: italic; /* Adds italic style for distinction */
+}
+
+ol li {
+  margin-bottom: 5px; /* Add space between list items */
+}
+
+ol > li { /* Style only the top-level list items */
+  font-weight: bold; /* Make top-level items bold */
+  font-size: 1.1em; /* Make top-level items slightly larger */
+}
+</style>
+</head>
+<body>
+
+<h1>Main Topics</h1>
+<ol>
+  <li>Introduction to Programming</li>
+  <li>Data Structures and Algorithms
+    <ol>
+      <li>Arrays</li>
+      <li>Linked Lists
+        <ol>
+          <li>Singly Linked Lists</li>
+          <li>Doubly Linked Lists</li>
+        </ol>
+      </li>
+      <li>Trees</li>
+    </ol>
+  </li>
+  <li>Object-Oriented Programming</li>
+</ol>
+
+</body>
+</html>
 ```
-
-Let's assume indexes exist on `productName`, `category`, `price`, `supplier`, and `stockQuantity`,  but only queries on `productName` and `category` are frequent.  We need to remove the unnecessary indexes.
-
-
-**Step 1: Identify Unnecessary Indexes:**
-
-Use the `db.collection.getIndexes()` method to list all indexes on the "products" collection.  This will show you the index keys and their background status.
-
-```javascript
-use myDatabase; // Replace myDatabase with your database name
-db.products.getIndexes()
-```
-
-**Step 2: Remove Unnecessary Indexes:**
-
-Based on the output from Step 1, identify indexes not used frequently in queries (e.g., indexes on `price`, `supplier`, `stockQuantity`, `lastUpdated`). Use the `db.collection.dropIndex()` method to remove them.
-
-```javascript
-db.products.dropIndex("price_1"); // Replace with the actual index name from step 1
-db.products.dropIndex("supplier_1"); // Replace with the actual index name from step 1
-db.products.dropIndex("stockQuantity_1"); // Replace with the actual index name from step 1
-db.products.dropIndex("lastUpdated_1"); // Replace with the actual index name from step 1
-```
-
-**Step 3: Verify Index Removal:**
-
-After dropping the indexes, re-run `db.collection.getIndexes()` to confirm that the unnecessary indexes have been removed.
-
-```javascript
-db.products.getIndexes()
-```
-
-
-**Step 4: Monitor Performance:**
-
-Monitor your write operations after removing unnecessary indexes. Observe improvements in insertion, update, and deletion speeds.  Use MongoDB's monitoring tools or application performance monitoring tools to track relevant metrics.
-
 
 ## Explanation
 
-Over-indexing impacts write performance because each write requires updating all relevant indexes.  The more indexes you have, the more overhead is incurred during write operations. This overhead can outweigh the benefits of faster read operations, particularly if those indexes are rarely used.  Careful consideration of query patterns is crucial when designing an index strategy.  A well-planned indexing strategy focuses on frequently used query patterns, avoiding unnecessary indexes that could slow down your database.
+The CSS code uses nested selectors (`ol ol`, `ol ol ol`) to target different levels of the nested list. Each level gets a different `list-style-type`, increased indentation using `margin-left`, and potentially adjusted font size and style for better readability.  The `> li` selector targets only the direct children of the `<ol>` element, allowing specific styling of the top-level list items.  Adjust the `margin-left` and `font-size` values to fine-tune the appearance as needed.
 
 
-## External References
+## Resources to Learn More
 
-* [MongoDB Indexing Documentation](https://www.mongodb.com/docs/manual/indexes/)
-* [MongoDB Performance Tuning](https://www.mongodb.com/docs/manual/administration/performance/)
-* [Understanding MongoDB Index Usage](https://www.mongodb.com/blog/post/understanding-mongodb-index-usage)
+* **MDN Web Docs - CSS Lists:** [https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type](https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type)  - Learn about different list-style types and how to use them.
+* **MDN Web Docs - CSS Selectors:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors) -  Understand how CSS selectors work to target specific elements.
+* **W3Schools CSS Tutorial:** [https://www.w3schools.com/css/](https://www.w3schools.com/css/) - A comprehensive CSS tutorial covering various aspects of styling web pages.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
