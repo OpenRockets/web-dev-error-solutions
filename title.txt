@@ -1,1 +1,1 @@
-Overcoming MongoDB's "Exceeded time limit" Error During a `find()` Operation
+CSS Challenge:  The "Shimmering Card"
