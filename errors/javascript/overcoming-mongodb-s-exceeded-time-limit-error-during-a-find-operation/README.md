@@ -1,3 +1,5 @@
+# 🐞 Overcoming MongoDB's "Exceeded time limit" Error During a `find()` Operation
+
 
 This document addresses a common problem encountered when working with MongoDB: the "Exceeded time limit" error during a `find()` operation. This typically happens when a query takes longer than the MongoDB server's configured `maxTimeMS` setting.  This can be due to several factors, including inefficient queries, lack of appropriate indexes, or simply a very large dataset.
 
