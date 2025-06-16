@@ -1,1 +1,1 @@
-CSS Challenge:  The "Shimmering Card" Effect
+Overcoming the "Too Many Indexes" Problem in MongoDB
