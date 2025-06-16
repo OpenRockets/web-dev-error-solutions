@@ -1,62 +1,106 @@
 
-## Description of the Error
+This challenge involves creating a nested, multi-level list where each parent list item acts as an accordion, revealing or hiding its child list items upon clicking. We'll use CSS3 for the styling and achieve the accordion effect without JavaScript.
 
-A common problem in MongoDB development is encountering performance degradation despite having indexes. This often stems from having *too many* indexes. While indexes speed up queries, excessive indexes can negatively impact write performance (insertion, update, deletion operations).  Each index adds overhead during write operations, as MongoDB needs to update all relevant indexes whenever data is modified.  This overhead can significantly slow down write performance, potentially outweighing the benefits of faster reads.  The database can become sluggish, and applications relying on it may experience noticeable delays.  The `mongostat` utility might reveal slow write operations.
+**Description of the Styling:**
 
-## Fixing the "Too Many Indexes" Problem Step-by-Step
+The styling will focus on creating a clean and visually appealing nested list. We'll use a subtle background color to distinguish list items, padding for readability, and a plus/minus icon to indicate whether a section is expanded or collapsed. The accordion effect will be achieved by using CSS to toggle the height of the child list elements.  We'll strive for a modern and responsive design.
 
-This example demonstrates how to identify and address excessive indexes using MongoDB Compass (GUI) and the `mongo` shell (CLI).
+**Full Code (CSS only):**
 
-**Step 1: Identify Excessive Indexes (MongoDB Compass)**
+```css
+/* Styles for the overall list */
+.accordion-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px;
+}
 
-1. Open MongoDB Compass and connect to your database.
-2. Navigate to the collection experiencing performance issues.
-3. Click on the "Indexes" tab.
-4. Review the list of existing indexes.  Look for indexes that are rarely or never used.  Consider the following:
-    * **Redundant indexes:**  Do you have multiple indexes covering similar query patterns?
-    * **Unused indexes:** Are there indexes that haven't been utilized in recent queries (check your query logs)?
-    * **Overly specific indexes:** Are there compound indexes with too many fields, leading to high storage overhead and potentially low selectivity?
+.accordion-list li {
+  background-color: #f4f4f4;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+  padding: 10px;
+  cursor: pointer;
+}
 
-**Step 2: Identify Excessive Indexes (MongoDB Shell)**
+.accordion-list li > ul {
+  list-style: disc;
+  padding-left: 20px;
+  max-height: 0; /* Initially collapsed */
+  overflow: hidden;
+  transition: max-height 0.3s ease-out; /* Smooth transition */
+}
 
-1. Connect to your MongoDB instance using the mongo shell: `mongo <database_name>`
-2. List all indexes for a specific collection:  `db.<collection_name>.getIndexes()`
-3. Analyze the output.  Use the `db.collection.stats()` command to see storage size of the collection and indexes, helping you to identify indexes that take up significant space and are infrequently used.
+/* Style for the plus/minus icon */
+.accordion-list li::before {
+  content: "+";
+  display: inline-block;
+  width: 20px;
+  text-align: center;
+  margin-right: 10px;
+}
 
-**Step 3: Drop Unnecessary Indexes (MongoDB Shell)**
+/* Style when list item is expanded */
+.accordion-list li.active > ul {
+  max-height: 200px; /* Adjust as needed */
+}
 
-Once you've identified indexes to remove, use the following command to drop them:
+.accordion-list li.active::before {
+  content: "-";
+}
 
-```javascript
-db.<collection_name>.dropIndex("<index_name>")
+
+/* Responsive adjustments (optional) */
+@media (max-width: 768px) {
+  .accordion-list li {
+    font-size: 14px;
+  }
+}
 ```
 
-Replace `<collection_name>` with the name of your collection and `<index_name>` with the name of the index to drop.  For example:
+**HTML Structure (Example):**
 
-```javascript
-db.users.dropIndex("email_1_username_1") // Drops the index named "email_1_username_1"
+```html
+<ul class="accordion-list">
+  <li>Item 1
+    <ul>
+      <li>Subitem 1.1</li>
+      <li>Subitem 1.2</li>
+    </ul>
+  </li>
+  <li>Item 2
+    <ul>
+      <li>Subitem 2.1</li>
+      <li>Subitem 2.2
+        <ul>
+          <li>Sub-subitem 2.2.1</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Item 3</li>
+</ul>
+
+<script>
+  const accordions = document.querySelectorAll('.accordion-list li');
+  accordions.forEach(item => {
+    item.addEventListener('click', () => {
+      item.classList.toggle('active');
+    });
+  });
+</script>
 ```
 
-You can also drop indexes based on their keys. For example, to drop an index on field "email":
+**Explanation:**
 
-```javascript
-db.users.dropIndex({email: 1})
-```
+The CSS uses `max-height` and `transition` to create the accordion effect.  Initially, the child `<ul>` elements have `max-height: 0;` making them collapsed.  When a list item is clicked, JavaScript toggles the `active` class, which changes the `max-height` to a defined value, smoothly revealing the child list items. The `::before` pseudo-element adds the plus/minus icon.  The provided JavaScript is simple and adds the 'active' class on click.  This can be expanded upon for more complex behavior if needed.
 
-**Step 4: Monitor Performance (MongoDB Shell & Compass)**
 
-After dropping indexes, monitor your database's performance using `mongostat` (command-line) or the performance monitoring tools within MongoDB Compass to verify that write performance has improved.  Use `db.collection.stats()` to check collection size to observe the index size reduction.
+**Links to Resources to Learn More:**
 
-## Explanation
-
-The root cause is the trade-off between read and write performance. While indexes speed up queries (reads), they add overhead to write operations.  Each index must be updated for every insert, update, or delete.  Too many indexes, especially those rarely used or redundant, cause significant write-performance bottlenecks without providing commensurate read-speed improvements.  Identifying and removing unused or redundant indexes optimizes the balance, leading to better overall database performance.
-
-## External References
-
-* [MongoDB Indexing Documentation](https://www.mongodb.com/docs/manual/indexes/)
-* [MongoDB Performance Tuning Guide](https://www.mongodb.com/docs/manual/tutorial/optimize-performance/)
-* [Understanding `mongostat`](https://www.mongodb.com/docs/manual/reference/program/mongostat/) (for monitoring performance)
-* [MongoDB Compass Documentation](https://www.mongodb.com/docs/compass/current/) (if using Compass)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Pseudo-elements:** [MDN Web Docs - Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
+* **JavaScript Event Listeners:** [MDN Web Docs - Event Listeners](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
