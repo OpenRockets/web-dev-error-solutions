@@ -1,1 +1,1 @@
-CSS Challenge:  Tessellating Hexagon Grid
+Overcoming "Too Many Indexes" Error in MongoDB
