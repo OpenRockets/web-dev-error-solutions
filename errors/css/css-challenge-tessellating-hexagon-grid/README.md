@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Tessellating Hexagon Grid
+
 
 This challenge involves creating a grid of hexagons that tessellate perfectly (meaning they fit together without gaps). We'll use CSS Grid for layout and some clever transformations to achieve the hexagonal shape.  This example uses pure CSS, but could easily be adapted to use a CSS framework like Tailwind CSS.
 
