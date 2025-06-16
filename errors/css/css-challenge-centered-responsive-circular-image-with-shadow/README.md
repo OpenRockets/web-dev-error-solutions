@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Centered, Responsive Circular Image with Shadow
+
 
 This challenge focuses on creating a circular image that is perfectly centered on the page, responsive to different screen sizes, and has a subtle drop shadow. We'll achieve this using pure CSS, leveraging techniques applicable to both CSS3 and Tailwind CSS.
 
