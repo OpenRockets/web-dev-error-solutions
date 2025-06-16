@@ -1,1 +1,1 @@
-Overcoming MongoDB's "Too Many Opened Cursors" Error
+CSS Challenge:  Reproducing a Modern Card Component
