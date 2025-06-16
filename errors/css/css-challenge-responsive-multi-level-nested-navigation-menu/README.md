@@ -1,24 +1,31 @@
-# 🐞 CSS Challenge:  Responsive Multi-level Nested Navigation Menu
+# 🐞 CSS Challenge: Responsive Multi-level Nested Navigation Menu
 
 
-This challenge involves creating a responsive, multi-level nested navigation menu using CSS (specifically CSS3) and optionally Tailwind CSS for utility classes. The goal is to build a menu that gracefully adapts to different screen sizes, displaying sub-menus on hover or click depending on the device.  We'll focus on a clean, modern design.
+This challenge focuses on creating a responsive, multi-level nested navigation menu using CSS.  The goal is to build a menu that gracefully collapses and expands its sub-menus on smaller screens, offering a clean and intuitive user experience.  We'll utilize standard CSS for this implementation, avoiding any CSS frameworks like Tailwind CSS to emphasize fundamental CSS principles.
 
+## Description of the Styling
 
-## Styling Description
+The navigation menu will consist of a main navigation bar containing several top-level menu items. Each top-level item can have multiple sub-items, creating a nested structure.  The styling should include:
 
-The navigation menu will be horizontally oriented on larger screens and will collapse into a hamburger menu on smaller screens.  Sub-menus will appear on hover (desktop) or on click (mobile) and be positioned to avoid overlapping the main menu items. We'll aim for a smooth, user-friendly experience.  We will use a dark theme for contrast.
+* **Top-Level Menu:**  A horizontal list of menu items with clear visual separation between them.
+* **Sub-Menus:**  Sub-menus should appear on hover (or click on smaller screens) and be visually distinct from the top-level menu.
+* **Responsiveness:**  The menu should adapt to different screen sizes, collapsing sub-menus on smaller screens to avoid cluttering the interface.  A hamburger menu icon will be used for smaller screen sizes to toggle the visibility of the menu.
 
+## Full Code
 
-## Full Code (CSS3):
-
-```css
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responsive Nested Navigation Menu</title>
+<style>
 nav {
   background-color: #333;
   overflow: hidden;
 }
 
 nav ul {
-  list-style: none;
+  list-style-type: none;
   margin: 0;
   padding: 0;
 }
@@ -27,7 +34,7 @@ nav li {
   float: left;
 }
 
-nav a {
+nav li a {
   display: block;
   color: white;
   text-align: center;
@@ -35,14 +42,14 @@ nav a {
   text-decoration: none;
 }
 
-nav a:hover {
+nav li a:hover {
   background-color: #ddd;
   color: black;
 }
 
-nav ul ul {
-  display: none; /* Hidden by default */
-  position: absolute;
+nav li ul {
+  display: none; /* Initially hide sub-menus */
+  position: absolute; /* Position sub-menus absolutely */
   background-color: #333;
 }
 
@@ -50,22 +57,77 @@ nav li:hover > ul {
   display: block; /* Show sub-menu on hover */
 }
 
-/* Responsive Design */
+/* Responsiveness */
 @media screen and (max-width: 600px) {
   nav li {
-    float: none;
+    float: none; /* Stack menu items vertically */
   }
-
-  nav ul ul {
-    position: static;
+  nav li ul {
+    position: static; /* No longer need absolute positioning */
   }
+  nav li:hover > ul { /* Remove hover effect on small screens */
+    display: none;
+  }
+    nav ul{
+        display:none;
+    }
+    nav #menuToggle{
+        display:block;
+        width:30px;
+        height:30px;
+        cursor:pointer;
+        position:relative;
+        background-color:transparent;
+        border:none;
+    }
+    #menuToggle input{
+        display:block;
+        width:40px;
+        height:32px;
+        position:absolute;
+        top: -7px;
+        left: -5px;
+        cursor:pointer;
+        opacity:0; /* hide this */
+    }
+    #menuToggle span{
+        display:block;
+        width: 30px;
+        height: 4px;
+        margin-bottom: 5px;
+        position: relative;
+        background: #fff;
+        border-radius: 3px;
+        z-index: 1;
+        transform: rotate(0);
+        transition: .25s ease-in-out;
+    }
+    #menuToggle span:nth-child(2){
+        margin-top: -5px;
+        width: 20px;
+        margin-left: 5px;
+    }
+    #menuToggle input:checked ~ span{
+        transform:rotate(45deg);
+        background: #2980b9;
+    }
+    #menuToggle input:checked ~ span:nth-child(2){
+        transform:rotate(-45deg);
+        background: #2980b9;
+        margin-left: 0px;
+    }
+    #menuToggle input:checked ~ ul{
+        display:block;
+    }
 }
-```
+</style>
+</head>
+<body>
 
-**HTML Structure (required for the CSS to work):**
-
-```html
 <nav>
+  <input type="checkbox" id="menuToggle">
+  <label for="menuToggle"><span></span><span></span><span></span></label>
+
   <ul>
     <li><a href="#">Home</a></li>
     <li><a href="#">About</a>
@@ -75,31 +137,31 @@ nav li:hover > ul {
       </ul>
     </li>
     <li><a href="#">Services</a>
-      <ul>
-        <li><a href="#">Web Design</a></li>
-        <li><a href="#">App Development</a></li>
-      </ul>
+        <ul>
+            <li><a href="#">Service 1</a></li>
+            <li><a href="#">Service 2</a></li>
+            <li><a href="#">Service 3</a></li>
+        </ul>
     </li>
     <li><a href="#">Contact</a></li>
   </ul>
 </nav>
-```
 
+</body>
+</html>
+```
 
 ## Explanation
 
-* The base styles set up a dark background and removes default list styling.
-* `float: left` positions menu items horizontally.
-* Sub-menus are initially hidden using `display: none;` and positioned absolutely for precise placement.
-* `li:hover > ul` shows the sub-menu on hover.  The `>` ensures only direct children are targeted.
-* The media query adjusts the layout for smaller screens, removing the floats and making sub-menus appear inline.
+The CSS uses a combination of `float`, `position: absolute`, and media queries to achieve the desired effect.  The `display: none` property initially hides the sub-menus. The `:hover` pseudo-class shows the sub-menus when the parent list item is hovered over. Media queries adjust the layout for smaller screens, stacking the menu items vertically and removing the hover effect, thus employing a checkbox for toggling visibility.
 
 
-##  Resources to Learn More
+## Links to Resources to Learn More
 
-* **MDN Web Docs CSS Reference:** [https://developer.mozilla.org/en-US/docs/Web/CSS](https://developer.mozilla.org/en-US/docs/Web/CSS) –  A comprehensive resource for all things CSS.
-* **CSS Tricks:** [https://css-tricks.com/](https://css-tricks.com/) – A great website with tutorials and articles on various CSS techniques.
+* **MDN Web Docs - CSS Selectors:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
+* **MDN Web Docs - CSS Pseudo-classes:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+* **MDN Web Docs - Media Queries:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
 
 
-## Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
