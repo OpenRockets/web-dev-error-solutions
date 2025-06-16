@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Shimmering Loading Effect with Tailwind CSS
+
 
 This challenge recreates a subtle shimmering loading effect often seen on websites to indicate data is loading.  We'll achieve this using Tailwind CSS for rapid styling and CSS animations.
 
