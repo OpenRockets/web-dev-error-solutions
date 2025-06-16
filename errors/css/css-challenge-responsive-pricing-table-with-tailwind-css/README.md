@@ -1,18 +1,18 @@
 # 🐞 CSS Challenge: Responsive Pricing Table with Tailwind CSS
 
 
-This challenge involves creating a responsive pricing table using Tailwind CSS.  The table will feature three pricing plans (Basic, Pro, and Enterprise) with different features and prices, adapting gracefully to various screen sizes.  The styling will emphasize clarity, readability, and a modern aesthetic.
+This challenge involves creating a responsive pricing table using Tailwind CSS. The table should display three different pricing plans (Basic, Pro, and Premium) with clear visual distinctions and responsiveness across various screen sizes.  We'll leverage Tailwind's utility classes for efficient styling.
 
 **Description of the Styling:**
 
-The pricing table will consist of three cards, each representing a pricing plan.  These cards will be arranged horizontally on larger screens and stacked vertically on smaller screens thanks to Tailwind's responsive modifiers.  Each card will include:
+The pricing table will consist of three columns, each representing a pricing plan. Each column will contain:
 
-* A clear title (Basic, Pro, Enterprise)
-* A prominent price displayed prominently.
-* A bulleted list of features.
-* A call to action button ("Choose Plan").
+* **Plan Name:** (e.g., Basic, Pro, Premium) displayed prominently.
+* **Price:**  Clearly shown with the currency symbol.
+* **Features:** A bulleted list of features included in each plan.
+* **Button:** A call-to-action button (e.g., "Choose Plan")
 
-The styling will use Tailwind's pre-defined classes for spacing, typography, colors, and responsiveness to ensure efficient and consistent styling. We'll aim for a clean and modern look, using a subtle color palette and clear visual hierarchy.
+The styling will emphasize visual clarity and separation between plans using Tailwind's spacing, color, and border utilities.  Responsiveness will be achieved using Tailwind's breakpoint modifiers.
 
 
 **Full Code:**
@@ -21,57 +21,55 @@ The styling will use Tailwind's pre-defined classes for spacing, typography, col
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Responsive Pricing Table</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<title>Responsive Pricing Table</title>
 </head>
 <body class="bg-gray-100">
 
-  <div class="container mx-auto px-4 py-8">
-    <h2 class="text-3xl font-bold text-center mb-8">Choose Your Plan</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="container mx-auto p-8">
+  <h2 class="text-3xl font-bold mb-8 text-center">Pricing Plans</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!-- Basic Plan -->
+    <div class="bg-white shadow-md rounded-lg p-6">
+      <h3 class="text-xl font-bold mb-4">Basic</h3>
+      <p class="text-4xl font-bold mb-4 text-blue-500">$9<span class="text-base">/month</span></p>
+      <ul class="list-disc list-inside mb-6">
+        <li>10GB Storage</li>
+        <li>1 User</li>
+        <li>Basic Support</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Choose Plan</button>
+    </div>
 
-      <!-- Basic Plan -->
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-bold mb-4">Basic</h3>
-        <p class="text-4xl font-bold text-blue-500 mb-4">$9/month</p>
-        <ul class="list-disc list-inside mb-4">
-          <li>10GB Storage</li>
-          <li>1 User</li>
-          <li>Basic Support</li>
-        </ul>
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Choose Plan</button>
-      </div>
+    <!-- Pro Plan -->
+    <div class="bg-white shadow-md rounded-lg p-6">
+      <h3 class="text-xl font-bold mb-4">Pro</h3>
+      <p class="text-4xl font-bold mb-4 text-blue-500">$29<span class="text-base">/month</span></p>
+      <ul class="list-disc list-inside mb-6">
+        <li>100GB Storage</li>
+        <li>5 Users</li>
+        <li>Priority Support</li>
+        <li>Advanced Features</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Choose Plan</button>
+    </div>
 
-      <!-- Pro Plan -->
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-bold mb-4">Pro</h3>
-        <p class="text-4xl font-bold text-blue-500 mb-4">$49/month</p>
-        <ul class="list-disc list-inside mb-4">
-          <li>100GB Storage</li>
-          <li>5 Users</li>
-          <li>Priority Support</li>
-          <li>Advanced Features</li>
-        </ul>
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Choose Plan</button>
-      </div>
-
-      <!-- Enterprise Plan -->
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-bold mb-4">Enterprise</h3>
-        <p class="text-4xl font-bold text-blue-500 mb-4">$99/month</p>
-        <ul class="list-disc list-inside mb-4">
-          <li>Unlimited Storage</li>
-          <li>Unlimited Users</li>
-          <li>Dedicated Support</li>
-          <li>All Features</li>
-        </ul>
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Choose Plan</button>
-      </div>
-
+    <!-- Premium Plan -->
+    <div class="bg-white shadow-md rounded-lg p-6">
+      <h3 class="text-xl font-bold mb-4">Premium</h3>
+      <p class="text-4xl font-bold mb-4 text-blue-500">$99<span class="text-base">/month</span></p>
+      <ul class="list-disc list-inside mb-6">
+        <li>Unlimited Storage</li>
+        <li>10 Users</li>
+        <li>Dedicated Support</li>
+        <li>All Features</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Choose Plan</button>
     </div>
   </div>
+</div>
 
 </body>
 </html>
@@ -79,14 +77,12 @@ The styling will use Tailwind's pre-defined classes for spacing, typography, col
 
 **Explanation:**
 
-The code utilizes Tailwind's utility-first approach.  Classes like `grid`, `grid-cols`, `gap`, `bg-white`, `rounded-lg`, `shadow-md`, `text-xl`, `font-bold`, and many others are used to quickly style the elements.  Responsive design is achieved using the `md:grid-cols-3` modifier, which changes the layout to three columns on medium-sized screens and above.  Hover effects are easily added using `hover:bg-blue-700`.
-
+The code utilizes Tailwind's grid system (`grid`, `grid-cols`, `gap`) for layout.  Classes like `bg-white`, `shadow-md`, `rounded-lg`, `p-6`, `text-xl`, `font-bold`, etc., handle styling. Breakpoints (`md:grid-cols-3`) ensure responsiveness.  The code is well-structured and easy to understand, demonstrating the power and efficiency of Tailwind CSS.
 
 **Links to Resources to Learn More:**
 
-* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs/](https://tailwindcss.com/docs/)  -  The official Tailwind CSS documentation is an excellent resource for learning about all its features and utility classes.
-* **Tailwind CSS Cheat Sheet:** [Many available online, search "Tailwind CSS cheatsheet"] -  A cheat sheet can be helpful for quickly referencing available classes.
-* **CSS Grid Layout:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout) -  Understanding CSS Grid is crucial for creating responsive layouts efficiently.
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
+* **Tailwind CSS Cheat Sheet:** [Many available online, search "Tailwind CSS Cheat Sheet"]
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
