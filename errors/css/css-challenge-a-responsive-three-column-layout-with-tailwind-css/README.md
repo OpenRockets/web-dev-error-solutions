@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  A Responsive, Three-Column Layout with Tailwind CSS
+
 
 This challenge focuses on creating a responsive three-column layout using Tailwind CSS.  The layout should adapt gracefully to different screen sizes, maintaining a clean and visually appealing presentation.  We'll aim for a card-based design, easily adaptable for showcasing products, articles, or other content.
 
