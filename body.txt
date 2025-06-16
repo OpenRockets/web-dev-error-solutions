@@ -1,76 +1,67 @@
 
-This document addresses a common problem developers encounter in MongoDB: having too many indexes on a collection.  While indexes significantly speed up queries, an excessive number can hinder performance due to increased write operations overhead and storage consumption.
+This challenge focuses on creating an animated expanding card using pure CSS. The card will subtly expand on hover, revealing more content, providing a visually engaging user experience.  We'll be using CSS3 transitions and transforms to achieve this effect.
 
-## Description of the Error
 
-The error isn't a specific error message but rather a performance degradation.  Symptoms include:
+**Description of the Styling:**
 
-* **Slow write operations:**  Inserting, updating, and deleting documents become significantly slower.
-* **Increased storage usage:**  Each index consumes disk space.  Too many indexes lead to excessive storage usage.
-* **Query performance inconsistencies:** While some queries might be fast, others might become unexpectedly slow due to index contention.
+The card will be a simple rectangular element with a background color and padding.  On hover, the card will smoothly increase its width and height by a small percentage, creating an expanding animation.  We'll add a subtle box-shadow to enhance the 3D effect. The content inside the card will remain static; the animation focuses solely on the card's dimensions.
 
-This performance bottleneck isn't immediately obvious and often requires careful monitoring and profiling to identify.
 
-## Fixing the Problem Step-by-Step
+**Full Code:**
 
-This example assumes a collection named `products` with numerous indexes, some of which are redundant or underutilized. We will use the MongoDB shell for demonstration.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expanding Card</title>
+<style>
+.card {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 5px;
+  transition: width 0.3s ease, height 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  width: 200px;
+  height: 150px;
+}
 
-**Step 1: Identify Redundant and Unused Indexes**
+.card:hover {
+  width: 250px;
+  height: 200px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+}
 
-We begin by listing all indexes on the `products` collection:
+.card-content {
+  text-align: center;
+}
+</style>
+</head>
+<body>
 
-```javascript
-use your_database_name; // Replace with your database name
-db.products.getIndexes()
+<div class="card">
+  <div class="card-content">
+    <h3>Expanding Card</h3>
+    <p>This is some example content.</p>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-This will output a list of all indexes, including their keys and other metadata.  Carefully review this list to identify indexes that:
 
-* **Cover the same fields:**  Two indexes with similar key patterns might be redundant.
-* **Are seldom used:** Check your application logs and MongoDB profiler to find which indexes are frequently used and which are rarely, if ever, utilized.  Indexes with low utilization are candidates for removal.
+**Explanation:**
 
-**Step 2: Remove Redundant Indexes**
-
-Let's say you identify an index on `{"category": 1, "price": 1}` which is largely redundant with another index on `{"category": 1}`.  You can remove it with:
-
-```javascript
-db.products.dropIndex({"category": 1, "price": 1})
-```
-
-**Step 3: Remove Unused Indexes**
-
-If you identify an index on `{"description": 1}` that is never used in queries, you can remove it using:
-
-```javascript
-db.products.dropIndex({"description": 1})
-```
-
-**Step 4: Monitor Performance**
-
-After removing indexes, monitor the performance of your write operations and queries. Use the MongoDB profiler to track query execution times and index usage.
-
-```javascript
-db.setProfilingLevel(2) // Enables profiling at a level to capture all queries
-// Perform operations to test the impact
-db.getProfilingStatus() // Check profiling results
-db.setProfilingLevel(0) // Disable profiling once done
-```
-
-**Step 5: Consider Compound Indexes Carefully**
-
-When creating new compound indexes (indexes with multiple fields), ensure they cover the most frequently used query patterns. Creating overly broad compound indexes can negate their benefits.
+* **`.card`:** This class styles the main card element.  `background-color`, `padding`, `border-radius` provide basic styling.  `transition` is crucial; it defines the smooth animation for `width`, `height`, and `box-shadow` properties.  The initial `box-shadow` gives a subtle 3D look.
+* **`.card:hover`:** This targets the card when the mouse hovers over it.  `width` and `height` are increased, causing the expansion. The `box-shadow` is intensified on hover to emphasize the animation.
+* **`.card-content`:** This class styles the content within the card for better presentation.
 
 
-## Explanation
+**Links to Resources to Learn More:**
 
-Having too many indexes forces MongoDB to perform more write operations (updates, insertions, deletions) because it must update all indexes whenever a document is modified. This leads to write performance degradation.  Furthermore, the storage overhead increases linearly with the number of indexes.  Improper index selection and an excess of indexes overshadow the benefits of faster query times.
-
-
-## External References
-
-* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
-* **MongoDB Performance Tuning:** [https://www.mongodb.com/docs/manual/administration/performance/](https://www.mongodb.com/docs/manual/administration/performance/)
-* **MongoDB Profiler:** [https://www.mongodb.com/docs/manual/tutorial/use-profiling-to-determine-slow-queries/](https://www.mongodb.com/docs/manual/tutorial/use-profiling-to-determine-slow-queries/)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Box-Shadow:** [MDN Web Docs - CSS box-shadow](https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
