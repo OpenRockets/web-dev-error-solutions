@@ -1,66 +1,131 @@
 
-## Description of the Error
+This challenge involves creating a responsive pricing table using CSS.  We'll build a table with three pricing plans (Basic, Pro, and Premium) that adapts gracefully to different screen sizes.  We will use plain CSS for this example, focusing on flexbox for layout and media queries for responsiveness.
 
-The "too many open files" error in MongoDB occurs when your MongoDB process exhausts the operating system's limit on the number of simultaneously open files. This typically manifests as connection failures, slow performance, or complete application crashes.  The error's specifics might vary slightly depending on the operating system (e.g., "Too many open files" on Linux, equivalent errors on Windows and macOS).  This is a common problem, particularly in production environments with high-volume data access or a large number of concurrent connections.
+**Description of the Styling:**
 
-## Fixing the Error Step-by-Step
+The pricing table will feature:
 
-The solution involves increasing the operating system's file descriptor limit and, potentially, adjusting MongoDB's connection pool settings.
+* **Three columns:** One for each pricing plan (Basic, Pro, Premium).
+* **Clear visual separation:**  Each plan will have its own distinct background color and border.
+* **Responsive design:**  The table should stack vertically on smaller screens.
+* **Clean typography:**  Clear and easy-to-read text for plan names, features, and prices.
 
-**Step 1: Determine the Current Limit**
+**Full Code:**
 
-First, find out the current maximum number of open files allowed per process.  This command differs depending on your operating system:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responsive Pricing Table</title>
+<style>
+body {
+  font-family: sans-serif;
+}
 
+.pricing-table {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
 
-* **Linux/macOS:**
-```bash
-ulimit -n
+.pricing-plan {
+  width: 300px;
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.pricing-plan h2 {
+  margin-bottom: 10px;
+}
+
+.pricing-plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.pricing-plan ul {
+  list-style: none;
+  padding: 0;
+}
+
+.pricing-plan li {
+  margin-bottom: 5px;
+}
+
+/* Media Query for smaller screens */
+@media (max-width: 768px) {
+  .pricing-plan {
+    width: 100%;
+  }
+}
+
+/* Style variations for each plan */
+.basic {
+  background-color: #f0f0f0;
+}
+
+.pro {
+  background-color: #e0e0e0;
+}
+
+.premium {
+  background-color: #d0d0d0;
+}
+</style>
+</head>
+<body>
+
+<div class="pricing-table">
+  <div class="pricing-plan basic">
+    <h2>Basic</h2>
+    <p class="price">$9.99/month</p>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+    </ul>
+  </div>
+  <div class="pricing-plan pro">
+    <h2>Pro</h2>
+    <p class="price">$19.99/month</p>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+    </ul>
+  </div>
+  <div class="pricing-plan premium">
+    <h2>Premium</h2>
+    <p class="price">$29.99/month</p>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+      <li>Feature 6</li>
+    </ul>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-* **Windows:**
-```bash
-Get-WmiObject Win32_OperatingSystem | Select-Object -ExpandProperty MaxProcessMemory
-```  *(While this doesn't directly show the file descriptor limit, unusually low values suggest a potential problem. You'll need to check your Windows system settings for the specific limit)*
+**Explanation:**
 
-**Step 2: Increase the Limit (Linux/macOS)**
+The code uses flexbox to arrange the pricing plans horizontally.  The `flex-wrap: wrap;` property ensures that the plans wrap onto the next line if there isn't enough horizontal space.  The `@media` query adjusts the width of each plan to 100% on smaller screens, making the table stack vertically.  Different background colors are used to visually distinguish the plans.
 
-You'll likely need administrative privileges (e.g., using `sudo`) to modify the limit. Use the `ulimit -n` command with the desired new limit (e.g., 65536). This change is only for the current session; for a permanent change, add it to your shell's configuration file (e.g., `~/.bashrc`, `~/.zshrc`).
+**Links to Resources to Learn More:**
 
-```bash
-sudo ulimit -n 65536  # Set the limit to 65536. Adjust as needed.
-echo "ulimit -n 65536" >> ~/.bashrc # Add to your shell's configuration (requires sourcing or restarting the shell)
-source ~/.bashrc #Apply the changes to current shell session
-```
-
-**Step 3: Increase the Limit (Windows)**
-
-Increasing the file descriptor limit on Windows is more involved. It usually requires modifying registry settings.  This is beyond the scope of a simple code example but requires finding and modifying the appropriate registry keys relevant to your specific system and user. Be very cautious when modifying the registry.  Consult Microsoft documentation for guidance.
-
-**Step 4: Verify the Change**
-
-After making the changes, check the limit again using the commands from Step 1 to confirm the new limit is in effect.
-
-**Step 5: (Optional) Adjust MongoDB Connection Pool**
-
-If the problem persists after increasing the system limit, you might need to examine your application's MongoDB driver configuration. The driver might be creating more connections than necessary. Adjust the connection pool size in your driver configuration to limit the maximum number of simultaneous connections.  The exact method depends on your driver (e.g., pymongo for Python, MongoDB Node.js driver).  Example for Python's `pymongo`:
-
-```python
-import pymongo
-
-client = pymongo.MongoClient("mongodb://localhost:27017/", maxPoolSize=50) # Adjust maxPoolSize as needed
-```
-
-
-## Explanation
-
-The "too many open files" error arises from the operating system's resource limitation. Each open file, network connection, and other system resources consume a file descriptor.  MongoDB, especially under heavy load, can rapidly consume these descriptors if your application isn't properly managing connections or if the system-wide limit is too low. Increasing the limit provides more available file descriptors, allowing MongoDB to handle more concurrent connections and operations without errors.  Adjusting the connection pool prevents your application from unnecessarily opening excessive connections.
-
-
-## External References
-
-* [MongoDB Documentation](https://www.mongodb.com/docs/)  (General MongoDB documentation)
-* [ulimit man page](https://man7.org/linux/man-pages/man1/ulimit.1.html) (For Linux/macOS)
-* [Windows Registry](https://docs.microsoft.com/en-us/windows/win32/sysinfo/registry) (For Windows)
+* **CSS Flexbox:** [MDN Web Docs - CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

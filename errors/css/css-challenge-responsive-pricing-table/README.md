@@ -1,75 +1,118 @@
-# 🐞 CSS Challenge:  Responsive Pricing Table
+# 🐞 CSS Challenge: Responsive Pricing Table
 
 
-This challenge involves creating a responsive pricing table using CSS.  We'll focus on a clean, modern design adaptable to different screen sizes.  While the specific design can vary wildly depending on the source, we'll target a common approach using flexbox and media queries for responsiveness.
-
+This challenge involves creating a responsive pricing table using CSS.  We'll build a table with three pricing plans (Basic, Pro, and Premium) that adapts gracefully to different screen sizes.  We will use plain CSS for this example, focusing on flexbox for layout and media queries for responsiveness.
 
 **Description of the Styling:**
 
-The pricing table will consist of three pricing plans (e.g., Basic, Pro, Premium).  Each plan will have a title, a list of features, a price, and a call-to-action button.  The table will be responsive, adjusting its layout nicely on smaller screens (like mobile phones) and maintaining a clean look on larger screens (like desktops). We will use a combination of CSS and potentially Tailwind CSS for the styling.
+The pricing table will feature:
 
+* **Three columns:** One for each pricing plan (Basic, Pro, Premium).
+* **Clear visual separation:**  Each plan will have its own distinct background color and border.
+* **Responsive design:**  The table should stack vertically on smaller screens.
+* **Clean typography:**  Clear and easy-to-read text for plan names, features, and prices.
 
-**Full Code (using Tailwind CSS):**
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Responsive Pricing Table</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <style>
-  /* Optional custom styles if needed */
-  .btn {
-    @apply px-6 py-3 rounded-md bg-blue-500 text-white hover:bg-blue-700;
+body {
+  font-family: sans-serif;
+}
+
+.pricing-table {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+.pricing-plan {
+  width: 300px;
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.pricing-plan h2 {
+  margin-bottom: 10px;
+}
+
+.pricing-plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.pricing-plan ul {
+  list-style: none;
+  padding: 0;
+}
+
+.pricing-plan li {
+  margin-bottom: 5px;
+}
+
+/* Media Query for smaller screens */
+@media (max-width: 768px) {
+  .pricing-plan {
+    width: 100%;
   }
+}
+
+/* Style variations for each plan */
+.basic {
+  background-color: #f0f0f0;
+}
+
+.pro {
+  background-color: #e0e0e0;
+}
+
+.premium {
+  background-color: #d0d0d0;
+}
 </style>
 </head>
-<body class="bg-gray-100">
+<body>
 
-<div class="container mx-auto p-8">
-  <h1 class="text-3xl font-bold mb-8 text-center">Choose Your Plan</h1>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-    <div class="bg-white shadow-md rounded-lg p-6">
-      <h2 class="text-xl font-bold mb-4">Basic</h2>
-      <ul class="mb-4">
-        <li>Feature 1</li>
-        <li>Feature 2</li>
-        <li>Feature 3</li>
-      </ul>
-      <p class="text-2xl font-bold mb-4">$9/month</p>
-      <button class="btn">Sign Up</button>
-    </div>
-
-    <div class="bg-white shadow-md rounded-lg p-6">
-      <h2 class="text-xl font-bold mb-4">Pro</h2>
-      <ul class="mb-4">
-        <li>Feature 1</li>
-        <li>Feature 2</li>
-        <li>Feature 3</li>
-        <li>Feature 4</li>
-        <li>Feature 5</li>
-      </ul>
-      <p class="text-2xl font-bold mb-4">$49/month</p>
-      <button class="btn">Sign Up</button>
-    </div>
-
-    <div class="bg-white shadow-md rounded-lg p-6">
-      <h2 class="text-xl font-bold mb-4">Premium</h2>
-      <ul class="mb-4">
-        <li>Feature 1</li>
-        <li>Feature 2</li>
-        <li>Feature 3</li>
-        <li>Feature 4</li>
-        <li>Feature 5</li>
-        <li>Feature 6</li>
-      </ul>
-      <p class="text-2xl font-bold mb-4">$99/month</p>
-      <button class="btn">Sign Up</button>
-    </div>
-
+<div class="pricing-table">
+  <div class="pricing-plan basic">
+    <h2>Basic</h2>
+    <p class="price">$9.99/month</p>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+    </ul>
+  </div>
+  <div class="pricing-plan pro">
+    <h2>Pro</h2>
+    <p class="price">$19.99/month</p>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+    </ul>
+  </div>
+  <div class="pricing-plan premium">
+    <h2>Premium</h2>
+    <p class="price">$29.99/month</p>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+      <li>Feature 6</li>
+    </ul>
   </div>
 </div>
 
@@ -77,19 +120,14 @@ The pricing table will consist of three pricing plans (e.g., Basic, Pro, Premium
 </html>
 ```
 
-
 **Explanation:**
 
-* **Tailwind CSS:** This example leverages Tailwind CSS for rapid UI development.  The utility classes (e.g., `grid`, `grid-cols-1`, `md:grid-cols-3`, `bg-white`, `shadow-md`, `text-xl`, etc.) handle most of the styling.  You'll need to include the Tailwind CSS CDN link in your `<head>`.
-* **Responsiveness:** The `grid` system, combined with Tailwind's responsive modifiers (e.g., `md:grid-cols-3`), ensures the table adapts well to different screen sizes.  On smaller screens (by default), the columns stack vertically; on medium screens and larger, they arrange horizontally in three columns.
-* **Structure:** The HTML uses a simple grid layout to organize the pricing plans.  Each plan is in its own `div` with its content (title, features, price, button).
+The code uses flexbox to arrange the pricing plans horizontally.  The `flex-wrap: wrap;` property ensures that the plans wrap onto the next line if there isn't enough horizontal space.  The `@media` query adjusts the width of each plan to 100% on smaller screens, making the table stack vertically.  Different background colors are used to visually distinguish the plans.
 
 **Links to Resources to Learn More:**
 
-* **Tailwind CSS:** [https://tailwindcss.com/](https://tailwindcss.com/)
-* **CSS Grid:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
-* **CSS Flexbox:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout)
-* **Responsive Web Design:** [https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design](https://developer.mozilla.org/en-US/docs/Learn/Responsive_web_design)
+* **CSS Flexbox:** [MDN Web Docs - CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
