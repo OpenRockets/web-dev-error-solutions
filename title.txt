@@ -1,1 +1,1 @@
-Overcoming the "Too Many Indexes" Problem in MongoDB
+Overcoming the "Slow Query" Problem Due to Missing or Inefficient MongoDB Indexes
