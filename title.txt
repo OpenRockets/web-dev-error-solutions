@@ -1,1 +1,1 @@
-CSS Challenge:  A Responsive, Three-Column Layout with Tailwind CSS
+Overcoming the "Too Many Indexes" Problem in MongoDB
