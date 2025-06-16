@@ -1,131 +1,55 @@
 
-This challenge involves creating a responsive pricing table using CSS.  We'll build a table with three pricing plans (Basic, Pro, and Premium) that adapts gracefully to different screen sizes.  We will use plain CSS for this example, focusing on flexbox for layout and media queries for responsiveness.
+## Description of the Error
 
-**Description of the Styling:**
+A common problem in MongoDB is encountering performance degradation, not due to a lack of indexes, but due to *too many* indexes.  While indexes speed up queries, having excessive indexes can significantly impact write performance.  Every write operation requires updating all relevant indexes, so an overabundance can lead to slow insertions, updates, and deletes. This can manifest as noticeably slower application response times and increased latency.  The MongoDB profiler may highlight slow index writes as the bottleneck.
 
-The pricing table will feature:
+## Fixing the Problem: A Step-by-Step Guide
 
-* **Three columns:** One for each pricing plan (Basic, Pro, Premium).
-* **Clear visual separation:**  Each plan will have its own distinct background color and border.
-* **Responsive design:**  The table should stack vertically on smaller screens.
-* **Clean typography:**  Clear and easy-to-read text for plan names, features, and prices.
+This example demonstrates how to identify and address excess indexes in a collection focusing on the `products` collection with potentially redundant indexes.
 
-**Full Code:**
+**Step 1: Identify Redundant Indexes**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Responsive Pricing Table</title>
-<style>
-body {
-  font-family: sans-serif;
-}
+First, use the `db.collection.getIndexes()` method to list all indexes on the `products` collection.  Analyze the indexes to see if any are redundant. Redundancy occurs when multiple indexes cover the same query patterns, offering minimal additional benefit while incurring extra write overhead.
 
-.pricing-table {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-}
-
-.pricing-plan {
-  width: 300px;
-  margin: 20px;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  text-align: center;
-}
-
-.pricing-plan h2 {
-  margin-bottom: 10px;
-}
-
-.pricing-plan .price {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.pricing-plan ul {
-  list-style: none;
-  padding: 0;
-}
-
-.pricing-plan li {
-  margin-bottom: 5px;
-}
-
-/* Media Query for smaller screens */
-@media (max-width: 768px) {
-  .pricing-plan {
-    width: 100%;
-  }
-}
-
-/* Style variations for each plan */
-.basic {
-  background-color: #f0f0f0;
-}
-
-.pro {
-  background-color: #e0e0e0;
-}
-
-.premium {
-  background-color: #d0d0d0;
-}
-</style>
-</head>
-<body>
-
-<div class="pricing-table">
-  <div class="pricing-plan basic">
-    <h2>Basic</h2>
-    <p class="price">$9.99/month</p>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-    </ul>
-  </div>
-  <div class="pricing-plan pro">
-    <h2>Pro</h2>
-    <p class="price">$19.99/month</p>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
-    </ul>
-  </div>
-  <div class="pricing-plan premium">
-    <h2>Premium</h2>
-    <p class="price">$29.99/month</p>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
-      <li>Feature 6</li>
-    </ul>
-  </div>
-</div>
-
-</body>
-</html>
+```javascript
+// Connect to your MongoDB instance.  Replace <your_database> and <your_collection> with your actual names.
+use <your_database>;
+db.<your_collection>.getIndexes()
 ```
 
-**Explanation:**
+This will return a JSON array of index specifications.  Look for similar keys used in different index combinations.  For instance, having separate indexes on `{"category": 1}` and `{"category": 1, "price": 1}` might be redundant if most queries only need the `category`.
 
-The code uses flexbox to arrange the pricing plans horizontally.  The `flex-wrap: wrap;` property ensures that the plans wrap onto the next line if there isn't enough horizontal space.  The `@media` query adjusts the width of each plan to 100% on smaller screens, making the table stack vertically.  Different background colors are used to visually distinguish the plans.
 
-**Links to Resources to Learn More:**
+**Step 2: Remove Redundant Indexes**
 
-* **CSS Flexbox:** [MDN Web Docs - CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
-* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+Once you’ve identified redundant indexes, remove them using the `db.collection.dropIndex()` method.  Replace `<index_name>` with the actual name of the index you want to remove. You can find the index name in the output of `db.collection.getIndexes()`.
+
+```javascript
+// Example: Removing an index named 'category_price_index'
+db.<your_collection>.dropIndex("category_price_index");
+
+// Example: Removing an index based on a specific key pattern
+db.<your_collection>.dropIndex({category: 1, price: 1}); 
+```
+
+**Step 3: Optimize Remaining Indexes**
+
+After removing redundant indexes, review the remaining indexes. Consider if any indexes are overly specific and rarely used. The optimal number of indexes depends on your application's query patterns.  A good strategy is to focus on indexes that support the most frequent and performance-critical queries.
+
+**Step 4: Monitor Performance**
+
+After making changes, monitor the performance of your application. Use the MongoDB profiler or performance monitoring tools to track write operation times and identify any remaining bottlenecks.
+
+
+## Explanation
+
+The key to efficient MongoDB indexing is to have the right indexes, not necessarily the most indexes.  Too many indexes significantly increase the overhead of write operations, leading to performance degradation. Identifying and removing redundant or rarely used indexes is crucial for maintaining optimal write performance without sacrificing read performance.  A carefully planned indexing strategy that focuses on supporting the most frequent and essential queries is vital for maintaining database health.
+
+## External References
+
+* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
+* **MongoDB Performance Monitoring:** [https://www.mongodb.com/docs/manual/tutorial/monitor-performance/](https://www.mongodb.com/docs/manual/tutorial/monitor-performance/)
+* **MongoDB Profiler:** [https://www.mongodb.com/docs/manual/reference/method/db.profilingLevel/](https://www.mongodb.com/docs/manual/reference/method/db.profilingLevel/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
