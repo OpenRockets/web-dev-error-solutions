@@ -1,1 +1,1 @@
-CSS Challenge:  Animated Expanding Card
+Overcoming MongoDB's "Too Many Connections" Error
