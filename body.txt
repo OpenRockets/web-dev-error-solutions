@@ -1,72 +1,93 @@
 
-This document addresses a common performance issue in MongoDB: having too many indexes. While indexes significantly speed up queries, an excessive number can lead to slower write operations and increased storage consumption.  This can manifest as slow insertion, update, and delete operations, impacting overall application performance.
-
-**Description of the Error:**
-
-The error itself isn't a specific error message, but rather a performance degradation.  You might observe slow write performance, increased storage utilization disproportionate to the data growth, and potentially slower query performance (counterintuitive, but true if the index overhead outweighs the benefits).  MongoDB's profiler (explained below) is crucial for identifying this.
+This challenge involves creating an animated circular progress bar using only CSS.  We'll achieve this effect using CSS animations and transformations, avoiding JavaScript entirely. The bar will be visually appealing and easily customizable for different percentages.  This example uses plain CSS; adapting it to Tailwind CSS would involve translating the classes and values.
 
 
-**Fixing Step-by-Step (using the MongoDB shell):**
+## Description of the Styling
 
-Let's assume we have a collection named `products` with numerous indexes that are not all necessary.
+The progress bar will be a circle with a background color.  A semi-circle on top will represent the progress, animating to fill the circle based on a percentage value.  We'll use `clip-path` to create the semi-circle and CSS animations to control the filling effect.  The percentage will be displayed in the center of the circle.
 
-**Step 1: Identify Unnecessary Indexes:**
+## Full Code (CSS Only)
 
-Use the `db.products.getIndexes()` command to list all existing indexes:
+```css
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #f2f2f2; /* Light gray background */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-```javascript
-use your_database_name; // Replace with your database name
-db.products.getIndexes()
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  clip-path: circle(50% at 50% 100%); /* Bottom half of the circle */
+  background-color: #4CAF50; /* Green progress color */
+  animation: progress-animation 2s linear forwards; /* Animation defined below */
+}
+
+.progress-ring span {
+  position: absolute;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: white;
+}
+
+
+@keyframes progress-animation {
+  0% {
+    clip-path: circle(0% at 50% 100%);
+  }
+  100% {
+    clip-path: circle(50% at 50% 100%);
+  }
+}
+
+/* Example usage to set progress (adjust the percentage in the class name): */
+.progress-ring.progress-75::before {
+  animation: progress-animation-75 2s linear forwards;
+}
+
+@keyframes progress-animation-75 {
+  0% {
+    clip-path: circle(0% at 50% 100%);
+  }
+  100% {
+    clip-path: circle(75% at 50% 100%);
+  }
+}
+
+.progress-ring.progress-75 span {
+  content: "75%";
+}
+
+
 ```
 
-This will output a JSON array of all indexes. Analyze each index carefully.  Consider which fields are frequently used in `$eq`, `$in`, `$gt`, `$lt` etc. queries.  Indexes on infrequently used fields are candidates for removal.  Also, look for redundant indexes (e.g., an index on `{"field1": 1}` and another on `{"field1": -1}` might be consolidated).
-
-**Step 2:  Profiling (Crucial for Diagnosis):**
-
-Enable the profiler to understand the query workload:
-
-```javascript
-db.setProfilingLevel(2); // Level 2 logs all queries
-```
-
-Perform typical operations on your application. Then disable profiling:
-
-```javascript
-db.setProfilingLevel(0);
-```
-
-Retrieve profiling information:
-
-```javascript
-db.system.profile.find()
-```
-
-Examine the results.  Look for slow queries where indexes could potentially be optimized or removed. This step guides your index optimization strategy.
-
-**Step 3: Drop Unnecessary Indexes:**
-
-After identifying unnecessary indexes (using their `name` field from `getIndexes()`), drop them one by one using `db.products.dropIndex()`:
-
-```javascript
-db.products.dropIndex("unnecessary_index_name"); // Replace with the actual index name
-```
-
-Repeat this for each index deemed unnecessary.
-
-**Step 4: Monitor Performance:**
-
-After removing indexes, monitor your application's performance. Use metrics like write operation latency, storage usage, and query performance to ensure the changes have improved efficiency. You might need to re-run the profiling to confirm the improvement.
+To use this, create a `<div>` with the class `progress-ring` and add a `<span>` inside for the percentage.  To adjust the progress, add a class like `progress-75` (or any other percentage) to the container div.
 
 
-**Explanation:**
+## Explanation
 
-Too many indexes negatively impact write performance because MongoDB must update all indexes whenever a document is inserted, updated, or deleted.  Each index consumes storage space, increasing overall database size. While indexes speed up *reads*, excessive indexes can eventually slow down writes to the point that the overall database performance suffers.  The profiler helps identify the actual performance bottlenecks and guide index optimization/removal.
+1. **Base Structure:** The `.progress-ring` class creates the base circular structure using `border-radius: 50%`. The `::before` pseudo-element creates the semi-circle progress indicator.
 
-**External References:**
+2. **`clip-path`:** This property is crucial for creating the semi-circular shape. `circle(50% at 50% 100%)` creates a circle with a radius of 50% (half the width/height), positioned at the bottom (100% y-coordinate).
 
-* **MongoDB Documentation on Indexes:** [https://www.mongodb.com/docs/manual/indexes/](https://www.mongodb.com/docs/manual/indexes/)
-* **MongoDB Performance Tuning:** [https://www.mongodb.com/docs/manual/performance/](https://www.mongodb.com/docs/manual/performance/)
-* **Understanding the MongoDB Profiler:** [https://www.mongodb.com/docs/manual/tutorial/profile-operations/](https://www.mongodb.com/docs/manual/tutorial/profile-operations/)
+3. **Animations:** The `@keyframes` define the animation.  It starts with a circle of 0% radius and expands to 50% (a full semi-circle) over the specified duration.  Custom percentage classes (like `progress-75`) allow for different animations using dynamic keyframes.
+
+4. **Customization:**  The colors, sizes, and animation duration can be easily changed by modifying the CSS variables.
+
+
+## Resources to Learn More
+
+* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS-Tricks on Animations:** [https://css-tricks.com/almanac/properties/a/animation/](https://css-tricks.com/almanac/properties/a/animation/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
