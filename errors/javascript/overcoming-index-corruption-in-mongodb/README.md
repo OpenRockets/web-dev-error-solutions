@@ -1,3 +1,5 @@
+# 🐞 Overcoming "Index Corruption" in MongoDB
+
 
 ## Description of the Error
 
