@@ -1,1 +1,1 @@
-Overcoming the "Invalid $expr in $group" Error in MongoDB Aggregations
+Overcoming MongoDB's "Cannot use $inc with a non-numeric value" Error
