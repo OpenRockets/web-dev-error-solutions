@@ -1,3 +1,5 @@
+# 🐞 Overcoming the "Invalid $expr in $group" Error in MongoDB Aggregations
+
 
 ## Description of the Error
 
