@@ -1,87 +1,120 @@
 
-This challenge involves creating a visually appealing circular progress bar using only CSS. The progress bar will be centered on the page and display a percentage value within the circle.  We'll use CSS variables for easy customization.  This example utilizes standard CSS, but the concepts could easily be adapted to a framework like Tailwind CSS.
+**Description of the Error:**
 
+A common problem when working with posts (e.g., blog posts, social media updates) in Firebase Firestore is inefficient data structuring leading to performance bottlenecks and exceeding Firestore's query limitations.  Storing each post as a single document with embedded comments or user data can quickly become unwieldy.  Retrieving a feed of posts with their associated comments becomes increasingly slow as the number of posts and comments grows, especially when using nested queries.  This often manifests as slow loading times for users, exceeding Firestore's maximum document size, or exceeding the maximum number of nested subcollections.
 
-## Description of the Styling:
+**Step-by-Step Code Solution:**
 
-The progress bar consists of a circular track and a circular fill. The fill's size represents the percentage.  We'll use `conic-gradient` for the circular fill, giving a smooth and visually pleasing progress indicator. The percentage is displayed in the center of the circle using a pseudo-element.  The styling aims for a clean, modern look, easily adaptable to different color schemes.
+This solution uses a denormalized approach to optimize queries.  We'll store posts and comments in separate collections, with necessary data duplicated for efficient retrieval.
 
-## Full Code:
+**1. Data Structure:**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Circular Progress Bar</title>
-<style>
-  .progress-ring {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+We'll have three main collections:
+
+* **`posts`:**  Stores post metadata (title, author ID, timestamp, etc.).  The post content itself could be stored here or in a separate storage service like Firebase Storage for large text or images.
+* **`comments`:** Stores individual comments. Each comment will reference the post ID.
+* **`users`:** Stores user information. (Not directly related to posts, but essential for showing author information).
+
+**2. Code (using Firebase Admin SDK in Node.js):**
+
+```javascript
+// Import the Firebase Admin SDK
+const admin = require('firebase-admin');
+admin.initializeApp();
+const db = admin.firestore();
+
+// Add a new post
+async function addPost(postData) {
+  try {
+    const postRef = await db.collection('posts').add({
+      title: postData.title,
+      authorId: postData.authorId,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      // ... other post metadata
+    });
+    console.log('Post added:', postRef.id);
+    return postRef.id;
+  } catch (error) {
+    console.error('Error adding post:', error);
+    throw error;
   }
+}
 
-  .progress-ring::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 5px solid #ddd; /* Track color */
-    box-sizing: border-box;
+// Add a comment to a post
+async function addComment(postId, commentData) {
+  try {
+    const commentRef = await db.collection('comments').add({
+      postId: postId,
+      authorId: commentData.authorId,
+      text: commentData.text,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      // ... other comment metadata
+    });
+    console.log('Comment added:', commentRef.id);
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    throw error;
   }
+}
 
-  .progress-ring::after {
-    content: attr(data-percentage)'%';
-    position: absolute;
-    font-size: 1.2em;
-    font-weight: bold;
-  }
 
-  .progress-ring.filled {
-      --progress: 75; /* Adjust this value to change the progress percentage */
-      --color: #007bff; /* Progress bar color */
+// Retrieve posts with their comments (efficient query)
+async function getPostsWithComments(limit = 10, lastDoc = null) {
+  try {
+      let query = db.collection('posts').orderBy('timestamp', 'desc').limit(limit);
+      if(lastDoc){
+          query = query.startAfter(lastDoc)
+      }
+      const snapshot = await query.get();
+      const posts = [];
+      const postIds = snapshot.docs.map(doc => doc.id);
       
-      /* The magic - conic gradient creates the filled circle */
-      background: conic-gradient(
-          var(--color) var(--progress)%,
-          #ddd var(--progress)%
-      );
+      //Efficiently fetch comments using a where clause
+      const commentsSnapshot = await db.collection('comments').where('postId', 'in', postIds).get();
+
+      const commentsByPostId = {};
+      commentsSnapshot.forEach(doc => {
+          const comment = doc.data();
+          if(!commentsByPostId[comment.postId]){
+              commentsByPostId[comment.postId] = [];
+          }
+          commentsByPostId[comment.postId].push(comment);
+      });
+
+      snapshot.forEach(doc => {
+          const post = doc.data();
+          post.comments = commentsByPostId[doc.id] || [];
+          posts.push({...post, id: doc.id});
+      });
+
+      const lastVisible = snapshot.docs[snapshot.docs.length -1];
+
+      return { posts, lastVisible };
+  } catch (error) {
+    console.error('Error retrieving posts:', error);
+    throw error;
   }
+}
 
-</style>
-</head>
-<body>
 
-<div class="progress-ring filled" data-percentage="75"></div>
+//Example Usage
+addPost({ title: "My First Post", authorId: "user123" })
+  .then(postId => addComment(postId, { authorId: "user456", text: "Great post!" }));
 
-</body>
-</html>
+
+getPostsWithComments().then(result => console.log(result));
 ```
 
+**3. Explanation:**
 
-## Explanation:
-
-* **`progress-ring`**: This class sets the dimensions, shape, and centering of the progress bar.  `display: flex` and `justify-content/align-items` are used for easy centering.
-* **`::before` pseudo-element**: Creates the circular track.
-* **`::after` pseudo-element**: Displays the percentage value.  `attr(data-percentage)` accesses the data attribute from the main element.
-* **`filled` class**:  This class holds the magic: the `conic-gradient` function creates the circular fill. `var(--progress)` dynamically adjusts the fill's size based on the CSS variable. `var(--color)` controls the color of the filled section.
-* **CSS Variables**: `--progress` and `--color` make it easy to change the percentage and color.
+This approach uses separate collections for posts and comments, avoiding nested queries.  The `getPostsWithComments` function efficiently retrieves posts and their associated comments using a single query per collection combined with the `where` and `in` operators. This significantly improves performance compared to nested queries.  The use of `admin.firestore.FieldValue.serverTimestamp()` ensures accurate timestamps.
 
 
-## Links to Resources to Learn More:
+**External References:**
 
-* **CSS Gradients:**  [MDN Web Docs - CSS Gradients](https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient) (Look at the `conic-gradient` section)
-* **CSS Pseudo-elements:** [MDN Web Docs - Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* **CSS Variables (Custom Properties):** [MDN Web Docs - CSS Variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
-
-## Adapting to Tailwind CSS:
-
-To adapt this to Tailwind CSS, you would replace the custom CSS with Tailwind classes. For example, you could use `w-48 h-48` for size, `rounded-full` for border radius, and Tailwind's utility classes for colors and spacing.  The `conic-gradient` would still be needed as a custom CSS declaration within a `style` attribute or a separate CSS file.
-
+* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
+* [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
+* [Firestore Data Modeling](https://firebase.google.com/docs/firestore/modeling/design) - This provides guidance on structuring your data for optimal performance.
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
