@@ -27,7 +27,7 @@ jobs:
           -d '{
             "contents": [{
               "parts": [{
-                "text": "Generate a documentation with Markdown about a randomly chosen problem developers face in MongoDB Indexes, Databases, Collections, CRUD Operations, Data Types, integration, data modelling, security, replication, sharding. Include:
+                "text": "Generate a documentation with Markdown about a randomly chosen problem developers face in Firebase Firestore, data storing, post. Include:
                           - A Markdown H1 title
                           - Description of the error
                           - full code of fixing step by step
