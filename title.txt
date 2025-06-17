@@ -1,1 +1,1 @@
-CSS Challenge:  Building a Simple Pricing Table with Tailwind CSS
+Overcoming the "Too Many Indexes" Problem in MongoDB
