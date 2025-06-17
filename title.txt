@@ -1,1 +1,1 @@
-CSS Challenge: Recreate a Modern Card Component
+Overcoming "Too Many Documents to Scan" in MongoDB Queries
