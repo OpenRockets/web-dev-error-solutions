@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Building a Simple Pricing Table with Tailwind CSS
+
 
 This challenge focuses on creating a clean and responsive pricing table using Tailwind CSS.  The goal is to build a table with three different pricing plans, each with its own features and price, presented in a visually appealing and easy-to-understand manner. We'll use Tailwind's utility classes for rapid development and responsive design.
 
