@@ -1,16 +1,13 @@
-# 🐞 CSS Challenge: Responsive Pricing Table
+# 🐞 CSS Challenge:  Responsive Pricing Table
 
 
-This challenge involves creating a responsive pricing table using CSS.  We'll build a table with three pricing plans (Basic, Pro, and Premium) that adapts gracefully to different screen sizes.  We will use plain CSS for this example, focusing on flexbox for layout and media queries for responsiveness.
+This challenge focuses on creating a responsive pricing table using CSS. The goal is to build a visually appealing and easily understandable table that adapts seamlessly to different screen sizes. We'll utilize CSS Grid for layout and some basic CSS for styling.
+
 
 **Description of the Styling:**
 
-The pricing table will feature:
+The pricing table will consist of three plans: Basic, Pro, and Premium. Each plan will have its own card containing a title, a list of features, a price, and a call-to-action button.  The table will be responsive, adjusting its layout to columns or stacking vertically on smaller screens.  We aim for a clean, modern aesthetic.
 
-* **Three columns:** One for each pricing plan (Basic, Pro, Premium).
-* **Clear visual separation:**  Each plan will have its own distinct background color and border.
-* **Responsive design:**  The table should stack vertically on smaller screens.
-* **Clean typography:**  Clear and easy-to-read text for plan names, features, and prices.
 
 **Full Code:**
 
@@ -25,75 +22,68 @@ body {
 }
 
 .pricing-table {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
+  grid-gap: 20px;
 }
 
-.pricing-plan {
-  width: 300px;
-  margin: 20px;
-  padding: 20px;
+.plan {
   border: 1px solid #ccc;
-  border-radius: 5px;
+  padding: 20px;
   text-align: center;
 }
 
-.pricing-plan h2 {
+.plan h2 {
+  margin-top: 0;
+}
+
+.plan ul {
+  list-style: none;
+  padding: 0;
+}
+
+.plan li {
   margin-bottom: 10px;
 }
 
-.pricing-plan .price {
+.plan .price {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 10px;
 }
 
-.pricing-plan ul {
-  list-style: none;
-  padding: 0;
+.plan button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.pricing-plan li {
-  margin-bottom: 5px;
-}
-
-/* Media Query for smaller screens */
+/* Media query for smaller screens */
 @media (max-width: 768px) {
-  .pricing-plan {
-    width: 100%;
+  .pricing-table {
+    grid-template-columns: 1fr; /* Stack vertically */
   }
-}
-
-/* Style variations for each plan */
-.basic {
-  background-color: #f0f0f0;
-}
-
-.pro {
-  background-color: #e0e0e0;
-}
-
-.premium {
-  background-color: #d0d0d0;
 }
 </style>
 </head>
 <body>
 
 <div class="pricing-table">
-  <div class="pricing-plan basic">
+  <div class="plan">
     <h2>Basic</h2>
-    <p class="price">$9.99/month</p>
     <ul>
       <li>Feature 1</li>
       <li>Feature 2</li>
       <li>Feature 3</li>
     </ul>
+    <div class="price">$9.99/month</div>
+    <button>Sign Up</button>
   </div>
-  <div class="pricing-plan pro">
+  <div class="plan">
     <h2>Pro</h2>
-    <p class="price">$19.99/month</p>
     <ul>
       <li>Feature 1</li>
       <li>Feature 2</li>
@@ -101,10 +91,11 @@ body {
       <li>Feature 4</li>
       <li>Feature 5</li>
     </ul>
+    <div class="price">$19.99/month</div>
+    <button>Sign Up</button>
   </div>
-  <div class="pricing-plan premium">
+  <div class="plan">
     <h2>Premium</h2>
-    <p class="price">$29.99/month</p>
     <ul>
       <li>Feature 1</li>
       <li>Feature 2</li>
@@ -113,6 +104,8 @@ body {
       <li>Feature 5</li>
       <li>Feature 6</li>
     </ul>
+    <div class="price">$29.99/month</div>
+    <button>Sign Up</button>
   </div>
 </div>
 
@@ -122,12 +115,15 @@ body {
 
 **Explanation:**
 
-The code uses flexbox to arrange the pricing plans horizontally.  The `flex-wrap: wrap;` property ensures that the plans wrap onto the next line if there isn't enough horizontal space.  The `@media` query adjusts the width of each plan to 100% on smaller screens, making the table stack vertically.  Different background colors are used to visually distinguish the plans.
+* **CSS Grid:** The `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` line is crucial for responsiveness.  `repeat(auto-fit, ...)` creates as many columns as fit, while `minmax(300px, 1fr)` ensures each column is at least 300px wide but also shares available space equally.
+* **Media Query:** The `@media (max-width: 768px)` section changes the layout to a single column on smaller screens.
+* **Basic CSS Styling:**  The rest of the CSS handles the visual aspects like borders, padding, colors, and fonts.
+
 
 **Links to Resources to Learn More:**
 
-* **CSS Flexbox:** [MDN Web Docs - CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
-* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **CSS Grid Layout:** [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
+* **Responsive Web Design:** [MDN Web Docs - Responsive Web Design](https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/Responsive_design)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
