@@ -1,3 +1,5 @@
+# 🐞 Efficiently Storing and Querying Large Posts with Images in Firebase Firestore
+
 
 This document addresses a common challenge developers face when managing posts with images in Firebase Firestore:  inefficient data storage and slow query performance due to large document sizes and inefficient data modeling.  Storing large images directly within Firestore documents leads to increased document sizes, exceeding the maximum document size limits and impacting query performance, especially when fetching posts with their associated images.
 

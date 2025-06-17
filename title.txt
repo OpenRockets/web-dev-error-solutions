@@ -1,1 +1,1 @@
-Handling Firestore Data Storage Limits When Storing Large Posts
+Efficiently Storing and Querying Large Posts with Images in Firebase Firestore
