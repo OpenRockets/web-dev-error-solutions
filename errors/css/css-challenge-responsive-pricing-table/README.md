@@ -1,13 +1,11 @@
-# 🐞 CSS Challenge:  Responsive Pricing Table
+# 🐞 CSS Challenge: Responsive Pricing Table
 
 
-This challenge focuses on creating a responsive pricing table using CSS. The goal is to build a visually appealing and easily understandable table that adapts seamlessly to different screen sizes. We'll utilize CSS Grid for layout and some basic CSS for styling.
-
+This challenge focuses on creating a responsive pricing table using CSS. The goal is to design a clean, visually appealing table that adapts seamlessly to different screen sizes, from large desktops to smaller mobile devices. We'll be using plain CSS for this example, focusing on flexbox and media queries for responsiveness.
 
 **Description of the Styling:**
 
-The pricing table will consist of three plans: Basic, Pro, and Premium. Each plan will have its own card containing a title, a list of features, a price, and a call-to-action button.  The table will be responsive, adjusting its layout to columns or stacking vertically on smaller screens.  We aim for a clean, modern aesthetic.
-
+The pricing table will feature three pricing plans (Basic, Pro, and Premium). Each plan will have a distinct color scheme, clear headings, a list of features, and a prominent "Sign Up" button. The table will be horizontally scrollable on smaller screens to ensure all content remains visible.  The design will emphasize clean lines, good spacing, and a modern aesthetic.
 
 **Full Code:**
 
@@ -22,90 +20,123 @@ body {
 }
 
 .pricing-table {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
-  grid-gap: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .plan {
-  border: 1px solid #ccc;
+  width: 300px;
+  margin: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.plan-header {
+  background-color: #f0f0f0;
   padding: 20px;
   text-align: center;
 }
 
-.plan h2 {
-  margin-top: 0;
+.plan-header h2 {
+  margin: 0;
 }
 
-.plan ul {
+.plan-features {
+  padding: 20px;
+}
+
+.plan-features ul {
   list-style: none;
   padding: 0;
 }
 
-.plan li {
+.plan-features li {
   margin-bottom: 10px;
 }
 
-.plan .price {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.plan button {
+.plan-button {
   background-color: #4CAF50;
   color: white;
-  padding: 10px 20px;
+  padding: 15px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  width: 100%;
   border: none;
-  border-radius: 5px;
+  border-radius: 0 0 5px 5px;
   cursor: pointer;
 }
 
-/* Media query for smaller screens */
+
+/* Media Query for smaller screens */
 @media (max-width: 768px) {
-  .pricing-table {
-    grid-template-columns: 1fr; /* Stack vertically */
+  .plan {
+    width: 100%;
+    margin: 10px 0;
   }
+}
+
+/* Styling for different plans */
+.basic {
+  background-color: #e0f7fa;
+}
+
+.pro {
+  background-color: #b2ebf2;
+}
+
+.premium {
+  background-color: #80deea;
 }
 </style>
 </head>
 <body>
 
 <div class="pricing-table">
-  <div class="plan">
-    <h2>Basic</h2>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-    </ul>
-    <div class="price">$9.99/month</div>
-    <button>Sign Up</button>
+  <div class="plan basic">
+    <div class="plan-header">
+      <h2>Basic</h2>
+      <p>$9/month</p>
+    </div>
+    <div class="plan-features">
+      <ul>
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+      </ul>
+    </div>
+    <button class="plan-button">Sign Up</button>
   </div>
-  <div class="plan">
-    <h2>Pro</h2>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
-    </ul>
-    <div class="price">$19.99/month</div>
-    <button>Sign Up</button>
+  <div class="plan pro">
+    <div class="plan-header">
+      <h2>Pro</h2>
+      <p>$19/month</p>
+    </div>
+    <div class="plan-features">
+      <ul>
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+      </ul>
+    </div>
+    <button class="plan-button">Sign Up</button>
   </div>
-  <div class="plan">
-    <h2>Premium</h2>
-    <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
-      <li>Feature 6</li>
-    </ul>
-    <div class="price">$29.99/month</div>
-    <button>Sign Up</button>
+  <div class="plan premium">
+    <div class="plan-header">
+      <h2>Premium</h2>
+      <p>$49/month</p>
+    </div>
+    <div class="plan-features">
+      <ul>
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+        <li>Feature 4</li>
+      </ul>
+    </div>
+    <button class="plan-button">Sign Up</button>
   </div>
 </div>
 
@@ -115,15 +146,14 @@ body {
 
 **Explanation:**
 
-* **CSS Grid:** The `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` line is crucial for responsiveness.  `repeat(auto-fit, ...)` creates as many columns as fit, while `minmax(300px, 1fr)` ensures each column is at least 300px wide but also shares available space equally.
-* **Media Query:** The `@media (max-width: 768px)` section changes the layout to a single column on smaller screens.
-* **Basic CSS Styling:**  The rest of the CSS handles the visual aspects like borders, padding, colors, and fonts.
+The code utilizes flexbox for easy layout management and media queries for responsiveness.  The `.pricing-table` div uses `flex-wrap: wrap` to allow plans to wrap onto new lines on smaller screens.  The `@media` query adjusts the width of each `.plan` div to 100% on screens smaller than 768px, ensuring the table remains usable on mobile devices.  Different classes (`.basic`, `.pro`, `.premium`) allow for easy styling of individual plans.
 
 
 **Links to Resources to Learn More:**
 
-* **CSS Grid Layout:** [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
-* **Responsive Web Design:** [MDN Web Docs - Responsive Web Design](https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/Responsive_design)
+* **CSS Flexbox:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+* **CSS Media Queries:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **CSS Box Model:** [https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
