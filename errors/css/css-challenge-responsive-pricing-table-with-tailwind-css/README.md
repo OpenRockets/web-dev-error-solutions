@@ -1,89 +1,85 @@
 # 🐞 CSS Challenge: Responsive Pricing Table with Tailwind CSS
 
 
-This challenge focuses on building a responsive pricing table using Tailwind CSS. The goal is to create a clean, visually appealing table that adapts seamlessly to different screen sizes.  We'll utilize Tailwind's utility classes for efficient and rapid styling.
+This challenge involves creating a responsive pricing table using Tailwind CSS. The table will feature three different pricing tiers (Basic, Pro, and Enterprise) with varying features and prices. The design should be clean, visually appealing, and adapt seamlessly to different screen sizes.
 
 **Description of the Styling:**
 
-The pricing table will feature three different pricing plans: Basic, Pro, and Premium. Each plan will have a distinct color scheme (using Tailwind's color palette) and will clearly display the plan's name, price, and a list of features.  The table will be responsive, meaning it will adjust its layout beautifully on smaller screens (e.g., mobile devices) by stacking the columns vertically.  We'll add some subtle hover effects for improved user experience.
+The pricing table will utilize Tailwind CSS classes to achieve a modern and responsive design.  Key styling aspects include:
 
+* **Card Structure:** Each pricing tier will be contained within a card-like structure with rounded corners and subtle shadows.
+* **Color Scheme:** A muted color palette will be used to create a professional and clean look. We'll use Tailwind's built-in color classes.
+* **Typography:** Clear and concise typography will be used for headings, features, and prices.  Tailwind's font size and weight classes will handle this.
+* **Responsiveness:** The layout will adjust gracefully to different screen sizes, ensuring readability and usability on all devices. Tailwind's responsive modifiers will be crucial here.
+* **Highlighting:**  The "Pro" plan will be visually highlighted to draw attention.
 
 **Full Code:**
 
 ```html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Responsive Pricing Table</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100">
+<div class="container mx-auto px-4">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-  <div class="container mx-auto p-8">
-    <h2 class="text-3xl font-bold text-center mb-8">Choose Your Plan</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <!-- Basic Plan -->
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-bold text-blue-500 mb-4">Basic</h3>
-        <p class="text-4xl font-bold text-gray-800 mb-4">$9<span class="text-xl">/month</span></p>
-        <ul class="list-disc list-inside text-gray-600">
-          <li>1 User</li>
-          <li>10 GB Storage</li>
-          <li>Basic Support</li>
-        </ul>
-        <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          Sign Up
-        </button>
-      </div>
-
-      <!-- Pro Plan -->
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-bold text-green-500 mb-4">Pro</h3>
-        <p class="text-4xl font-bold text-gray-800 mb-4">$49<span class="text-xl">/month</span></p>
-        <ul class="list-disc list-inside text-gray-600">
-          <li>5 Users</li>
-          <li>100 GB Storage</li>
-          <li>Priority Support</li>
-          <li>Advanced Features</li>
-        </ul>
-        <button class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-          Sign Up
-        </button>
-      </div>
-
-      <!-- Premium Plan -->
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-xl font-bold text-purple-500 mb-4">Premium</h3>
-        <p class="text-4xl font-bold text-gray-800 mb-4">$99<span class="text-xl">/month</span></p>
-        <ul class="list-disc list-inside text-gray-600">
-          <li>Unlimited Users</li>
-          <li>Unlimited Storage</li>
-          <li>Dedicated Support</li>
-          <li>All Features</li>
-        </ul>
-        <button class="mt-4 bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
-          Sign Up
-        </button>
-      </div>
+    <div class="bg-gray-100 rounded-lg shadow-md p-6">
+      <h3 class="text-xl font-bold mb-4">Basic</h3>
+      <p class="text-gray-700 mb-4">Limited Features</p>
+      <p class="text-3xl font-bold mb-4 text-blue-600">$9/month</p>
+      <ul class="list-disc list-inside text-gray-600">
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+        Sign Up
+      </button>
     </div>
-  </div>
 
-</body>
-</html>
+    <div class="bg-gray-100 rounded-lg shadow-md p-6 bg-blue-100">  <!-- Highlight Pro plan -->
+      <h3 class="text-xl font-bold mb-4 text-blue-800">Pro</h3>
+      <p class="text-gray-700 mb-4">Most Popular</p>
+      <p class="text-3xl font-bold mb-4 text-blue-600">$49/month</p>
+      <ul class="list-disc list-inside text-gray-600">
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+        <li>Feature 4</li>
+        <li>Feature 5</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+        Sign Up
+      </button>
+    </div>
+
+    <div class="bg-gray-100 rounded-lg shadow-md p-6">
+      <h3 class="text-xl font-bold mb-4">Enterprise</h3>
+      <p class="text-gray-700 mb-4">Unlimited Features</p>
+      <p class="text-3xl font-bold mb-4 text-blue-600">$99/month</p>
+      <ul class="list-disc list-inside text-gray-600">
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+        <li>Feature 4</li>
+        <li>Feature 5</li>
+        <li>Feature 6</li>
+        <li>Feature 7</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+        Sign Up
+      </button>
+    </div>
+
+  </div>
+</div>
 ```
 
 **Explanation:**
 
-* **Tailwind Classes:** The code heavily relies on Tailwind CSS utility classes for styling.  Classes like `grid`, `grid-cols`, `bg-white`, `text-xl`, `font-bold`, `rounded-lg`, `shadow-md`, etc., are used to quickly style the elements.  Refer to the Tailwind CSS documentation for a complete list of utility classes.
-* **Responsiveness:** The `grid` system with `grid-cols-1 md:grid-cols-3` makes the table responsive. On smaller screens (mobile), it defaults to a single column, and on medium screens and above, it switches to a three-column layout.
-* **Hover Effects:** The `hover:bg-blue-700`, `hover:bg-green-700`, and `hover:bg-purple-700` classes add subtle hover effects to the buttons.
+The code utilizes Tailwind's grid system (`grid`, `grid-cols`, `gap`) for layout.  Responsive behavior is achieved using the `md:` prefix on `grid-cols`.  Classes like `bg-gray-100`, `rounded-lg`, `shadow-md`, `text-xl`, `font-bold`, etc., handle styling. The `bg-blue-100` class specifically highlights the "Pro" plan.
 
 **Links to Resources to Learn More:**
 
-* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
-* **Tailwind CSS Cheat Sheet:** [Search for "Tailwind CSS Cheat Sheet" on Google - many helpful resources exist]
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs/](https://tailwindcss.com/docs/)
+* **Tailwind CSS Grid System:** [https://tailwindcss.com/docs/grid](https://tailwindcss.com/docs/grid)
+* **Learn CSS Grid:** [Various tutorials available on YouTube and freeCodeCamp](Search on YouTube or freeCodeCamp)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

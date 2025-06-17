@@ -1,68 +1,83 @@
 
-## Description of the Error
+This challenge involves creating a responsive pricing table using Tailwind CSS. The table will feature three different pricing tiers (Basic, Pro, and Enterprise) with varying features and prices. The design should be clean, visually appealing, and adapt seamlessly to different screen sizes.
 
-The "too many open files" error in MongoDB arises when the database server attempts to open more files than the operating system allows. This limit is typically controlled by the `ulimit` command (on Linux/macOS) or similar settings on Windows.  When this limit is reached, MongoDB operations fail, often leading to application errors and performance degradation.  This is particularly common in applications with high read/write workloads or a large number of concurrent connections.
+**Description of the Styling:**
 
+The pricing table will utilize Tailwind CSS classes to achieve a modern and responsive design.  Key styling aspects include:
 
-## Fixing the "too many open files" Error Step-by-Step
+* **Card Structure:** Each pricing tier will be contained within a card-like structure with rounded corners and subtle shadows.
+* **Color Scheme:** A muted color palette will be used to create a professional and clean look. We'll use Tailwind's built-in color classes.
+* **Typography:** Clear and concise typography will be used for headings, features, and prices.  Tailwind's font size and weight classes will handle this.
+* **Responsiveness:** The layout will adjust gracefully to different screen sizes, ensuring readability and usability on all devices. Tailwind's responsive modifiers will be crucial here.
+* **Highlighting:**  The "Pro" plan will be visually highlighted to draw attention.
 
-This solution focuses on increasing the operating system's file descriptor limit.  **The exact commands may vary slightly depending on your operating system and its configuration.**
+**Full Code:**
 
-**Step 1: Check the Current Limit**
+```html
+<div class="container mx-auto px-4">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-First, we need to determine the current limit using the `ulimit -n` command (Linux/macOS):
+    <div class="bg-gray-100 rounded-lg shadow-md p-6">
+      <h3 class="text-xl font-bold mb-4">Basic</h3>
+      <p class="text-gray-700 mb-4">Limited Features</p>
+      <p class="text-3xl font-bold mb-4 text-blue-600">$9/month</p>
+      <ul class="list-disc list-inside text-gray-600">
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+        Sign Up
+      </button>
+    </div>
 
-```bash
-ulimit -n
+    <div class="bg-gray-100 rounded-lg shadow-md p-6 bg-blue-100">  <!-- Highlight Pro plan -->
+      <h3 class="text-xl font-bold mb-4 text-blue-800">Pro</h3>
+      <p class="text-gray-700 mb-4">Most Popular</p>
+      <p class="text-3xl font-bold mb-4 text-blue-600">$49/month</p>
+      <ul class="list-disc list-inside text-gray-600">
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+        <li>Feature 4</li>
+        <li>Feature 5</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+        Sign Up
+      </button>
+    </div>
+
+    <div class="bg-gray-100 rounded-lg shadow-md p-6">
+      <h3 class="text-xl font-bold mb-4">Enterprise</h3>
+      <p class="text-gray-700 mb-4">Unlimited Features</p>
+      <p class="text-3xl font-bold mb-4 text-blue-600">$99/month</p>
+      <ul class="list-disc list-inside text-gray-600">
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+        <li>Feature 4</li>
+        <li>Feature 5</li>
+        <li>Feature 6</li>
+        <li>Feature 7</li>
+      </ul>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+        Sign Up
+      </button>
+    </div>
+
+  </div>
+</div>
 ```
 
-This will output a number representing the current maximum number of open files.
+**Explanation:**
 
-**Step 2: Increase the Limit (Linux/macOS)**
+The code utilizes Tailwind's grid system (`grid`, `grid-cols`, `gap`) for layout.  Responsive behavior is achieved using the `md:` prefix on `grid-cols`.  Classes like `bg-gray-100`, `rounded-lg`, `shadow-md`, `text-xl`, `font-bold`, etc., handle styling. The `bg-blue-100` class specifically highlights the "Pro" plan.
 
-To permanently increase the limit, you'll need to modify the system's configuration files.  The method depends on your system's configuration.  Here are common approaches:
+**Links to Resources to Learn More:**
 
-* **Modifying `/etc/security/limits.conf` (recommended for system-wide change):**
-
-Add or modify the following line in `/etc/security/limits.conf`, replacing `<username>` with your MongoDB user's username and `<limit>` with the desired higher limit (e.g., 65535).  Ensure the `-n` or `nofile` parameter is present to specify the file descriptor limit.
-
-```
-<username>   hard    nofile     <limit>
-<username>   soft    nofile     <limit>
-```
-
-After saving the file, you need to reload the system's configuration or restart the system for the changes to take effect.
-
-* **Using `ulimit` at shell startup (for user-specific change, less recommended):**
-
-Alternatively, you can add the `ulimit -n <limit>` command to your shell's startup script (e.g., `.bashrc` or `.zshrc`). This will only increase the limit for your current shell session. This is less recommended for MongoDB servers as it might not persist across reboots.
-
-```bash
-# Add this line to your .bashrc or .zshrc file
-ulimit -n <limit>
-```
-
-**Step 3: Verify the Change**
-
-After making the changes, re-check the limit using `ulimit -n` again. You should see the new, increased limit.
-
-
-**Step 4: Restart MongoDB**
-
-Restart the MongoDB server to apply the changes.  The method for restarting depends on your MongoDB installation (e.g., `systemctl restart mongod` or `mongod --restart`).
-
-
-
-## Explanation
-
-The "too many open files" error stems from a resource constraint at the operating system level. Each open file (including network connections, database files, etc.) consumes a file descriptor.  When the system runs out of available file descriptors, new connections and operations are blocked, leading to the error.  Increasing the limit allows MongoDB to handle more concurrent operations and connections without hitting this constraint.
-
-
-## External References
-
-* **MongoDB Documentation:** While the official MongoDB documentation doesn't explicitly cover this as a standalone error, it's implicitly addressed in their performance tuning guides: [https://www.mongodb.com/docs/manual/administration/performance-monitoring/](https://www.mongodb.com/docs/manual/administration/performance-monitoring/) (Search for "ulimit" or "file descriptors" within the documentation.)
-* **Linux `ulimit` command:** [https://man7.org/linux/man-pages/man1/ulimit.1.html](https://man7.org/linux/man-pages/man1/ulimit.1.html)
-* **macOS `ulimit` command:** The macOS man page for `ulimit` is very similar to the Linux version.
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs/](https://tailwindcss.com/docs/)
+* **Tailwind CSS Grid System:** [https://tailwindcss.com/docs/grid](https://tailwindcss.com/docs/grid)
+* **Learn CSS Grid:** [Various tutorials available on YouTube and freeCodeCamp](Search on YouTube or freeCodeCamp)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
