@@ -1,94 +1,99 @@
 
-## Description of the Error
-
-A common issue when working with posts (e.g., blog posts, social media updates) in Firebase Firestore is performance degradation as the number of posts grows.  Simple queries like fetching all posts or filtering by date can become incredibly slow if not structured correctly. This is because Firestore charges you based on the amount of data read, and inefficient queries can result in reading far more data than necessary, leading to increased costs and latency.  Trying to fetch thousands of posts with a single query will likely timeout or severely impact app performance.
-
-## Fixing Step-by-Step Code
-
-This solution focuses on using pagination and efficient querying techniques. We'll assume your posts have fields like `postId`, `timestamp`, `author`, and `content`.
-
-**1.  Data Structuring:**
-
-Maintain your post data in a single collection called `posts`.  Avoid denormalization unless absolutely necessary for performance gains that outweigh data redundancy concerns.
-
-**2.  Paginated Querying (Client-Side):**
-
-This approach fetches posts in batches, significantly improving performance.
+This challenge focuses on creating an animated circular progress bar using pure CSS.  We'll leverage CSS animations and transformations to achieve a visually appealing and smooth progress indicator.  No JavaScript is required!
 
 
-```javascript
-import { collection, query, limit, orderBy, startAfter, getDocs } from "firebase/firestore";
-import { db } from "./firebaseConfig"; // Your Firebase configuration
+## Description of the Styling
 
-const postsCollectionRef = collection(db, "posts");
+The goal is to create a circular progress bar that visually represents a percentage. The bar should fill up from 0% to a specified percentage, animating the fill smoothly.  The styling will include:
 
-// Function to fetch a page of posts
-async function fetchPostsPage(lastVisible, pageSize = 10) {
-  let q;
-  if (lastVisible) {
-    q = query(
-      postsCollectionRef,
-      orderBy("timestamp", "desc"),
-      startAfter(lastVisible),
-      limit(pageSize)
-    );
-  } else {
-    q = query(postsCollectionRef, orderBy("timestamp", "desc"), limit(pageSize));
+* A circular base (the background track).
+* A circular overlay (the progress indicator) that animates its stroke-dashoffset to represent the percentage.
+* Customizable colors for the base and progress.
+* Clean and semantic HTML structure.
+
+
+## Full Code (CSS Only)
+
+```css
+/* Base styles */
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  position: relative;
+}
+
+.progress-ring svg {
+  transform: rotate(-90deg); /* Start the animation from the top */
+}
+
+.progress-ring circle {
+  fill: transparent;
+  stroke-width: 10;
+  stroke-linecap: round;
+  /* Stroke dasharray and dashoffset to control animation */
+  stroke-dasharray: 471.2388980384689; /* Circumference of the circle */
+}
+
+.progress-ring .progress-background {
+  stroke: #ddd; /* Background color of the ring */
+}
+
+.progress-ring .progress-foreground {
+  stroke: #4CAF50; /* Progress bar color */
+  stroke-dashoffset: 471.2388980384689; /* Initially, fully hidden */
+  animation: progress-animation 2s linear forwards; /* Animation */
+}
+
+/* Keyframes for the animation */
+@keyframes progress-animation {
+  to {
+    stroke-dashoffset: 0; /* Animate to 0 to show the progress */
   }
-  const querySnapshot = await getDocs(q);
-  const posts = [];
-  querySnapshot.forEach((doc) => {
-    posts.push({ id: doc.id, ...doc.data() });
-  });
-  const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
-  return { posts, lastDoc };
+}
+
+/*  To control percentage, update CSS variable --progress */
+:root {
+  --progress: 75; /* Adjust this value to change progress percentage */
+}
+
+.progress-ring .progress-foreground {
+  stroke-dashoffset: calc(471.2388980384689 * (1 - var(--progress) / 100));
 }
 
 
-// Example usage:
-async function getPosts(){
-    let lastVisible = null;
-    let allPosts = [];
-    let keepFetching = true;
-    while(keepFetching){
-        const {posts, lastDoc} = await fetchPostsPage(lastVisible);
-        if(posts.length === 0){
-            keepFetching = false;
-        } else {
-            allPosts = allPosts.concat(posts);
-            lastVisible = lastDoc;
-        }
-    }
-    console.log(allPosts);
-}
-
-
-getPosts();
 ```
 
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Circular Progress Bar</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-**3. Server-Side Pagination (Optional, for more control):**
+<div class="progress-ring">
+  <svg width="150" height="150">
+    <circle class="progress-background" cx="75" cy="75" r="60"/>
+    <circle class="progress-foreground" cx="75" cy="75" r="60"/>
+  </svg>
+</div>
 
-For extremely large datasets or more complex scenarios, consider server-side pagination using Cloud Functions. This allows you to implement more sophisticated logic and control over data fetching.
+</body>
+</html>
 
-**4.  Efficient Querying:**
-
-* **Use Indexes:** Ensure you have appropriate Firestore indexes defined for your queries.  The Firestore console will usually alert you if an index is needed.
-* **Limit Data Retrieval:** Only retrieve the fields you actually need in your queries using `select()`.
-* **Avoid `where` clauses that don't use indexed fields:** Firestore performs poorly with unindexed `where` clauses.
+```
 
 ## Explanation
 
-The code implements client-side pagination. The `fetchPostsPage` function fetches a limited number of posts (`pageSize`) ordered by timestamp. The `lastVisible` parameter keeps track of the last document fetched, allowing you to fetch subsequent pages. The `getPosts` function iterates until no more posts are found, collecting them into `allPosts`.  This avoids loading the entire collection into memory at once.
-
-Using `orderBy("timestamp", "desc")` ensures that newer posts are fetched first.  Remember to replace `"timestamp"` with the actual field name you use for post timestamps.
+The code uses an SVG to create the circles.  The `stroke-dasharray` property defines the total length of the circle's stroke, which we calculate as the circumference. `stroke-dashoffset` controls how much of the stroke is initially hidden.  The CSS animation smoothly reduces `stroke-dashoffset` to 0, revealing the progress bar. The `var(--progress)` custom property allows easy percentage adjustment.  Remember to adjust `stroke-dasharray` if you change the radius of the circle.
 
 
-## External References
+## Links to Resources to Learn More
 
-* **Firebase Firestore Documentation:** [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
-* **Firebase Firestore Querying:** [https://firebase.google.com/docs/firestore/query-data/queries](https://firebase.google.com/docs/firestore/query-data/queries)
-* **Understanding Firestore Indexes:** [https://firebase.google.com/docs/firestore/query-data/indexes](https://firebase.google.com/docs/firestore/query-data/indexes)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **SVG in CSS:** [MDN Web Docs - SVG](https://developer.mozilla.org/en-US/docs/Web/SVG)
+* **CSS Variables (Custom Properties):** [MDN Web Docs - CSS Variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

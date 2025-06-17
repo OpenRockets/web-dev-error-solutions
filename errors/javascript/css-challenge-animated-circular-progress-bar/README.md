@@ -1,95 +1,101 @@
 # 🐞 CSS Challenge:  Animated Circular Progress Bar
 
 
-This challenge involves creating an animated circular progress bar using only CSS.  We'll achieve this effect using CSS animations and transformations, avoiding JavaScript entirely. The bar will be visually appealing and easily customizable for different percentages.  This example uses plain CSS; adapting it to Tailwind CSS would involve translating the classes and values.
+This challenge focuses on creating an animated circular progress bar using pure CSS.  We'll leverage CSS animations and transformations to achieve a visually appealing and smooth progress indicator.  No JavaScript is required!
 
 
 ## Description of the Styling
 
-The progress bar will be a circle with a background color.  A semi-circle on top will represent the progress, animating to fill the circle based on a percentage value.  We'll use `clip-path` to create the semi-circle and CSS animations to control the filling effect.  The percentage will be displayed in the center of the circle.
+The goal is to create a circular progress bar that visually represents a percentage. The bar should fill up from 0% to a specified percentage, animating the fill smoothly.  The styling will include:
+
+* A circular base (the background track).
+* A circular overlay (the progress indicator) that animates its stroke-dashoffset to represent the percentage.
+* Customizable colors for the base and progress.
+* Clean and semantic HTML structure.
+
 
 ## Full Code (CSS Only)
 
 ```css
+/* Base styles */
 .progress-ring {
   width: 150px;
   height: 150px;
-  border-radius: 50%;
-  background-color: #f2f2f2; /* Light gray background */
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
-.progress-ring::before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  clip-path: circle(50% at 50% 100%); /* Bottom half of the circle */
-  background-color: #4CAF50; /* Green progress color */
-  animation: progress-animation 2s linear forwards; /* Animation defined below */
+.progress-ring svg {
+  transform: rotate(-90deg); /* Start the animation from the top */
 }
 
-.progress-ring span {
-  position: absolute;
-  font-size: 1.2em;
-  font-weight: bold;
-  color: white;
+.progress-ring circle {
+  fill: transparent;
+  stroke-width: 10;
+  stroke-linecap: round;
+  /* Stroke dasharray and dashoffset to control animation */
+  stroke-dasharray: 471.2388980384689; /* Circumference of the circle */
 }
 
+.progress-ring .progress-background {
+  stroke: #ddd; /* Background color of the ring */
+}
 
+.progress-ring .progress-foreground {
+  stroke: #4CAF50; /* Progress bar color */
+  stroke-dashoffset: 471.2388980384689; /* Initially, fully hidden */
+  animation: progress-animation 2s linear forwards; /* Animation */
+}
+
+/* Keyframes for the animation */
 @keyframes progress-animation {
-  0% {
-    clip-path: circle(0% at 50% 100%);
-  }
-  100% {
-    clip-path: circle(50% at 50% 100%);
+  to {
+    stroke-dashoffset: 0; /* Animate to 0 to show the progress */
   }
 }
 
-/* Example usage to set progress (adjust the percentage in the class name): */
-.progress-ring.progress-75::before {
-  animation: progress-animation-75 2s linear forwards;
+/*  To control percentage, update CSS variable --progress */
+:root {
+  --progress: 75; /* Adjust this value to change progress percentage */
 }
 
-@keyframes progress-animation-75 {
-  0% {
-    clip-path: circle(0% at 50% 100%);
-  }
-  100% {
-    clip-path: circle(75% at 50% 100%);
-  }
-}
-
-.progress-ring.progress-75 span {
-  content: "75%";
+.progress-ring .progress-foreground {
+  stroke-dashoffset: calc(471.2388980384689 * (1 - var(--progress) / 100));
 }
 
 
 ```
 
-To use this, create a `<div>` with the class `progress-ring` and add a `<span>` inside for the percentage.  To adjust the progress, add a class like `progress-75` (or any other percentage) to the container div.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Circular Progress Bar</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+<div class="progress-ring">
+  <svg width="150" height="150">
+    <circle class="progress-background" cx="75" cy="75" r="60"/>
+    <circle class="progress-foreground" cx="75" cy="75" r="60"/>
+  </svg>
+</div>
+
+</body>
+</html>
+
+```
 
 ## Explanation
 
-1. **Base Structure:** The `.progress-ring` class creates the base circular structure using `border-radius: 50%`. The `::before` pseudo-element creates the semi-circle progress indicator.
-
-2. **`clip-path`:** This property is crucial for creating the semi-circular shape. `circle(50% at 50% 100%)` creates a circle with a radius of 50% (half the width/height), positioned at the bottom (100% y-coordinate).
-
-3. **Animations:** The `@keyframes` define the animation.  It starts with a circle of 0% radius and expands to 50% (a full semi-circle) over the specified duration.  Custom percentage classes (like `progress-75`) allow for different animations using dynamic keyframes.
-
-4. **Customization:**  The colors, sizes, and animation duration can be easily changed by modifying the CSS variables.
+The code uses an SVG to create the circles.  The `stroke-dasharray` property defines the total length of the circle's stroke, which we calculate as the circumference. `stroke-dashoffset` controls how much of the stroke is initially hidden.  The CSS animation smoothly reduces `stroke-dashoffset` to 0, revealing the progress bar. The `var(--progress)` custom property allows easy percentage adjustment.  Remember to adjust `stroke-dasharray` if you change the radius of the circle.
 
 
-## Resources to Learn More
+## Links to Resources to Learn More
 
-* **MDN Web Docs on `clip-path`:** [https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
-* **CSS-Tricks on Animations:** [https://css-tricks.com/almanac/properties/a/animation/](https://css-tricks.com/almanac/properties/a/animation/)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **SVG in CSS:** [MDN Web Docs - SVG](https://developer.mozilla.org/en-US/docs/Web/SVG)
+* **CSS Variables (Custom Properties):** [MDN Web Docs - CSS Variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
