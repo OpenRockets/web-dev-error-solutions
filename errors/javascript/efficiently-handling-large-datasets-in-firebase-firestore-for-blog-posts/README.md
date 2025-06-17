@@ -1,3 +1,5 @@
+# 🐞 Efficiently Handling Large Datasets in Firebase Firestore for Blog Posts
+
 
 This document addresses a common problem developers encounter when storing a large number of blog posts in Firebase Firestore: **performance degradation due to inefficient data querying and structuring.**  As the number of posts grows, fetching and displaying them can become slow, leading to a poor user experience. This is especially true if you're fetching all posts at once or using inefficient queries.
 
