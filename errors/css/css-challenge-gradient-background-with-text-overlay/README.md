@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Gradient Background with Text Overlay
+
 
 This challenge involves creating a visually appealing background using CSS gradients and overlaying text that remains highly readable despite the background's complexity.  We'll use CSS3 for this implementation.  The goal is to create a clean and modern look that's responsive across different screen sizes.
 
