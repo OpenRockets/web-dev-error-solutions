@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Modern Navigation Bar with Tailwind CSS
+
 
 This challenge focuses on creating a modern, responsive navigation bar using Tailwind CSS.  The design emphasizes clean lines, subtle hover effects, and a mobile-first approach. The navbar will include a logo, several navigation links, and a button.
 
