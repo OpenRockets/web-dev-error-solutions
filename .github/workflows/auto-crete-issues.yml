@@ -27,7 +27,7 @@ jobs:
           -d '{
             "contents": [{
               "parts": [{
-                "text": "Generate a documentation with Markdown about a randomly chosen problem developers face in Firebase Firestore, data storing, post. Include:
+                "text": "Generate a documentation with Markdown about a randomly chosen problem developers face in Firebase Firestore, data storing and posts. Include:
                           - A Markdown H1 title
                           - Description of the error
                           - full code of fixing step by step
