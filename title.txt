@@ -1,1 +1,1 @@
-Overcoming "Too Many Connections" Errors in MongoDB
+CSS Challenge: Recreate a Simple Pricing Table
