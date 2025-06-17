@@ -1,61 +1,47 @@
 # 🐞 Overcoming the "Write Concern Error" in MongoDB
 
 
-This document addresses a common issue encountered when performing write operations in MongoDB: the `WriteConcernError`. This error indicates that a write operation did not meet the specified write concern, typically related to replication and data durability.
+This document addresses a common problem encountered when working with MongoDB's write operations: the `WriteConcernError`. This error signifies that a write operation (insert, update, delete) didn't meet the specified write concern settings.  This often stems from network issues, replica set issues, or improperly configured write concern parameters.
 
-**Description of the Error:**
 
-A `WriteConcernError` occurs when MongoDB fails to satisfy the specified write concern settings for a write operation (insert, update, delete). The write concern defines the level of acknowledgement required from the database servers before a write operation is considered successful. For example, a write concern of `w: 1` requires that at least one member of the replica set acknowledges the write, while `w: "majority"` requires a majority of members to acknowledge it.  Failure to meet the specified `w` setting results in this error.  Other write concern settings such as `wtimeoutMS` (timeout) can also contribute to the error.
+## Description of the Error
 
-**Scenario:**  Imagine a deployment with a replica set aiming for high data durability.  An application attempts an `insertOne` operation with a write concern set to `w: "majority"` (requiring a majority of the replica set members to acknowledge the write). However, a network issue prevents one or more secondary members from acknowledging the write within the `wtimeoutMS` timeframe.  This leads to a `WriteConcernError`.
+The `WriteConcernError` manifests as an exception during a write operation. The error message usually indicates that the write operation couldn't achieve the desired level of acknowledgment, such as acknowledging the write across a majority of replica set members (`w: majority`).  The specific error message varies slightly depending on the driver being used (e.g., Node.js, Python, etc.).  A common pattern is:
 
-**Step-by-Step Fix with Code:**
+```
+WriteConcernError: {
+  "ok": 0,
+  "errmsg": "Not enough data-bearing nodes available to meet write concern",
+  "code": 133,
+  "codeName": "WriteConcernFailed"
+}
+```
 
-Let's assume we're using the official MongoDB Node.js driver.  The code below demonstrates the problem and then shows how to handle it effectively:
+This implies the database couldn't write the data reliably according to the specified write concern.
+
+
+## Fixing the Error Step-by-Step
+
+Let's address this using the Node.js MongoDB driver as an example.  Assume we're inserting data into a collection named `users`.
+
+**Step 1: Identify the Write Concern**
+
+First, examine your write operation code. The write concern is often implicitly set, but you can explicitly control it.  Here's an example without explicit write concern:
 
 ```javascript
 const { MongoClient } = require('mongodb');
-
-// Connection string (replace with yours)
-const uri = "mongodb://localhost:27017/?replicaSet=myReplicaSet"; 
+const uri = "mongodb://localhost:27017/?readPreference=primary"; // Replace with your connection string
 const client = new MongoClient(uri);
 
 async function run() {
   try {
     await client.connect();
-    const database = client.db('mydb');
-    const collection = database.collection('myCollection');
+    const database = client.db('myDatabase');
+    const collection = database.collection('users');
 
-    // Incorrect: No write concern specified, defaults to unacknowledged. Prone to WriteConcernError in replica sets
-    // const result = await collection.insertOne({ name: "Alice", age: 30 });
-
-    // Correct: Explicitly setting write concern. Note `w: "majority"`
-    const result = await collection.insertOne({ name: "Bob", age: 25 }, { writeConcern: { w: "majority" , wtimeoutMS: 5000 }});
-    console.log(`Inserted ${result.insertedCount} document`);
-
-    // Example of handling WriteConcernError (using try...catch)
-    try {
-        const result2 = await collection.insertOne({name: "Charlie", age: 40}, {writeConcern: {w: "majority", wtimeoutMS: 1000}}); // intentionally short timeout for demo
-        console.log(`Inserted ${result2.insertedCount} documents`);
-    } catch (error) {
-        if (error.codeName === 'WriteConcernError'){
-            console.error("WriteConcernError occurred:", error);
-            //Implement retry logic or other error handling here. For example, you could retry the operation after a delay
-            console.log("Attempting to retry the operation...");
-            setTimeout(async () => {
-                try {
-                    const resultRetry = await collection.insertOne({name: "Charlie", age: 40}, {writeConcern: {w: "majority", wtimeoutMS: 5000}});
-                    console.log(`Retry successful. Inserted ${resultRetry.insertedCount} documents`);
-                } catch (retryError){
-                    console.error("Retry failed:", retryError);
-                }
-            }, 5000); // Retry after 5 seconds
-        } else {
-            console.error("Another error occurred:", error);
-        }
-    }
-
-
+    const doc = { name: "John Doe", age: 30 };
+    const result = await collection.insertOne(doc);
+    console.log(`Inserted ${result.insertedCount} documents`);
   } finally {
     await client.close();
   }
@@ -63,15 +49,65 @@ async function run() {
 run().catch(console.dir);
 ```
 
-**Explanation:**
+**Step 2: Explicitly Set Write Concern (Recommended)**
 
-The corrected code explicitly sets the `writeConcern` option in the `insertOne` method.  `w: "majority"` ensures that a majority of replica set members acknowledge the write before the operation is considered successful. `wtimeoutMS` sets a timeout for the operation. The `try...catch` block demonstrates robust error handling by specifically catching `WriteConcernError` and implementing a retry mechanism.  Always handle potential errors in your code to prevent unexpected application behaviour.
+For better control and error handling, explicitly set the write concern.  A common setting is `w: 'majority'`, ensuring the write is acknowledged by a majority of the replica set members:
 
-**External References:**
+```javascript
+const { MongoClient } = require('mongodb');
+const uri = "mongodb://localhost:27017/?readPreference=primary"; //Replace with your connection string
+const client = new MongoClient(uri);
 
-* [MongoDB Write Concern Documentation](https://www.mongodb.com/docs/manual/core/write-concern/)
-* [MongoDB Node.js Driver Documentation](https://www.mongodb.com/docs/drivers/node/current/)
-* [Handling Errors in MongoDB Node.js Driver](https://www.mongodb.com/docs/drivers/node/current/fundamentals/error-handling/)
+async function run() {
+  try {
+    await client.connect();
+    const database = client.db('myDatabase');
+    const collection = database.collection('users');
+
+    const doc = { name: "John Doe", age: 30 };
+    const result = await collection.insertOne(doc, { writeConcern: { w: 'majority' } });
+    console.log(`Inserted ${result.insertedCount} documents`);
+  } finally {
+    await client.close();
+  }
+}
+run().catch(console.dir);
+```
+
+**Step 3: Handle the Error Gracefully**
+
+Wrap the write operation in a `try...catch` block to handle potential `WriteConcernError` exceptions:
+
+
+```javascript
+async function run() {
+  try {
+    // ... (code from Step 2) ...
+  } catch (error) {
+    if (error.errorLabels && error.errorLabels.includes('WriteConcernError')) {
+      console.error("WriteConcernError:", error);
+      // Implement retry logic or alternative handling here. For example, you might log the error, attempt a retry after a delay, or notify an administrator.
+    } else {
+      console.error("An unexpected error occurred:", error);
+    }
+  }
+}
+```
+
+**Step 4: Check Replica Set Health (If Applicable)**
+
+If you're using a replica set, ensure all members are running and communicating correctly. Use the `mongostat` command or your MongoDB management tools to monitor the replica set's health.  A single node failure can lead to `WriteConcernError` if `w: 'majority'` is used.
+
+
+## Explanation
+
+The `WriteConcernError` indicates a mismatch between the desired level of data persistence and what the database could achieve.  By explicitly setting the write concern and handling errors, you gain better control over data reliability.  The `w` parameter dictates the number of nodes that must acknowledge the write. Using `w: 'majority'` ensures data durability even in the case of node failures, but it also means that writes will fail if a sufficient majority of nodes aren't available.
+
+
+## External References
+
+* **MongoDB Write Concern Documentation:** [https://www.mongodb.com/docs/manual/core/write-concern/](https://www.mongodb.com/docs/manual/core/write-concern/)
+* **Node.js MongoDB Driver Documentation:** [https://mongodb.github.io/node-mongodb-native/](https://mongodb.github.io/node-mongodb-native/) (or relevant driver documentation for your language)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
