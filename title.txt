@@ -1,1 +1,1 @@
-CSS Challenge: Responsive Pricing Table
+Overcoming MongoDB's "Too many open files" Error
