@@ -1,1 +1,1 @@
-Overcoming "Too Many Documents to Scan" in MongoDB Queries
+Overcoming the "Too Many Indexes" Problem in MongoDB
