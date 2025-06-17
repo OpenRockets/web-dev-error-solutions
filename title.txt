@@ -1,1 +1,1 @@
-CSS Challenge:  Modern Product Card with Tailwind CSS
+Overcoming "Too Many Indexes" Error in MongoDB
