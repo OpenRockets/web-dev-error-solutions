@@ -1,1 +1,1 @@
-Handling Firestore Data Updates and Concurrent Writes for Posts
+Efficiently Storing and Retrieving Large Post Datasets in Firebase Firestore
