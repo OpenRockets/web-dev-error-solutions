@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Navigation Bar with a Dark Mode Toggle
+
 
 This challenge focuses on creating a responsive navigation bar that adapts to different screen sizes and includes a toggle for switching between light and dark mode. We'll use CSS3 for styling and leverage media queries for responsiveness.  No external libraries like Tailwind CSS are used to emphasize core CSS concepts.
 
