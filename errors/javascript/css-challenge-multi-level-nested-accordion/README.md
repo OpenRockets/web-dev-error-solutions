@@ -1,112 +1,105 @@
 # 🐞 CSS Challenge:  Multi-level Nested Accordion
 
 
-This challenge involves creating a multi-level nested accordion using CSS.  The accordion will allow users to expand and collapse sections, with subsections nested within each section.  We'll be using pure CSS3 for styling, avoiding JavaScript for the dynamic behavior.
+This challenge involves creating a multi-level nested accordion using CSS.  The accordion will allow users to expand and collapse sections, with sub-sections nested within the main sections.  We'll achieve this using only CSS, leveraging the power of the `:target` pseudo-class and sibling selectors. No JavaScript will be used.
+
 
 **Description of the Styling:**
 
-The accordion will have a clean and modern look. Each section and subsection will be clearly delineated using borders, padding, and background colors. The section titles will be visually distinct, perhaps using a bolder font weight or a different color.  The animation of expanding and collapsing will be smooth and unobtrusive.  We'll aim for a design that's accessible and works well on different screen sizes.
+The accordion will have a clean and modern look.  Each section will have a heading that, when clicked, expands to reveal its content (and any nested sub-sections).  The expanded sections will smoothly slide down. We'll use a subtle background color to differentiate sections and a clear visual cue (e.g., a plus/minus icon or arrow) to indicate expansion/collapse.  We'll style it to be responsive, adapting well to different screen sizes.
 
-**Full Code:**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Nested Accordion</title>
-<style>
+**Full Code (CSS only):**
+
+```css
 body {
   font-family: sans-serif;
 }
 
 .accordion {
-  width: 300px;
-  border: 1px solid #ccc;
+  width: 80%;
+  margin: 20px auto;
 }
 
 .accordion-item {
-  border-bottom: 1px solid #ccc;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  overflow: hidden; /* Hide content initially */
 }
 
 .accordion-header {
   background-color: #f0f0f0;
-  padding: 10px;
+  padding: 15px;
   cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.accordion-header::before {
+  content: "+"; /* Plus sign initially */
   font-weight: bold;
+  transition: transform 0.3s ease; /* Smooth transition for icon */
+}
+
+.accordion-header:target::before {
+  content: "-"; /* Minus sign when expanded */
+  transform: rotate(45deg); /* Rotate the plus sign to an "x" */
 }
 
 .accordion-content {
-  padding: 10px;
-  display: none; /* Initially hidden */
-  overflow: hidden; /* Prevents content from overflowing while animating */
-  transition: max-height 0.3s ease-out; /* Smooth animation */
+  padding: 15px;
+  max-height: 0; /* Initially collapsed */
+  overflow: hidden;
+  transition: max-height 0.3s ease; /* Smooth transition for height */
 }
 
-.accordion-item.active .accordion-content {
-  display: block;
-  max-height: 500px; /* Adjust as needed */
+.accordion-header:target ~ .accordion-content {
+  max-height: 200px; /* Adjust as needed */
 }
 
 /* Nested Accordion Styling */
 .nested-accordion {
-  margin-left: 20px;
+    margin-left: 20px;
 }
 
-.nested-accordion .accordion-item {
-  border-bottom: 1px solid #eee;
-}
+```
 
-</style>
-</head>
-<body>
+**HTML Structure (Example):**
 
+```html
 <div class="accordion">
   <div class="accordion-item">
-    <div class="accordion-header">Section 1</div>
+    <a class="accordion-header" href="#section1">Section 1</a>
     <div class="accordion-content">
-      Content of Section 1.
+      Content for Section 1.
+
       <div class="nested-accordion">
         <div class="accordion-item">
-          <div class="accordion-header">Subsection 1.1</div>
-          <div class="accordion-content">Content of Subsection 1.1</div>
-        </div>
-        <div class="accordion-item">
-          <div class="accordion-header">Subsection 1.2</div>
-          <div class="accordion-content">Content of Subsection 1.2</div>
+          <a class="accordion-header" href="#section1-1">Subsection 1.1</a>
+          <div class="accordion-content">Content for Subsection 1.1</div>
         </div>
       </div>
     </div>
   </div>
   <div class="accordion-item">
-    <div class="accordion-header">Section 2</div>
-    <div class="accordion-content">Content of Section 2.</div>
+    <a class="accordion-header" href="#section2">Section 2</a>
+    <div class="accordion-content">Content for Section 2.</div>
   </div>
 </div>
-
-<script>
-const accordionHeaders = document.querySelectorAll('.accordion-header');
-accordionHeaders.forEach(header => {
-  header.addEventListener('click', () => {
-    const item = header.parentElement;
-    item.classList.toggle('active');
-  });
-});
-</script>
-
-
-</body>
-</html>
 ```
+
 
 **Explanation:**
 
-The CSS uses the `display: none;` and `max-height` properties combined with a transition for smooth animation. The JavaScript adds event listeners to the header elements to toggle the `active` class, which controls the visibility of the content.  The nested accordion structure is achieved by simply embedding another `accordion` within a section's content. The key is the use of CSS to style the nested items appropriately.
+This code utilizes CSS's `:target` pseudo-class to control the visibility of the accordion content.  When a header link is clicked, the browser navigates to the corresponding `id` (e.g., `#section1`), making that header the target.  The `:target ~ .accordion-content` selector then targets the sibling content div and changes its `max-height` property to reveal the content.  The plus/minus icon is toggled using the `::before` pseudo-element and CSS transforms.  The `transition` property ensures smooth animations. The nested accordion works by applying the same CSS rules recursively to the inner accordion elements.
+
 
 **Links to Resources to Learn More:**
 
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
-* **Accordion Pattern:** [Various articles on accordion implementations on sites like CSS-Tricks](https://css-tricks.com/) (Search for "CSS accordion")
+* **MDN Web Docs CSS Selectors:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
+* **MDN Web Docs :target Pseudo-class:** [https://developer.mozilla.org/en-US/docs/Web/CSS/:target](https://developer.mozilla.org/en-US/docs/Web/CSS/:target)
+* **CSS Transitions:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transition](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
