@@ -1,120 +1,127 @@
 
-This challenge focuses on styling a multi-level nested list using CSS, achieving a visually appealing and easily navigable hierarchy. We'll use standard CSS (no frameworks like Tailwind are needed for this specific example, although they could be used).  The goal is to create a nested list that clearly differentiates levels through indentation, different bullet styles, and color variations.
+**Description of the Error:**
 
-**Description of the Styling:**
+Developers often encounter performance issues when storing and retrieving large amounts of data associated with posts in Firebase Firestore.  This is particularly true if each post contains extensive details like images, long text descriptions, or multiple user-related fields.  Directly storing all this data within a single Firestore document can lead to slow read/write operations, exceed document size limits (1MB), and negatively impact application responsiveness. This can manifest as slow loading times for users viewing posts, sluggish post creation processes, and even application crashes.
 
-The styling will incorporate the following elements:
+**Fixing the Problem Step-by-Step:**
 
-* **Indentation:** Each nested level will be indented further to the right.
-* **Bullet Styles:** The top-level list items will use circles, the second level will use squares, and the third level will use triangles.
-* **Color Variation:**  Each level will have a slightly different text color to improve readability and hierarchy.
-* **Background Colors:** Alternate background colors will be applied to list items for better visual separation.
+The solution involves adopting a data normalization strategy. Instead of storing all post data in one document, we'll break it down into smaller, manageable units. This example focuses on separating images and main post content:
 
+**Step 1: Data Model Refactoring**
 
-**Full Code:**
+We'll create two collections: `posts` and `images`.
 
-```css
-ul {
-  list-style: none; /* Remove default bullet points */
-  padding: 0;
-  margin-bottom: 1em;
+*   **`posts` Collection:** This collection will store essential post information like title, author ID, timestamps, and a reference to images.  Each document will have an ID.  Example document structure:
+
+```json
+{
+  "postId": "post123",
+  "title": "My Awesome Post",
+  "authorId": "user456",
+  "timestamp": 1678886400,
+  "imageRefs": ["image789", "image101"] // Array of image IDs
 }
+```
 
-li {
-  margin-left: 20px; /* Indentation */
-}
+*   **`images` Collection:** This collection will store image metadata and URLs.  Each document will have an ID corresponding to the `imageRefs` in the `posts` collection. Example document structure:
 
-ul > li { /* Top-level list items */
-  list-style-type: disc;
-  color: #333;
-}
-
-ul > li::before {
-  content: "";
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  margin-left: -20px;
-  margin-right: 5px;
-  border-radius: 50%; /* Circle */
-  background-color: #007bff;
-}
-
-ul > li:nth-child(even) { /* Alternate background color */
-  background-color: #f2f2f2;
-}
-
-ul ul > li { /* Second-level list items */
-  list-style-type: square;
-  color: #555;
-}
-
-ul ul > li::before {
-  content: "";
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  margin-left: -20px;
-  margin-right: 5px;
-  background-color: #28a745;
-}
-
-ul ul ul > li { /* Third-level list items */
-  list-style-type: triangle;
-  color: #777;
-}
-
-ul ul ul > li::before {
-  content: "";
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  margin-left: -20px;
-  margin-right: 5px;
-  border-left: 5px solid #dc3545;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  
+```json
+{
+  "imageId": "image789",
+  "imageUrl": "https://example.com/image789.jpg",
+  "thumbnailUrl": "https://example.com/image789_thumb.jpg" //Optional
 }
 ```
 
 
-**HTML (Example to use with the CSS):**
+**Step 2: Code Implementation (using Node.js with the Firebase Admin SDK)**
 
-```html
-<ul>
-  <li>Item 1
-    <ul>
-      <li>Sub-item 1.1
-        <ul>
-          <li>Sub-sub-item 1.1.1</li>
-          <li>Sub-sub-item 1.1.2</li>
-        </ul>
-      </li>
-      <li>Sub-item 1.2</li>
-    </ul>
-  </li>
-  <li>Item 2
-    <ul>
-      <li>Sub-item 2.1</li>
-      <li>Sub-item 2.2</li>
-    </ul>
-  </li>
-  <li>Item 3</li>
-</ul>
+This example demonstrates adding and retrieving a post:
+
+```javascript
+const admin = require('firebase-admin');
+admin.initializeApp();
+const db = admin.firestore();
+
+// Add a new post
+async function addPost(title, authorId, imageUrls) {
+  const postRef = db.collection('posts').doc();
+  const postId = postRef.id;
+  const imageRefs = [];
+
+  const imagePromises = imageUrls.map(async (imageUrl) => {
+    const imageRef = db.collection('images').doc();
+    const imageId = imageRef.id;
+    await imageRef.set({ imageId, imageUrl, thumbnailUrl: `${imageUrl}_thumb` }); //Add thumbnail logic as needed
+    imageRefs.push(imageId);
+  });
+  
+  await Promise.all(imagePromises);
+  await postRef.set({ postId, title, authorId, timestamp: Date.now(), imageRefs });
+  console.log('Post added:', postId);
+}
+
+
+// Retrieve a post and its images
+async function getPost(postId) {
+  const postDoc = await db.collection('posts').doc(postId).get();
+  if (!postDoc.exists) {
+    console.log('Post not found');
+    return null;
+  }
+  const postData = postDoc.data();
+  const imagePromises = postData.imageRefs.map(imageId => db.collection('images').doc(imageId).get());
+  const imageDocs = await Promise.all(imagePromises);
+  const images = imageDocs.map(doc => doc.data());
+  return { ...postData, images };
+}
+
+
+// Example usage
+addPost("My Second Post", "user123", ["https://example.com/image1.jpg", "https://example.com/image2.jpg"])
+  .then(() => getPost("post123").then(post => console.log(post)))
+  .catch(error => console.error('Error:', error));
+
+```
+
+**Step 3:  Client-Side Retrieval (Example using JavaScript)**
+
+Adapt the retrieval to fit your client-side framework:
+
+```javascript
+// Assuming you have Firebase initialized on the client-side
+const db = firebase.firestore();
+
+db.collection("posts").doc("post123").get()
+.then(doc => {
+    if (doc.exists){
+        const postData = doc.data();
+        const imagePromises = postData.imageRefs.map(imageId => db.collection("images").doc(imageId).get())
+        Promise.all(imagePromises).then(imageDocs => {
+            const images = imageDocs.map(doc => doc.data().imageUrl)
+            console.log("Post Data:", postData)
+            console.log("Images", images)
+        })
+    } else {
+        console.log("Post not found")
+    }
+})
 ```
 
 
 **Explanation:**
 
-The CSS utilizes `list-style-type` to change the bullet style for each level.  The `::before` pseudo-element is used to create custom bullet points with specific shapes and colors.  `nth-child` is used for alternating background colors, improving visual organization. Indentation is managed using `margin-left`.  The code is well-commented to explain each section.
+This approach significantly improves performance by:
 
+*   **Reducing document size:**  Individual documents are smaller, leading to faster reads and writes.
+*   **Improved query performance:** Retrieving a single post doesn't require loading potentially large amounts of image data.
+*   **Scalability:** The system can handle a much larger number of posts and images efficiently.
 
-**Links to Resources to Learn More:**
+**External References:**
 
-* **MDN Web Docs - CSS Lists:** [https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type](https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type)
-* **MDN Web Docs - CSS Pseudo-elements:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements)
-* **CSS-Tricks - Lists:** [https://css-tricks.com/almanac/selectors/n/nth-child/](https://css-tricks.com/almanac/selectors/n/nth-child/) (For `nth-child` selector)
+*   [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
+*   [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
+*   [Data Modeling in NoSQL Databases](https://en.wikipedia.org/wiki/Data_modeling#NoSQL_data_modeling)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
