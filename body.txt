@@ -1,60 +1,127 @@
 
-## Description of the Error
+This challenge involves creating a responsive, multi-level navigation menu using CSS.  The menu should gracefully adapt to different screen sizes, ensuring usability on both desktops and mobile devices.  We'll use CSS3 for styling and achieve responsiveness through media queries.
 
-A common problem encountered when sharding a MongoDB cluster is choosing an inappropriate shard key.  A poorly chosen shard key can lead to several performance bottlenecks:
+## Description of the Styling:
 
-* **Data Skew:**  If the shard key doesn't distribute data evenly across shards, some shards will become overloaded while others remain underutilized. This leads to performance degradation and potential slowdowns for queries involving the shard key.
-* **Inefficient Queries:** If queries frequently filter on fields *not* included in the shard key, MongoDB may need to perform a "collection scan" across multiple shards, significantly impacting query performance.  This can negate the benefits of sharding entirely.
-* **Slow Resharding:** An inefficient shard key can make re-sharding (rebalancing data across shards) extremely slow and resource-intensive.
+The navigation menu will be a vertical stack on smaller screens (mobile) and a horizontal menu on larger screens (desktops and tablets).  Sub-menus will appear on hover (desktop) or on click (mobile) to avoid cluttering the screen.  We'll utilize a clean, modern aesthetic with subtle hover effects and clear visual hierarchy.
 
-This example focuses on data skew arising from a poorly chosen shard key in an e-commerce application.
 
-## Code: Fixing Step-by-Step
+## Full Code:
 
-Let's assume we have an e-commerce application storing product data with a collection named `products`. Initially, the `_id` field (automatically generated ObjectId) was used as the shard key.  However, this led to significant data skew as products are not uniformly distributed across `_id` values.  Instead, let's use the `category` field as the shard key (assuming product categories are more evenly distributed).
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responsive Multi-Level Menu</title>
+<style>
+body {
+  font-family: sans-serif;
+  margin: 0;
+}
 
-**Step 1: Identify the Problem (Monitoring)**
+.nav {
+  background-color: #333;
+  color: white;
+  overflow: hidden;
+}
 
-Before changing the shard key, it's crucial to monitor your cluster's performance. Tools like MongoDB Compass or the `mongostat` command-line utility can reveal imbalances in shard usage. Look for shards with significantly higher read/write operations or higher storage usage.
+.nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
 
-**Step 2: Unshard the Collection**
+.nav li {
+  float: left; /* For horizontal layout on larger screens */
+}
 
-First, we need to unshard the existing `products` collection.
+.nav li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
 
-```bash
-sh.unshardCollection("products")
+.nav li a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+
+.nav ul ul {
+  display: none; /* Hide sub-menus by default */
+  position: absolute;
+  background-color: #333;
+}
+
+.nav li:hover > ul {
+  display: block; /* Show sub-menu on hover (desktop) */
+}
+
+/* Mobile Styles */
+@media screen and (max-width: 600px) {
+  .nav li {
+    float: none; /* Remove horizontal layout */
+  }
+  .nav li a {
+    display: block; /* Make menu items stack vertically */
+  }
+  .nav ul ul {
+    display: none; /* Hide sub-menus by default */
+  }
+  .nav li:hover > ul {
+    display: none; /* Prevent accidental hover on mobile */
+  }
+  .nav li a {
+      padding: 10px;
+  }
+  .nav li a.active {
+        background-color: #555;
+  }
+  .nav li a.active + ul{
+        display:block;
+  }
+}
+
+/* Add active class for better navigation (Mobile) */
+.nav ul li a:focus {
+  color: black;
+  background-color: #ddd;
+}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <ul>
+    <li><a href="#">Home</a></li>
+    <li><a href="#">About</a></li>
+    <li><a href="#">Services</a>
+      <ul>
+        <li><a href="#">Service 1</a></li>
+        <li><a href="#">Service 2</a></li>
+        <li><a href="#">Service 3</a></li>
+      </ul>
+    </li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+</div>
+
+</body>
+</html>
 ```
 
-**Step 3: Reshard the Collection with a New Shard Key**
+## Explanation:
 
-Now, we'll reshard the collection using the `category` field as the shard key:
+The code uses a combination of `float`, `position: absolute`, and media queries to achieve the desired responsiveness.  The base styles create a horizontal menu.  The `@media` query modifies the styles for smaller screens, removing the `float` and displaying menu items vertically.  The crucial part is the interaction of `display: none` and `display: block` to show and hide submenus based on the screen size and user interaction (hover or click).  Clicking on a menu item on mobile adds an active class, showing the submenu.
 
-```bash
-sh.shardCollection("products", { key: { category: 1 } })
-```
+## Links to Resources to Learn More:
 
-**Step 4: Verify the Changes**
+* **CSS3 Selectors:** [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Selectors)
+* **CSS3 Media Queries:** [MDN Web Docs - Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **CSS Positioning:** [MDN Web Docs - CSS Positioning](https://developer.mozilla.org/en-US/docs/Web/CSS/position)
 
-After resharding, verify the data distribution across shards using `sh.status()`.  Observe if the data is more evenly distributed. Use `mongostat` to monitor the impact on performance.
-
-**Step 5: (Optional) Migrate Data for better balance**
-
-If the data distribution is still uneven, it might necessitate migrating data within the collection to achieve better balance after the resharding.  This often involves a more complex process, possibly including temporary data copies and data redistribution.
-
-## Explanation
-
-The `sh.shardCollection()` command specifies the shard key, which is a field or compound field used to distribute data across shards.  Choosing the right shard key is critical for optimal performance.  A good shard key exhibits the following properties:
-
-* **Even Data Distribution:** Ensures relatively uniform data distribution across shards.
-* **Query Selectivity:** The shard key should be frequently used in query filters to ensure that data requests are directed to the relevant shard.
-
-In our case, changing the shard key from `_id` to `category` improves data distribution if product categories are reasonably balanced. If that's not the case, other candidates will have to be found.
-
-## External References
-
-* **MongoDB Sharding Documentation:** [https://www.mongodb.com/docs/manual/sharding/](https://www.mongodb.com/docs/manual/sharding/)
-* **MongoDB Sharding Best Practices:** [https://www.mongodb.com/blog/post/best-practices-for-mongodb-sharding](https://www.mongodb.com/blog/post/best-practices-for-mongodb-sharding) (This link might require an account or may change over time. Search for MongoDB sharding best practices for an updated link)
-* **Understanding Data Skew in MongoDB:** (Search for relevant blog posts or articles on this topic, there is no single definitive link)
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
