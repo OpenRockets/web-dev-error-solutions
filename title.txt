@@ -1,1 +1,1 @@
-CSS Challenge: Responsive Product Card with Tailwind CSS
+Overcoming MongoDB's "Too Many Open Files" Error
