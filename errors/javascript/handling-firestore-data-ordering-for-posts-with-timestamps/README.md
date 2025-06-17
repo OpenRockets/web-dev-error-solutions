@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data Ordering for Posts with Timestamps
+
 
 This document addresses a common issue developers encounter when storing and retrieving posts in Firebase Firestore, specifically concerning proper data ordering based on timestamps to display posts in chronological order.  The problem arises when relying solely on automatic timestamp generation and failing to account for potential inconsistencies or the need for specific ordering within a query.
 
