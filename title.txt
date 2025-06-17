@@ -1,1 +1,1 @@
-CSS Challenge:  Shimmering Loading Effect with Tailwind CSS
+Overcoming the "Too Many Indexes" Problem in MongoDB
