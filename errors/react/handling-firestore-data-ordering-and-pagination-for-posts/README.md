@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data Ordering and Pagination for Posts
+
 
 This document addresses a common issue developers encounter when displaying a feed of posts from Firebase Firestore: efficiently handling data ordering and pagination to prevent loading all data at once and improve performance.  This is particularly crucial when dealing with a large number of posts.  Inefficient handling can lead to slow loading times, poor user experience, and even application crashes.
 
