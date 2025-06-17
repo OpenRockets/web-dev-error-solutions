@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Modern Product Card with Tailwind CSS
+
 
 This challenge focuses on building a visually appealing product card using Tailwind CSS. The card will showcase a product image, title, description, price, and a "Buy Now" button.  We'll utilize Tailwind's utility classes for efficient and responsive styling.
 
