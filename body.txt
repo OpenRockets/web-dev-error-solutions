@@ -1,115 +1,165 @@
 
-## Description of the Problem
-
-A common issue when working with Firebase Firestore and applications involving posts (e.g., blogs, social media feeds) is efficiently handling large amounts of data associated with each post.  Storing extensive text content, high-resolution images, or numerous embedded elements directly within a single Firestore document can lead to several problems:
-
-* **Document Size Limits:** Firestore documents have size limitations. Exceeding these limits results in errors preventing data storage or retrieval.
-* **Slow Query Performance:** Retrieving large documents can significantly slow down your application, especially when dealing with multiple posts or complex queries.
-* **Inefficient Data Management:**  Managing large, monolithic documents makes updates and modifications more complex and prone to errors.
-
-This problem arises because Firestore is a NoSQL document database optimized for smaller, well-structured documents.  Trying to force large amounts of data into a single document goes against this design philosophy.
+This challenge focuses on creating a responsive pricing table using CSS.  We'll build a clean, modern table that adapts well to different screen sizes, demonstrating techniques like flexbox and media queries.  This example uses plain CSS; adapting it to Tailwind CSS is a straightforward exercise (explained below).
 
 
-## Step-by-Step Solution:  Using Storage and Separate Collections
+## Description of the Styling
 
-The best approach is to break down the post data into smaller, manageable pieces and store them strategically across Firestore and Firebase Storage.
+The pricing table will consist of three pricing plans: Basic, Pro, and Premium.  Each plan will have a title, a list of features, a price, and a call-to-action button.  The styling will emphasize clean lines, clear visual hierarchy, and responsiveness.  The table should stack vertically on smaller screens.
 
-**1.  Firebase Storage for Media:**
 
-Use Firebase Storage to store large media files (images, videos).  This keeps your Firestore documents lean and improves performance.
+## Full Code (CSS)
 
-```javascript
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+```css
+body {
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  background-color: #f4f4f4;
+}
 
-const storage = getStorage();
+.pricing-table {
+  display: flex;
+  width: 80%;
+  max-width: 1200px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Prevents shadow from overflowing on smaller screens*/
+}
 
-async function uploadImage(image, postId) {
-  const storageRef = ref(storage, `posts/${postId}/image.jpg`); // Or use a unique filename
-  const uploadTask = uploadBytesResumable(storageRef, image);
+.plan {
+  flex: 1;
+  text-align: center;
+  padding: 20px;
+  background-color: #fff;
+}
 
-  return new Promise((resolve, reject) => {
-    uploadTask.on('state_changed',
-      (snapshot) => {
-        // Observe state change events such as progress, pause, and resume
-        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log('Upload is ' + progress + '% done');
-        switch (snapshot.state) {
-          case 'paused':
-            console.log('Upload is paused');
-            break;
-          case 'running':
-            console.log('Upload is running');
-            break;
-        }
-      },
-      (error) => {
-        // Handle unsuccessful uploads
-        reject(error);
-      },
-      () => {
-        // Handle successful uploads on complete
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          resolve(downloadURL);
-        });
-      }
-    );
-  });
+.plan h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.plan ul {
+  list-style: none;
+  padding: 0;
+}
+
+.plan li {
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.plan .price span {
+  font-size: 16px;
+  font-weight: normal;
+}
+
+.plan button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
 
-//Example usage
-const imageUrl = await uploadImage(imageBlob, 'postId123');
-console.log("Image URL:", imageUrl);
-```
-
-**2. Firestore for Metadata and Smaller Data:**
-
-Store post metadata (title, author, short description, timestamps, etc.) in a Firestore collection called `posts`.  Reference the media URLs from Storage within this collection.
-
-```javascript
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from './firebaseConfig'; //Import your firebase config
-
-async function createPost(title, author, shortDescription, imageUrl) {
-  try {
-    const docRef = await addDoc(collection(db, "posts"), {
-      title: title,
-      author: author,
-      shortDescription: shortDescription,
-      imageUrl: imageUrl,
-      timestamp: serverTimestamp(),
-    });
-    console.log("Document written with ID: ", docRef.id);
-  } catch (e) {
-    console.error("Error adding document: ", e);
+/* Responsive Design */
+@media (max-width: 768px) {
+  .pricing-table {
+    flex-direction: column; /* Stack plans vertically */
+  }
+  .plan {
+    width: 100%; /* Full width for each plan */
   }
 }
-
-// Example usage
-createPost("My Awesome Post", "John Doe", "A short description...", imageUrl);
 ```
 
-**3. Separate Collection for Long Text Content (Optional):**
+## HTML Structure (required to use the CSS)
 
-For very long text content (e.g., blog posts), consider storing this in a separate collection linked to the main `posts` collection. This prevents excessively large documents in the main collection.
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Responsive Pricing Table</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="pricing-table">
+    <div class="plan">
+      <h2>Basic</h2>
+      <ul>
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+      </ul>
+      <div class="price">$9<span>/month</span></div>
+      <button>Sign Up</button>
+    </div>
+    <div class="plan">
+      <h2>Pro</h2>
+      <ul>
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+        <li>Feature 4</li>
+        <li>Feature 5</li>
+      </ul>
+      <div class="price">$19<span>/month</span></div>
+      <button>Sign Up</button>
+    </div>
+    <div class="plan">
+      <h2>Premium</h2>
+      <ul>
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+        <li>Feature 4</li>
+        <li>Feature 5</li>
+        <li>Feature 6</li>
+      </ul>
+      <div class="price">$29<span>/month</span></div>
+      <button>Sign Up</button>
+    </div>
+  </div>
+</body>
+</html>
+
+```
 
 
 ## Explanation
 
-This approach leverages the strengths of both Firestore and Storage.  Firestore manages structured metadata efficiently, while Storage handles large binary files, resulting in:
-
-* **Improved performance:** Faster query times and reduced latency.
-* **Scalability:** Easier to handle a growing number of posts without performance degradation.
-* **Simplified data management:** Easier to update and maintain individual components of a post.
-* **Compliance with document size limits:** Avoids exceeding Firestore's document size constraints.
+The CSS utilizes flexbox for easy layout management. The `.pricing-table` is a flex container, distributing the plans equally across the available width.  Media queries handle responsiveness, changing the flex direction to column on smaller screens to stack the plans vertically.  Classes are used for semantic styling, making the code easy to understand and maintain.
 
 
-## External References
+## Adapting to Tailwind CSS
 
-* **Firebase Storage Documentation:** [https://firebase.google.com/docs/storage](https://firebase.google.com/docs/storage)
-* **Firebase Firestore Documentation:** [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
-* **Firebase JavaScript SDK:** [https://firebase.google.com/docs/web/setup](https://firebase.google.com/docs/web/setup)
+Tailwind CSS simplifies the process significantly.  You would replace the custom CSS classes with their Tailwind equivalents.  For example:
+
+* `display: flex;` becomes `flex`
+* `justify-content: center;` becomes `justify-center`
+* `padding: 20px;` becomes `p-4` (or adjust as needed)
+* `background-color: #fff;` becomes `bg-white`
+* and so on...
+
+
+Refer to the Tailwind CSS documentation for the complete list of utility classes.
+
+
+## Resources to Learn More
+
+* **CSS Flexbox:** [https://css-tricks.com/snippets/css/a-guide-to-flexbox/](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
+* **CSS Media Queries:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
