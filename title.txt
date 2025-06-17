@@ -1,1 +1,1 @@
-CSS Challenge:  Animated Circular Progress Bar with Tailwind CSS
+Overcoming the "Too Many Indexes" Problem in MongoDB
