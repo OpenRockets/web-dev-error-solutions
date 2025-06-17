@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Recreate a Modern Card Component
+
 
 This challenge focuses on creating a visually appealing and modern card component using CSS. The goal is to build a card that resembles a typical product or content card found on e-commerce websites or blogs. We will use plain CSS for this example to keep things simple.  If you'd like to explore more advanced layouts consider Tailwind CSS.
 
