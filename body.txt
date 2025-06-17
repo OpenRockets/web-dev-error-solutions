@@ -1,83 +1,127 @@
 
-## Problem Description
+This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll leverage CSS Grid for layout and some basic CSS properties for styling.  While not explicitly using a framework like Tailwind CSS, the principles can easily be adapted.
 
-A common challenge when using Firebase Firestore for managing posts, especially in applications with a large number of posts, is efficiently retrieving and displaying them.  Simply fetching all posts with a single query can lead to performance issues, slow loading times for users, and even exceed Firestore's query limitations. This is because Firestore retrieves data in batches, and a single large query can overwhelm the client and network.  Further, inefficient queries can lead to exceeding Firestore's document size limits for a single document if you attempt to embed all posts in a single document.
 
-## Solution: Pagination with Cursors
+## Description of the Styling
 
-The optimal solution is to implement pagination using cursors.  Pagination breaks down the data retrieval into smaller, manageable chunks, fetching only a limited number of posts at a time.  Cursors allow you to track your position in the dataset, enabling efficient retrieval of subsequent pages.
+The goal is to build a pricing table with three pricing tiers: Basic, Pro, and Premium. Each tier will have a title, a list of features, a price, and a call-to-action button. The design should be responsive, adapting well to different screen sizes.  The styling will be clean and modern, using a subtle color palette.
 
-## Step-by-Step Code (JavaScript)
+## Full Code
 
-This example demonstrates pagination using a client-side approach with JavaScript.  Server-side pagination is also possible for improved security and performance, especially with very large datasets.
-
-```javascript
-// Import necessary Firebase modules
-import { collection, query, orderBy, limit, startAfter, getDocs } from "firebase/firestore";
-import { db } from "./firebase"; // Your Firebase initialization
-
-// Function to fetch a page of posts
-async function fetchPosts(lastDoc = null, limitNum = 10) {
-  let q;
-  if (lastDoc) {
-    q = query(collection(db, "posts"), orderBy("createdAt", "desc"), startAfter(lastDoc), limit(limitNum));
-  } else {
-    q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(limitNum));
-  }
-
-  try {
-    const querySnapshot = await getDocs(q);
-    const posts = [];
-    querySnapshot.forEach((doc) => {
-      posts.push({ id: doc.id, ...doc.data() });
-    });
-    const lastVisible = querySnapshot.docs[querySnapshot.docs.length -1];
-    return { posts, lastVisible };
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-    return { posts: [], lastVisible: null }; // Return empty array and null lastVisible on error.
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pricing Table</title>
+<style>
+body {
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f4f4;
 }
 
-
-// Example usage:
-let lastVisible = null;
-let allPosts = [];
-
-async function loadMorePosts() {
-  const {posts, lastVisible: newLastVisible} = await fetchPosts(lastVisible);
-  allPosts = allPosts.concat(posts);
-  lastVisible = newLastVisible;
-  // Update your UI to display the new posts
-  if (posts.length === 0) {
-      console.log("No more posts to load!");
-  }
+.pricing-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-//Initial load
-loadMorePosts();
+.pricing-plan {
+  border: 1px solid #ddd;
+  padding: 20px;
+  text-align: center;
+}
 
-// subsequent loads are triggered by a "Load More" button or similar UI element.
+.pricing-plan h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.pricing-plan ul {
+  list-style: none;
+  padding: 0;
+}
+
+.pricing-plan li {
+  margin-bottom: 10px;
+}
+
+.pricing-plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  color: #28a745; /* Green */
+}
+
+.pricing-plan button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="pricing-table">
+  <div class="pricing-plan">
+    <h2>Basic</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+    </ul>
+    <p class="price">$9/month</p>
+    <button>Sign Up</button>
+  </div>
+  <div class="pricing-plan">
+    <h2>Pro</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+    </ul>
+    <p class="price">$19/month</p>
+    <button>Sign Up</button>
+  </div>
+  <div class="pricing-plan">
+    <h2>Premium</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+      <li>Feature 6</li>
+    </ul>
+    <p class="price">$29/month</p>
+    <button>Sign Up</button>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
 ## Explanation
 
-1. **`fetchPosts` Function:** This function takes an optional `lastDoc` argument (the last document from the previous page) and a `limitNum` (number of posts per page).  It uses `orderBy` to sort posts by creation date (`createdAt`), `limit` to restrict the number of documents retrieved, and `startAfter` to specify the starting point for the next page.
-
-2. **`startAfter`:** This crucial clause utilizes the `lastVisible` document from the previous query to effectively paginate. The first call to `fetchPosts` omits `startAfter`.
-
-3. **Error Handling:** The `try...catch` block handles potential errors during the query.  It's essential to include robust error handling in production applications.
-
-4. **UI Update:** The code includes a placeholder comment indicating where to update your user interface to display the fetched posts.  This would involve using a framework like React, Angular, or Vue.js to dynamically render the posts.
-
-5. **Initial Load & Subsequent Loads**: The code showcases the approach for both the first data load and subsequent loads triggered by user interactions (like a "Load More" button).
+The code utilizes CSS Grid to easily create the three-column layout.  `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` ensures responsiveness:  it creates as many columns as fit within the available space, with a minimum width of 300px per column.  The rest of the CSS handles styling elements like colors, fonts, spacing, and button appearance.
 
 
-## External References
+## Links to Resources to Learn More
 
-* **Firebase Firestore Documentation:** [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
-* **Firebase Querying Documentation:** [https://firebase.google.com/docs/firestore/query-data/queries](https://firebase.google.com/docs/firestore/query-data/queries)
-* **JavaScript `async/await`:** [https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
+* **CSS Grid Layout:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)  (MDN Web Docs)
+* **CSS Box Model:** [https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model) (MDN Web Docs)
+* **Learn CSS:**  [https://www.freecodecamp.org/learn/responsive-web-design/](https://www.freecodecamp.org/learn/responsive-web-design/) (freeCodeCamp)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
