@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Animated Circular Progress Bar
+
 
 This challenge involves creating an animated circular progress bar using pure CSS.  The bar will visually represent a percentage, updating smoothly from 0% to a specified value. We'll use CSS variables and animations for a clean and efficient solution.
 
