@@ -1,81 +1,86 @@
 # 🐞 CSS Challenge:  Animated Circular Progress Bar
 
 
-This challenge involves creating an animated circular progress bar using pure CSS.  We'll achieve the animation and circular shape using techniques like `border-radius`, `transform`, and keyframes.  This example avoids JavaScript for a purely CSS-based solution.  Tailwind CSS is not used here to keep the core CSS concepts clearer, but the principles could be easily adapted.
+This challenge involves creating an animated circular progress bar using pure CSS.  The bar will fill up gradually, simulating progress. We'll utilize CSS variables and animations for a clean and efficient solution.  No JavaScript will be required.
 
 
-## Description of the Styling:
+## Description of the Styling
 
-The progress bar will be a circle with a colored segment representing the progress. The animation will smoothly fill the circle from 0% to 100%.  We'll use a combination of a background circle and an overlaying circle to create the progress effect. The color of the progress will be a vibrant blue, and the background will be a light gray.  The animation will be smooth and visually appealing.
+The progress bar will be a circle with a thicker ring representing the track. The inner ring will fill up to represent the percentage of progress.  The animation will smoothly fill this inner ring from 0% to a specified value (e.g., 75%).  We'll use CSS variables to easily control the color, size, and progress percentage.
 
+## Full Code (CSS Only)
 
-## Full Code:
+```css
+:root {
+  --progress-color: #007bff; /* Progress bar color */
+  --track-color: #e0e0e0;  /* Track color */
+  --progress-width: 10px; /* Width of the progress and track */
+  --size: 100px;          /* Size of the circle */
+  --progress-percentage: 75%; /* Percentage of progress */
+}
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Circular Progress Bar</title>
-<style>
-  .container {
-    width: 200px;
-    height: 200px;
-    position: relative;
+.progress-ring {
+  width: var(--size);
+  height: var(--size);
+  position: relative;
+  display: inline-block;
+}
+
+.progress-ring svg {
+  transform: rotate(-90deg); /* Start at the top */
+}
+
+.progress-ring circle {
+  stroke-width: var(--progress-width);
+  stroke-linecap: round;
+  fill: transparent;
+  stroke-dasharray: calc(2 * 3.14159 * var(--size) / 2); /* Circumference */
+}
+
+.progress-ring .progress-track {
+  stroke: var(--track-color);
+}
+
+.progress-ring .progress-bar {
+  stroke: var(--progress-color);
+  stroke-dashoffset: calc(100% - var(--progress-percentage));
+  animation: fill-progress 2s linear forwards;
+}
+
+@keyframes fill-progress {
+  from {
+    stroke-dashoffset: calc(100% - var(--progress-percentage));
   }
-
-  .circle {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background-color: lightgray;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  to {
+    stroke-dashoffset: 0;
   }
+}
 
-  .progress {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background-color: #007bff; /* Blue progress color */
-    clip-path: polygon(50% 50%, 0% 0%, 0% 100%); /* Initial clip path */
-    animation: progress-animation 2s linear forwards; /* Animation */
-  }
 
-  @keyframes progress-animation {
-    to {
-      clip-path: polygon(50% 50%, 0% 0%, 100% 0%); /* Final clip path for full circle */
-    }
-  }
-</style>
-</head>
-<body>
-
-<div class="container">
-  <div class="circle">
-    <div class="progress"></div>
-  </div>
+/* Example usage: */
+<div class="progress-ring">
+  <svg width="100" height="100">
+    <circle class="progress-track" cx="50" cy="50" r="45"></circle>
+    <circle class="progress-bar" cx="50" cy="50" r="45"></circle>
+  </svg>
 </div>
 
-</body>
-</html>
 ```
 
+You'll need to embed this CSS within `<style>` tags or a linked stylesheet.  The provided HTML snippet demonstrates how to use the CSS.
 
-## Explanation:
+## Explanation
 
-* **`container`**: This div sets the overall dimensions and relative positioning for the progress bar.
-* **`circle`**: This creates the background circle using `border-radius: 50%`.  Flexbox is used for centering the progress indicator.
-* **`progress`**: This is the dynamic part.  `clip-path` initially shows only a part of the circle, then the animation (`progress-animation`) changes the `clip-path` to gradually reveal the full circle.
-* **`@keyframes progress-animation`**: This defines the animation, smoothly changing the `clip-path` from a triangle to a full semicircle, simulating the filling of the progress bar.  `linear` ensures a constant speed. `forwards` makes the animation stay at the end state.
+* **CSS Variables:**  Using `var(--variable-name)` allows for easy customization of colors, sizes, and progress percentage.
+* **SVG for the Circle:** An SVG `<circle>` element is used to create the circular shape.  This is more efficient than trying to approximate a circle using borders or other techniques.
+* **`stroke-dasharray` and `stroke-dashoffset`:** These properties are key to creating the progress bar effect. `stroke-dasharray` sets the total length of the dash (the circumference), and `stroke-dashoffset` controls how much of the dash is hidden.
+* **Animation:** The `@keyframes` rule smoothly animates the `stroke-dashoffset` property, creating the filling effect.  `linear` ensures a consistent animation speed. `forwards` makes the animation stay at its final state.
 
+## Links to Resources to Learn More
 
-## Links to Resources to Learn More:
-
-* **CSS `clip-path`:** [MDN Web Docs - clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
-* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
-* **CSS Keyframes:** [MDN Web Docs - @keyframes](https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes)
-
+* **MDN Web Docs - CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **MDN Web Docs - SVG `<circle>` element:** [https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle](https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle)
+* **Understanding `stroke-dasharray` and `stroke-dashoffset`:** Search for tutorials on these CSS properties; many visual explanations are available.
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
