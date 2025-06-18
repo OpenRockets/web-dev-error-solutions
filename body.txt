@@ -1,122 +1,128 @@
 
-This challenge focuses on creating a responsive pricing table using CSS.  We'll build a table with three pricing tiers (Basic, Pro, and Premium), each displaying different features and prices. The table should be responsive, adapting gracefully to different screen sizes.  We'll use plain CSS for this example, avoiding any CSS frameworks like Tailwind.
+This document addresses a common problem developers encounter when managing posts with rich content (images, videos, long text) in Firebase Firestore: **inefficient data storage and retrieval leading to slow load times and potential performance issues.**  Firestore's document size limitations and the impact of nested data on query performance can significantly affect the user experience.
 
-**Description of the Styling:**
+**Description of the Error:**
 
-The pricing table will be styled with a clean, modern look.  Each pricing tier will be contained within a card-like structure with a clear heading, a list of features, and a prominent price.  We'll use subtle gradients and shadows to add visual appeal.  The table will be horizontally centered and will adapt to smaller screens by stacking the pricing tiers vertically.
+Storing entire large posts (including images, videos, etc.) directly within a single Firestore document often leads to:
 
-**Full Code:**
+* **Document size exceeded:** Firestore has a limit on the size of individual documents (currently 1MB). Attempting to store large media directly results in an error.
+* **Slow query performance:** Retrieving large documents containing lots of data significantly impacts query performance, resulting in slow loading times for users.
+* **Inefficient data management:**  Retrieving more data than necessary for a given view creates unnecessary bandwidth usage and slows down your application.
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Responsive Pricing Table</title>
-<style>
-body {
-  font-family: sans-serif;
-  background-color: #f4f4f4;
+
+**Step-by-Step Solution: Using Storage and Separate Collections**
+
+The optimal solution involves leveraging Firebase Storage for media and structuring your Firestore data more efficiently.
+
+**Step 1: Store Media in Firebase Storage**
+
+Instead of directly embedding images and videos in Firestore documents, upload them to Firebase Storage.  This allows you to handle large files efficiently and take advantage of Storage's optimized infrastructure for serving media.
+
+```javascript
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
+async function uploadMedia(file, postID) {
+  const storage = getStorage();
+  const storageRef = ref(storage, `posts/${postID}/${file.name}`);
+  const uploadTask = uploadBytesResumable(storageRef, file);
+
+  uploadTask.on('state_changed',
+    (snapshot) => {
+      // Observe state change events such as progress, pause, and resume
+      // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      console.log('Upload is ' + progress + '% done');
+      switch (snapshot.state) {
+        case 'paused':
+          console.log('Upload is paused');
+          break;
+        case 'running':
+          console.log('Upload is running');
+          break;
+      }
+    },
+    (error) => {
+      // Handle unsuccessful uploads
+      console.error("Error uploading media:", error);
+    },
+    () => {
+      // Handle successful uploads on complete
+      getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+        console.log('File available at', downloadURL);
+        //Now you can save the downloadURL to Firestore
+        return downloadURL;
+      });
+    }
+  );
 }
 
-.pricing-table {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
-}
-
-.pricing-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin: 20px;
-  padding: 20px;
-  width: 300px; /* Adjust as needed */
-  min-height: 350px;
-  text-align: center;
-}
-
-.pricing-card h2 {
-  color: #333;
-  margin-bottom: 10px;
-}
-
-.pricing-card ul {
-  list-style: none;
-  padding: 0;
-}
-
-.pricing-card li {
-  margin-bottom: 5px;
-}
-
-.pricing-card .price {
-  font-size: 24px;
-  font-weight: bold;
-  color: #007bff;
-  margin-bottom: 15px;
-}
-
-/* Media query for smaller screens */
-@media (max-width: 768px) {
-  .pricing-card {
-    width: 100%;
-    margin-bottom: 20px;
-  }
-  .pricing-table {
-      flex-direction: column; /* Stack cards vertically */
-  }
-}
-</style>
-</head>
-<body>
-
-<div class="pricing-table">
-  <div class="pricing-card">
-    <h2>Basic</h2>
-    <p class="price">$9/month</p>
-    <ul>
-      <li>10GB Storage</li>
-      <li>1 User</li>
-      <li>Basic Support</li>
-    </ul>
-    <button>Sign Up</button>
-  </div>
-  <div class="pricing-card">
-    <h2>Pro</h2>
-    <p class="price">$29/month</p>
-    <ul>
-      <li>100GB Storage</li>
-      <li>5 Users</li>
-      <li>Priority Support</li>
-    </ul>
-    <button>Sign Up</button>
-  </div>
-  <div class="pricing-card">
-    <h2>Premium</h2>
-    <p class="price">$99/month</p>
-    <ul>
-      <li>Unlimited Storage</li>
-      <li>10 Users</li>
-      <li>Dedicated Support</li>
-    </ul>
-    <button>Sign Up</button>
-  </div>
-</div>
-
-</body>
-</html>
+//Example usage:
+const file = /* your file object */;
+const postID = /* your post ID */;
+uploadMedia(file, postID).then(downloadURL => {
+  // Save downloadURL to Firestore
+});
 ```
 
 
+**Step 2: Store Post Metadata in Firestore**
+
+Create a separate Firestore collection to store post metadata, including the URLs to the media files stored in Storage.  This keeps your Firestore documents small and efficient.
+
+
+```javascript
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "./firebaseConfig"; // Your Firebase config
+
+async function createPost(postData) {
+  const postsCollectionRef = collection(db, "posts");
+
+  try {
+    const docRef = await addDoc(postsCollectionRef, {
+      title: postData.title,
+      author: postData.author,
+      content: postData.content, //Short content or summary
+      imageUrl: postData.imageUrl,  //URL from Storage
+      videoUrl: postData.videoUrl, //URL from Storage
+      timestamp: Date.now() //etc.  Only essential data here
+    });
+    console.log("Document written with ID: ", docRef.id);
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
+```
+
+
+**Step 3: Efficiently Query Data**
+
+Use appropriate Firestore queries to retrieve only the necessary data. Avoid retrieving large documents unnecessarily.
+
+```javascript
+// Example to fetch only post titles and author for display
+const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+
+onSnapshot(q, (snapshot) => {
+  snapshot.docChanges().forEach((change) => {
+    if (change.type === "added") {
+      console.log("New post:", change.doc.data());
+    }
+  });
+});
+
+//Use where clauses to further filter queries and only fetch required data
+```
+
 **Explanation:**
 
-The code uses flexbox for layout. The `.pricing-table` div uses `flex-wrap: wrap` to allow the cards to wrap onto multiple lines on larger screens.  The `@media` query adjusts the layout for smaller screens, setting `flex-direction: column` to stack the cards vertically.  Individual pricing cards are styled with borders, shadows, and padding to create a visually appealing effect.
+By separating media storage from metadata, you greatly improve Firestore's efficiency. Small documents in Firestore lead to faster queries and lower costs. Firebase Storage handles large file uploads and delivery efficiently. This approach is scalable and optimized for managing substantial amounts of user-generated content.
 
-**Links to Resources to Learn More:**
 
-* **CSS Flexbox:** [https://css-tricks.com/snippets/css/a-guide-to-flexbox/](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
-* **CSS Media Queries:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
-* **CSS Grid (alternative layout method):** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/)
+**External References:**
+
+* [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
+* [Firestore Data Modeling](https://firebase.google.com/docs/firestore/design/schema)
+* [Firebase Security Rules](https://firebase.google.com/docs/firestore/security/rules)  (Crucial for securing your data)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
