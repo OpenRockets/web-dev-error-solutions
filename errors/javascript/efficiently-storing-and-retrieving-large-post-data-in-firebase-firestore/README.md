@@ -1,141 +1,137 @@
 # 🐞 Efficiently Storing and Retrieving Large Post Data in Firebase Firestore
 
 
-## Problem Description:  Performance Issues with Large Post Data
+This document addresses a common issue developers face when managing posts with large amounts of data in Firebase Firestore: performance degradation due to inefficient data structuring and retrieval.  Storing entire posts, including potentially large images or videos directly within Firestore documents, can lead to slow read and write operations, especially as your application scales.  This problem manifests itself in slow loading times for users, increased latency, and potentially exceeding Firestore's document size limits.
 
-A common problem when using Firebase Firestore to store and retrieve blog posts or similar content is performance degradation when dealing with large amounts of data within a single document.  Storing extensive text content, images (or their URLs), and other rich media directly within a Firestore document can lead to slow read and write operations, impacting the user experience.  Retrieving a single post might become noticeably slow, and querying multiple posts could be prohibitively expensive.  This is because Firestore charges based on document size and the amount of data read/written.
+## Description of the Error
 
-## Solution:  Data Denormalization and Optimized Data Structure
+The core problem arises from violating the principle of efficient data modeling for Firestore.  Trying to store large binary data (images, videos) directly within Firestore documents results in:
 
-The optimal approach is to denormalize your data and strategically distribute information across multiple Firestore documents.  Instead of embedding everything in a single "post" document, we'll break it down:
-
-1. **Main Post Document:** Contains essential metadata (title, author, short description, timestamp, etc.).  This remains small and fast to retrieve.
-
-2. **Content Document:** Stores the actual blog post content separately. This allows for efficient partial retrieval if needed.
-
-3. **Media Storage:** Utilize Firebase Storage for images and other media files. The Firestore document will only store the URLs pointing to these files in storage.
+* **Slow read speeds:** Downloading large documents takes longer, impacting user experience.
+* **Slow write speeds:** Uploading large documents can lead to timeouts and errors.
+* **Document size limits:** Firestore imposes limits on document size. Exceeding this limit will result in errors.
+* **Inefficient queries:** Retrieving specific fields from large documents is less efficient than retrieving them from smaller, targeted documents.
 
 
-## Step-by-Step Code Example (Node.js with Admin SDK)
+## Step-by-Step Code Solution (Using Cloud Storage and Firestore)
 
-This example demonstrates creating, updating, and retrieving a post with separated content and media:
+This solution leverages Firebase Cloud Storage to store the large binary data (images, videos) and Firestore to store metadata and references.
 
-**1. Installation:**
-
-```bash
-npm install firebase-admin
-```
-
-**2. Initialization (index.js):**
+**1. Upload Image to Cloud Storage:**
 
 ```javascript
-const admin = require('firebase-admin');
-const serviceAccount = require('./serviceAccountKey.json'); // Replace with your service account key
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "YOUR_DATABASE_URL" // Replace with your database URL
+async function uploadImage(image, postId) {
+  const storage = getStorage();
+  const storageRef = ref(storage, `posts/${postId}/image.jpg`); // Customizable path
+
+  const uploadTask = uploadBytesResumable(storageRef, image);
+
+  uploadTask.on('state_changed', 
+    (snapshot) => {
+      // Observe state change events such as progress, pause, and resume
+      // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      console.log('Upload is ' + progress + '% done');
+      switch (snapshot.state) {
+        case 'paused':
+          console.log('Upload is paused');
+          break;
+        case 'running':
+          console.log('Upload is running');
+          break;
+      }
+    }, 
+    (error) => {
+      // Handle unsuccessful uploads
+      console.error("Error uploading image:", error);
+      // ... error handling logic ...
+    }, 
+    () => {
+      // Handle successful uploads on complete
+      getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+        console.log('File available at', downloadURL);
+        //Store downloadURL in Firestore
+        return downloadURL;
+      });
+    }
+  );
+}
+```
+
+**2. Store Metadata in Firestore:**
+
+```javascript
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "./firebaseConfig"; //Import your Firebase configuration
+
+async function createPost(title, content, imageUrl) {
+  try {
+    const docRef = await addDoc(collection(db, "posts"), {
+      title: title,
+      content: content,
+      imageUrl: imageUrl, // Store the URL from Cloud Storage
+      timestamp: serverTimestamp(),
+    });
+    console.log("Document written with ID: ", docRef.id);
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
+
+
+// Example usage combining uploadImage and createPost functions:
+const image = /* your image file */;
+const postId = /* generate a unique ID for the post */;
+
+uploadImage(image, postId)
+  .then((downloadURL) => {
+    createPost("My Post Title", "My Post Content", downloadURL);
+  })
+  .catch((error) => {
+    console.error("Failed to upload image or create post:", error);
+  });
+
+```
+
+**3. Retrieve Post Data:**
+
+```javascript
+import { getDoc, doc, getFirestore } from "firebase/firestore";
+
+async function getPost(postId) {
+    const db = getFirestore();
+    const docRef = doc(db, "posts", postId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        return docSnap.data();
+    } else {
+        console.log("No such document!");
+        return null;
+    }
+}
+
+getPost("yourPostId").then((postData) => {
+    console.log(postData); // access title, content, and imageUrl
+    //use postData.imageUrl to load from Cloud Storage
 });
 
-const db = admin.firestore();
-const storage = admin.storage();
-```
-
-**3. Creating a Post:**
-
-```javascript
-async function createPost(title, author, shortDescription, content, imageUrl) {
-  // Upload image to Firebase Storage (replace with your image handling)
-  const bucket = storage.bucket();
-  const file = bucket.file(`posts/${Date.now()}.jpg`); //Example filename, adjust accordingly.
-  const stream = file.createWriteStream({
-    metadata: {
-      contentType: 'image/jpeg',
-    },
-  });
-
-  //This is placeholder for image upload, replace with actual upload
-  stream.on('error', err => { console.error(err)});
-  stream.on('finish', async () => {
-    const publicUrl = await file.getSignedUrl({
-          action: 'read',
-          expires: '03-09-2491'
-        });
-    console.log("URL: ", publicUrl[0]);
-
-    const postRef = db.collection('posts').doc();
-    const postId = postRef.id;
-
-    await db.collection('posts').doc(postId).set({
-      title,
-      author,
-      shortDescription,
-      imageUrl: publicUrl[0], //Store the URL.
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      contentId: postId //Link to the content document.
-    });
-
-
-    await db.collection('postContent').doc(postId).set({
-      content
-    });
-
-  });
-  stream.end(Buffer.from('Fake Image Data', 'utf8')); //Replace with your actual image data
-}
-
 ```
 
 
-**4. Retrieving a Post:**
 
-```javascript
-async function getPost(postId) {
-  const postDoc = await db.collection('posts').doc(postId).get();
-  if (!postDoc.exists) {
-    return null;
-  }
+## Explanation
 
-  const postData = postDoc.data();
-  const contentDoc = await db.collection('postContent').doc(postId).get();
-  postData.content = contentDoc.data().content;
-
-  return postData;
-}
-```
-
-**5. Example Usage:**
-
-```javascript
-const newPost = async () => {
-  await createPost("My Awesome Post", "John Doe", "A short description", "This is the long post content", "image.jpg");
-};
-
-const getPostData = async () => {
-  let post = await getPost("yourPostId"); //Replace with actual ID
-  console.log(post);
-};
-
-newPost();
-getPostData();
-```
+This approach separates large binary data from metadata.  Cloud Storage is optimized for storing and serving files, while Firestore is ideal for structured data and fast querying of metadata.  This improves performance, scalability, and adherence to Firestore's document size limits.  The application retrieves the image from Cloud Storage using the URL stored in Firestore, improving efficiency and user experience.
 
 
-## Explanation:
+## External References
 
-This approach significantly improves performance by:
-
-* **Reduced Document Size:** The main post document only contains metadata, keeping it small and efficient for queries and retrieval.
-* **Targeted Retrieval:**  You fetch only the necessary data.  Need the main details? Fetch the "posts" document. Need the full content? Fetch the separate content document.
-* **Scalability:**  Handles larger amounts of data much more efficiently than storing everything in a single document.
-* **Media Management:**  Offloading media to Firebase Storage leverages its optimized infrastructure for handling large files.
-
-
-## External References:
-
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
 * [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
-* [Understanding Firestore Pricing](https://firebase.google.com/pricing)
+* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
+* [Firebase JavaScript SDK](https://firebase.google.com/docs/web/setup)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
