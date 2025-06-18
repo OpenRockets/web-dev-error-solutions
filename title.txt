@@ -1,1 +1,1 @@
-Handling Firestore Data Validation for Posts to Prevent Invalid Data
+CSS Challenge: Responsive Pricing Table with Tailwind CSS
