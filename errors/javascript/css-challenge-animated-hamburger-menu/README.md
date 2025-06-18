@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Animated Hamburger Menu
+
 
 This challenge involves creating an animated hamburger menu using pure CSS.  The menu will transition from a stacked hamburger icon to an "X" when clicked, revealing a navigation list. We'll utilize CSS transitions and transforms to achieve the animation effect.  No JavaScript is required.
 
