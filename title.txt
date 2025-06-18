@@ -1,1 +1,1 @@
-CSS Challenge:  A Responsive Navigation Bar with a Subtle Hover Effect
+Handling Firestore Data Consistency Issues with Concurrent Updates to Posts
