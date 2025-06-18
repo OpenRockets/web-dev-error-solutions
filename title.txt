@@ -1,1 +1,1 @@
-CSS Challenge:  Modern Product Card with Tailwind CSS
+Efficiently Storing and Retrieving Large Post Data in Firebase Firestore
