@@ -1,3 +1,5 @@
+# 🐞 Efficiently Storing and Querying Large Datasets of Posts in Firebase Firestore
+
 
 This document addresses a common challenge developers face when managing a large number of posts in Firebase Firestore:  **inefficient querying and data retrieval leading to slow application performance and potential timeout errors.**  This often arises when attempting to fetch all posts or filter posts based on complex criteria without proper data structuring and querying techniques.
 
