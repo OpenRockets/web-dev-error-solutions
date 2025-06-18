@@ -1,87 +1,122 @@
 
-This challenge involves creating a responsive pricing table using Tailwind CSS.  The table should display three pricing plans (Basic, Pro, and Premium) with different features and prices, adapting seamlessly to various screen sizes.  The design emphasizes clean aesthetics and easy readability.
+## Problem Description
 
-**Description of the Styling:**
+A common challenge when working with Firebase Firestore and applications involving posts (e.g., blog posts, social media updates) is efficiently handling large amounts of text data within each document.  Storing entire lengthy posts directly within a single Firestore document can lead to performance issues, especially when retrieving and displaying them.  Firestore's document size limits and the impact on read/write speeds necessitate a different approach for optimal performance.  Directly storing large text fields can result in slower query times, increased latency for users, and exceeding Firestore's document size limits (currently 1 MB).
 
-The pricing table will utilize Tailwind CSS classes to achieve a modern and responsive layout. Key styling elements include:
+## Solution: Utilizing Storage and References
 
-* **Cards:** Each pricing plan will be represented as a separate card with a shadow and rounded corners.
-* **Color Scheme:** A subtle color scheme will be used to visually distinguish the plans.  The "Pro" plan will have a slightly more prominent visual treatment.
-* **Responsiveness:** The layout will adjust gracefully from large screens to smaller mobile screens, ensuring readability and usability across all devices.
-* **Clear Hierarchy:**  Headings, prices, and features will be clearly differentiated using Tailwind's typography classes.
+The solution involves separating the large text content from the main post document and storing it in Firebase Storage. The Firestore document will then only contain a reference (URL) to the stored text file. This approach allows for efficient retrieval of metadata (title, author, date, etc.) from Firestore while leaving the bulk of the text data in Storage.
 
+## Step-by-Step Code (JavaScript)
 
-**Full Code:**
+This example demonstrates storing and retrieving a post using Firebase Storage and Firestore.  We will assume you have already set up your Firebase project and installed the necessary packages (`firebase`).
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pricing Table</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-100">
+**1. Storing the Post:**
 
-  <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-center mb-8">Pricing Plans</h1>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+```javascript
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
 
-      <div class="bg-white shadow-md rounded-lg p-6">
-        <h2 class="text-xl font-bold mb-4 text-gray-800">Basic</h2>
-        <p class="text-4xl font-bold text-gray-700 mb-4">$9</p>
-        <p class="text-gray-600 mb-6">per month</p>
-        <ul class="list-disc list-inside text-gray-600">
-          <li>10 GB Storage</li>
-          <li>1 User</li>
-          <li>Basic Support</li>
-        </ul>
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Sign Up</button>
-      </div>
+const storage = getStorage();
+const db = getFirestore();
 
-      <div class="bg-white shadow-md rounded-lg p-6 bg-yellow-100">
-        <h2 class="text-xl font-bold mb-4 text-gray-800">Pro</h2>
-        <p class="text-4xl font-bold text-gray-700 mb-4">$49</p>
-        <p class="text-gray-600 mb-6">per month</p>
-        <ul class="list-disc list-inside text-gray-600">
-          <li>100 GB Storage</li>
-          <li>5 Users</li>
-          <li>Priority Support</li>
-          <li>Advanced Features</li>
-        </ul>
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Sign Up</button>
-      </div>
+async function storePost(postTitle, postContent, author) {
+  // 1. Upload the post content to Firebase Storage
+  const storageRef = ref(storage, `posts/${postTitle}.txt`); //Creates a unique reference. You may need more robust naming to avoid collisions.
+  const uploadTask = uploadBytesResumable(storageRef, new Blob([postContent]));
 
-      <div class="bg-white shadow-md rounded-lg p-6">
-        <h2 class="text-xl font-bold mb-4 text-gray-800">Premium</h2>
-        <p class="text-4xl font-bold text-gray-700 mb-4">$99</p>
-        <p class="text-gray-600 mb-6">per month</p>
-        <ul class="list-disc list-inside text-gray-600">
-          <li>Unlimited Storage</li>
-          <li>10 Users</li>
-          <li>Dedicated Support</li>
-          <li>All Features</li>
-        </ul>
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Sign Up</button>
-      </div>
+  uploadTask.on('state_changed', 
+    (snapshot) => {
+      // Observe state change events such as progress, pause, and resume
+      // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      console.log('Upload is ' + progress + '% done');
+      switch (snapshot.state) {
+        case 'paused':
+          console.log('Upload is paused');
+          break;
+        case 'running':
+          console.log('Upload is running');
+          break;
+      }
+    }, 
+    (error) => {
+      // Handle unsuccessful uploads
+      console.error(error);
+    }, 
+    () => {
+      // Handle successful uploads on complete
+      // Get the download URL from the successful upload
+      getDownloadURL(uploadTask.snapshot.ref)
+        .then((downloadURL) => {
+          // 2. Store the post metadata in Firestore
+          addDoc(collection(db, "posts"), {
+            title: postTitle,
+            author: author,
+            contentURL: downloadURL,
+            timestamp: new Date(),
+          }).then((docRef)=>{
+            console.log("Document written with ID: ", docRef.id);
+          }).catch((error)=>{
+            console.error("Error adding document: ", error)
+          });
+        });
+    }
+  );
+}
 
-    </div>
-  </div>
-
-</body>
-</html>
+// Example usage:
+const postTitle = "My Awesome Post";
+const postContent = "This is the content of my awesome post. It's quite long!";
+const author = "John Doe";
+storePost(postTitle, postContent, author);
 ```
 
-**Explanation:**
+**2. Retrieving the Post:**
 
-The code utilizes Tailwind's grid system (`grid grid-cols-1 md:grid-cols-3`) to create a responsive layout.  On smaller screens, the cards stack vertically, while on medium-sized screens and larger, they arrange themselves in three columns.  Classes like `bg-white`, `shadow-md`, `rounded-lg`, and others handle the visual styling of the cards and text.  The `hover` states are used to add interactive effects.
+```javascript
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+
+const storage = getStorage();
+const db = getFirestore();
+
+async function getPost(postTitle) {
+    const q = query(collection(db, "posts"), where("title", "==", postTitle));
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        const data = doc.data();
+        console.log("Post content URL:", data.contentURL);
+        getDownloadURL(ref(storage, data.contentURL.substring(data.contentURL.lastIndexOf('/') + 1) )) //Extract filename from URL, improve by using structured filenames.
+          .then((url) => {
+            fetch(url)
+              .then(response => response.text())
+              .then(text => console.log("Post content:\n", text))
+              .catch(error => console.error("Error fetching content:", error));
+          })
+          .catch((error) => {
+            console.error("Error getting content URL:", error);
+          });
+    });
+}
+
+// Example usage:
+getPost("My Awesome Post");
+```
 
 
-**Links to Resources to Learn More:**
+## Explanation
 
-* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs/](https://tailwindcss.com/docs/)
-* **Tailwind CSS Cheat Sheet:** [Numerous cheat sheets are available via a quick Google search.]
+The code first uploads the post content to Firebase Storage as a text file.  Then, it stores a reference (the download URL) to this file in the Firestore document along with other post metadata.  Retrieving the post involves fetching the metadata from Firestore, extracting the content URL, and then using that URL to download the content from Storage. This separation ensures that Firestore only handles small metadata documents, leading to improved performance and scalability.  Error handling is included to gracefully manage potential issues during both upload and download operations.  Remember to adjust file names for better management and collision avoidance in a production environment.
+
+
+## External References
+
+* **Firebase Storage Documentation:** [https://firebase.google.com/docs/storage](https://firebase.google.com/docs/storage)
+* **Firebase Firestore Documentation:** [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
+* **Firebase JavaScript SDK:** [https://firebase.google.com/docs/web/setup](https://firebase.google.com/docs/web/setup)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

@@ -1,108 +1,124 @@
 # 🐞 Efficiently Storing and Retrieving Large Posts in Firebase Firestore
 
 
-## Problem Description:  Performance Issues with Large Post Data
+## Problem Description
 
-Developers frequently encounter performance bottlenecks when storing and retrieving large amounts of text or media data within Firebase Firestore documents, especially when dealing with blog posts or social media feeds.  Storing entire posts (including images, videos, or extensive text content) directly within a single Firestore document can lead to slow read and write operations, exceeding Firestore's document size limits, and negatively impacting application performance.  This is exacerbated when fetching multiple posts, as larger documents translate to larger network payloads and increased processing time on the client-side.
+A common challenge when working with Firebase Firestore and applications involving posts (e.g., blog posts, social media updates) is efficiently handling large amounts of text data within each document.  Storing entire lengthy posts directly within a single Firestore document can lead to performance issues, especially when retrieving and displaying them.  Firestore's document size limits and the impact on read/write speeds necessitate a different approach for optimal performance.  Directly storing large text fields can result in slower query times, increased latency for users, and exceeding Firestore's document size limits (currently 1 MB).
 
+## Solution: Utilizing Storage and References
 
-## Solution: Data Denormalization and Storage Optimization
+The solution involves separating the large text content from the main post document and storing it in Firebase Storage. The Firestore document will then only contain a reference (URL) to the stored text file. This approach allows for efficient retrieval of metadata (title, author, date, etc.) from Firestore while leaving the bulk of the text data in Storage.
 
-The most effective solution is to employ data denormalization and leverage Firebase Storage for media files.  This approach involves separating large text content and media into different locations, referencing them from a smaller, more efficient Firestore document.
+## Step-by-Step Code (JavaScript)
 
-### Step-by-Step Code Example (Node.js with Firebase Admin SDK):
+This example demonstrates storing and retrieving a post using Firebase Storage and Firestore.  We will assume you have already set up your Firebase project and installed the necessary packages (`firebase`).
 
-
-**1. Setting up Firebase:**
-
-```javascript
-const admin = require('firebase-admin');
-const serviceAccount = require('./path/to/your/serviceAccountKey.json'); // Replace with your path
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "YOUR_DATABASE_URL" // Replace with your database URL
-});
-
-const db = admin.firestore();
-const storage = admin.storage();
-```
-
-**2.  Storing a Post (including an image):**
+**1. Storing the Post:**
 
 ```javascript
-async function createPost(postData) {
-  try {
-    // Store the image in Firebase Storage
-    const imageFile = postData.image; // Assume postData contains a buffer of image data
-    const imageRef = storage.bucket().file(`posts/${Date.now()}.jpg`); //Unique filename
-    await imageRef.save(imageFile);
-    const imageUrl = await imageRef.publicUrl(); // Get the public URL
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
 
-    //Store a summary in Firestore.
-    const postRef = db.collection('posts').doc();
-    await postRef.set({
-      title: postData.title,
-      author: postData.author,
-      imageUrl: imageUrl,
-      shortDescription: postData.shortDescription,  //A concise summary
-      postId: postRef.id //Store the ID for easier querying
-    });
+const storage = getStorage();
+const db = getFirestore();
 
-    console.log("Post created with ID:", postRef.id);
+async function storePost(postTitle, postContent, author) {
+  // 1. Upload the post content to Firebase Storage
+  const storageRef = ref(storage, `posts/${postTitle}.txt`); //Creates a unique reference. You may need more robust naming to avoid collisions.
+  const uploadTask = uploadBytesResumable(storageRef, new Blob([postContent]));
 
-    //Store the full text in another document.  Consider using a separate collection for scalability.
-    const fullTextRef = db.collection('postText').doc(postRef.id);
-    await fullTextRef.set({
-      fullText: postData.fullText //large text
-    })
-
-
-  } catch (error) {
-    console.error("Error creating post:", error);
-  }
-}
-```
-
-
-**3. Retrieving a Post:**
-
-```javascript
-async function getPost(postId) {
-  try {
-    const postDoc = await db.collection('posts').doc(postId).get();
-    if (!postDoc.exists) {
-      return null;
+  uploadTask.on('state_changed', 
+    (snapshot) => {
+      // Observe state change events such as progress, pause, and resume
+      // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      console.log('Upload is ' + progress + '% done');
+      switch (snapshot.state) {
+        case 'paused':
+          console.log('Upload is paused');
+          break;
+        case 'running':
+          console.log('Upload is running');
+          break;
+      }
+    }, 
+    (error) => {
+      // Handle unsuccessful uploads
+      console.error(error);
+    }, 
+    () => {
+      // Handle successful uploads on complete
+      // Get the download URL from the successful upload
+      getDownloadURL(uploadTask.snapshot.ref)
+        .then((downloadURL) => {
+          // 2. Store the post metadata in Firestore
+          addDoc(collection(db, "posts"), {
+            title: postTitle,
+            author: author,
+            contentURL: downloadURL,
+            timestamp: new Date(),
+          }).then((docRef)=>{
+            console.log("Document written with ID: ", docRef.id);
+          }).catch((error)=>{
+            console.error("Error adding document: ", error)
+          });
+        });
     }
-    const postData = postDoc.data();
-
-    //Fetch the full text separately
-    const fullTextDoc = await db.collection('postText').doc(postId).get();
-    postData.fullText = fullTextDoc.data().fullText
-
-
-    return postData;
-  } catch (error) {
-    console.error("Error getting post:", error);
-    return null;
-  }
+  );
 }
+
+// Example usage:
+const postTitle = "My Awesome Post";
+const postContent = "This is the content of my awesome post. It's quite long!";
+const author = "John Doe";
+storePost(postTitle, postContent, author);
 ```
+
+**2. Retrieving the Post:**
+
+```javascript
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+
+const storage = getStorage();
+const db = getFirestore();
+
+async function getPost(postTitle) {
+    const q = query(collection(db, "posts"), where("title", "==", postTitle));
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach((doc) => {
+        // doc.data() is never undefined for query doc snapshots
+        const data = doc.data();
+        console.log("Post content URL:", data.contentURL);
+        getDownloadURL(ref(storage, data.contentURL.substring(data.contentURL.lastIndexOf('/') + 1) )) //Extract filename from URL, improve by using structured filenames.
+          .then((url) => {
+            fetch(url)
+              .then(response => response.text())
+              .then(text => console.log("Post content:\n", text))
+              .catch(error => console.error("Error fetching content:", error));
+          })
+          .catch((error) => {
+            console.error("Error getting content URL:", error);
+          });
+    });
+}
+
+// Example usage:
+getPost("My Awesome Post");
+```
+
 
 ## Explanation
 
-This solution addresses the performance issues by:
-
-* **Using Firebase Storage for Media:**  Large files (images, videos) are stored in Firebase Storage, a more efficient system for managing binary data. Firestore is then only used to store a reference to these files (the URL).
-* **Data Denormalization:** The post data is split.  A concise summary resides in the main `posts` collection. The full text (which can be substantial) is kept in a separate collection to avoid document size limitations and improve read performance.  This is a form of data denormalization, trading data redundancy for improved query speeds.
-* **Efficient Queries:**  Retrieving a post now involves fetching a small document from Firestore and potentially downloading a media file from Storage, resulting in significantly faster load times compared to downloading a large single Firestore document.
+The code first uploads the post content to Firebase Storage as a text file.  Then, it stores a reference (the download URL) to this file in the Firestore document along with other post metadata.  Retrieving the post involves fetching the metadata from Firestore, extracting the content URL, and then using that URL to download the content from Storage. This separation ensures that Firestore only handles small metadata documents, leading to improved performance and scalability.  Error handling is included to gracefully manage potential issues during both upload and download operations.  Remember to adjust file names for better management and collision avoidance in a production environment.
 
 
 ## External References
 
-* [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Data Modeling in Firestore](https://firebase.google.com/docs/firestore/modeling-data)
+* **Firebase Storage Documentation:** [https://firebase.google.com/docs/storage](https://firebase.google.com/docs/storage)
+* **Firebase Firestore Documentation:** [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
+* **Firebase JavaScript SDK:** [https://firebase.google.com/docs/web/setup](https://firebase.google.com/docs/web/setup)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
