@@ -1,1 +1,1 @@
-CSS Challenge:  Animated Expanding Card
+Efficiently Storing and Querying Large Post Collections in Firebase Firestore
