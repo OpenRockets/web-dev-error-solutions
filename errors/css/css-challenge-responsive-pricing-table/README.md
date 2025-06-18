@@ -1,44 +1,54 @@
-# 🐞 CSS Challenge:  Responsive Pricing Table
+# 🐞 CSS Challenge: Responsive Pricing Table
 
 
-This challenge focuses on creating a responsive pricing table using CSS.  We'll build a clean, modern table that adapts well to different screen sizes, demonstrating techniques like flexbox and media queries.  This example uses plain CSS; adapting it to Tailwind CSS is a straightforward exercise (explained below).
+This challenge involves creating a responsive pricing table using CSS.  The goal is to build a clean, visually appealing table that adapts smoothly to different screen sizes. We'll use a mix of standard CSS and some flexbox for layout flexibility.
 
 
 ## Description of the Styling
 
-The pricing table will consist of three pricing plans: Basic, Pro, and Premium.  Each plan will have a title, a list of features, a price, and a call-to-action button.  The styling will emphasize clean lines, clear visual hierarchy, and responsiveness.  The table should stack vertically on smaller screens.
+The pricing table will contain three pricing plans: Basic, Premium, and Enterprise. Each plan will have a title, a list of features, a price, and a call to action button.  The design will be modern and clean, utilizing subtle gradients and clear visual separation between plans.  Responsiveness is key—the table should neatly stack vertically on smaller screens.
 
 
-## Full Code (CSS)
+## Full Code
 
-```css
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responsive Pricing Table</title>
+<style>
 body {
   font-family: sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  margin: 0;
   background-color: #f4f4f4;
 }
 
 .pricing-table {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
   width: 80%;
   max-width: 1200px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Prevents shadow from overflowing on smaller screens*/
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /*to hide gradient overflow */
 }
 
 .plan {
-  flex: 1;
-  text-align: center;
+  flex: 1 0 300px; /* Ensures each plan takes at least 300px and distributes space equally */
   padding: 20px;
-  background-color: #fff;
+  text-align: center;
+  margin: 10px;
+  border-radius: 8px;
+  background: linear-gradient(to bottom right, #e6f7ff, #d2e9ff); /* subtle gradient */
 }
 
 .plan h2 {
-  margin-top: 0;
+  margin-bottom: 10px;
   color: #333;
 }
 
@@ -48,120 +58,90 @@ body {
 }
 
 .plan li {
-  margin-bottom: 10px;
-  color: #555;
+  margin-bottom: 5px;
 }
+
 
 .plan .price {
-  font-size: 24px;
+  font-size: 2em;
   font-weight: bold;
-  color: #333;
-  margin-bottom: 20px;
-}
-
-.plan .price span {
-  font-size: 16px;
-  font-weight: normal;
+  color: #007bff;
+  margin-bottom: 10px;
 }
 
 .plan button {
   background-color: #007bff;
-  color: #fff;
+  color: white;
   border: none;
   padding: 10px 20px;
-  cursor: pointer;
   border-radius: 5px;
+  cursor: pointer;
 }
 
-
-/* Responsive Design */
+/* Responsive Styles */
 @media (max-width: 768px) {
   .pricing-table {
     flex-direction: column; /* Stack plans vertically */
   }
   .plan {
-    width: 100%; /* Full width for each plan */
+    flex-basis: 100%; /* Each plan takes full width */
   }
 }
-```
-
-## HTML Structure (required to use the CSS)
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Responsive Pricing Table</title>
-  <link rel="stylesheet" href="style.css">
+</style>
 </head>
 <body>
-  <div class="pricing-table">
-    <div class="plan">
-      <h2>Basic</h2>
-      <ul>
-        <li>Feature 1</li>
-        <li>Feature 2</li>
-        <li>Feature 3</li>
-      </ul>
-      <div class="price">$9<span>/month</span></div>
-      <button>Sign Up</button>
-    </div>
-    <div class="plan">
-      <h2>Pro</h2>
-      <ul>
-        <li>Feature 1</li>
-        <li>Feature 2</li>
-        <li>Feature 3</li>
-        <li>Feature 4</li>
-        <li>Feature 5</li>
-      </ul>
-      <div class="price">$19<span>/month</span></div>
-      <button>Sign Up</button>
-    </div>
-    <div class="plan">
-      <h2>Premium</h2>
-      <ul>
-        <li>Feature 1</li>
-        <li>Feature 2</li>
-        <li>Feature 3</li>
-        <li>Feature 4</li>
-        <li>Feature 5</li>
-        <li>Feature 6</li>
-      </ul>
-      <div class="price">$29<span>/month</span></div>
-      <button>Sign Up</button>
-    </div>
+
+<div class="pricing-table">
+  <div class="plan">
+    <h2>Basic</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+    </ul>
+    <p class="price">$9/month</p>
+    <button>Sign Up</button>
   </div>
+  <div class="plan">
+    <h2>Premium</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+    </ul>
+    <p class="price">$29/month</p>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Enterprise</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+      <li>Feature 6</li>
+    </ul>
+    <p class="price">$99/month</p>
+    <button>Sign Up</button>
+  </div>
+</div>
+
 </body>
 </html>
-
 ```
 
 
 ## Explanation
 
-The CSS utilizes flexbox for easy layout management. The `.pricing-table` is a flex container, distributing the plans equally across the available width.  Media queries handle responsiveness, changing the flex direction to column on smaller screens to stack the plans vertically.  Classes are used for semantic styling, making the code easy to understand and maintain.
+The code uses flexbox for layout.  The `.pricing-table` is a flex container, allowing us to easily arrange the plans horizontally.  The `.plan` class uses `flex: 1 0 300px;` to ensure each plan takes up equal space (at least 300px wide) and wraps to the next line if necessary. The media query at `@media (max-width: 768px)` switches to a vertical stack for smaller screens, making the table responsive.  The styling adds a subtle gradient, shadows, and clean typography.
 
 
-## Adapting to Tailwind CSS
+## Links to Resources to Learn More
 
-Tailwind CSS simplifies the process significantly.  You would replace the custom CSS classes with their Tailwind equivalents.  For example:
-
-* `display: flex;` becomes `flex`
-* `justify-content: center;` becomes `justify-center`
-* `padding: 20px;` becomes `p-4` (or adjust as needed)
-* `background-color: #fff;` becomes `bg-white`
-* and so on...
-
-
-Refer to the Tailwind CSS documentation for the complete list of utility classes.
-
-
-## Resources to Learn More
-
-* **CSS Flexbox:** [https://css-tricks.com/snippets/css/a-guide-to-flexbox/](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
-* **CSS Media Queries:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
-* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
+* **CSS Flexbox:** [MDN Web Docs - CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **CSS Gradients:** [MDN Web Docs - CSS Gradients](https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

@@ -1,107 +1,145 @@
 
-This document addresses a common challenge developers face when working with Firebase Firestore: efficiently storing and retrieving large text posts (e.g., blog posts, articles) without impacting performance or exceeding document size limits.  Firestore has a document size limit of 1 MB, which can easily be exceeded by lengthy posts with rich text formatting or embedded media.
-
-**Description of the Error:**
-
-Attempting to store a large post directly within a single Firestore document will result in one of the following:
-
-* **`INVALID_ARGUMENT: Document size exceeds the maximum allowed size (1MB)`:** This error occurs if the post content exceeds the document size limit.
-* **Slow retrieval:**  Even if the document size is below the limit, fetching and rendering a very large document can significantly impact application performance, leading to slow load times and poor user experience.
+This challenge involves creating a responsive pricing table using CSS.  The goal is to build a clean, visually appealing table that adapts smoothly to different screen sizes. We'll use a mix of standard CSS and some flexbox for layout flexibility.
 
 
-**Fixing the Problem:  Using Separate Collections and Data Structures**
+## Description of the Styling
 
-The optimal solution is to break down the large post into smaller, manageable chunks and store them across multiple documents or collections.  We'll demonstrate a strategy using a main "posts" collection for metadata and a separate collection for the post content itself.
+The pricing table will contain three pricing plans: Basic, Premium, and Enterprise. Each plan will have a title, a list of features, a price, and a call to action button.  The design will be modern and clean, utilizing subtle gradients and clear visual separation between plans.  Responsiveness is key—the table should neatly stack vertically on smaller screens.
 
-**Step-by-Step Code (using Node.js with the Firebase Admin SDK):**
 
-```javascript
-const admin = require('firebase-admin');
-admin.initializeApp();
-const db = admin.firestore();
+## Full Code
 
-// 1. Create a new post (metadata) in the "posts" collection:
-async function createPost(title, author, contentChunks) {
-  const postRef = db.collection('posts').doc();
-  const postId = postRef.id;
-  const timestamp = admin.firestore.FieldValue.serverTimestamp();
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responsive Pricing Table</title>
+<style>
+body {
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f4f4;
+}
 
-  await postRef.set({
-    title: title,
-    author: author,
-    createdAt: timestamp,
-    contentChunks: contentChunks.length, // Store the number of content chunks
-    firstChunkId: contentChunks[0].id //Reference to the first chunk
-  });
+.pricing-table {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  width: 80%;
+  max-width: 1200px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /*to hide gradient overflow */
+}
 
-  // 2. Store the content chunks in a separate "postContent" collection:
+.plan {
+  flex: 1 0 300px; /* Ensures each plan takes at least 300px and distributes space equally */
+  padding: 20px;
+  text-align: center;
+  margin: 10px;
+  border-radius: 8px;
+  background: linear-gradient(to bottom right, #e6f7ff, #d2e9ff); /* subtle gradient */
+}
 
-  const contentCollectionRef = db.collection('postContent');
+.plan h2 {
+  margin-bottom: 10px;
+  color: #333;
+}
 
-  for (const chunk of contentChunks) {
-      await contentCollectionRef.doc(chunk.id).set({
-          postId: postId,
-          chunkIndex: chunk.chunkIndex,
-          content: chunk.content
-      });
+.plan ul {
+  list-style: none;
+  padding: 0;
+}
+
+.plan li {
+  margin-bottom: 5px;
+}
+
+
+.plan .price {
+  font-size: 2em;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.plan button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .pricing-table {
+    flex-direction: column; /* Stack plans vertically */
   }
-
-  return postId;
-
+  .plan {
+    flex-basis: 100%; /* Each plan takes full width */
+  }
 }
+</style>
+</head>
+<body>
 
-//Example usage (Remember to adjust chunk size according to your needs):
-async function example() {
-    const largePostContent = "This is a very long post... (imagine thousands of words)";
-    const chunkSize = 500; // Adjust as needed.
-    const contentChunks = [];
-    for (let i = 0; i < largePostContent.length; i += chunkSize) {
-      const chunk = largePostContent.substring(i, i + chunkSize);
-      contentChunks.push({id: `${Date.now()}-${i}`, chunkIndex: i, content: chunk})
-    }
-    const postId = await createPost("My Large Post", "John Doe", contentChunks);
-    console.log(`Post created with ID: ${postId}`);
-}
+<div class="pricing-table">
+  <div class="plan">
+    <h2>Basic</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+    </ul>
+    <p class="price">$9/month</p>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Premium</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+    </ul>
+    <p class="price">$29/month</p>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Enterprise</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+      <li>Feature 6</li>
+    </ul>
+    <p class="price">$99/month</p>
+    <button>Sign Up</button>
+  </div>
+</div>
 
-example().catch(console.error);
-
-// 3. Retrieve the post (combining metadata and content chunks):
-async function getPost(postId) {
-    const postRef = db.collection('posts').doc(postId);
-    const postDoc = await postRef.get();
-
-    if (!postDoc.exists) {
-        return null; //Post not found
-    }
-    const postData = postDoc.data();
-    const contentChunks = [];
-    const contentQuery = db.collection('postContent').where('postId', '==', postId).orderBy('chunkIndex');
-    const contentSnapshot = await contentQuery.get();
-    contentSnapshot.forEach(doc => {
-        contentChunks.push(doc.data().content)
-    });
-    postData.content = contentChunks.join(''); //concatenate content
-    return postData;
-}
-
-//Example usage of retrieving a post:
-async function getExamplePost(){
-    const retrievedPost = await getPost("YOUR_POST_ID"); // Replace with actual post ID
-    console.log(retrievedPost);
-}
-getExamplePost().catch(console.error);
+</body>
+</html>
 ```
 
 
-**Explanation:**
+## Explanation
 
-This approach separates metadata (title, author, creation date) from the actual content.  The content is divided into smaller chunks stored in the `postContent` collection.  This keeps individual documents small, improving performance and avoiding the 1MB limit.  Retrieving the post involves fetching the metadata and then querying the `postContent` collection to get the content chunks, which are then concatenated for display.
+The code uses flexbox for layout.  The `.pricing-table` is a flex container, allowing us to easily arrange the plans horizontally.  The `.plan` class uses `flex: 1 0 300px;` to ensure each plan takes up equal space (at least 300px wide) and wraps to the next line if necessary. The media query at `@media (max-width: 768px)` switches to a vertical stack for smaller screens, making the table responsive.  The styling adds a subtle gradient, shadows, and clean typography.
 
-**External References:**
 
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firebase Admin SDK (Node.js)](https://firebase.google.com/docs/admin/setup)
-* [Firestore Data Modeling](https://firebase.google.com/docs/firestore/design/schemas)
+## Links to Resources to Learn More
+
+* **CSS Flexbox:** [MDN Web Docs - CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **CSS Gradients:** [MDN Web Docs - CSS Gradients](https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
