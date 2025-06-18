@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data for Posts: Efficiently Storing and Retrieving Large Images
+
 
 This document addresses a common problem developers encounter when using Firebase Firestore to store and retrieve posts containing large images: **exceeding Firestore's document size limits and impacting performance**.  Firestore has a limit on the size of individual documents (currently 1 MB).  Large images easily exceed this limit, leading to errors and slow loading times.
 
