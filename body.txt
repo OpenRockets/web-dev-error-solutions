@@ -1,75 +1,107 @@
 
-This challenge focuses on creating a visually appealing card that simulates a 3D effect using only CSS.  We'll leverage CSS box-shadow and transforms to achieve this without relying on any JavaScript or image manipulation.  This example utilizes plain CSS, but could easily be adapted to use Tailwind CSS.
+This document addresses a common challenge developers face when working with Firebase Firestore: efficiently storing and retrieving large text posts (e.g., blog posts, articles) without impacting performance or exceeding document size limits.  Firestore has a document size limit of 1 MB, which can easily be exceeded by lengthy posts with rich text formatting or embedded media.
 
-**Description of the Styling:**
+**Description of the Error:**
 
-The card will have a clean, modern design with a subtle 3D effect.  This will be accomplished primarily through strategically applied box-shadows to create depth and a slight lift from the background.  We'll also use `transform: rotateX()` to subtly tilt the card, enhancing the 3D illusion. The card will have a gradient background for added visual interest.
+Attempting to store a large post directly within a single Firestore document will result in one of the following:
 
-**Full Code (CSS):**
+* **`INVALID_ARGUMENT: Document size exceeds the maximum allowed size (1MB)`:** This error occurs if the post content exceeds the document size limit.
+* **Slow retrieval:**  Even if the document size is below the limit, fetching and rendering a very large document can significantly impact application performance, leading to slow load times and poor user experience.
 
-```css
-.card {
-  width: 300px;
-  height: 200px;
-  background: linear-gradient(135deg, #f0f0f0, #d0d0d0);
-  border-radius: 10px;
-  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2), -5px -5px 10px rgba(255, 255, 255, 0.2); /* Double shadow for 3D effect */
-  transform: rotateX(3deg); /* Subtle rotation for 3D effect */
-  overflow: hidden; /* Ensure content doesn't overflow */
-  transition: transform 0.3s ease; /* Add smooth transition */
+
+**Fixing the Problem:  Using Separate Collections and Data Structures**
+
+The optimal solution is to break down the large post into smaller, manageable chunks and store them across multiple documents or collections.  We'll demonstrate a strategy using a main "posts" collection for metadata and a separate collection for the post content itself.
+
+**Step-by-Step Code (using Node.js with the Firebase Admin SDK):**
+
+```javascript
+const admin = require('firebase-admin');
+admin.initializeApp();
+const db = admin.firestore();
+
+// 1. Create a new post (metadata) in the "posts" collection:
+async function createPost(title, author, contentChunks) {
+  const postRef = db.collection('posts').doc();
+  const postId = postRef.id;
+  const timestamp = admin.firestore.FieldValue.serverTimestamp();
+
+  await postRef.set({
+    title: title,
+    author: author,
+    createdAt: timestamp,
+    contentChunks: contentChunks.length, // Store the number of content chunks
+    firstChunkId: contentChunks[0].id //Reference to the first chunk
+  });
+
+  // 2. Store the content chunks in a separate "postContent" collection:
+
+  const contentCollectionRef = db.collection('postContent');
+
+  for (const chunk of contentChunks) {
+      await contentCollectionRef.doc(chunk.id).set({
+          postId: postId,
+          chunkIndex: chunk.chunkIndex,
+          content: chunk.content
+      });
+  }
+
+  return postId;
+
 }
 
-.card:hover {
-  transform: rotateX(5deg); /* Enhanced rotation on hover */
-  box-shadow: 7px 7px 15px rgba(0, 0, 0, 0.3), -7px -7px 15px rgba(255, 255, 255, 0.3); /* Stronger shadow on hover */
+//Example usage (Remember to adjust chunk size according to your needs):
+async function example() {
+    const largePostContent = "This is a very long post... (imagine thousands of words)";
+    const chunkSize = 500; // Adjust as needed.
+    const contentChunks = [];
+    for (let i = 0; i < largePostContent.length; i += chunkSize) {
+      const chunk = largePostContent.substring(i, i + chunkSize);
+      contentChunks.push({id: `${Date.now()}-${i}`, chunkIndex: i, content: chunk})
+    }
+    const postId = await createPost("My Large Post", "John Doe", contentChunks);
+    console.log(`Post created with ID: ${postId}`);
 }
 
-.card-content {
-  padding: 20px;
-  color: #333;
-  text-align: center;
+example().catch(console.error);
+
+// 3. Retrieve the post (combining metadata and content chunks):
+async function getPost(postId) {
+    const postRef = db.collection('posts').doc(postId);
+    const postDoc = await postRef.get();
+
+    if (!postDoc.exists) {
+        return null; //Post not found
+    }
+    const postData = postDoc.data();
+    const contentChunks = [];
+    const contentQuery = db.collection('postContent').where('postId', '==', postId).orderBy('chunkIndex');
+    const contentSnapshot = await contentQuery.get();
+    contentSnapshot.forEach(doc => {
+        contentChunks.push(doc.data().content)
+    });
+    postData.content = contentChunks.join(''); //concatenate content
+    return postData;
 }
 
-.card-title {
-  font-size: 1.5em;
-  font-weight: bold;
-  margin-bottom: 10px;
+//Example usage of retrieving a post:
+async function getExamplePost(){
+    const retrievedPost = await getPost("YOUR_POST_ID"); // Replace with actual post ID
+    console.log(retrievedPost);
 }
+getExamplePost().catch(console.error);
 ```
 
-**HTML (Example):**
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>3D Card</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="card">
-    <div class="card-content">
-      <h2 class="card-title">My 3D Card</h2>
-      <p>This is some sample text for the card.</p>
-    </div>
-  </div>
-</body>
-</html>
-```
 
 **Explanation:**
 
-* **`box-shadow`:**  We use two `box-shadow` properties to create the 3D effect. One simulates a light source from above, and the other simulates a light source from below, creating depth. The `rgba()` values control the shadow color and opacity.
-* **`transform: rotateX()`:** This slightly rotates the card along the X-axis, giving it a tilted perspective. The `hover` effect increases this rotation for added interaction.
-* **`linear-gradient`:** This creates a smooth gradient background for the card, enhancing its visual appeal.
-* **`transition`:** This property creates a smooth animation when hovering over the card.
+This approach separates metadata (title, author, creation date) from the actual content.  The content is divided into smaller chunks stored in the `postContent` collection.  This keeps individual documents small, improving performance and avoiding the 1MB limit.  Retrieving the post involves fetching the metadata and then querying the `postContent` collection to get the content chunks, which are then concatenated for display.
 
+**External References:**
 
-**Resources to Learn More:**
-
-* **MDN Web Docs - CSS Box Shadow:** [https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow](https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow)
-* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS-Tricks - Box Shadow Techniques:** (Search for relevant articles on CSS-Tricks)
+* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
+* [Firebase Admin SDK (Node.js)](https://firebase.google.com/docs/admin/setup)
+* [Firestore Data Modeling](https://firebase.google.com/docs/firestore/design/schemas)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
