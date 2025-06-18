@@ -1,1 +1,1 @@
-Handling Firestore Data for Posts: Avoiding `FieldValue.serverTimestamp()` Issues
+Efficiently Storing and Querying Large Posts in Firebase Firestore
