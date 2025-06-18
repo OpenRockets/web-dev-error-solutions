@@ -1,14 +1,15 @@
 # 🐞 CSS Challenge: Recreate a Simple Pricing Table
 
 
-This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll leverage CSS Grid for layout and some basic CSS properties for styling.  While not explicitly using a framework like Tailwind CSS, the principles can easily be adapted.
+This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll leverage standard CSS3 properties for layout and styling, demonstrating techniques applicable to a wide range of projects.  No CSS preprocessors like Tailwind CSS will be used in this example to keep the core CSS concepts clear.
 
 
-## Description of the Styling
+**Description of the Styling:**
 
-The goal is to build a pricing table with three pricing tiers: Basic, Pro, and Premium. Each tier will have a title, a list of features, a price, and a call-to-action button. The design should be responsive, adapting well to different screen sizes.  The styling will be clean and modern, using a subtle color palette.
+The pricing table will consist of three columns representing different pricing plans (Basic, Pro, Premium). Each column will include a plan name, a price, a list of features, and a call-to-action button.  The styling will emphasize clear visual separation between plans and a clean, modern aesthetic. We'll use a combination of flexbox and grid for layout to ensure responsiveness across different screen sizes.
 
-## Full Code
+
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
@@ -18,53 +19,45 @@ The goal is to build a pricing table with three pricing tiers: Basic, Pro, and P
 <style>
 body {
   font-family: sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f4f4f4;
 }
 
 .pricing-table {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
   gap: 20px;
   padding: 20px;
-  background-color: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.pricing-plan {
-  border: 1px solid #ddd;
+.plan {
+  border: 1px solid #ccc;
   padding: 20px;
   text-align: center;
 }
 
-.pricing-plan h2 {
+.plan h2 {
   margin-top: 0;
-  color: #333;
 }
 
-.pricing-plan ul {
+.plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.plan ul {
   list-style: none;
   padding: 0;
 }
 
-.pricing-plan li {
-  margin-bottom: 10px;
+.plan li {
+  margin-bottom: 5px;
 }
 
-.pricing-plan .price {
-  font-size: 24px;
-  font-weight: bold;
-  color: #28a745; /* Green */
-}
-
-.pricing-plan button {
-  background-color: #28a745;
+.plan button {
+  background-color: #4CAF50;
   color: white;
-  border: none;
   padding: 10px 20px;
+  border: none;
   border-radius: 5px;
   cursor: pointer;
 }
@@ -73,18 +66,19 @@ body {
 <body>
 
 <div class="pricing-table">
-  <div class="pricing-plan">
+  <div class="plan">
     <h2>Basic</h2>
+    <div class="price">$9/month</div>
     <ul>
       <li>Feature 1</li>
       <li>Feature 2</li>
       <li>Feature 3</li>
     </ul>
-    <p class="price">$9/month</p>
     <button>Sign Up</button>
   </div>
-  <div class="pricing-plan">
+  <div class="plan">
     <h2>Pro</h2>
+    <div class="price">$29/month</div>
     <ul>
       <li>Feature 1</li>
       <li>Feature 2</li>
@@ -92,11 +86,11 @@ body {
       <li>Feature 4</li>
       <li>Feature 5</li>
     </ul>
-    <p class="price">$19/month</p>
     <button>Sign Up</button>
   </div>
-  <div class="pricing-plan">
+  <div class="plan">
     <h2>Premium</h2>
+    <div class="price">$49/month</div>
     <ul>
       <li>Feature 1</li>
       <li>Feature 2</li>
@@ -105,7 +99,6 @@ body {
       <li>Feature 5</li>
       <li>Feature 6</li>
     </ul>
-    <p class="price">$29/month</p>
     <button>Sign Up</button>
   </div>
 </div>
@@ -114,16 +107,17 @@ body {
 </html>
 ```
 
-## Explanation
 
-The code utilizes CSS Grid to easily create the three-column layout.  `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` ensures responsiveness:  it creates as many columns as fit within the available space, with a minimum width of 300px per column.  The rest of the CSS handles styling elements like colors, fonts, spacing, and button appearance.
+**Explanation:**
 
+* **Grid Layout:** The `pricing-table` div uses `display: grid` with `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))` for responsive behavior. This allows the columns to adjust based on screen size, ensuring a good experience on both desktop and mobile.
+* **Plan Styling:** Each `.plan` div is styled individually with borders and padding.
+* **Responsiveness:** The `auto-fit` keyword in the grid template columns ensures that the number of columns adjusts automatically based on screen width. The `minmax` function sets a minimum width of 300px and allows columns to grow to fill available space.
 
-## Links to Resources to Learn More
+**Links to Resources to Learn More:**
 
-* **CSS Grid Layout:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)  (MDN Web Docs)
-* **CSS Box Model:** [https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model) (MDN Web Docs)
-* **Learn CSS:**  [https://www.freecodecamp.org/learn/responsive-web-design/](https://www.freecodecamp.org/learn/responsive-web-design/) (freeCodeCamp)
+* **CSS Grid Layout:** [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
+* **CSS Flexbox:** [MDN Web Docs - CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

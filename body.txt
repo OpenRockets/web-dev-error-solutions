@@ -1,101 +1,122 @@
 
-## Problem Description:  Performance Degradation with Large Post Data
-
-A common challenge when using Firebase Firestore to store and retrieve blog posts or similar content is performance degradation.  If posts contain large amounts of text, images (stored as URLs), or embedded data, fetching and displaying them can become slow, especially when retrieving multiple posts or loading a single post with many fields.  Firestore's document size limits (1 MB) and network latency can exacerbate this issue, leading to a poor user experience.  Simply storing everything in a single document is inefficient and can lead to slow load times and potentially exceed the document size limit.
+This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll leverage standard CSS3 properties for layout and styling, demonstrating techniques applicable to a wide range of projects.  No CSS preprocessors like Tailwind CSS will be used in this example to keep the core CSS concepts clear.
 
 
-## Solution:  Data Normalization and Pagination
+**Description of the Styling:**
 
-The optimal approach is to normalize your data and implement pagination.  This involves breaking down large posts into smaller, manageable units.
-
-### Step-by-Step Code Example (using JavaScript with the Firebase Admin SDK)
+The pricing table will consist of three columns representing different pricing plans (Basic, Pro, Premium). Each column will include a plan name, a price, a list of features, and a call-to-action button.  The styling will emphasize clear visual separation between plans and a clean, modern aesthetic. We'll use a combination of flexbox and grid for layout to ensure responsiveness across different screen sizes.
 
 
-**1. Data Structure:**
+**Full Code:**
 
-Instead of storing everything in a single document, we'll create a separate collection for posts and potentially subcollections for related data like comments or images.
-
-* **posts collection:** Each document represents a post and contains essential metadata:
-    * `postId` (String, auto-generated ID)
-    * `title` (String)
-    * `authorId` (String, reference to user document)
-    * `shortDescription` (String - a short summary)
-    * `createdAt` (Timestamp)
-    * `imageUrls` (array of strings - URLs to images)
-
-
-* **postContent collection:**  This collection will store the actual post content, referenced by the `postId`. Each document contains:
-    * `postId` (String, matching the post document)
-    * `content` (String, the full post text - potentially chunked for larger posts)
-
-```javascript
-// Firebase Admin SDK initialization (replace with your config)
-const admin = require('firebase-admin');
-admin.initializeApp();
-const db = admin.firestore();
-
-// Example of adding a new post
-async function addPost(title, authorId, shortDescription, content, imageUrls) {
-  const postId = db.collection('posts').doc().id;
-  await db.collection('posts').doc(postId).set({
-    postId,
-    title,
-    authorId,
-    shortDescription,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    imageUrls,
-  });
-
-  await db.collection('postContent').doc(postId).set({
-    postId,
-    content,
-  });
-
-  console.log('Post added:', postId);
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pricing Table</title>
+<style>
+body {
+  font-family: sans-serif;
 }
 
-// Example of fetching a post with pagination (fetching the first 10 posts)
-async function getPosts(limit = 10, startAfter = null) {
-  let query = db.collection('posts').orderBy('createdAt', 'desc').limit(limit);
-  if(startAfter){
-    query = query.startAfter(startAfter);
-  }
-  const snapshot = await query.get();
-
-  const posts = snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
-
-  const lastPost = snapshot.docs[snapshot.docs.length -1];
-
-  return {posts, lastPost};
+.pricing-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
+  gap: 20px;
+  padding: 20px;
 }
 
+.plan {
+  border: 1px solid #ccc;
+  padding: 20px;
+  text-align: center;
+}
 
+.plan h2 {
+  margin-top: 0;
+}
 
-//Example Usage
-addPost("My Awesome Post", "user123", "Short description", "This is the full content of my awesome post", ["url1", "url2"])
-  .then(() => {
-      getPosts().then(result => console.log(result));
-  })
-  .catch(error => console.error(error));
+.plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.plan ul {
+  list-style: none;
+  padding: 0;
+}
+
+.plan li {
+  margin-bottom: 5px;
+}
+
+.plan button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="pricing-table">
+  <div class="plan">
+    <h2>Basic</h2>
+    <div class="price">$9/month</div>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Pro</h2>
+    <div class="price">$29/month</div>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Premium</h2>
+    <div class="price">$49/month</div>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+      <li>Feature 6</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
-**2. Pagination:** The `getPosts` function demonstrates basic pagination using `limit` and `startAfter`.  The client-side will request subsequent pages using the last document from the previous page.
+
+**Explanation:**
+
+* **Grid Layout:** The `pricing-table` div uses `display: grid` with `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))` for responsive behavior. This allows the columns to adjust based on screen size, ensuring a good experience on both desktop and mobile.
+* **Plan Styling:** Each `.plan` div is styled individually with borders and padding.
+* **Responsiveness:** The `auto-fit` keyword in the grid template columns ensures that the number of columns adjusts automatically based on screen width. The `minmax` function sets a minimum width of 300px and allows columns to grow to fill available space.
+
+**Links to Resources to Learn More:**
+
+* **CSS Grid Layout:** [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
+* **CSS Flexbox:** [MDN Web Docs - CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout)
 
 
-## Explanation:
-
-Data normalization improves read performance by reducing the amount of data retrieved in each query.  By separating metadata from the full content, we only fetch essential information when displaying a list of posts. When the user clicks to view a specific post, we fetch the full content separately.  Pagination prevents loading all posts at once, improving responsiveness, especially for sites with many posts.
-
-
-## External References:
-
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
-* [Data Modeling in Firestore](https://firebase.google.com/docs/firestore/modeling-data)
-
-
-Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
