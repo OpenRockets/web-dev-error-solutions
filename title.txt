@@ -1,1 +1,1 @@
-Handling Firestore Data Consistency Issues with Concurrent Updates to Posts
+Efficiently Storing and Retrieving Large Post Data in Firebase Firestore
