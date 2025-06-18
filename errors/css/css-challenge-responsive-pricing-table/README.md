@@ -1,11 +1,13 @@
 # 🐞 CSS Challenge: Responsive Pricing Table
 
 
-This challenge focuses on creating a responsive pricing table using CSS.  We'll build a table with three pricing tiers (Basic, Pro, and Premium), each displaying different features and prices. The table should be responsive, adapting gracefully to different screen sizes.  We'll use plain CSS for this example, avoiding any CSS frameworks like Tailwind.
+This challenge focuses on creating a responsive pricing table using CSS.  We'll aim for a clean, modern design that adapts well to different screen sizes.  This example utilizes plain CSS, but the principles can easily be adapted to frameworks like Tailwind CSS.
+
 
 **Description of the Styling:**
 
-The pricing table will be styled with a clean, modern look.  Each pricing tier will be contained within a card-like structure with a clear heading, a list of features, and a prominent price.  We'll use subtle gradients and shadows to add visual appeal.  The table will be horizontally centered and will adapt to smaller screens by stacking the pricing tiers vertically.
+The pricing table will consist of three pricing plans (Basic, Pro, and Premium). Each plan will have a title, a list of features, a price, and a call-to-action button. The table will be horizontally scrollable on smaller screens to ensure all content is visible.  We'll use a clean and visually appealing color scheme.
+
 
 **Full Code:**
 
@@ -17,55 +19,59 @@ The pricing table will be styled with a clean, modern look.  Each pricing tier w
 <style>
 body {
   font-family: sans-serif;
-  background-color: #f4f4f4;
 }
 
 .pricing-table {
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  overflow-x: auto; /* Enable horizontal scrolling on smaller screens */
 }
 
-.pricing-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin: 20px;
+.pricing-plan {
+  width: 300px; /* Adjust width as needed */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin: 10px;
   padding: 20px;
-  width: 300px; /* Adjust as needed */
-  min-height: 350px;
-  text-align: center;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
 }
 
-.pricing-card h2 {
-  color: #333;
-  margin-bottom: 10px;
+.pricing-plan h2 {
+  margin-top: 0;
 }
 
-.pricing-card ul {
+.pricing-plan ul {
   list-style: none;
   padding: 0;
 }
 
-.pricing-card li {
-  margin-bottom: 5px;
+.pricing-plan li {
+  margin-bottom: 10px;
 }
 
-.pricing-card .price {
+.pricing-plan .price {
   font-size: 24px;
   font-weight: bold;
-  color: #007bff;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
+}
+
+.pricing-plan button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 /* Media query for smaller screens */
 @media (max-width: 768px) {
-  .pricing-card {
-    width: 100%;
-    margin-bottom: 20px;
-  }
   .pricing-table {
-      flex-direction: column; /* Stack cards vertically */
+    flex-direction: column; /* Stack plans vertically */
+    overflow-x: hidden; /* No horizontal scroll needed */
+  }
+  .pricing-plan {
+    width: 100%; /* Full width on smaller screens */
+    margin: 0 10px 20px; /* Adjust margins */
   }
 }
 </style>
@@ -73,34 +79,39 @@ body {
 <body>
 
 <div class="pricing-table">
-  <div class="pricing-card">
+  <div class="pricing-plan">
     <h2>Basic</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+    </ul>
     <p class="price">$9/month</p>
-    <ul>
-      <li>10GB Storage</li>
-      <li>1 User</li>
-      <li>Basic Support</li>
-    </ul>
     <button>Sign Up</button>
   </div>
-  <div class="pricing-card">
+  <div class="pricing-plan">
     <h2>Pro</h2>
-    <p class="price">$29/month</p>
     <ul>
-      <li>100GB Storage</li>
-      <li>5 Users</li>
-      <li>Priority Support</li>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
     </ul>
+    <p class="price">$19/month</p>
     <button>Sign Up</button>
   </div>
-  <div class="pricing-card">
+  <div class="pricing-plan">
     <h2>Premium</h2>
-    <p class="price">$99/month</p>
     <ul>
-      <li>Unlimited Storage</li>
-      <li>10 Users</li>
-      <li>Dedicated Support</li>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+      <li>Feature 6</li>
     </ul>
+    <p class="price">$29/month</p>
     <button>Sign Up</button>
   </div>
 </div>
@@ -112,13 +123,17 @@ body {
 
 **Explanation:**
 
-The code uses flexbox for layout. The `.pricing-table` div uses `flex-wrap: wrap` to allow the cards to wrap onto multiple lines on larger screens.  The `@media` query adjusts the layout for smaller screens, setting `flex-direction: column` to stack the cards vertically.  Individual pricing cards are styled with borders, shadows, and padding to create a visually appealing effect.
+* The `pricing-table` uses `flexbox` for easy arrangement and `overflow-x: auto` to allow horizontal scrolling when needed.
+* Individual `pricing-plan` divs are styled with borders, padding, and shadows for visual appeal.
+* A media query (`@media (max-width: 768px)`) adjusts the layout for smaller screens, stacking the plans vertically.
+* CSS is used for styling all elements to achieve a consistent design.
+
 
 **Links to Resources to Learn More:**
 
-* **CSS Flexbox:** [https://css-tricks.com/snippets/css/a-guide-to-flexbox/](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
+* **CSS Flexbox:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout)
 * **CSS Media Queries:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
-* **CSS Grid (alternative layout method):** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/)
+* **CSS Grid Layout (alternative layout method):** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
