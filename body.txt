@@ -1,127 +1,87 @@
 
-**Description of the Error:**
+This challenge involves creating a responsive pricing table using Tailwind CSS.  The table should display three pricing plans (Basic, Pro, and Premium) with different features and prices, adapting seamlessly to various screen sizes.  The design emphasizes clean aesthetics and easy readability.
 
-A common issue when working with Firebase Firestore and applications involving posts (e.g., blog posts, social media updates) is managing large amounts of data efficiently.  Storing entire post content (especially rich text with images, videos, etc.) directly within a single Firestore document can lead to several problems:
+**Description of the Styling:**
 
-* **Document size limits:** Firestore has document size limitations (currently 1 MB). Exceeding this limit results in errors during write operations.
-* **Slow read speeds:** Retrieving large documents can be slow, impacting application performance and user experience.
-* **Inefficient querying:** Complex queries on large documents are less efficient than queries on smaller, well-structured data.
+The pricing table will utilize Tailwind CSS classes to achieve a modern and responsive layout. Key styling elements include:
 
-This documentation details how to address this by using a more efficient data structure, separating large data into smaller chunks (e.g., storing images separately and referencing them).
-
-
-**Fixing Step-by-Step (Code Example):**
-
-Let's assume we're dealing with blog posts, each having a title, a short description, content (rich text), and an image.
-
-**1. Data Structure Modification:**
-
-Instead of storing everything in a single document, we'll use multiple collections:
-
-* **`posts` collection:** This collection will store metadata about each post:
-
-```json
-{
-  "postId": "post123",
-  "title": "Efficient Firestore Data Management",
-  "description": "A guide to storing large post data in Firestore.",
-  "imageUrl": "gs://your-bucket/images/post123.jpg", // Cloud Storage path
-  "createdAt": 1678886400000 
-}
-```
-
-* **`postContent` collection:** This will store the actual rich text content:
-
-```json
-{
-  "postId": "post123",
-  "content": "<p>This is the detailed content of the blog post...</p>"
-}
-```
-
-**2. Cloud Storage Integration:**
-
-Use Firebase Cloud Storage to store images and other large media files.  The `imageUrl` in the `posts` collection will point to the file's location in Cloud Storage.
-
-**3. Firebase Code (JavaScript):**
-
-```javascript
-import { getFirestore, collection, addDoc, getDocs, doc, getDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-
-const db = getFirestore();
-const storage = getStorage();
+* **Cards:** Each pricing plan will be represented as a separate card with a shadow and rounded corners.
+* **Color Scheme:** A subtle color scheme will be used to visually distinguish the plans.  The "Pro" plan will have a slightly more prominent visual treatment.
+* **Responsiveness:** The layout will adjust gracefully from large screens to smaller mobile screens, ensuring readability and usability across all devices.
+* **Clear Hierarchy:**  Headings, prices, and features will be clearly differentiated using Tailwind's typography classes.
 
 
-// Function to create a new post
-async function createPost(title, description, content, image) {
-  const postId = Date.now().toString(); // Or generate a unique ID
+**Full Code:**
 
-  // Upload image to Cloud Storage
-  const storageRef = ref(storage, `images/${postId}.jpg`); // Adjust file type as needed.
-  const uploadTask = uploadBytesResumable(storageRef, image);
-  await uploadTask; 
-  const imageUrl = await getDownloadURL(storageRef);
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing Table</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
 
-  // Add metadata to 'posts' collection
-  await addDoc(collection(db, "posts"), {
-    postId: postId,
-    title: title,
-    description: description,
-    imageUrl: imageUrl,
-    createdAt: Date.now()
-  });
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-center mb-8">Pricing Plans</h1>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-  // Add content to 'postContent' collection
-  await addDoc(collection(db, "postContent"), {
-    postId: postId,
-    content: content
-  });
+      <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-xl font-bold mb-4 text-gray-800">Basic</h2>
+        <p class="text-4xl font-bold text-gray-700 mb-4">$9</p>
+        <p class="text-gray-600 mb-6">per month</p>
+        <ul class="list-disc list-inside text-gray-600">
+          <li>10 GB Storage</li>
+          <li>1 User</li>
+          <li>Basic Support</li>
+        </ul>
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Sign Up</button>
+      </div>
 
-  console.log("Post created successfully!");
-}
+      <div class="bg-white shadow-md rounded-lg p-6 bg-yellow-100">
+        <h2 class="text-xl font-bold mb-4 text-gray-800">Pro</h2>
+        <p class="text-4xl font-bold text-gray-700 mb-4">$49</p>
+        <p class="text-gray-600 mb-6">per month</p>
+        <ul class="list-disc list-inside text-gray-600">
+          <li>100 GB Storage</li>
+          <li>5 Users</li>
+          <li>Priority Support</li>
+          <li>Advanced Features</li>
+        </ul>
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Sign Up</button>
+      </div>
 
-// Function to fetch a post by its ID.
-async function getPost(postId){
-  const postDocRef = doc(db, "posts", postId);
-  const postDocSnap = await getDoc(postDocRef);
-  if (postDocSnap.exists()){
-    const postData = postDocSnap.data();
-    const contentDocRef = doc(db, "postContent", postId);
-    const contentDocSnap = await getDoc(contentDocRef);
-    if (contentDocSnap.exists()){
-      postData.content = contentDocSnap.data().content;
-      return postData;
-    }
-    else{
-      console.error("Content document not found for post: ", postId);
-      return null;
-    }
-  }
-  else{
-    console.error("Post document not found: ", postId);
-    return null;
-  }
-}
+      <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-xl font-bold mb-4 text-gray-800">Premium</h2>
+        <p class="text-4xl font-bold text-gray-700 mb-4">$99</p>
+        <p class="text-gray-600 mb-6">per month</p>
+        <ul class="list-disc list-inside text-gray-600">
+          <li>Unlimited Storage</li>
+          <li>10 Users</li>
+          <li>Dedicated Support</li>
+          <li>All Features</li>
+        </ul>
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Sign Up</button>
+      </div>
 
-// Example usage:
-// ... (handle image selection and content input) ...
-createPost(title, description, content, image).then(()=>console.log("post created"))
-  .catch(error => console.error("Error creating post:", error));
+    </div>
+  </div>
 
-getPost("post123").then(post=>console.log(post)).catch(error=>console.error("Error getting Post", error))
+</body>
+</html>
 ```
 
 **Explanation:**
 
-This code separates the metadata (title, description, image URL) from the large content data.  It utilizes Cloud Storage for efficient image handling.  This approach avoids exceeding document size limits and improves read/write performance.  Queries will be faster as we're querying smaller documents.
+The code utilizes Tailwind's grid system (`grid grid-cols-1 md:grid-cols-3`) to create a responsive layout.  On smaller screens, the cards stack vertically, while on medium-sized screens and larger, they arrange themselves in three columns.  Classes like `bg-white`, `shadow-md`, `rounded-lg`, and others handle the visual styling of the cards and text.  The `hover` states are used to add interactive effects.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* **Firebase Firestore Documentation:** [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
-* **Firebase Cloud Storage Documentation:** [https://firebase.google.com/docs/storage](https://firebase.google.com/docs/storage)
-* **Firebase JavaScript SDK:** [https://firebase.google.com/docs/web/setup](https://firebase.google.com/docs/web/setup)
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs/](https://tailwindcss.com/docs/)
+* **Tailwind CSS Cheat Sheet:** [Numerous cheat sheets are available via a quick Google search.]
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
