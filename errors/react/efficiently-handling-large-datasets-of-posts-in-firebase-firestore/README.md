@@ -1,3 +1,5 @@
+# 🐞 Efficiently Handling Large Datasets of Posts in Firebase Firestore
+
 
 This document addresses a common challenge developers face when storing and retrieving large numbers of posts (e.g., blog posts, social media updates) in Firebase Firestore: **performance degradation due to inefficient data retrieval.**  Fetching all posts at once for display on a feed or similar view can lead to slow loading times and poor user experience, especially as the number of posts grows.  This is particularly problematic if you need to display posts sorted by a specific field (e.g., timestamp for a chronological feed).
 
