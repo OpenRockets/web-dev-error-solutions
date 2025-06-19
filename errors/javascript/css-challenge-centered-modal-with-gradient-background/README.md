@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Centered Modal with Gradient Background
+
 
 This challenge focuses on creating a visually appealing modal that is perfectly centered on the screen and features a stylish gradient background.  We'll use pure CSS for the layout and styling, avoiding JavaScript.  This approach is ideal for learning about positioning and background properties in CSS.
 
