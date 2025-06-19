@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data Ordering and Pagination for Efficient Post Loading
+
 
 This document addresses a common problem developers encounter when working with Firebase Firestore: efficiently loading and displaying a large number of posts, ordered chronologically, while avoiding performance bottlenecks.  Inefficient data retrieval can lead to slow loading times and potentially exceed Firestore's query limits.
 
