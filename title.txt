@@ -1,1 +1,1 @@
-Efficiently Handling Large Datasets in Firebase Firestore for Post Management
+Efficiently Storing and Querying Large Lists of Post Data in Firebase Firestore
