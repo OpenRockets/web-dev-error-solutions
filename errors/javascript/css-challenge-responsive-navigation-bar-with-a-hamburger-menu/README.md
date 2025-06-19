@@ -1,15 +1,13 @@
-# 🐞 CSS Challenge: Responsive Navigation Bar with a Hamburger Menu
+# 🐞 CSS Challenge:  Responsive Navigation Bar with a Hamburger Menu
 
 
-This challenge focuses on creating a responsive navigation bar that adapts seamlessly to different screen sizes.  We'll utilize CSS Grid for layout and a hamburger menu icon for smaller screens.  No JavaScript is required; the entire effect is achieved with CSS.  This example will use plain CSS, but could easily be adapted to Tailwind CSS.
+This challenge involves creating a responsive navigation bar that adapts to different screen sizes.  For smaller screens, a hamburger menu icon will be used to reveal the navigation links. We'll use CSS (specifically CSS3) for styling.  Tailwind CSS is not strictly needed for this, but it could streamline some of the styling.
 
+**Description of the Styling:**
 
-## Description of the Styling:
+The navigation bar will be fixed at the top of the page. On larger screens (e.g., above 768px), the navigation links will be displayed inline. On smaller screens, the links will be hidden by default and revealed when the hamburger menu is clicked. The hamburger icon will be a simple three-line icon that transforms into an "X" upon clicking.  The overall style will be clean and modern.
 
-The navigation bar will be positioned at the top of the page.  On larger screens (above 768px), the navigation links will be displayed inline, evenly spaced. On smaller screens, the links will be hidden behind a hamburger menu icon. Clicking the icon will toggle the visibility of the links.  The styling will include a clean, modern aesthetic.
-
-
-## Full Code:
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
@@ -17,118 +15,142 @@ The navigation bar will be positioned at the top of the page.  On larger screens
 <head>
 <title>Responsive Navigation Bar</title>
 <style>
-body {
-  font-family: sans-serif;
-  margin: 0;
-}
+  body {
+    margin: 0;
+    font-family: sans-serif;
+  }
 
-nav {
-  background-color: #333;
-  color: #fff;
-  display: grid;
-  grid-template-columns: auto 1fr; /* Header and Navigation */
-  align-items: center;
-}
-
-.nav-brand {
-  padding: 1rem;
-}
-
-.nav-links {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.nav-links li {
-  margin: 0 1rem;
-}
-
-.nav-links a {
-  color: #fff;
-  text-decoration: none;
-}
-
-/* Hamburger menu styles */
-.hamburger {
-  display: none; /* Hidden on larger screens */
-  cursor: pointer;
-  padding: 1rem;
-}
-
-.hamburger span {
-  display: block;
-  width: 25px;
-  height: 3px;
-  background-color: white;
-  margin: 5px 0;
-}
-
-/* Responsive styles */
-@media (max-width: 767px) {
-  .nav-links {
-    display: none; /* Hide links on small screens */
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
+  .navbar {
     background-color: #333;
-    flex-direction: column;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    width: 100%;
   }
 
-  .nav-links li {
-    margin: 0.5rem 0;
+  .navbar a {
+    float: left;
+    display: block;
+    color: white;
     text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
   }
 
-  .hamburger {
-    display: block; /* Show hamburger menu on small screens */
+  .navbar a:hover {
+    background-color: #ddd;
+    color: black;
   }
 
-  .nav-links.active {
-    display: flex; /* Show links when hamburger is clicked */
+  .navbar-responsive {
+    display: none;
   }
-}
 
+  .navbar-icon {
+    display: none;
+    cursor: pointer;
+    float: right;
+    padding: 10px 12px;
+  }
 
+  .navbar-icon:hover {
+    background-color: #ddd;
+  }
+
+  .navbar-icon span {
+    display: block;
+    height: 2px;
+    width: 25px;
+    background-color: white;
+    margin: 5px 0;
+    transition: 0.4s;
+  }
+
+  @media screen and (max-width: 768px) {
+    .navbar a:not(:first-child) {display: none;}
+    .navbar a.icon {
+      float: right;
+      display: block;
+    }
+    .navbar-responsive {
+      display: block;
+      background-color: #333;
+      position: absolute;
+      top: 50px;
+      width: 100%;
+      z-index: 1;
+    }
+    .navbar-responsive a {
+      float: none;
+      display: block;
+      text-align: left;
+    }
+
+    .navbar-icon {
+      display: block;
+    }
+
+    .navbar-icon:hover span:nth-child(1) {
+      transform: rotate(45deg) translate(7px, 7px);
+    }
+    .navbar-icon:hover span:nth-child(2) {
+      opacity: 0;
+    }
+    .navbar-icon:hover span:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -7px);
+    }
+  }
 </style>
 </head>
 <body>
-<nav>
-  <div class="nav-brand">My Website</div>
-  <div class="hamburger" onclick="toggleNav()">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-  <ul class="nav-links">
-    <li><a href="#">Home</a></li>
-    <li><a href="#">About</a></li>
-    <li><a href="#">Services</a></li>
-    <li><a href="#">Contact</a></li>
-  </ul>
-</nav>
+
+<div class="navbar">
+  <a href="#">Home</a>
+  <a href="#">About</a>
+  <a href="#">Services</a>
+  <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+    <div class="navbar-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </a>
+</div>
+
+<div id="myNavbar" class="navbar-responsive">
+  <a href="#">Home</a>
+  <a href="#">About</a>
+  <a href="#">Services</a>
+</div>
+
 <script>
-  function toggleNav() {
-    document.querySelector('.nav-links').classList.toggle('active');
+function myFunction() {
+  var x = document.getElementById("myNavbar");
+  if (x.style.display === "block") {
+    x.style.display = "none";
+  } else {
+    x.style.display = "block";
   }
+}
 </script>
+
 </body>
 </html>
 ```
 
-## Explanation:
 
-The CSS uses `grid-template-columns` to create a simple grid layout for the navigation bar.  The media query `@media (max-width: 767px)` targets screens smaller than 768 pixels.  Inside this query, the `nav-links` are hidden by default, and the hamburger menu is displayed. JavaScript’s `toggleNav` function simply adds and removes the `active` class to the `nav-links` element, controlling its visibility.
+**Explanation:**
+
+The code uses CSS media queries to adjust the layout based on screen size.  For larger screens, the links are displayed inline. For smaller screens,  JavaScript is used to toggle the visibility of the responsive navigation menu.  The hamburger icon uses CSS transforms to create the "X" animation on hover.
 
 
 
-## Links to Resources to Learn More:
+**Links to Resources to Learn More:**
 
-* **CSS Grid Layout:** [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
-* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
-* **Tailwind CSS:** [Tailwind CSS Official Website](https://tailwindcss.com/)
+* **CSS3 Tutorial:** [MDN Web Docs CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
+* **Media Queries:** [MDN Web Docs Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **CSS Transforms:** [MDN Web Docs CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **Tailwind CSS (Optional):** [Tailwind CSS Docs](https://tailwindcss.com/docs/installation)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

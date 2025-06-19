@@ -1,115 +1,154 @@
 
-## Description of the Problem
+This challenge involves creating a responsive navigation bar that adapts to different screen sizes.  For smaller screens, a hamburger menu icon will be used to reveal the navigation links. We'll use CSS (specifically CSS3) for styling.  Tailwind CSS is not strictly needed for this, but it could streamline some of the styling.
 
-A common issue developers face when using Firebase Firestore to store and retrieve blog posts or similar content is managing large amounts of data within a single document.  Storing extensive text content, images, or embedded media directly within a Firestore document can lead to several problems:
+**Description of the Styling:**
 
-* **Document size limitations:** Firestore documents have size limits. Exceeding these limits will result in errors when attempting to write or update the document.
-* **Performance issues:** Retrieving large documents can be slow, impacting the user experience, especially on low-bandwidth connections.  Querying and filtering become less efficient.
-* **Data redundancy:**  If multiple posts share similar data (e.g., author information), storing this repeatedly in each post document is inefficient and wasteful.
+The navigation bar will be fixed at the top of the page. On larger screens (e.g., above 768px), the navigation links will be displayed inline. On smaller screens, the links will be hidden by default and revealed when the hamburger menu is clicked. The hamburger icon will be a simple three-line icon that transforms into an "X" upon clicking.  The overall style will be clean and modern.
 
+**Full Code:**
 
-## Step-by-Step Solution: Utilizing Subcollections and Data Normalization
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responsive Navigation Bar</title>
+<style>
+  body {
+    margin: 0;
+    font-family: sans-serif;
+  }
 
-The most effective solution involves a combination of data normalization and using subcollections:
+  .navbar {
+    background-color: #333;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    width: 100%;
+  }
 
-**1. Data Normalization:**
+  .navbar a {
+    float: left;
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
 
-Separate frequently accessed data, like author information or media details, into their own collections.  This avoids redundancy and improves query efficiency.
+  .navbar a:hover {
+    background-color: #ddd;
+    color: black;
+  }
 
-**2. Subcollections for Post Content:**
+  .navbar-responsive {
+    display: none;
+  }
 
-Instead of storing the entire post content (body text, images, etc.) within the main `posts` collection document, create a subcollection within each post document.  This subcollection can hold smaller, manageable chunks of the post's content, media references, or metadata.
+  .navbar-icon {
+    display: none;
+    cursor: pointer;
+    float: right;
+    padding: 10px 12px;
+  }
 
+  .navbar-icon:hover {
+    background-color: #ddd;
+  }
 
-## Code Example (JavaScript)
+  .navbar-icon span {
+    display: block;
+    height: 2px;
+    width: 25px;
+    background-color: white;
+    margin: 5px 0;
+    transition: 0.4s;
+  }
 
-This example demonstrates creating and retrieving posts with a subcollection for managing post content.  We'll use the `posts` collection and a subcollection called `content` for each post.
+  @media screen and (max-width: 768px) {
+    .navbar a:not(:first-child) {display: none;}
+    .navbar a.icon {
+      float: right;
+      display: block;
+    }
+    .navbar-responsive {
+      display: block;
+      background-color: #333;
+      position: absolute;
+      top: 50px;
+      width: 100%;
+      z-index: 1;
+    }
+    .navbar-responsive a {
+      float: none;
+      display: block;
+      text-align: left;
+    }
 
+    .navbar-icon {
+      display: block;
+    }
 
-```javascript
-// Import the Firestore library
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, query, where } from "firebase/firestore";
+    .navbar-icon:hover span:nth-child(1) {
+      transform: rotate(45deg) translate(7px, 7px);
+    }
+    .navbar-icon:hover span:nth-child(2) {
+      opacity: 0;
+    }
+    .navbar-icon:hover span:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -7px);
+    }
+  }
+</style>
+</head>
+<body>
 
-// Your Firebase configuration (replace with your project details)
-const firebaseConfig = {
-  // ... your firebase config ...
-};
+<div class="navbar">
+  <a href="#">Home</a>
+  <a href="#">About</a>
+  <a href="#">Services</a>
+  <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+    <div class="navbar-icon">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </a>
+</div>
 
-let app;
-if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApp();
-}
-const db = getFirestore(app);
+<div id="myNavbar" class="navbar-responsive">
+  <a href="#">Home</a>
+  <a href="#">About</a>
+  <a href="#">Services</a>
+</div>
 
-
-// Create a new post with a subcollection for content
-async function createPost(title, authorId) {
-  const postRef = doc(collection(db, "posts"));
-  await setDoc(postRef, {
-    title: title,
-    authorId: authorId, //Reference to the Author document
-    timestamp: new Date(),
-  });
-  //Adding content to the subcollection
-  const contentRef = collection(postRef,"content");
-  await addDoc(contentRef, {
-    section: "Introduction",
-    text: "This is the introduction to the post."
-  })
-  await addDoc(contentRef, {
-      section: "Body",
-      text: "This is the body of the post."
-  })
-
-}
-
-
-// Retrieve a post and its content
-async function getPost(postId) {
-  const postRef = doc(db, "posts", postId);
-  const postSnapshot = await getDoc(postRef);
-  if (postSnapshot.exists()) {
-    const postData = postSnapshot.data();
-    const contentRef = collection(postRef,"content");
-    const contentSnapshot = await getDocs(contentRef);
-    const content = contentSnapshot.docs.map(doc => doc.data());
-    return { ...postData, content };
+<script>
+function myFunction() {
+  var x = document.getElementById("myNavbar");
+  if (x.style.display === "block") {
+    x.style.display = "none";
   } else {
-    return null;
+    x.style.display = "block";
   }
 }
+</script>
 
-
-// Example usage:
-createPost("My First Post", "author123")
-  .then(() => console.log("Post created successfully!"))
-  .catch((error) => console.error("Error creating post:", error));
-
-
-getPost("yourPostId") //Replace with the actual post ID
-  .then((post) => console.log("Retrieved post:", post))
-  .catch((error) => console.error("Error retrieving post:", error));
-
-
+</body>
+</html>
 ```
 
 
-## Explanation
+**Explanation:**
 
-This code demonstrates the key improvements:
-
-* **Structured data:** Posts are stored efficiently, avoiding the size limitations of a single large document.
-* **Efficient querying:** Retrieving a post only loads the main post data and its relevant content chunks from the subcollection.  You can query the subcollection based on criteria if needed (e.g., retrieving only specific sections).
-* **Scalability:**  This approach scales much better as the amount of content increases.
+The code uses CSS media queries to adjust the layout based on screen size.  For larger screens, the links are displayed inline. For smaller screens,  JavaScript is used to toggle the visibility of the responsive navigation menu.  The hamburger icon uses CSS transforms to create the "X" animation on hover.
 
 
-## External References
 
-* **Firebase Firestore Documentation:** [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
-* **Firebase Data Modeling:** [https://firebase.google.com/docs/firestore/manage-data/data-modeling](https://firebase.google.com/docs/firestore/manage-data/data-modeling)
+**Links to Resources to Learn More:**
+
+* **CSS3 Tutorial:** [MDN Web Docs CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
+* **Media Queries:** [MDN Web Docs Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **CSS Transforms:** [MDN Web Docs CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **Tailwind CSS (Optional):** [Tailwind CSS Docs](https://tailwindcss.com/docs/installation)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
