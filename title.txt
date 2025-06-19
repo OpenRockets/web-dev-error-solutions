@@ -1,1 +1,1 @@
-Handling Firestore Data for Posts: Avoiding Data Duplication and Overwrites
+Efficiently Storing and Retrieving Large Post Datasets in Firebase Firestore
