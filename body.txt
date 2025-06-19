@@ -1,110 +1,151 @@
 
-## Description of the Problem
+This challenge focuses on creating a responsive, multi-level navigation menu using CSS (specifically CSS3).  The menu will adapt seamlessly to different screen sizes, showcasing your understanding of media queries and flexible layouts.  We'll utilize a simple HTML structure and style it with CSS to achieve a clean and functional design.
 
-A common challenge when using Firebase Firestore to store and manage posts (e.g., blog posts, social media updates) is dealing with performance issues as the collection grows.  Simply storing all post data in a single collection quickly becomes inefficient when performing queries, especially if those queries involve filtering or sorting based on multiple fields.  This leads to slow load times for your application and a poor user experience.  The problem is exacerbated if your posts contain rich media like images or videos, increasing the size of each document significantly.
+**Description of the Styling:**
 
-Firestore's limitations on query depth and the cost of reading large datasets become apparent in such scenarios.  Queries requiring filtering across multiple fields become expensive and can exceed Firestore's query limits.
+The navigation menu will be a horizontal list at larger screen sizes. Upon reaching a smaller breakpoint (e.g., 768px), the menu will become vertical, likely using a hamburger menu icon to toggle its visibility. Submenus will appear on hover (larger screens) or upon clicking (smaller screens). The styling should be clean, modern, and consistent, employing appropriate colors, fonts, and spacing.  We'll aim for a clean, minimal aesthetic.
 
+**Full Code:**
 
-## Step-by-Step Solution: Implementing a Scalable Data Structure
-
-To address this, we'll adopt a more efficient data model using subcollections and potentially denormalization.  This approach optimizes query performance and reduces the amount of data transferred.
-
-**1. Data Modeling:**
-
-Instead of storing all post data in a single `posts` collection, we'll create a `posts` collection where each document represents a post's metadata (title, author, timestamp, etc.).  Then, we will use subcollections to organize content-rich parts of the post. For instance, if a post has comments, images, or other related data, these would be stored in subcollections under each post document.
-
-
-**2. Code Implementation (Node.js with Admin SDK):**
-
-This example uses the Node.js Admin SDK for Firestore.  Adapt it to your preferred language and SDK.
-
-```javascript
-const admin = require('firebase-admin');
-admin.initializeApp();
-const db = admin.firestore();
-
-
-// Create a new post (with comments as a subcollection)
-async function createPost(postData) {
-  const postRef = await db.collection('posts').add({
-    title: postData.title,
-    author: postData.author,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
-    // ... other metadata
-  });
-
-  // Add comments to the subcollection
-  postData.comments.forEach(async comment => {
-    await postRef.collection('comments').add({
-      text: comment.text,
-      author: comment.author,
-      timestamp: admin.firestore.FieldValue.serverTimestamp()
-    });
-  });
-  console.log('Post created:', postRef.id);
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responsive Multi-Level Navigation</title>
+<style>
+/* Basic Styling */
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
+nav li {
+  display: inline-block; /* Horizontal on larger screens */
+  position: relative; /* For submenus */
+}
 
-//Retrieve a post with its comments
-async function getPostWithComments(postId) {
-  const postDoc = await db.collection('posts').doc(postId).get();
-  if (!postDoc.exists) {
-    console.log('Post not found');
-    return null;
+nav a {
+  display: block;
+  padding: 15px 20px;
+  text-decoration: none;
+  color: #333;
+}
+
+nav a:hover {
+  background-color: #f0f0f0;
+}
+
+/* Submenu Styling */
+nav ul ul {
+  display: none; /* Hidden by default */
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+}
+
+nav li:hover > ul {
+  display: block; /* Show submenu on hover */
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+  nav li {
+    display: block; /* Vertical on smaller screens */
   }
-  const post = postDoc.data();
-  const commentsSnapshot = await postDoc.ref.collection('comments').get();
-  post.comments = commentsSnapshot.docs.map(doc => doc.data());
-  return post;
+
+  nav ul ul {
+    position: static; /* No absolute positioning on smaller screens */
+    width: 100%;
+  }
 }
 
-//Example usage
-const newPostData = {
-    title: "My awesome post",
-    author: "John Doe",
-    comments: [
-      {text: "Great post!", author: "Jane Doe"},
-      {text: "I agree!", author: "Peter Pan"}
-    ]
-  };
+/*Hamburger Menu Style (for smaller screens)*/
+.hamburger {
+  display: none; /* Hidden on larger screens */
+  cursor: pointer;
+  padding: 15px;
+}
 
-createPost(newPostData).then(() => {
-  getPostWithComments('yourPostIdHere').then(post => console.log(post))
-})
+.hamburger span {
+  display: block;
+  height: 3px;
+  width: 25px;
+  margin: 5px 0;
+  background: #333;
+}
 
+@media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+  nav ul {
+    display: none; /*Hidden until toggled*/
+  }
+
+  nav ul.show {
+    display: block;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div class="hamburger" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
+
+<nav>
+  <ul>
+    <li><a href="#">Home</a></li>
+    <li><a href="#">About</a>
+      <ul>
+        <li><a href="#">Our Team</a></li>
+        <li><a href="#">History</a></li>
+      </ul>
+    </li>
+    <li><a href="#">Services</a>
+      <ul>
+        <li><a href="#">Web Design</a></li>
+        <li><a href="#">Development</a></li>
+      </ul>
+    </li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+</nav>
+
+<script>
+function toggleMenu() {
+  const nav = document.querySelector('nav ul');
+  nav.classList.toggle('show');
+}
+</script>
+
+</body>
+</html>
 ```
 
+**Explanation:**
 
-**3. Querying Data:**
+The code is divided into sections:
 
-Queries are now more targeted and efficient.  For instance, retrieving posts by author:
+* **Basic Styling:** Sets up the basic structure and appearance of the menu items and links.
+* **Submenu Styling:** Styles the submenus, making them hidden by default and showing them on hover.  Absolute positioning is used for positioning the submenu below its parent.
+* **Responsive Styling:** Uses media queries to adjust the layout for smaller screens, changing the display to `block` for a vertical layout.
+* **Hamburger Menu Styling:** This adds a basic hamburger menu icon that toggles the visibility of the navigation menu on smaller screens.
+* **JavaScript Toggle:**  A simple JavaScript function uses `classList.toggle` to show and hide the navigation menu when the hamburger icon is clicked.
 
-```javascript
-const author = "John Doe";
-const querySnapshot = await db.collection('posts').where('author', '==', author).get();
-querySnapshot.forEach(doc => {
-    console.log(doc.id, doc.data());
-});
+**Links to Resources to Learn More:**
 
-```
-
-Retrieving comments for a specific post is similarly efficient because it operates within a smaller subcollection.
-
-## Explanation
-
-This approach improves performance by:
-
-* **Reducing document size:** Individual post documents are smaller, leading to faster reads and writes.
-* **Improved Query Targeting:** Queries become more focused on specific data sets, minimizing the amount of data processed by Firestore.
-* **Scalability:** The structure allows for easy scaling as the number of posts and comments increases.
-
-
-## External References
-
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firebase Firestore Data Modeling](https://firebase.google.com/docs/firestore/data-modeling)
-* [Node.js Admin SDK](https://firebase.google.com/docs/admin/setup)
+* **CSS3 Tutorial:** [MDN Web Docs CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
+* **Responsive Web Design:** [Google Web Fundamentals](https://developers.google.com/web/fundamentals/design-and-ux/responsive/)
+* **CSS Media Queries:** [MDN Web Docs Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
