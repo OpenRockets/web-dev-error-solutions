@@ -1,102 +1,111 @@
 # 🐞 Efficiently Storing and Retrieving Large Posts in Firebase Firestore
 
 
+This document addresses a common issue developers encounter when managing posts with rich text content or extensive metadata in Firebase Firestore: inefficient data storage and retrieval leading to slow loading times and exceeding Firestore's document size limits.  Firestore has a document size limit of 1MB.  Exceeding this limit will result in an error.  Furthermore, retrieving large documents can impact application performance, especially on mobile devices.
+
 **Description of the Error:**
 
-A common problem when working with Firebase Firestore and applications involving posts (e.g., blog posts, social media updates) is efficiently handling large amounts of text data within each post document.  Storing lengthy posts directly within a single Firestore document can lead to several issues:
+When attempting to store a large post (e.g., a blog post with images, embedded videos, long text content, and extensive metadata) directly as a single Firestore document, you might encounter the following:
 
-* **Read performance degradation:** Retrieving large documents can significantly slow down your application, particularly on mobile devices with limited bandwidth. Firestore charges based on the amount of data read, making this costly.
-* **Document size limits:** Firestore has document size limits (currently 1MB). Exceeding this limit will result in errors when attempting to create or update the document.
-* **Inefficient querying:** Querying based on parts of the large text field can become slow and complex.
+* **`FAILED_PRECONDITION: The document size exceeds the maximum allowed size of 1 MiB.`** This error directly indicates exceeding Firestore's document size limit.
+* **Slow loading times:** Even if you don't hit the size limit, fetching a large document can cause significant delays, leading to a poor user experience.
+* **Inefficient queries:**  Fetching large documents can also negatively impact query performance, particularly if you need to filter or sort based on fields within the document.
 
 
-**Fixing Step-by-Step (Code Example):**
+**Fixing the Problem: Data Normalization and Subcollections**
 
-The most efficient approach to handle large text posts is to **separate the main post content from the rest of the post data.**  We will store the main text in a separate Cloud Storage bucket and store only a reference to it in Firestore. This allows for optimized querying and reading of metadata.
+The solution involves implementing data normalization by breaking down the large post into smaller, more manageable units. We'll store the core post information (title, summary, author, etc.) in one document and use a subcollection to manage the rich content (images, text blocks, etc).
 
-**1. Project Setup:**
-
-* Ensure you have the Firebase SDK and Cloud Storage SDK integrated into your project.  Instructions can be found in the Firebase documentation.
-
-**2.  Storing the Post (Node.js Example):**
+**Step-by-step Code (JavaScript):**
 
 ```javascript
-const admin = require('firebase-admin');
-admin.initializeApp();
-const bucket = admin.storage().bucket();
-const db = admin.firestore();
+// 1. Setting up the Firestore instance
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, addDoc, doc, getDoc, setDoc, getDocs } from "firebase/firestore";
 
-async function createPost(postTitle, postContent, authorId) {
-  // Upload the post content to Cloud Storage
-  const file = bucket.file(`posts/${Date.now()}_${postTitle}.txt`); // Use unique filenames
-  const stream = file.createWriteStream({
-    metadata: {
-      contentType: 'text/plain',
-    },
+// Replace with your Firebase configuration
+const firebaseConfig = {
+  // ... your Firebase config ...
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 2. Defining the Post structure
+const createPost = async (postDetails) => {
+  // Core Post Data
+  const postRef = await addDoc(collection(db, "posts"), {
+    title: postDetails.title,
+    author: postDetails.author,
+    summary: postDetails.summary,
+    timestamp: new Date(), //Adding a timestamp
   });
-  stream.on('error', err => {
-    console.error('Error uploading file:', err);
-    throw err;
+
+  //Subcollection to store detailed post content (text and image URLS)
+  const contentRef = collection(db, "posts", postRef.id, "content");
+  postDetails.content.forEach(async (contentItem) => {
+     await addDoc(contentRef, contentItem);
   });
-  stream.on('finish', async () => {
-    // Get the public URL
-    const [url] = await file.getSignedUrl({
-      action: 'read',
-      expires: Date.now() + 60*60*1000 //1 hour expiration
-    });
+};
 
-    // Store metadata in Firestore
-    const postRef = db.collection('posts').doc();
-    await postRef.set({
-      postId: postRef.id,
-      title: postTitle,
-      authorId: authorId,
-      contentUrl: url, //Store the URL, not the content
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    console.log('Post created successfully:', postRef.id);
-  });
-  stream.end(postContent);
-}
+//3. Example Post Data
+const newPost = {
+  title: "My Awesome Post",
+  author: "John Doe",
+  summary: "A short summary of the post...",
+  content: [
+    { type: "text", text: "This is the main text of the post." },
+    { type: "image", url: "https://example.com/image1.jpg" },
+    { type: "text", text: "More text here..." },
+  ],
+};
 
-//Example usage:
-createPost("My Awesome Post", "This is a very long post content...", "user123")
-  .catch(err => console.error("Error creating post:", err));
-```
 
-**3. Retrieving the Post (Node.js Example):**
+// 4. Adding the post
+createPost(newPost).then(() => console.log('Post added successfully!'))
+.catch((error)=> console.log('Error adding post:', error))
 
-```javascript
-async function getPost(postId) {
-  const postRef = db.collection('posts').doc(postId);
-  const doc = await postRef.get();
+// 5. Retrieving the post
+const getPost = async (postId) => {
+  const postDocRef = doc(db, "posts", postId);
+  const postDoc = await getDoc(postDocRef);
 
-  if (!doc.exists) {
+  if(postDoc.exists()){
+    let post = postDoc.data();
+    const contentRef = collection(db, "posts", postId, "content");
+    const contentSnapshot = await getDocs(contentRef);
+    const content = contentSnapshot.docs.map(doc => doc.data());
+
+    post = {...post, content: content};
+
+    return post;
+  } else {
     return null;
   }
+};
 
-  const postData = doc.data();
-  //Fetch the content from Cloud Storage using the URL.
-  const response = await fetch(postData.contentUrl);
-  const content = await response.text();
 
-  return { ...postData, content };
-}
+getPost("yourPostId").then((post) => {
+  if(post){
+     console.log("Retrieved post:", post)
+  } else {
+    console.log("Post not found")
+  }
+}).catch((error) => console.log("Error retrieving post:", error))
 
-//Example Usage
-getPost("yourPostId").then(post => console.log(post)).catch(err => console.error("Error getting post:",err))
 ```
 
 **Explanation:**
 
-This solution leverages Cloud Storage for efficient storage of large text data. The Firestore document now only stores metadata (title, author, timestamp, and a URL to the content in Cloud Storage). This minimizes the document size, resulting in improved read performance, lower costs, and easier querying. When retrieving a post, you fetch the content from Cloud Storage using the URL stored in Firestore.  Remember to handle potential errors (e.g., network errors during content retrieval).  You'll also need to implement appropriate security rules to control access to both Firestore and Cloud Storage.
-
+* **Data Normalization:** The core post information is stored in the `posts` collection, and the rich content is stored in a subcollection (`content`) associated with each post. This prevents exceeding the document size limit.
+* **Efficient Retrieval:**  Retrieving a post now involves fetching the main post document and then querying the subcollection for its content.  This is far more efficient than fetching a single, massive document.
+* **Scalability:** This approach is scalable, allowing for the addition of more content to posts without impacting the performance of retrieving other posts.
 
 **External References:**
 
 * [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firebase Cloud Storage Documentation](https://firebase.google.com/docs/storage)
-* [Node.js Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
+* [Firestore Data Modeling](https://firebase.google.com/docs/firestore/design-structure)
+* [Dealing with large documents in Firestore](https://stackoverflow.com/questions/49177768/how-to-deal-with-large-documents-in-firestore)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
