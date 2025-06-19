@@ -1,1 +1,1 @@
-CSS Challenge:  Three-Column Layout with Sticky Header and Footer
+Efficiently Storing and Querying Large Post Collections in Firebase Firestore
