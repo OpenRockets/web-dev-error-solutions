@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Centered, Responsive Circular Image with Shadow
+
 
 This challenge involves creating a circular image that is centered both horizontally and vertically within its container. The image should maintain its aspect ratio on different screen sizes and have a subtle drop shadow for visual appeal. We'll achieve this using pure CSS (no JavaScript required).  This example uses standard CSS, but could easily be adapted to Tailwind CSS.
 
