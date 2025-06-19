@@ -1,1 +1,1 @@
-CSS Challenge:  Dynamically Sized Card with Tailwind CSS
+Efficiently Storing and Retrieving Large Post Datasets in Firebase Firestore
