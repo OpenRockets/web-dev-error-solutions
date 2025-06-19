@@ -1,1 +1,1 @@
-CSS Challenge: Recreate a Simple Pricing Table
+Efficiently Storing and Querying Large Posts in Firebase Firestore
