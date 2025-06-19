@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Fluid, Responsive Image Card
+
 
 This challenge involves creating a responsive image card using CSS. The card should adapt smoothly to different screen sizes, maintaining a consistent aspect ratio and visual appeal.  We'll use a combination of CSS Grid and CSS Flexbox for layout and styling.
 
