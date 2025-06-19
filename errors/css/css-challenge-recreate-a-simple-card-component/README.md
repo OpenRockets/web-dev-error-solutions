@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Recreate a Simple Card Component
+
 
 This challenge focuses on creating a visually appealing card component using CSS.  We'll use plain CSS (no preprocessors or frameworks like Tailwind) to achieve this, emphasizing fundamental CSS concepts like box-model, flexbox, and selectors. The goal is to build a clean, responsive card suitable for displaying information like product details, blog posts, or user profiles.
 
