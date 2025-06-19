@@ -1,1 +1,1 @@
-Handling Firestore Data Ordering and Pagination for Posts
+Handling Firestore Data Integrity with Concurrent Updates to Posts
