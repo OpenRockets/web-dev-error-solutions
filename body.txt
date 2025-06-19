@@ -1,109 +1,134 @@
 
-This document addresses a common issue developers encounter when managing posts with rich text content or extensive metadata in Firebase Firestore: inefficient data storage and retrieval leading to slow loading times and exceeding Firestore's document size limits.  Firestore has a document size limit of 1MB.  Exceeding this limit will result in an error.  Furthermore, retrieving large documents can impact application performance, especially on mobile devices.
+This challenge involves recreating a clean and responsive pricing table using CSS.  We'll focus on a simple design, suitable for beginners, utilizing standard CSS (no frameworks like Tailwind CSS for this example to keep it accessible).  The goal is to demonstrate basic layout techniques, styling, and responsiveness.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-When attempting to store a large post (e.g., a blog post with images, embedded videos, long text content, and extensive metadata) directly as a single Firestore document, you might encounter the following:
-
-* **`FAILED_PRECONDITION: The document size exceeds the maximum allowed size of 1 MiB.`** This error directly indicates exceeding Firestore's document size limit.
-* **Slow loading times:** Even if you don't hit the size limit, fetching a large document can cause significant delays, leading to a poor user experience.
-* **Inefficient queries:**  Fetching large documents can also negatively impact query performance, particularly if you need to filter or sort based on fields within the document.
+The pricing table will consist of three columns representing different pricing tiers (Basic, Pro, Enterprise). Each column will include a title (e.g., "Basic"), a price, a list of features, and a call-to-action button.  The styling will emphasize clean lines, clear visual hierarchy, and responsiveness across different screen sizes.  We'll use a subtle gradient for visual appeal.
 
 
-**Fixing the Problem: Data Normalization and Subcollections**
+**Full Code:**
 
-The solution involves implementing data normalization by breaking down the large post into smaller, more manageable units. We'll store the core post information (title, summary, author, etc.) in one document and use a subcollection to manage the rich content (images, text blocks, etc).
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pricing Table</title>
+<style>
+body {
+  font-family: sans-serif;
+  background-color: #f4f4f4;
+}
 
-**Step-by-step Code (JavaScript):**
+.pricing-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
+  grid-gap: 20px;
+  padding: 20px;
+}
 
-```javascript
-// 1. Setting up the Firestore instance
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, doc, getDoc, setDoc, getDocs } from "firebase/firestore";
+.pricing-column {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+}
 
-// Replace with your Firebase configuration
-const firebaseConfig = {
-  // ... your Firebase config ...
-};
+.pricing-column h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+.pricing-column p {
+  color: #555;
+  margin-bottom: 20px;
+}
 
-// 2. Defining the Post structure
-const createPost = async (postDetails) => {
-  // Core Post Data
-  const postRef = await addDoc(collection(db, "posts"), {
-    title: postDetails.title,
-    author: postDetails.author,
-    summary: postDetails.summary,
-    timestamp: new Date(), //Adding a timestamp
-  });
+.pricing-column ul {
+  list-style: none;
+  padding: 0;
+}
 
-  //Subcollection to store detailed post content (text and image URLS)
-  const contentRef = collection(db, "posts", postRef.id, "content");
-  postDetails.content.forEach(async (contentItem) => {
-     await addDoc(contentRef, contentItem);
-  });
-};
+.pricing-column li {
+  margin-bottom: 10px;
+}
 
-//3. Example Post Data
-const newPost = {
-  title: "My Awesome Post",
-  author: "John Doe",
-  summary: "A short summary of the post...",
-  content: [
-    { type: "text", text: "This is the main text of the post." },
-    { type: "image", url: "https://example.com/image1.jpg" },
-    { type: "text", text: "More text here..." },
-  ],
-};
+.pricing-column .price {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff; /* Blue price */
+}
 
+.pricing-column button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
 
-// 4. Adding the post
-createPost(newPost).then(() => console.log('Post added successfully!'))
-.catch((error)=> console.log('Error adding post:', error))
+.pricing-column button:hover {
+  background-color: #0069d9;
+}
 
-// 5. Retrieving the post
-const getPost = async (postId) => {
-  const postDocRef = doc(db, "posts", postId);
-  const postDoc = await getDoc(postDocRef);
-
-  if(postDoc.exists()){
-    let post = postDoc.data();
-    const contentRef = collection(db, "posts", postId, "content");
-    const contentSnapshot = await getDocs(contentRef);
-    const content = contentSnapshot.docs.map(doc => doc.data());
-
-    post = {...post, content: content};
-
-    return post;
-  } else {
-    return null;
+/* Responsive adjustments (optional - for larger screens) */
+@media (min-width: 992px) {
+  .pricing-table {
+    grid-template-columns: repeat(3, 1fr); /* 3 columns on larger screens */
   }
-};
+}
+</style>
+</head>
+<body>
 
+<div class="pricing-table">
+  <div class="pricing-column">
+    <h2>Basic</h2>
+    <p class="price">$9.99/month</p>
+    <ul>
+      <li>10GB Storage</li>
+      <li>1 User</li>
+      <li>Basic Support</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+  <div class="pricing-column">
+    <h2>Pro</h2>
+    <p class="price">$29.99/month</p>
+    <ul>
+      <li>50GB Storage</li>
+      <li>5 Users</li>
+      <li>Priority Support</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+  <div class="pricing-column">
+    <h2>Enterprise</h2>
+    <p class="price">$99.99/month</p>
+    <ul>
+      <li>Unlimited Storage</li>
+      <li>Unlimited Users</li>
+      <li>Dedicated Support</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+</div>
 
-getPost("yourPostId").then((post) => {
-  if(post){
-     console.log("Retrieved post:", post)
-  } else {
-    console.log("Post not found")
-  }
-}).catch((error) => console.log("Error retrieving post:", error))
-
+</body>
+</html>
 ```
 
 **Explanation:**
 
-* **Data Normalization:** The core post information is stored in the `posts` collection, and the rich content is stored in a subcollection (`content`) associated with each post. This prevents exceeding the document size limit.
-* **Efficient Retrieval:**  Retrieving a post now involves fetching the main post document and then querying the subcollection for its content.  This is far more efficient than fetching a single, massive document.
-* **Scalability:** This approach is scalable, allowing for the addition of more content to posts without impacting the performance of retrieving other posts.
+The code uses CSS Grid for a responsive layout.  The `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` line ensures the columns adapt to different screen sizes.  On smaller screens, they stack vertically; on larger screens, they arrange horizontally.  Basic CSS is used for styling elements, including colors, fonts, padding, and shadows.  A media query (`@media (min-width: 992px)`) provides optional adjustments for larger screens.
 
-**External References:**
 
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firestore Data Modeling](https://firebase.google.com/docs/firestore/design-structure)
-* [Dealing with large documents in Firestore](https://stackoverflow.com/questions/49177768/how-to-deal-with-large-documents-in-firestore)
+**Links to Resources to Learn More:**
+
+* **CSS Grid Layout:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
+* **CSS Box Model:** [https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing)
+* **CSS Media Queries:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

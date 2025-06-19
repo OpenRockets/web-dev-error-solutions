@@ -1,12 +1,11 @@
 # 🐞 CSS Challenge: Recreate a Simple Pricing Table
 
 
-This challenge focuses on creating a clean and responsive pricing table using CSS. We'll build a table with three pricing tiers: Basic, Pro, and Premium, each with different features and prices.  The styling will be clean and modern, utilizing basic CSS (no preprocessors like Sass or Less, or frameworks like Tailwind).
-
+This challenge involves recreating a clean and responsive pricing table using CSS.  We'll focus on a simple design, suitable for beginners, utilizing standard CSS (no frameworks like Tailwind CSS for this example to keep it accessible).  The goal is to demonstrate basic layout techniques, styling, and responsiveness.
 
 **Description of the Styling:**
 
-The pricing table will be responsive, adapting to different screen sizes. Each pricing tier will be contained within a card-like element with a subtle shadow.  The headers will be clear and concise, and features will be presented using a bulleted list.  The price will be prominently displayed.  We'll use gradients for a visually appealing effect, though this is optional.
+The pricing table will consist of three columns representing different pricing tiers (Basic, Pro, Enterprise). Each column will include a title (e.g., "Basic"), a price, a list of features, and a call-to-action button.  The styling will emphasize clean lines, clear visual hierarchy, and responsiveness across different screen sizes.  We'll use a subtle gradient for visual appeal.
 
 
 **Full Code:**
@@ -19,54 +18,66 @@ The pricing table will be responsive, adapting to different screen sizes. Each p
 <style>
 body {
   font-family: sans-serif;
+  background-color: #f4f4f4;
 }
 
 .pricing-table {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
+  grid-gap: 20px;
+  padding: 20px;
 }
 
-.pricing-card {
-  width: 300px;
-  margin: 20px;
+.pricing-column {
+  background-color: white;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  background: linear-gradient(to bottom, #f0f0f0, #e0e0e0); /*Optional Gradient*/
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
 }
 
-.pricing-card h2 {
-  background-color: #4CAF50;
-  color: white;
-  padding: 15px;
-  margin: 0;
-}
-
-.pricing-card ul {
-  list-style: none;
-  padding: 15px;
-}
-
-.pricing-card li {
+.pricing-column h2 {
+  color: #333;
   margin-bottom: 10px;
 }
 
-.pricing-card .price {
-  font-size: 24px;
-  font-weight: bold;
-  padding: 15px;
-  text-align: center;
-}
-@media (max-width: 768px) {
-  .pricing-card {
-    width: calc(50% - 40px); /* Adjust for responsiveness */
-  }
+.pricing-column p {
+  color: #555;
+  margin-bottom: 20px;
 }
 
-@media (max-width: 480px) {
-  .pricing-card {
-    width: calc(100% - 40px); /* Adjust for responsiveness */
+.pricing-column ul {
+  list-style: none;
+  padding: 0;
+}
+
+.pricing-column li {
+  margin-bottom: 10px;
+}
+
+.pricing-column .price {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff; /* Blue price */
+}
+
+.pricing-column button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.pricing-column button:hover {
+  background-color: #0069d9;
+}
+
+/* Responsive adjustments (optional - for larger screens) */
+@media (min-width: 992px) {
+  .pricing-table {
+    grid-template-columns: repeat(3, 1fr); /* 3 columns on larger screens */
   }
 }
 </style>
@@ -74,32 +85,35 @@ body {
 <body>
 
 <div class="pricing-table">
-  <div class="pricing-card">
+  <div class="pricing-column">
     <h2>Basic</h2>
-    <div class="price">$9.99/month</div>
+    <p class="price">$9.99/month</p>
     <ul>
       <li>10GB Storage</li>
       <li>1 User</li>
       <li>Basic Support</li>
     </ul>
+    <button>Sign Up</button>
   </div>
-  <div class="pricing-card">
+  <div class="pricing-column">
     <h2>Pro</h2>
-    <div class="price">$29.99/month</div>
+    <p class="price">$29.99/month</p>
     <ul>
-      <li>100GB Storage</li>
+      <li>50GB Storage</li>
       <li>5 Users</li>
       <li>Priority Support</li>
     </ul>
+    <button>Sign Up</button>
   </div>
-  <div class="pricing-card">
-    <h2>Premium</h2>
-    <div class="price">$99.99/month</div>
+  <div class="pricing-column">
+    <h2>Enterprise</h2>
+    <p class="price">$99.99/month</p>
     <ul>
       <li>Unlimited Storage</li>
       <li>Unlimited Users</li>
       <li>Dedicated Support</li>
     </ul>
+    <button>Sign Up</button>
   </div>
 </div>
 
@@ -107,17 +121,16 @@ body {
 </html>
 ```
 
-
 **Explanation:**
 
-The code utilizes flexbox for easy layout management.  Media queries are used to ensure responsiveness.  Classes are used to target specific elements for styling.  The gradient is optional but adds visual appeal.  This example prioritizes simplicity and clarity to teach fundamental CSS concepts.
+The code uses CSS Grid for a responsive layout.  The `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` line ensures the columns adapt to different screen sizes.  On smaller screens, they stack vertically; on larger screens, they arrange horizontally.  Basic CSS is used for styling elements, including colors, fonts, padding, and shadows.  A media query (`@media (min-width: 992px)`) provides optional adjustments for larger screens.
 
 
 **Links to Resources to Learn More:**
 
-* **CSS Flexbox:** [MDN Web Docs - CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
-* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
-* **CSS Box Model:** [MDN Web Docs - CSS Box Model](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model)
+* **CSS Grid Layout:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
+* **CSS Box Model:** [https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing)
+* **CSS Media Queries:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
