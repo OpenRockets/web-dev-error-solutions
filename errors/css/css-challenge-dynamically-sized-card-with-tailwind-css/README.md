@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Dynamically Sized Card with Tailwind CSS
+
 
 This challenge involves creating a card component using Tailwind CSS that dynamically adjusts its size based on the content it contains.  The card should maintain a consistent aspect ratio and padding, ensuring it always looks well-proportioned regardless of the text length.
 
