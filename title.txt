@@ -1,1 +1,1 @@
-CSS Challenge:  Fluid, Responsive Image Card
+Efficiently Storing and Retrieving Large Posts in Firebase Firestore
