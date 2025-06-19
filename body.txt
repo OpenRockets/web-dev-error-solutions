@@ -1,107 +1,123 @@
 
-This document addresses a common challenge developers encounter when working with Firebase Firestore: efficiently storing and querying large amounts of post data, especially when dealing with text-heavy content.  Inefficient data structuring can lead to slow query performance and exceed Firestore's document size limits (1 MB).
+This challenge involves creating a responsive pricing table using CSS.  We'll aim for a clean, modern look that adapts well to different screen sizes.  The table will feature three pricing plans: Basic, Pro, and Premium, each with its own set of features and price.  We'll use a combination of CSS Grid and Flexbox for layout and responsiveness.
 
-**Problem Description:**
+**Description of the Styling:**
 
-Storing entire blog posts or lengthy social media updates directly within a single Firestore document can become problematic.  Large documents lead to slow query times, especially when only a small portion of the data is needed (e.g., displaying a post excerpt on a feed). Exceeding the 1MB document size limit results in write failures.
+The pricing table will be contained within a card-like structure. Each plan will be represented by a column in a grid layout.  We will use appropriate colors, fonts, and spacing to create a visually appealing and easy-to-read design.  Responsiveness will be achieved by using media queries to adjust the layout for smaller screens (e.g., switching to a single-column layout on mobile).
 
+**Full Code (CSS only - HTML would be required for structure):**
 
-**Solution: Data Denormalization and Subcollections**
+```css
+/* Basic Styles */
+body {
+  font-family: sans-serif;
+  margin: 2rem;
+}
 
-The most effective solution involves a combination of data denormalization and using subcollections to break down large posts into smaller, manageable chunks. We'll store essential post metadata in a main document and then store the actual post content in a subcollection.
+.pricing-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
+  grid-gap: 20px;
+}
 
+.plan {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+}
 
-**Step-by-Step Code (using JavaScript):**
+.plan h2 {
+  margin-bottom: 10px;
+}
 
-This example uses the Firebase JavaScript SDK.  Remember to initialize Firebase correctly before running this code.  [See Firebase documentation for initialization](https://firebase.google.com/docs/web/setup).
+.plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
 
-```javascript
-// Import necessary Firebase modules
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, doc, getDoc, setDoc, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+.plan ul {
+  list-style: none;
+  padding: 0;
+}
 
-// Your Firebase configuration (replace with your actual config)
-const firebaseConfig = {
-  // ...
-};
+.plan li {
+  margin-bottom: 5px;
+}
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// Function to create a new post
-async function createPost(title, excerpt, content) {
-  try {
-    // 1. Create a main post document with metadata
-    const postRef = await addDoc(collection(db, "posts"), {
-      title: title,
-      excerpt: excerpt,
-      createdAt: new Date(),
-    });
-
-    // 2. Create a subcollection for post content and add content chunks
-    const contentRef = collection(postRef, "content");
-    await addDoc(contentRef, {
-        chunk: 1, //chunk number for ordering
-        text: content
-    });
-
-
-    console.log("Post created with ID: ", postRef.id);
-  } catch (error) {
-    console.error("Error creating post:", error);
+/* Media Query for Smaller Screens */
+@media (max-width: 768px) {
+  .pricing-table {
+    grid-template-columns: 1fr; /* Single column on smaller screens */
   }
 }
 
-//Function to retrieve a post
-async function getPost(postId) {
-    try {
-        const postDocRef = doc(db, "posts", postId);
-        const postDocSnap = await getDoc(postDocRef);
 
-        if (postDocSnap.exists()) {
-            let post = postDocSnap.data();
-            const contentRef = collection(postDocRef, "content");
-            const contentSnap = await getDocs(contentRef);
-            post.content = [];
-            contentSnap.forEach(doc => post.content.push(doc.data().text));
-
-            return post;
-        } else {
-            console.log("No such document!");
-            return null;
-        }
-    } catch (error) {
-        console.error("Error retrieving post:", error);
-        return null;
-    }
+/* Styling for specific plans (can be customized further):*/
+.plan.basic {
+    background-color: #f0f0f0;
 }
 
+.plan.pro {
+    background-color: #e0e0e0;
+}
 
-// Example usage:
-const title = "My Awesome Post";
-const excerpt = "This is a short excerpt of my awesome post.";
-const content = "This is the long and detailed content of my awesome post. It can be quite extensive.";
-
-createPost(title, excerpt, content);
-
-getPost("postId").then(post => console.log(post));
-
+.plan.premium {
+    background-color: #d0d0d0;
+}
 ```
 
 **Explanation:**
 
-1. **Metadata Document:**  We create a main document in the `posts` collection. This document stores concise metadata like the title, excerpt, author, creation date, etc., avoiding the storage of large text blocks in this document.
+* **`display: grid;`**: This establishes a grid layout for the pricing table.
+* **`grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));`**: This creates responsive columns. `auto-fit` automatically adjusts the number of columns based on screen size, and `minmax(300px, 1fr)` ensures each column is at least 300px wide but also takes up available space proportionally.
+* **`grid-gap: 20px;`**: This adds spacing between the columns.
+* **`@media (max-width: 768px)`**: This media query targets screens smaller than 768px and switches to a single-column layout.
+* The rest of the CSS styles the individual plan elements (headings, prices, feature lists, etc.).
 
-2. **Subcollection for Content:** A subcollection named `content` is created within each post document. This subcollection holds the actual post content, broken down into smaller chunks if necessary.  You could further optimize by only loading necessary chunks based on pagination or user scroll position.
 
-3. **Querying:**  Queries can now efficiently retrieve metadata or specific content chunks without loading the entire post content.
+**HTML Structure (Example):**  You'll need this to accompany the CSS above.
 
-**External References:**
+```html
+<div class="pricing-table">
+  <div class="plan basic">
+    <h2>Basic</h2>
+    <div class="price">$9/month</div>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+    </ul>
+  </div>
+  <div class="plan pro">
+    <h2>Pro</h2>
+    <div class="price">$29/month</div>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+    </ul>
+  </div>
+  <div class="plan premium">
+    <h2>Premium</h2>
+    <div class="price">$49/month</div>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+    </ul>
+  </div>
+</div>
+```
 
-* **Firestore Data Modeling:** [https://firebase.google.com/docs/firestore/data-model](https://firebase.google.com/docs/firestore/data-model)
-* **Firestore Querying:** [https://firebase.google.com/docs/firestore/query-data/queries](https://firebase.google.com/docs/firestore/query-data/queries)
-* **Firebase JavaScript SDK:** [https://firebase.google.com/docs/web/setup](https://firebase.google.com/docs/web/setup)
+
+**Links to Resources to Learn More:**
+
+* **CSS Grid:** [MDN Web Docs - CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout)
+* **CSS Flexbox:** [MDN Web Docs - CSS Flexible Box Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout)
+* **Media Queries:** [MDN Web Docs - Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
