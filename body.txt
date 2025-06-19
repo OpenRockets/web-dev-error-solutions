@@ -1,87 +1,109 @@
 
-This challenge focuses on creating a responsive pricing table using Tailwind CSS.  The goal is to build a clean, visually appealing table that adapts seamlessly to different screen sizes, offering three different pricing tiers.
+## Problem Description:  Performance Degradation with Large Posts
 
-**Description of the Styling:**
+A common issue when using Firebase Firestore to store and retrieve blog posts or other content-rich data is performance degradation.  Storing large amounts of text directly within a single Firestore document can lead to slow query times, increased costs, and potentially exceeding Firestore's document size limits (1 MB).  This is because Firestore retrieves the *entire* document when querying, even if you only need a small portion of the data.
 
-The pricing table will feature three columns representing different pricing plans (e.g., Basic, Pro, Premium).  Each column will contain:
+## Solution:  Data Normalization and Subcollections
 
-* **A plan title:**  Clearly labeled (e.g., "Basic", "Pro", "Premium").
-* **A price:** Displayed prominently.
-* **A list of features:** Bulleted list of included features.
-* **A call to action button:**  (e.g., "Choose Plan").
+The most effective solution is to normalize your data.  Instead of storing the entire post content in a single document, break down the post into smaller, manageable pieces and store them across multiple documents. This often involves using subcollections.
 
-The styling will utilize Tailwind CSS classes for rapid development and responsiveness.  The design will emphasize clear visual separation between plans, good use of whitespace, and a mobile-first approach.
+We'll illustrate this by storing the post's body in a separate subcollection, while the main post document contains meta-data like title, author, and timestamps.
 
 
-**Full Code:**
+## Step-by-Step Code (Node.js with Firebase Admin SDK)
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Responsive Pricing Table</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-100">
+This example demonstrates creating and retrieving a post using data normalization.
 
-<div class="container mx-auto px-4 py-8">
-  <h2 class="text-3xl font-bold mb-8 text-center">Choose Your Plan</h2>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-    <!-- Basic Plan -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h3 class="text-xl font-bold mb-4">Basic</h3>
-      <p class="text-4xl font-bold text-blue-500 mb-4">$9</p>
-      <ul class="list-disc list-inside mb-4">
-        <li>10 GB Storage</li>
-        <li>1 User</li>
-        <li>Basic Support</li>
-      </ul>
-      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Choose Plan</button>
-    </div>
 
-    <!-- Pro Plan -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h3 class="text-xl font-bold mb-4">Pro</h3>
-      <p class="text-4xl font-bold text-blue-500 mb-4">$49</p>
-      <ul class="list-disc list-inside mb-4">
-        <li>100 GB Storage</li>
-        <li>5 Users</li>
-        <li>Priority Support</li>
-        <li>Advanced Features</li>
-      </ul>
-      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Choose Plan</button>
-    </div>
+**1. Project Setup:**
 
-    <!-- Premium Plan -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h3 class="text-xl font-bold mb-4">Premium</h3>
-      <p class="text-4xl font-bold text-blue-500 mb-4">$99</p>
-      <ul class="list-disc list-inside mb-4">
-        <li>Unlimited Storage</li>
-        <li>10 Users</li>
-        <li>24/7 Support</li>
-        <li>All Features</li>
-      </ul>
-      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Choose Plan</button>
-    </div>
-  </div>
-</div>
+Ensure you have the Firebase Admin SDK installed:
 
-</body>
-</html>
+```bash
+npm install firebase-admin
 ```
 
-**Explanation:**
+Initialize Firebase:
 
-The code uses Tailwind CSS's grid system (`grid grid-cols-1 md:grid-cols-3`) to create a responsive layout.  On smaller screens (mobile), the pricing plans stack vertically.  On medium-sized screens and larger (desktops), they arrange themselves in three columns.  Other classes are used for styling elements like background color, shadows, padding, text sizes, and button styles.  The `hover` modifier adds interactive effects to the buttons.
+```javascript
+const admin = require('firebase-admin');
+const serviceAccount = require('./path/to/serviceAccountKey.json'); // Replace with your service account key
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "YOUR_DATABASE_URL" //Replace with your Database URL
+});
+
+const db = admin.firestore();
+```
+
+**2. Creating a Post:**
+
+```javascript
+async function createPost(title, author, body) {
+  const postRef = await db.collection('posts').add({
+    title: title,
+    author: author,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  const bodySegments = splitBodyIntoSegments(body, 500); // Adjust segment size as needed
+
+  await Promise.all(bodySegments.map(async (segment, index) => {
+    await postRef.collection('body').add({
+      order: index,
+      content: segment
+    });
+  }));
+  console.log('Post created:', postRef.id);
+}
+
+function splitBodyIntoSegments(text, segmentLength) {
+    const segments = [];
+    for (let i = 0; i < text.length; i += segmentLength) {
+        segments.push(text.substring(i, i + segmentLength));
+    }
+    return segments;
+}
+
+//Example usage
+createPost("My First Post", "John Doe", "This is a very long post with lots of text. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+```
+
+**3. Retrieving a Post:**
+
+```javascript
+async function getPost(postId) {
+  const postDoc = await db.collection('posts').doc(postId).get();
+  if (!postDoc.exists) {
+    return null;
+  }
+  const postData = postDoc.data();
+
+  const bodySegments = await postDoc.ref.collection('body').orderBy('order').get();
+  postData.body = bodySegments.docs.map(doc => doc.data().content).join('');
+
+  return postData;
+}
+
+// Example usage
+getPost("yourPostId").then(post => console.log(post));
+```
+
+## Explanation
+
+This approach significantly improves performance by:
+
+* **Reducing Document Size:**  Large text is broken into smaller, manageable chunks. This avoids exceeding Firestore's document size limit.
+* **Efficient Queries:** When retrieving a post, you only download the metadata and the relevant body segments, reducing the data transferred.
+* **Scalability:**  The design is more scalable as the post length doesn't directly impact query performance.
 
 
-**Links to Resources to Learn More:**
+## External References
 
-* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
-* **Learn CSS Grid:** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/)
+* [Firestore Data Modeling](https://firebase.google.com/docs/firestore/design/data-modeling)
+* [Firestore Pricing](https://firebase.google.com/pricing)
+* [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
