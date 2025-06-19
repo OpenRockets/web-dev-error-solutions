@@ -1,100 +1,74 @@
 
-**Description of the Error:**
+This challenge involves creating a card that expands smoothly when hovered over, revealing additional content. We'll use CSS3 transitions and transforms to achieve the animation.  No JavaScript is required.
 
-A common problem when working with Firebase Firestore and applications involving posts (e.g., blog posts, social media updates) is efficiently handling large amounts of text data within each post document.  Storing lengthy posts directly within a single Firestore document can lead to several issues:
+**Description of the Styling:**
 
-* **Read performance degradation:** Retrieving large documents can significantly slow down your application, particularly on mobile devices with limited bandwidth. Firestore charges based on the amount of data read, making this costly.
-* **Document size limits:** Firestore has document size limits (currently 1MB). Exceeding this limit will result in errors when attempting to create or update the document.
-* **Inefficient querying:** Querying based on parts of the large text field can become slow and complex.
+The card will be a simple rectangular box with a title and some brief content. On hover, the card will smoothly increase in width and height, revealing more content initially hidden.  We'll use a subtle shadow to enhance the effect.
 
+**Full Code (CSS only):**
 
-**Fixing Step-by-Step (Code Example):**
-
-The most efficient approach to handle large text posts is to **separate the main post content from the rest of the post data.**  We will store the main text in a separate Cloud Storage bucket and store only a reference to it in Firestore. This allows for optimized querying and reading of metadata.
-
-**1. Project Setup:**
-
-* Ensure you have the Firebase SDK and Cloud Storage SDK integrated into your project.  Instructions can be found in the Firebase documentation.
-
-**2.  Storing the Post (Node.js Example):**
-
-```javascript
-const admin = require('firebase-admin');
-admin.initializeApp();
-const bucket = admin.storage().bucket();
-const db = admin.firestore();
-
-async function createPost(postTitle, postContent, authorId) {
-  // Upload the post content to Cloud Storage
-  const file = bucket.file(`posts/${Date.now()}_${postTitle}.txt`); // Use unique filenames
-  const stream = file.createWriteStream({
-    metadata: {
-      contentType: 'text/plain',
-    },
-  });
-  stream.on('error', err => {
-    console.error('Error uploading file:', err);
-    throw err;
-  });
-  stream.on('finish', async () => {
-    // Get the public URL
-    const [url] = await file.getSignedUrl({
-      action: 'read',
-      expires: Date.now() + 60*60*1000 //1 hour expiration
-    });
-
-    // Store metadata in Firestore
-    const postRef = db.collection('posts').doc();
-    await postRef.set({
-      postId: postRef.id,
-      title: postTitle,
-      authorId: authorId,
-      contentUrl: url, //Store the URL, not the content
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-    console.log('Post created successfully:', postRef.id);
-  });
-  stream.end(postContent);
+```css
+.card {
+  width: 200px;
+  height: 150px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Hide content that extends beyond initial size */
+  transition: width 0.3s ease, height 0.3s ease; /* Smooth transition on hover */
 }
 
-//Example usage:
-createPost("My Awesome Post", "This is a very long post content...", "user123")
-  .catch(err => console.error("Error creating post:", err));
-```
-
-**3. Retrieving the Post (Node.js Example):**
-
-```javascript
-async function getPost(postId) {
-  const postRef = db.collection('posts').doc(postId);
-  const doc = await postRef.get();
-
-  if (!doc.exists) {
-    return null;
-  }
-
-  const postData = doc.data();
-  //Fetch the content from Cloud Storage using the URL.
-  const response = await fetch(postData.contentUrl);
-  const content = await response.text();
-
-  return { ...postData, content };
+.card:hover {
+  width: 400px;
+  height: 300px;
 }
 
-//Example Usage
-getPost("yourPostId").then(post => console.log(post)).catch(err => console.error("Error getting post:",err))
+.card-content {
+  padding: 15px;
+}
+
+.card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card-hidden {
+  display: none; /* Initially hidden content */
+}
+
+.card:hover .card-hidden {
+  display: block; /* Show hidden content on hover */
+}
 ```
+
+**HTML (Example):**
+
+```html
+<div class="card">
+  <div class="card-content">
+    <h2 class="card-title">My Expanding Card</h2>
+    <p>This is some initial content.</p>
+    <p class="card-hidden">This content is revealed on hover.</p>
+    <p class="card-hidden">More hidden content here!</p>
+  </div>
+</div>
+```
+
 
 **Explanation:**
 
-This solution leverages Cloud Storage for efficient storage of large text data. The Firestore document now only stores metadata (title, author, timestamp, and a URL to the content in Cloud Storage). This minimizes the document size, resulting in improved read performance, lower costs, and easier querying. When retrieving a post, you fetch the content from Cloud Storage using the URL stored in Firestore.  Remember to handle potential errors (e.g., network errors during content retrieval).  You'll also need to implement appropriate security rules to control access to both Firestore and Cloud Storage.
+* **`transition` property:** This is crucial for the animation.  It specifies that the `width` and `height` properties will transition smoothly over 0.3 seconds using an "ease" timing function.  You can experiment with different timing functions (e.g., `linear`, `ease-in-out`) to change the animation's feel.
+* **`overflow: hidden;`:** This prevents the initially hidden content from overflowing the card before the hover effect.
+* **`display: none;` and `display: block;`:** These control the visibility of the hidden content.  `display: none;` removes the element from the layout entirely, while `display: block;` makes it a block-level element and visible.
+* **`box-shadow`:** This adds a subtle shadow for visual enhancement.
 
 
-**External References:**
+**Links to Resources to Learn More:**
 
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firebase Cloud Storage Documentation](https://firebase.google.com/docs/storage)
-* [Node.js Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/animation) (for more complex animations beyond simple transitions)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
