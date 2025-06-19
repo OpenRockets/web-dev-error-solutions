@@ -1,105 +1,98 @@
 
-This challenge involves creating a 3D rotating cube using only CSS.  We'll utilize CSS transforms and animations to achieve the effect. No JavaScript will be required.
+## Problem Description:  Performance Degradation with Large Post Data
+
+A common issue when working with Firebase Firestore and applications involving blog posts or similar content is performance degradation when dealing with large amounts of text data within each document. Storing entire blog posts, including lengthy articles and images within a single Firestore document, can lead to slow query times, increased latency, and ultimately, a poor user experience.  Firestore's document size limitations also come into play.  Large documents can exceed the size limits, resulting in errors during saving or updates.
 
 
-## Description of the Styling:
+## Solution:  Data Denormalization and Efficient Data Structuring
 
-The cube will be composed of six square divs, each representing a face.  These faces will be positioned and rotated in 3D space to create the cube illusion.  CSS animations will provide the continuous rotation. We'll use a simple color scheme for clarity, but you can customize it easily.  The rotation will be around the Y-axis (spinning vertically).
+The most effective solution is to denormalize the data and separate the main post metadata from the actual post content. This involves creating separate collections for metadata and content, optimizing query performance, and addressing size limitations.
 
-## Full Code (CSS Only):
+## Step-by-Step Code Example (JavaScript)
 
-```css
-.container {
-  width: 200px;
-  height: 200px;
-  perspective: 800px; /* Adjust for perspective effect */
-  position: relative; /* Needed for absolute positioning of cube faces */
-}
+This example uses JavaScript with the Firebase Admin SDK, but the concepts apply to other SDKs. We'll break down storing post metadata and rich text content separately.
 
-.cube {
-  width: 100px;
-  height: 100px;
-  position: absolute;
-  transform-style: preserve-3d; /* Essential for 3D transforms */
-  animation: rotate 10s linear infinite; /* Animation settings */
-}
+**1. Project Setup (Assuming you have a Firebase project set up and the Admin SDK installed):**
 
-.face {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  opacity: 0.8; /* Slightly transparent for better depth perception */
-  background-size: cover;
-  border: 1px solid #ddd; /* Optional border for better visibility */
-}
-
-.face.front {
-  background-color: #f00;
-  transform: translateZ(50px);
-}
-
-.face.back {
-  background-color: #0f0;
-  transform: translateZ(-50px) rotateY(180deg);
-}
-
-.face.right {
-  background-color: #00f;
-  transform: rotateY(90deg) translateZ(50px);
-}
-
-.face.left {
-  background-color: #ff0;
-  transform: rotateY(-90deg) translateZ(50px);
-}
-
-.face.top {
-  background-color: #0ff;
-  transform: rotateX(90deg) translateZ(50px);
-}
-
-.face.bottom {
-  background-color: #f0f;
-  transform: rotateX(-90deg) translateZ(50px);
-}
-
-
-@keyframes rotate {
-  from {
-    transform: rotateY(0deg);
-  }
-  to {
-    transform: rotateY(360deg);
-  }
-}
-
-/* HTML Structure (Example):*/
-<div class="container">
-  <div class="cube">
-    <div class="face front"></div>
-    <div class="face back"></div>
-    <div class="face right"></div>
-    <div class="face left"></div>
-    <div class="face top"></div>
-    <div class="face bottom"></div>
-  </div>
-</div>
+```javascript
+const admin = require('firebase-admin');
+admin.initializeApp();
+const db = admin.firestore();
 ```
 
+**2. Post Metadata Collection:**  This collection stores concise information about each post, suitable for quick display and searching.
 
-## Explanation:
+```javascript
+// Create a new post document in the 'posts' collection
+async function createPostMetadata(title, authorId, shortDescription, timestamp, imageUrl) {
+  const postRef = db.collection('posts').doc();
+  await postRef.set({
+    postId: postRef.id, // use auto-generated ID
+    title: title,
+    authorId: authorId,
+    shortDescription: shortDescription,
+    timestamp: timestamp,
+    imageUrl: imageUrl
+  });
+  return postRef.id;
+}
+```
 
-1. **`container`**: Sets the perspective and contains the cube. `perspective` creates the 3D effect.
-2. **`cube`**: Contains the faces and applies the rotation animation. `transform-style: preserve-3d` is crucial for correct 3D rendering.
-3. **`face`**: Styles each face of the cube.
-4. **`.face.front`, `.face.back`, etc.**:  Positions each face using `transform: translateZ()` and `rotateY()`.  `translateZ()` moves the face along the z-axis (depth), and `rotateY()` rotates it around the y-axis.
-5. **`@keyframes rotate`**: Defines the animation that rotates the cube continuously.
+**3. Post Content Collection:** This collection stores the actual rich text content. We'll use a separate document for each post's content.
 
-## Resources to Learn More:
+```javascript
+// Create a new post content document in the 'postContent' collection
+async function createPostContent(postId, content) {
+  const contentRef = db.collection('postContent').doc(postId);
+  await contentRef.set({
+    content: content
+  });
+}
+```
 
-* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **MDN Web Docs - CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
-* **CSS-Tricks - 3D Transforms:**  (Search "CSS-Tricks 3D transforms" for relevant tutorials)
+**4. Retrieving Post Data:**  Efficiently fetching both metadata and content.
+
+```javascript
+async function getPost(postId) {
+  const postSnap = await db.collection('posts').doc(postId).get();
+  const contentSnap = await db.collection('postContent').doc(postId).get();
+
+  if (postSnap.exists && contentSnap.exists){
+      const postData = postSnap.data();
+      postData.content = contentSnap.data().content;
+      return postData;
+  } else {
+      return null; //Handle case where post doesn't exist
+  }
+}
+
+//Example Usage
+createPostMetadata("My Awesome Post", "user123", "A short description...", admin.firestore.FieldValue.serverTimestamp(), "image-url.jpg")
+.then((postId) => {
+  createPostContent(postId, "<p>This is my long blog post content...</p>")
+  .then(() => console.log("Post created successfully!"))
+  .catch((error) => console.error("Error creating post content:", error));
+})
+.catch((error) => console.error("Error creating post metadata:", error));
+
+
+getPost("yourPostId").then(post => console.log(post));
+
+```
+
+## Explanation
+
+This approach addresses the performance problems by:
+
+* **Reducing document size:**  Firestore documents are now significantly smaller, improving query speeds.
+* **Optimized queries:** Retrieving post metadata is fast as it involves small documents.  Fetching the full content is a separate operation, only performed when needed.
+* **Scalability:** The design scales better as the number of posts increases.
+
+## External References
+
+* **Firebase Firestore Documentation:** [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
+* **Firebase Admin SDK Documentation:** [https://firebase.google.com/docs/admin/setup](https://firebase.google.com/docs/admin/setup)
+* **Data Modeling in NoSQL Databases:**  Numerous articles and blog posts discuss efficient data modeling for NoSQL databases (search for "NoSQL data modeling best practices").
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
