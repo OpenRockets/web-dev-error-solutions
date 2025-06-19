@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data for Posts: Avoiding Duplicate IDs and Ensuring Data Integrity
+
 
 This document addresses a common issue developers encounter when storing post data in Firebase Firestore: generating unique IDs to prevent duplicate entries and maintaining data consistency.  The problem often arises when relying on client-side ID generation, which can lead to collisions if multiple clients attempt to create posts concurrently.
 
