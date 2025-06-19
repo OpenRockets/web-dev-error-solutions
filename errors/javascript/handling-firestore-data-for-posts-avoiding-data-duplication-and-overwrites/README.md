@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data for Posts: Avoiding Data Duplication and Overwrites
+
 
 This document addresses a common issue developers encounter when managing posts in Firebase Firestore: unintentional data duplication or overwriting when multiple users attempt to update the same post concurrently. This typically occurs when using simple `set()` operations without considering the possibility of concurrent writes.
 
