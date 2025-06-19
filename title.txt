@@ -1,1 +1,1 @@
-CSS Challenge:  Animated Expanding Card
+Handling Firestore Data with Multiple Collections for Posts and Users

@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data with Multiple Collections for Posts and Users
+
 
 This document addresses a common issue developers encounter when managing posts and user data in Firebase Firestore: efficiently linking posts to their authors while maintaining a clean and scalable database structure.  The problem arises when attempting to store post data in one collection and user data in another, requiring efficient querying and data retrieval.  Simply embedding the entire user object within each post leads to data redundancy and potential inconsistencies.
 
