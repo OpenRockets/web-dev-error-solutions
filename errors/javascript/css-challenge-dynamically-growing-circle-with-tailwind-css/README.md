@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Dynamically Growing Circle with Tailwind CSS
+
 
 This challenge involves creating a circle that smoothly expands and contracts its size based on user interaction, specifically a mouse hover. We'll achieve this effect using Tailwind CSS for rapid styling and a bit of JavaScript for the dynamic sizing.
 
