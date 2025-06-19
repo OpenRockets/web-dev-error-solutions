@@ -1,1 +1,1 @@
-CSS Challenge:  Centered, Responsive Circular Image with Shadow
+Efficiently Storing and Retrieving Large Post Arrays in Firebase Firestore
