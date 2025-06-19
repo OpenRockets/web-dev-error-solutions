@@ -1,1 +1,1 @@
-Handling Firestore's `FieldValue.serverTimestamp()` for Post Timestamps
+Efficiently Storing and Querying Large Post Collections in Firebase Firestore
