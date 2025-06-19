@@ -1,163 +1,105 @@
 
-## Description of the Problem
-
-A common challenge when using Firebase Firestore to manage posts (e.g., blog posts, social media updates) is efficiently handling large amounts of data within each post document.  Storing extensive text content, multiple images, or rich media directly within a single Firestore document can lead to several issues:
-
-* **Document Size Limits:** Firestore imposes document size limits (currently 1 MB). Exceeding this limit results in errors when attempting to create or update the document.
-* **Read Performance:** Retrieving large documents impacts read performance, potentially slowing down your application and increasing costs.
-* **Data Management:**  Managing large, complex documents can be cumbersome and lead to inefficient data updates.
+This challenge involves creating a 3D rotating cube using only CSS.  We'll utilize CSS transforms and animations to achieve the effect. No JavaScript will be required.
 
 
-## Step-by-Step Code Solution: Utilizing Subcollections
+## Description of the Styling:
 
-The most effective approach is to break down large post documents into smaller, manageable units using Firestore subcollections.  Instead of storing everything in a single `posts` document, we'll create a main `posts` document with essential metadata and then use subcollections to hold the lengthy content, images, and other rich media.
+The cube will be composed of six square divs, each representing a face.  These faces will be positioned and rotated in 3D space to create the cube illusion.  CSS animations will provide the continuous rotation. We'll use a simple color scheme for clarity, but you can customize it easily.  The rotation will be around the Y-axis (spinning vertically).
 
+## Full Code (CSS Only):
 
-**1. Data Structure:**
+```css
+.container {
+  width: 200px;
+  height: 200px;
+  perspective: 800px; /* Adjust for perspective effect */
+  position: relative; /* Needed for absolute positioning of cube faces */
+}
 
-Our new data structure will look like this:
+.cube {
+  width: 100px;
+  height: 100px;
+  position: absolute;
+  transform-style: preserve-3d; /* Essential for 3D transforms */
+  animation: rotate 10s linear infinite; /* Animation settings */
+}
 
-* **Collection: `posts`**
-    * **Document: `postId`**  (e.g., `post123`)
-        * `title`: string
-        * `authorId`: string
-        * `createdAt`: timestamp
-        * `summary`: string (short summary)
-        * ...other relevant metadata...
+.face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8; /* Slightly transparent for better depth perception */
+  background-size: cover;
+  border: 1px solid #ddd; /* Optional border for better visibility */
+}
 
-    * **Subcollection: `content`**
-        * **Document: `content`**
-            * `body`: string (full post body)
+.face.front {
+  background-color: #f00;
+  transform: translateZ(50px);
+}
 
-    * **Subcollection: `images`**
-        * **Document: `image1`**
-            * `url`: string (image URL)
-        * **Document: `image2`**
-            * `url`: string (image URL)
-        * ...more image documents...
+.face.back {
+  background-color: #0f0;
+  transform: translateZ(-50px) rotateY(180deg);
+}
 
+.face.right {
+  background-color: #00f;
+  transform: rotateY(90deg) translateZ(50px);
+}
 
-**2. Code Example (JavaScript):**
+.face.left {
+  background-color: #ff0;
+  transform: rotateY(-90deg) translateZ(50px);
+}
 
-This example uses the Firebase JavaScript SDK.  Remember to install it: `npm install firebase`
+.face.top {
+  background-color: #0ff;
+  transform: rotateX(90deg) translateZ(50px);
+}
 
-
-```javascript
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, doc, setDoc, getDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-
-// Your Firebase configuration
-const firebaseConfig = {
-  // ... your config ...
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-
-async function createPost(postDetails) {
-  const { title, authorId, summary, body, images } = postDetails;
-
-  const postRef = await addDoc(collection(db, "posts"), {
-    title: title,
-    authorId: authorId,
-    createdAt: new Date(),
-    summary: summary
-  });
-
-  const postId = postRef.id;
-
-
-  //Store post body in subcollection
-  await setDoc(doc(db, "posts", postId, "content", "content"), {body});
-
-  //Store images in subcollection  (assuming images are files)
-  for (let i = 0; i < images.length; i++) {
-    const image = images[i];
-    const storageRef = ref(storage, `posts/${postId}/images/image${i + 1}`);
-    const uploadTask = uploadBytesResumable(storageRef, image);
-
-    uploadTask.on('state_changed',
-      (snapshot) => {
-        // Observe state change events such as progress, pause, and resume
-        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log('Upload is ' + progress + '% done');
-        switch (snapshot.state) {
-          case 'paused':
-            console.log('Upload is paused');
-            break;
-          case 'running':
-            console.log('Upload is running');
-            break;
-        }
-      },
-      (error) => {
-        // Handle unsuccessful uploads
-        console.error(error);
-      },
-      () => {
-        // Handle successful uploads on complete
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          setDoc(doc(db, "posts", postId, "images", `image${i+1}`), {url: downloadURL});
-        });
-      }
-    );
-  }
-
+.face.bottom {
+  background-color: #f0f;
+  transform: rotateX(-90deg) translateZ(50px);
 }
 
 
-//Example usage:
-const newPost = {
-  title: "My Awesome Post",
-  authorId: "user123",
-  summary: "A short summary...",
-  body: "This is the full body of my awesome post.  It's quite long!",
-  images: [/* Array of image files */]
-};
-
-createPost(newPost);
-```
-
-**3. Retrieving Data:**
-
-Retrieving data involves fetching the main post document and then querying its subcollections:
-
-```javascript
-async function getPost(postId) {
-  const postDocRef = doc(db, "posts", postId);
-  const postDocSnap = await getDoc(postDocRef);
-  let post = postDocSnap.data();
-
-  if (post){
-    const contentRef = collection(db, "posts", postId, "content");
-    const contentSnap = await getDocs(contentRef);
-    post.body = (contentSnap.docs[0] || {}).data()?.body || '';
-
-    const imagesRef = collection(db, "posts", postId, "images");
-    const imagesSnap = await getDocs(imagesRef);
-    post.images = imagesSnap.docs.map(doc => doc.data().url);
+@keyframes rotate {
+  from {
+    transform: rotateY(0deg);
   }
-  return post;
-
+  to {
+    transform: rotateY(360deg);
+  }
 }
 
+/* HTML Structure (Example):*/
+<div class="container">
+  <div class="cube">
+    <div class="face front"></div>
+    <div class="face back"></div>
+    <div class="face right"></div>
+    <div class="face left"></div>
+    <div class="face top"></div>
+    <div class="face bottom"></div>
+  </div>
+</div>
 ```
 
 
-## Explanation
+## Explanation:
 
-This approach leverages Firestore's subcollections to segregate data, ensuring that no single document exceeds size limits.  It also improves read performance by retrieving only the necessary data at a given time.  For example, displaying a post summary on a feed only requires fetching the main `posts` document; the full content is loaded only when the user clicks to view the entire post.
+1. **`container`**: Sets the perspective and contains the cube. `perspective` creates the 3D effect.
+2. **`cube`**: Contains the faces and applies the rotation animation. `transform-style: preserve-3d` is crucial for correct 3D rendering.
+3. **`face`**: Styles each face of the cube.
+4. **`.face.front`, `.face.back`, etc.**:  Positions each face using `transform: translateZ()` and `rotateY()`.  `translateZ()` moves the face along the z-axis (depth), and `rotateY()` rotates it around the y-axis.
+5. **`@keyframes rotate`**: Defines the animation that rotates the cube continuously.
 
+## Resources to Learn More:
 
-## External References
-
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
-* [JavaScript SDK](https://firebase.google.com/docs/web/setup)
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **MDN Web Docs - CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS-Tricks - 3D Transforms:**  (Search "CSS-Tricks 3D transforms" for relevant tutorials)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
