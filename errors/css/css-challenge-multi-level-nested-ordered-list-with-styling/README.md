@@ -1,13 +1,19 @@
 # 🐞 CSS Challenge:  Multi-level Nested Ordered List with Styling
 
 
-This challenge focuses on styling a multi-level nested ordered list using CSS.  We'll achieve a visually appealing and easily readable hierarchy using indentation and distinct styling for each level.  We'll be utilizing standard CSS for this example, but the principles can be easily adapted to frameworks like Tailwind CSS.
+This challenge focuses on styling a multi-level nested ordered list using CSS. We'll create a visually appealing and easily readable nested list with distinct styling for each level.  We'll use standard CSS for this example, but the principles could be easily adapted to a CSS framework like Tailwind CSS.
 
-## Description of the Styling
+**Description of the Styling:**
 
-The goal is to create a nested ordered list where each level is visually distinct.  We will use padding and list-style-type to create a clear hierarchy.  The first level will have a larger font size and bolder text. Subsequent levels will be progressively indented and use a different list style type.
+The goal is to style a nested ordered list to clearly differentiate between the different levels. We will achieve this by:
 
-## Full Code
+* Indenting subsequent list levels.
+* Using different list-style-types (e.g., decimal, lower-alpha) for each level.
+* Applying different font sizes and weights for better readability.
+* Adding background colors to visually separate list items.
+
+
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
@@ -16,68 +22,78 @@ The goal is to create a nested ordered list where each level is visually distinc
 <title>Nested Ordered List</title>
 <style>
 ol {
-  list-style-type: decimal; /* Set default list style */
-  margin-left: 0; /* Reset default margin */
-  padding-left: 20px; /* Add padding for indentation */
+  list-style-type: decimal;
+  margin-left: 20px;
+  padding-left: 0; /* Remove default padding */
+  font-size: 16px;
 }
 
 ol ol {
-  list-style-type: lower-alpha; /* Different style for nested lists */
-  margin-left: 20px; /* Indent nested lists further */
-  font-size: 0.9em; /* Slightly smaller font size */
+  list-style-type: lower-alpha;
+  margin-left: 40px;
+  font-size: 14px;
 }
 
 ol ol ol {
-    list-style-type: square; /* Different style for deeply nested lists */
-    margin-left: 20px; /* Indent even further */
-    font-size: 0.8em; /* Even smaller font size */
-    font-style: italic; /* Adds italic style for distinction */
+  list-style-type: disc;
+  margin-left: 60px;
+  font-size: 12px;
+}
+
+li {
+  padding: 5px 0; /* Add some spacing */
 }
 
 ol li {
-  margin-bottom: 5px; /* Add space between list items */
+  background-color: #f2f2f2;
 }
 
-ol > li { /* Style only the top-level list items */
-  font-weight: bold; /* Make top-level items bold */
-  font-size: 1.1em; /* Make top-level items slightly larger */
+ol ol li {
+  background-color: #e0e0e0;
 }
+
+ol ol ol li {
+  background-color: #d0d0d0;
+}
+
 </style>
 </head>
 <body>
 
-<h1>Main Topics</h1>
+<h1>Nested List Example</h1>
+
 <ol>
-  <li>Introduction to Programming</li>
-  <li>Data Structures and Algorithms
+  <li>Item 1</li>
+  <li>Item 2
     <ol>
-      <li>Arrays</li>
-      <li>Linked Lists
+      <li>Sub-item 2.1</li>
+      <li>Sub-item 2.2
         <ol>
-          <li>Singly Linked Lists</li>
-          <li>Doubly Linked Lists</li>
+          <li>Sub-sub-item 2.2.1</li>
+          <li>Sub-sub-item 2.2.2</li>
         </ol>
       </li>
-      <li>Trees</li>
+      <li>Sub-item 2.3</li>
     </ol>
   </li>
-  <li>Object-Oriented Programming</li>
+  <li>Item 3</li>
 </ol>
 
 </body>
 </html>
 ```
 
-## Explanation
+**Explanation:**
 
-The CSS code uses nested selectors (`ol ol`, `ol ol ol`) to target different levels of the nested list. Each level gets a different `list-style-type`, increased indentation using `margin-left`, and potentially adjusted font size and style for better readability.  The `> li` selector targets only the direct children of the `<ol>` element, allowing specific styling of the top-level list items.  Adjust the `margin-left` and `font-size` values to fine-tune the appearance as needed.
+* The main `ol` style sets the base style for the top-level list.
+* Nested `ol` selectors (`ol ol`, `ol ol ol`) target subsequent levels and apply specific styles like indentation, list-style-type, and font size.
+* The `li` selectors apply padding and background colors to improve visual clarity and separation between list items.  Each level gets a slightly different background color to visually highlight the nesting.
 
 
-## Resources to Learn More
+**Links to Resources to Learn More:**
 
-* **MDN Web Docs - CSS Lists:** [https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type](https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type)  - Learn about different list-style types and how to use them.
-* **MDN Web Docs - CSS Selectors:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors) -  Understand how CSS selectors work to target specific elements.
-* **W3Schools CSS Tutorial:** [https://www.w3schools.com/css/](https://www.w3schools.com/css/) - A comprehensive CSS tutorial covering various aspects of styling web pages.
+* **MDN Web Docs - CSS Lists:** [https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type](https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type)  This provides comprehensive information on styling lists in CSS.
+* **CSS Tricks - List Styles:**  Search "CSS Tricks list styles" on Google for numerous articles and tutorials on advanced list styling techniques.  (Note:  Specific URLs to articles are dynamic and change frequently).
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
