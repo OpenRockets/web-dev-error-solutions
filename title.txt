@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Navigation Bar with a Hamburger Menu
+Efficiently Storing and Querying Large Posts in Firebase Firestore
