@@ -1,3 +1,5 @@
+# 🐞 Handling "FieldValue.serverTimestamp() is not a function" in Firebase Firestore when Storing Post Timestamps
+
 
 This document addresses a common error encountered when using Firebase Firestore to store timestamps associated with posts or other time-sensitive data: the `"FieldValue.serverTimestamp() is not a function"` error. This typically arises from incorrect import or usage of the `FieldValue` object.
 
