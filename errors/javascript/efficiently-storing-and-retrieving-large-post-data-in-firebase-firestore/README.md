@@ -3,119 +3,111 @@
 
 ## Description of the Problem
 
-A common issue when working with Firebase Firestore and applications involving posts (like blogs, social media feeds, etc.) is managing the storage and retrieval of large amounts of data associated with each post.  Storing large amounts of text, images, or other rich media directly within a single Firestore document can lead to performance bottlenecks, increased latency, and exceed Firestore document size limits (currently 1 MB).  Fetching entire posts, especially when dealing with many posts, can become slow and inefficient, degrading the user experience.
+A common challenge when using Firebase Firestore to manage posts (e.g., blog posts, social media updates) is efficiently handling large amounts of data within each post document.  Storing large text fields, images, or videos directly within a Firestore document can lead to several issues:
 
+* **Document Size Limits:** Firestore has document size limits (currently 1 MB).  Exceeding this limit results in errors when attempting to write or update the document.
+* **Read Performance:** Retrieving large documents impacts read performance and increases latency, leading to a poor user experience.
+* **Data Redundancy:**  If multiple posts share similar data (e.g., user profile information), storing this redundantly in each post document wastes storage and bandwidth.
 
-## Step-by-Step Code Solution:  Using Subcollections for Efficient Data Management
+This problem demonstrates how to efficiently store large posts by separating large data into separate collections and using references to maintain relationships.
 
-This solution demonstrates how to structure your data using subcollections to improve performance and scalability.  We will assume each post has a title, content, author ID, and a list of associated images.
+## Fixing the Problem Step-by-Step
+
+This solution uses separate collections for posts and their associated media (images/videos), and utilizes references instead of embedding the media directly in the post document.
 
 **1. Data Structure:**
 
-Instead of storing all post data within a single document, we'll use a "posts" collection to store core post metadata. For larger data like images or long text content, we'll create subcollections:
+We'll use two collections:
 
-* **`posts` collection:**
-    * `postId` (Document ID - auto-generated)
-    * `title`: string
-    * `authorId`: string
-    * `createdAt`: timestamp
+* `posts`: Contains metadata about each post (title, author, short description, timestamps, etc.) and references to associated media.
+* `postMedia`: Stores the actual media data (image URLs, video URLs, etc.). This can be adapted to store blob data in Cloud Storage for larger files.
 
-* **`posts/{postId}/images` subcollection:**
-    * `imageId` (Document ID - auto-generated)
-    * `imageUrl`: string
-
-* **`posts/{postId}/content` subcollection (optional, for very long text content):**
-    * `contentChunkId` (Document ID - auto-generated)
-    * `content`: string (break large text into smaller chunks)
-
-
-**2. Code (JavaScript with Firebase Admin SDK):**
+**2. Code (using JavaScript with Firebase Admin SDK):**
 
 ```javascript
 const admin = require('firebase-admin');
 admin.initializeApp();
 const db = admin.firestore();
 
-// Add a new post
-async function addPost(title, authorId, images, content) {
-  const postRef = db.collection('posts').doc();
-  const postId = postRef.id;
+// Create a new post
+async function createPost(postData) {
+  try {
+    const postRef = db.collection('posts').doc();
+    const postID = postRef.id;
+    // Assuming postData.mediaURLs is an array of URLs (or references to Cloud Storage)
+    const mediaPromises = postData.mediaURLs.map(async (url) => {
+      const mediaRef = db.collection('postMedia').doc();
+      await mediaRef.set({ url });
+      return mediaRef.id;
+    });
 
-  // Add post metadata
-  await postRef.set({
-    title,
-    authorId,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
+    const mediaIDs = await Promise.all(mediaPromises);
 
+    await postRef.set({
+      ...postData, //Other post data
+      postID: postID,
+      media: mediaIDs, // Array of references to media documents
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
 
-  // Add images to subcollection
-  const imagesRef = postRef.collection('images');
-  for (const imageUrl of images) {
-    await imagesRef.add({ imageUrl });
+    console.log('Post created:', postID);
+    return postID;
+  } catch (error) {
+    console.error('Error creating post:', error);
+    throw error;
   }
+}
 
-  // Add content to subcollection (if necessary and content is large)
-  if (content && content.length > 10000){ //Example Threshold
-    const contentChunks = chunkString(content, 10000); //Helper Function below
-    const contentRef = postRef.collection('content');
-    for(let i =0; i< contentChunks.length; i++){
-      await contentRef.add({content: contentChunks[i]});
+
+// Retrieve a post with its media
+async function getPost(postId) {
+  try {
+    const postDoc = await db.collection('posts').doc(postId).get();
+    if (!postDoc.exists) {
+      throw new Error('Post not found');
     }
-  }
 
+    const postData = postDoc.data();
+    const mediaPromises = postData.media.map(async (mediaId) => {
+      const mediaDoc = await db.collection('postMedia').doc(mediaId).get();
+      return mediaDoc.data();
+    });
+
+    const mediaData = await Promise.all(mediaPromises);
+    return { ...postData, media: mediaData };
+  } catch (error) {
+    console.error('Error retrieving post:', error);
+    throw error;
+  }
 }
 
-//Helper Function to chunk large strings
-function chunkString(str, len) {
-  const chunks = [];
-  for (let i = 0; i < str.length; i += len) {
-    chunks.push(str.substring(i, i + len));
-  }
-  return chunks;
-}
+// Example usage
+const newPostData = {
+  title: "My Awesome Post",
+  author: "John Doe",
+  description: "This is a short description...",
+  mediaURLs: ['https://example.com/image1.jpg', 'https://example.com/image2.png'],
+};
 
-//Retrieve a Post
-async function getPost(postId){
-  const postRef = db.collection('posts').doc(postId);
-  const postSnap = await postRef.get();
-  if (!postSnap.exists){
-    return null;
-  }
-  const post = postSnap.data();
-  const imagesSnap = await postRef.collection('images').get();
-  post.images = imagesSnap.docs.map(doc => doc.data().imageUrl);
-
-  //Retrieve Content (if applicable)
-  if(postRef.collection('content').get()){
-    const contentSnap = await postRef.collection('content').get();
-    post.content = contentSnap.docs.map(doc => doc.data().content).join('');
-  }
-  return post;
-}
-
-
-// Example usage:
-addPost("My Awesome Post", "user123", ["image1.jpg", "image2.png"], "This is the content of my post. It's quite long...").then(() => {
-    console.log('Post added successfully!');
-    getPost("yourPostId").then(post => console.log(post))
-}).catch(error => console.error("Error adding post:", error));
+createPost(newPostData)
+  .then((postId) => {
+      getPost(postId).then(post => console.log(post))
+  })
+  .catch(err => console.log(err));
 
 ```
 
 **3. Explanation:**
 
-This code demonstrates adding a new post with images and handling large content efficiently. The `addPost` function uses subcollections to separate different data types. `getPost` efficiently retrieves data from the main document and relevant subcollections.  This approach allows you to fetch only the necessary data, improving performance, especially for large posts or when retrieving multiple posts.
-
-The helper function `chunkString` breaks up large strings into manageable chunks to prevent exceeding Firestore's document size limits.
-
+The code creates a new post document with references to media instead of embedding the media data.  Retrieving a post involves fetching the post data and then separately fetching the associated media using the IDs.  This approach avoids exceeding document size limits and improves read performance, especially for posts with multiple images or videos.  For even better performance and to handle extremely large files, consider storing these in Cloud Storage and referencing the URLs in Firestore.
 
 
 ## External References
 
-* [Firebase Firestore Data Model](https://firebase.google.com/docs/firestore/data-model)
-* [Firebase Firestore Document Size Limits](https://firebase.google.com/docs/firestore/quotas)
-* [Firebase Admin SDK (JavaScript)](https://firebase.google.com/docs/admin/setup)
+* [Firestore Data Model](https://firebase.google.com/docs/firestore/data-model)
+* [Firestore Security Rules](https://firebase.google.com/docs/firestore/security/get-started)
+* [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
+* [Cloud Storage](https://cloud.google.com/storage)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
