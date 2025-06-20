@@ -1,1 +1,1 @@
-Efficiently Storing and Querying Large Post Collections in Firebase Firestore
+CSS Challenge:  Centered, Responsive Circular Image with Shadow
