@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data for Posts: Avoiding Duplicate IDs and Maintaining Order
+
 
 This document addresses a common issue developers encounter when managing posts in Firebase Firestore: ensuring unique post IDs and maintaining the desired chronological order of posts.  The problem typically arises when generating IDs client-side without leveraging Firestore's server-side capabilities and trying to rely solely on timestamps for ordering.  Timestamps can lead to inconsistencies, especially under high concurrency.
 
