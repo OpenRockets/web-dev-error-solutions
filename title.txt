@@ -1,1 +1,1 @@
-CSS Challenge:  Building a Simple Pricing Table with Tailwind CSS
+Efficiently Storing and Querying Large Post Datasets in Firebase Firestore
