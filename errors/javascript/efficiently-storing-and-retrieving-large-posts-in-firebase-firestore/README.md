@@ -1,120 +1,199 @@
 # 🐞 Efficiently Storing and Retrieving Large Posts in Firebase Firestore
 
 
-This document addresses a common challenge developers encounter when managing posts with rich content (images, videos, long text) in Firebase Firestore:  **inefficient data storage and retrieval leading to slow loading times and high costs.**  Firestore's document size limits and its nature as a NoSQL database can make handling large posts problematic if not approached correctly.  Simply storing everything in a single document quickly becomes unwieldy.
+## Description of the Problem
 
-**Description of the Problem:**
-
-Storing a large post (e.g., a blog post with multiple images and extensive text) as a single Firestore document can lead to several issues:
-
-* **Document Size Limits:** Firestore has limits on document size. Exceeding these limits results in errors when attempting to create or update the document.
-* **Slow Retrieval:** Retrieving a large document requires downloading all data, even if only a portion is needed.  This leads to slow loading times for users, especially on slower networks.
-* **Increased Costs:** Larger documents consume more storage space, leading to higher Firebase project costs.
-* **Inefficient Queries:** Querying based on parts of a large document can be inefficient and slow.
+A common challenge when using Firebase Firestore to store blog posts or other content-rich data is managing the size of documents. Firestore has document size limits (currently 1 MB).  Large posts containing extensive text, images, or videos often exceed this limit.  Simply trying to store everything in a single document leads to errors.  This problem necessitates a strategy for efficiently storing and retrieving data while maintaining performance.
 
 
-**Step-by-Step Solution (using JavaScript):**
+## Fixing the Problem: Step-by-Step Code
 
-This solution focuses on breaking down the post into smaller, manageable pieces stored in separate Firestore documents and using relationships to link them.
+This solution involves splitting the post data into smaller, manageable documents. We'll use a main document to store metadata and references to other documents holding the larger content.
 
 **1. Data Structure:**
 
-We'll separate the post into these Firestore collections:
+We'll use three collections:
 
-* **`posts`:** This collection stores metadata about the posts (title, author, creation date, etc.).  Each document ID will be the post's unique identifier.
-* **`postContent`:** This collection will store the actual post content, broken down into smaller chunks (e.g., text sections, image URLs). Each document will have a `postId` field linking back to the corresponding `posts` document.  You could also have separate collections for images and other media types for better organization.
+* `posts`: Stores metadata for each post (title, author, timestamp, etc.).
+* `postContent`: Stores the main text content of each post, broken down into chunks if needed.
+* `postImages`:  Stores references to images (e.g., storage URLs).
 
-**2. Code (JavaScript with Firebase Admin SDK):**
+**2. Code (using JavaScript):**
 
 ```javascript
-const admin = require('firebase-admin');
-admin.initializeApp();
-const db = admin.firestore();
+// Import necessary Firebase modules
+import { db, storage } from './firebaseConfig'; // Replace with your config
+import { collection, doc, getDoc, setDoc, addDoc, getDocs } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 
 // Function to create a new post
 async function createPost(postData) {
   try {
-    // 1. Create the main post document
-    const postRef = await db.collection('posts').add({
+    // 1. Store post metadata
+    const postRef = await addDoc(collection(db, "posts"), {
       title: postData.title,
       author: postData.author,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      // ... other metadata
+      timestamp: new Date(),
+      contentReference: [], //initially empty array to add references to chunks of content
+      imageReferences: [] //initially empty array to add image references
     });
-    const postId = postRef.id;
+
+    //2.  Store the content (breaking it down if needed):
+    const contentChunks = chunkString(postData.content, 1000); // Adjust chunk size as needed.
+
+    const contentReferences = [];
+    for (const chunk of contentChunks) {
+        const contentRef = await addDoc(collection(db, "postContent"), {
+            postId: postRef.id,
+            content: chunk
+        });
+        contentReferences.push({id: contentRef.id});
+    }
+      await updatePostContentRef(postRef.id, contentReferences); // Update the post document with the references
 
 
-    // 2. Create the post content documents
-    const contentChunks = chunkArray(postData.content, 500); //Splits the content into 500-character chunks
+    // 3. Upload and store image references:
+    const imageReferences = [];
+    for (const image of postData.images) {
+        const storageRef = ref(storage, `postImages/${postRef.id}/${image.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, image);
 
-    await Promise.all(contentChunks.map((chunk, index) => {
-      return db.collection('postContent').add({
-        postId: postId,
-        chunkIndex: index,
-        content: chunk,
-        // Add more fields if needed for each chunk like images or other media types
-      });
-    }));
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                // Observe state change events such as progress, pause, and resume
+                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload is ' + progress + '% done');
+                switch (snapshot.state) {
+                    case 'paused':
+                        console.log('Upload is paused');
+                        break;
+                    case 'running':
+                        console.log('Upload is running');
+                        break;
+                }
+            },
+            (error) => {
+                // Handle unsuccessful uploads
+                console.error(error);
+            },
+            () => {
+                // Handle successful uploads on complete
+                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                    imageReferences.push(downloadURL);
+                });
+            }
+        );
+    }
 
-    console.log('Post created successfully:', postId);
-    return postId;
+    await updatePostImageRef(postRef.id, imageReferences);
+
+
+    console.log("Post created successfully!", postRef.id);
+    return postRef.id;
   } catch (error) {
-    console.error('Error creating post:', error);
+    console.error("Error creating post:", error);
     throw error;
   }
 }
 
 
-//Helper function to split an array into chunks
-function chunkArray(myArray, chunk_size){
-  var index = 0;
-  var arrayLength = myArray.length;
-  var tempArray = [];
+//Helper Functions
+function chunkString(str, len) {
+  const numChunks = Math.ceil(str.length / len);
+  const chunks = new Array(numChunks);
 
-  for (index = 0; index < arrayLength; index += chunk_size) {
-    myChunk = myArray.slice(index, index+chunk_size);
-    //Do something if you want with the group
-    tempArray.push(myChunk);
+  for (let i = 0, o = 0; i < numChunks; ++i, o += len) {
+    chunks[i] = str.substr(o, len);
   }
 
-  return tempArray;
+  return chunks;
 }
 
 
+async function updatePostContentRef(postId, contentReferences){
+    const postRef = doc(db, "posts", postId);
+    await updateDoc(postRef, {contentReference: contentReferences});
+}
 
-// Example usage:
-const newPost = {
-  title: 'My Awesome Post',
-  author: 'John Doe',
-  content: "This is a very long post with lots and lots of text.  We need to break it into smaller chunks to store it efficiently in Firebase Firestore. This is a test of chunking a large string of text into smaller chunks that are easier to manage and store efficiently. This is another line of text to help make the string long enough to be chunked efficiently." //Example long string
+async function updatePostImageRef(postId, imageReferences){
+    const postRef = doc(db, "posts", postId);
+    await updateDoc(postRef, {imageReferences: imageReferences});
+}
+
+
+// Example usage
+const newPostData = {
+  title: "My Awesome Post",
+  author: "John Doe",
+  content: "This is a very long post content that exceeds the Firestore document size limit.  This is a test to see how the chunking works.",
+  images: [/* array of image files */]
 };
 
-createPost(newPost)
-  .then(postId => console.log('Post ID:', postId))
-  .catch(error => console.error('Error:', error));
+
+createPost(newPostData);
+```
+
+
+**3. Retrieving a Post:**
+
+```javascript
+async function getPost(postId) {
+  try {
+    const postDocRef = doc(db, "posts", postId);
+    const postDoc = await getDoc(postDocRef);
+
+    if (postDoc.exists()) {
+        const postData = postDoc.data();
+        const content = await getContent(postData.contentReference);
+        const images = postData.imageReferences;
+
+        return { ...postData, content, images };
+    } else {
+      console.log("Post not found!");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting post:", error);
+    throw error;
+  }
+}
+
+async function getContent(contentReferences){
+    let content = '';
+    const promises = contentReferences.map(async (reference) => {
+        const docRef = doc(db, 'postContent', reference.id);
+        const docSnap = await getDoc(docRef);
+        if(docSnap.exists()){
+            content += docSnap.data().content;
+        }
+    });
+
+    await Promise.all(promises);
+    return content;
+}
+
+getPost("yourPostId").then(post => console.log(post));
 
 ```
 
-**3. Retrieval:**
 
-To retrieve a post, fetch the metadata from `posts` and then query `postContent` for chunks using the `postId`.  You can then concatenate the chunks to reconstruct the complete post content on the client-side.
+## Explanation
+
+This approach avoids exceeding Firestore's document size limits by:
+
+* **Separating Data:**  Metadata, content, and images are stored in separate collections.
+* **Chunking Content:** Long text content is divided into smaller chunks using the `chunkString` function.  You can adjust the chunk size (currently 1000 characters) based on your needs.
+* **References:** The main `posts` document contains references to the content and image data, allowing efficient retrieval without exceeding size limits.
+* **Asynchronous Operations:**  The code uses asynchronous functions (`async/await`) to handle the potentially time-consuming tasks of uploading images and retrieving data from multiple documents concurrently, improving performance.
 
 
-**Explanation:**
-
-This approach significantly improves efficiency:
-
-* **Reduced Document Sizes:**  Each document is much smaller, staying within Firestore's limits.
-* **Faster Retrieval:** Retrieving only the necessary chunks reduces download time.
-* **Lower Costs:** Less storage is used, leading to lower costs.
-* **Improved Querying:** Queries are more focused and efficient.
-
-**External References:**
+## External References
 
 * [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firebase Firestore Data Model](https://firebase.google.com/docs/firestore/data-model)
-* [JavaScript Admin SDK](https://firebase.google.com/docs/admin/setup)
+* [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
+* [JavaScript `async/await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
