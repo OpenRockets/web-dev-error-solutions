@@ -1,1 +1,1 @@
-Efficiently Storing and Querying Large Posts with Images in Firebase Firestore
+Efficiently Storing and Retrieving Large Post Data in Firebase Firestore
