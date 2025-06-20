@@ -1,114 +1,89 @@
 
-This document addresses a common challenge developers encounter when working with Firebase Firestore: efficiently managing and querying large amounts of textual data within posts, particularly when dealing with complex structures or frequent updates.  Inefficient storage and querying strategies can lead to performance bottlenecks, increased costs, and a poor user experience.
+This challenge involves creating an animated circular progress bar using CSS.  We'll achieve this using only CSS, without relying on JavaScript. The goal is to create a visually appealing and smoothly animated progress indicator.  This solution utilizes CSS variables and animations for flexibility and control.
 
 
-## The Problem:  Slow Queries and Data Overload with Rich Post Content
+## Styling Description
 
-Let's imagine you're building a blogging platform using Firestore. Each post contains a title, author, body text (potentially long), images (URLs), tags, and comments.  If you store everything in a single document, retrieving and filtering posts based on specific criteria (e.g., tags, author) becomes increasingly slow as your database grows.  Furthermore, updating the body text of a long post can lead to significant write latency and increased costs.
-
-
-## Solution:  Normalization and Data Structuring
-
-The solution involves normalizing your data and employing efficient querying strategies. Instead of storing everything in a single document, we will break down the post into smaller, more manageable units.
+The progress bar is a circle with a thicker ring representing the progress track.  The inner part of the ring fills progressively to indicate the percentage complete.  The animation smoothly fills the circle from 0% to a specified value.  We'll use CSS variables to easily adjust the size, colors, and percentage complete.
 
 
-## Step-by-Step Code Example (JavaScript)
+## Full Code (CSS Only)
 
-This example demonstrates the improved structure and querying using the Firebase Admin SDK.  For client-side operations, use the Firebase Javascript SDK with appropriate security rules.
-
-**1. Data Structure:**
-
-We will create two collections: `posts` and `post_content`.
-
-* **`posts` collection:** This collection will store metadata about each post, including a reference to the detailed content.  Each document will have the following structure:
-
-```json
-{
-  "postId": "post123",
-  "authorId": "user456",
-  "title": "My Awesome Post",
-  "tags": ["javascript", "firebase"],
-  "contentRef": "post_content/post123" //Reference to detailed content
-}
-```
-
-* **`post_content` collection:** This collection will store the lengthy body text of each post.
-
-```json
-{
-  "postId": "post123",
-  "body": "This is the body of my awesome post. It can be very long..."
-}
-```
-
-
-**2.  Adding a New Post (Admin SDK):**
-
-```javascript
-const admin = require('firebase-admin');
-admin.initializeApp();
-const db = admin.firestore();
-
-async function addPost(postId, authorId, title, tags, body) {
-  const postRef = db.collection('posts').doc(postId);
-  const contentRef = db.collection('post_content').doc(postId);
-
-  await Promise.all([
-    postRef.set({
-      postId: postId,
-      authorId: authorId,
-      title: title,
-      tags: tags,
-      contentRef: contentRef.path //Store the path, not the whole document
-    }),
-    contentRef.set({
-      postId: postId,
-      body: body
-    })
-  ]);
-  console.log("Post added successfully!");
+```css
+:root {
+  --progress-size: 150px;
+  --progress-background: #e0e0e0;
+  --progress-color: #4CAF50;
+  --progress-percentage: 75; /* Adjust this value to change the progress */
 }
 
-//Example usage:
-addPost("post123", "user456", "My Awesome Post", ["javascript", "firebase"], "This is a long post body...");
-```
+.progress-container {
+  width: var(--progress-size);
+  height: var(--progress-size);
+  position: relative;
+}
 
-**3. Querying Posts by Tag:**
+.progress-ring {
+  width: var(--progress-size);
+  height: var(--progress-size);
+  border-radius: 50%;
+  border: 10px solid var(--progress-background);
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-```javascript
-async function getPostsByTag(tag) {
-  const postsSnapshot = await db.collection('posts')
-    .where('tags', 'array-contains', tag)
-    .get();
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  width: var(--progress-size);
+  height: var(--progress-size);
+  border-radius: 50%;
+  border: 10px solid var(--progress-color);
+  border-right-color: transparent; /* Hide the right side of the circle initially*/
+  transform: rotate(-90deg); /* Start at 0% position */
+  animation: progress-animation var(--progress-duration) linear forwards;
+}
 
-  const posts = [];
-  for (const doc of postsSnapshot.docs) {
-    const postData = doc.data();
-    const contentDoc = await db.doc(postData.contentRef).get();
-    const contentData = contentDoc.data();
-    posts.push({ ...postData, body: contentData.body });
+
+@keyframes progress-animation {
+  to {
+    transform: rotate(calc(360deg * var(--progress-percentage) / 100 - 90deg));
   }
-  return posts;
 }
 
-//Example usage:
-getPostsByTag("firebase").then(posts => console.log(posts));
-
+/* Set animation duration based on percentage */
+:root {
+  --progress-duration: 2s; /* Adjust as needed */
+}
 ```
+
+**To use this code:**
+
+1. Create an HTML file (e.g., `index.html`).
+2. Add a `<div>` with the class `progress-container` in the `<body>` of your HTML file.
+3. Include the CSS code in a `<style>` tag within the `<head>` or in a separate CSS file linked to your HTML.
+
+The progress bar will appear within the `progress-container` div.
+
 
 ## Explanation
 
-This approach significantly improves performance by:
+* **CSS Variables:**  Using `:root` allows for easy customization of colors, size, and percentage.
+* **`::before` Pseudo-element:** Creates the inner circle that fills up.
+* **`border-right-color: transparent;`:**  This cleverly hides the part of the circular border that isn't yet "filled," creating the effect of a partially filled circle.
+* **`transform: rotate();`:**  Rotates the inner circle to simulate the filling effect.
+* **`@keyframes progress-animation`:**  Defines the animation that rotates the inner circle over time.  `linear` ensures a smooth animation. `forwards` keeps the animation at its final state.
+* **`calc()`:**  Dynamically calculates the rotation angle based on the percentage.
 
-* **Reducing document size:**  The `posts` collection contains only essential metadata, leading to faster queries.
-* **Efficient querying:**  Filtering by tags is now much faster as it only operates on the smaller `posts` collection.
-* **Minimizing write operations:** Updating the body text of a post only involves modifying a single document in the `post_content` collection.
+## Resources to Learn More
 
-## External References
-
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firebase Admin SDK Documentation](https://firebase.google.com/docs/admin/setup)
-* [Array Contains Queries in Firestore](https://firebase.google.com/docs/firestore/query-data/queries#array-contains)
+* **MDN Web Docs on CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **MDN Web Docs on CSS Variables:** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_variables)
+* **CSS-Tricks on Animations:** [https://css-tricks.com/snippets/css/keyframe-animation-syntax/](https://css-tricks.com/snippets/css/keyframe-animation-syntax/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
