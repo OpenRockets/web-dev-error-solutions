@@ -1,1 +1,1 @@
-Efficiently Storing and Querying Large Post Collections in Firebase Firestore
+Handling Firestore's "out of range" error when storing large posts
