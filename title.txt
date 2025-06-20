@@ -1,1 +1,1 @@
-CSS Challenge: Responsive Navigation Bar with Tailwind CSS
+Efficiently Storing and Querying Large Posts in Firebase Firestore
