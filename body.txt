@@ -1,118 +1,130 @@
 
-This document addresses a common challenge developers encounter when managing posts with rich content (images, videos, long text) in Firebase Firestore:  **inefficient data storage and retrieval leading to slow loading times and high costs.**  Firestore's document size limits and its nature as a NoSQL database can make handling large posts problematic if not approached correctly.  Simply storing everything in a single document quickly becomes unwieldy.
+This challenge involves creating a responsive pricing table using CSS.  We'll build a table with three pricing plans (Basic, Pro, and Premium) that adapts gracefully to different screen sizes.  We'll use plain CSS for this example, focusing on fundamental techniques like flexbox and media queries.
 
-**Description of the Problem:**
+**Description of the Styling:**
 
-Storing a large post (e.g., a blog post with multiple images and extensive text) as a single Firestore document can lead to several issues:
+The pricing table will consist of three columns, each representing a pricing plan. Each column will contain the plan name, a list of features, the price, and a call-to-action button.  The design will be clean and modern, using a subtle color palette. The table should be responsive, adjusting its layout smoothly on smaller screens, potentially stacking the columns vertically on mobile.
 
-* **Document Size Limits:** Firestore has limits on document size. Exceeding these limits results in errors when attempting to create or update the document.
-* **Slow Retrieval:** Retrieving a large document requires downloading all data, even if only a portion is needed.  This leads to slow loading times for users, especially on slower networks.
-* **Increased Costs:** Larger documents consume more storage space, leading to higher Firebase project costs.
-* **Inefficient Queries:** Querying based on parts of a large document can be inefficient and slow.
+**Full Code:**
 
+```css
+body {
+  font-family: sans-serif;
+}
 
-**Step-by-Step Solution (using JavaScript):**
+.pricing-table {
+  display: flex;
+  justify-content: space-around; /* Distribute columns evenly */
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
 
-This solution focuses on breaking down the post into smaller, manageable pieces stored in separate Firestore documents and using relationships to link them.
+.pricing-plan {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 20px;
+  margin: 10px;
+  text-align: center;
+  min-width: 250px; /* Ensure minimum width for readability */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
 
-**1. Data Structure:**
+.pricing-plan h2 {
+  margin-bottom: 10px;
+}
 
-We'll separate the post into these Firestore collections:
+.pricing-plan ul {
+  list-style: none;
+  padding: 0;
+}
 
-* **`posts`:** This collection stores metadata about the posts (title, author, creation date, etc.).  Each document ID will be the post's unique identifier.
-* **`postContent`:** This collection will store the actual post content, broken down into smaller chunks (e.g., text sections, image URLs). Each document will have a `postId` field linking back to the corresponding `posts` document.  You could also have separate collections for images and other media types for better organization.
+.pricing-plan li {
+  margin-bottom: 5px;
+}
 
-**2. Code (JavaScript with Firebase Admin SDK):**
+.pricing-plan .price {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
 
-```javascript
-const admin = require('firebase-admin');
-admin.initializeApp();
-const db = admin.firestore();
-
-
-// Function to create a new post
-async function createPost(postData) {
-  try {
-    // 1. Create the main post document
-    const postRef = await db.collection('posts').add({
-      title: postData.title,
-      author: postData.author,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      // ... other metadata
-    });
-    const postId = postRef.id;
-
-
-    // 2. Create the post content documents
-    const contentChunks = chunkArray(postData.content, 500); //Splits the content into 500-character chunks
-
-    await Promise.all(contentChunks.map((chunk, index) => {
-      return db.collection('postContent').add({
-        postId: postId,
-        chunkIndex: index,
-        content: chunk,
-        // Add more fields if needed for each chunk like images or other media types
-      });
-    }));
-
-    console.log('Post created successfully:', postId);
-    return postId;
-  } catch (error) {
-    console.error('Error creating post:', error);
-    throw error;
-  }
+.pricing-plan button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 
-//Helper function to split an array into chunks
-function chunkArray(myArray, chunk_size){
-  var index = 0;
-  var arrayLength = myArray.length;
-  var tempArray = [];
-
-  for (index = 0; index < arrayLength; index += chunk_size) {
-    myChunk = myArray.slice(index, index+chunk_size);
-    //Do something if you want with the group
-    tempArray.push(myChunk);
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pricing-table {
+    flex-direction: column; /* Stack columns vertically */
   }
-
-  return tempArray;
+  .pricing-plan {
+    min-width: auto; /* Remove minimum width constraint */
+    margin: 10px 0;
+  }
 }
-
-
-
-// Example usage:
-const newPost = {
-  title: 'My Awesome Post',
-  author: 'John Doe',
-  content: "This is a very long post with lots and lots of text.  We need to break it into smaller chunks to store it efficiently in Firebase Firestore. This is a test of chunking a large string of text into smaller chunks that are easier to manage and store efficiently. This is another line of text to help make the string long enough to be chunked efficiently." //Example long string
-};
-
-createPost(newPost)
-  .then(postId => console.log('Post ID:', postId))
-  .catch(error => console.error('Error:', error));
-
 ```
 
-**3. Retrieval:**
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responsive Pricing Table</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-To retrieve a post, fetch the metadata from `posts` and then query `postContent` for chunks using the `postId`.  You can then concatenate the chunks to reconstruct the complete post content on the client-side.
+<div class="pricing-table">
+  <div class="pricing-plan">
+    <h2>Basic</h2>
+    <ul>
+      <li>10GB Storage</li>
+      <li>1 User</li>
+      <li>Email Support</li>
+    </ul>
+    <p class="price">$9/month</p>
+    <button>Sign Up</button>
+  </div>
+  <div class="pricing-plan">
+    <h2>Pro</h2>
+    <ul>
+      <li>50GB Storage</li>
+      <li>5 Users</li>
+      <li>Priority Support</li>
+    </ul>
+    <p class="price">$49/month</p>
+    <button>Sign Up</button>
+  </div>
+  <div class="pricing-plan">
+    <h2>Premium</h2>
+    <ul>
+      <li>Unlimited Storage</li>
+      <li>Unlimited Users</li>
+      <li>24/7 Support</li>
+    </ul>
+    <p class="price">$99/month</p>
+    <button>Sign Up</button>
+  </div>
+</div>
 
+</body>
+</html>
+```
 
 **Explanation:**
 
-This approach significantly improves efficiency:
+* **Flexbox:** The `flex` properties are used for easy column arrangement and responsiveness.  `flex-wrap` allows the columns to wrap onto multiple lines on smaller screens.
+* **Media Queries:** The `@media` rule targets screens smaller than 768 pixels wide, changing the `flex-direction` to column to stack the pricing plans vertically.
+* **CSS Selectors:**  Specific CSS selectors target elements within the pricing plans for styling (e.g., `h2`, `ul`, `.price`, `button`).
 
-* **Reduced Document Sizes:**  Each document is much smaller, staying within Firestore's limits.
-* **Faster Retrieval:** Retrieving only the necessary chunks reduces download time.
-* **Lower Costs:** Less storage is used, leading to lower costs.
-* **Improved Querying:** Queries are more focused and efficient.
+**Links to Resources to Learn More:**
 
-**External References:**
-
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firebase Firestore Data Model](https://firebase.google.com/docs/firestore/data-model)
-* [JavaScript Admin SDK](https://firebase.google.com/docs/admin/setup)
+* **CSS Flexbox:** [MDN Web Docs - CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
