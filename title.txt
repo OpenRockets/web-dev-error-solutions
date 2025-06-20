@@ -1,1 +1,1 @@
-CSS Challenge:  Centered, Responsive Circular Image with Shadow
+Handling Firestore Data for Posts: Efficiently Storing and Retrieving Large Datasets
