@@ -1,152 +1,127 @@
 # 🐞 Efficiently Storing and Retrieving Large Posts in Firebase Firestore
 
 
-## Description of the Problem
+## Problem Description:  Performance Issues with Large Text Fields in Firestore
 
-A common challenge when working with Firebase Firestore and applications involving blog posts or articles is efficiently handling large amounts of text data.  Storing entire, lengthy posts directly within a single Firestore document can lead to several issues:
+Developers often encounter performance bottlenecks when storing and retrieving large text fields (e.g., blog posts, articles) directly within Firestore documents.  Firestore is optimized for smaller, frequently updated documents.  Storing large amounts of text within individual documents can lead to slow read and write operations, increased latency, and potential client-side limitations (e.g., exceeding browser memory limits during data parsing).
 
-* **Document Size Limits:** Firestore imposes limitations on the size of individual documents. Exceeding these limits results in errors during write operations.
-* **Slow Retrieval:**  Retrieving large documents can significantly impact application performance, especially on slower network connections.  Users experience delays while waiting for content to load.
-* **Inefficient Queries:**  Filtering and querying based on specific parts of a large text field (e.g., searching within the post content) becomes computationally expensive and inefficient.
+## Solution: Utilizing Cloud Storage for Large Files, and Referencing in Firestore
 
-This document details a solution to mitigate these problems by storing post content in a more scalable and efficient manner.
+The most efficient solution is to store large text content in a cloud storage service like Firebase Storage, and then reference the file path within your Firestore documents. This allows Firestore to remain optimized for metadata and smaller data points, while leaving large files to the service better suited for handling them.
+
+## Step-by-Step Code Example (Node.js with Firebase Admin SDK)
+
+This example demonstrates storing a blog post in Firebase Storage and referencing it in Firestore.
 
 
-## Step-by-Step Solution: Separating Content and Metadata
-
-Instead of storing the entire post content within a single document, we'll separate the post's metadata (title, author, date, etc.) from its lengthy content.  The metadata will reside in a main document, while the content will be stored separately, potentially using techniques like storing it in a cloud storage service like Firebase Storage or a different database if the size of the text is exceptionally large.  This example focuses on Firebase Storage.
-
-**Step 1: Project Setup**
-
-Ensure you have a Firebase project set up and the necessary packages installed. You'll need the `firebase` package for JavaScript/TypeScript.
+**1. Install necessary packages:**
 
 ```bash
-npm install firebase
+npm install firebase @google-cloud/storage
 ```
 
-**Step 2: Data Structure**
-
-We'll use two collections: `posts` (for metadata) and potentially a folder structure in Firebase Storage for the actual post content.
-
-* **posts collection:**
-    * `postId` (document ID):  A unique identifier for each post.
-    * `title`: String
-    * `author`: String
-    * `date`: Timestamp
-    * `contentUrl`: String (URL to the post content in Firebase Storage)
-
-* **Firebase Storage:**  The actual post content will be stored as files (e.g., `.txt`, `.md`).  Organize these files into folders to maintain order if needed.  The `contentUrl` in the `posts` collection will point to the location of this file.
-
-
-**Step 3: Code (JavaScript/TypeScript)**
-
-This example demonstrates adding and retrieving a post.  Error handling and more robust features (like pagination) would be added in a production application.
+**2. Initialize Firebase and Storage:**
 
 ```javascript
-import { initializeApp } from "firebase/app";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+const admin = require('firebase-admin');
+const {Storage} = require('@google-cloud/storage');
 
+// Initialize Firebase Admin SDK (replace with your credentials)
+admin.initializeApp({
+  credential: admin.credential.cert("./path/to/your/serviceAccountKey.json"),
+  databaseURL: "your-database-url"
+});
 
-// Your Firebase configuration
-const firebaseConfig = {
-  // ... your firebase config ...
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-
-async function addPost(title, author, content) {
-  const postId = Date.now().toString(); // Generate a unique ID
-  const contentRef = ref(storage, `posts/${postId}/content.txt`); // reference to storage
-  const uploadTask = uploadBytesResumable(contentRef, new TextEncoder().encode(content)); //Upload to Storage
-
-  uploadTask.on('state_changed',
-      (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log('Upload is ' + progress + '% done');
-          switch (snapshot.state) {
-              case 'paused':
-                  console.log('Upload is paused');
-                  break;
-              case 'running':
-                  console.log('Upload is running');
-                  break;
-          }
-      },
-      (error) => {
-          switch (error.code) {
-              case 'storage/unauthorized':
-                  // Handle unauthorized error
-                  break;
-              case 'storage/canceled':
-                  // Handle canceled error
-                  break;
-
-              case 'storage/unknown':
-                  // Handle unknown error
-                  break;
-
-          }
-      },
-      () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-              setDoc(doc(db, "posts", postId), {
-                  title: title,
-                  author: author,
-                  date: new Date(),
-                  contentUrl: downloadURL
-              }).then(() => {
-                  console.log("Post added successfully!");
-              }).catch((error) => {
-                  console.error("Error adding post:", error);
-              });
-          });
-
-      }
-  );
-
-
-}
-
-async function getPost(postId) {
-  const postDoc = await getDoc(doc(db, "posts", postId));
-  if (postDoc.exists()) {
-    const postData = postDoc.data();
-    const content = await fetch(postData.contentUrl).then(response => response.text());
-    return { ...postData, content };
-  } else {
-    return null;
-  }
-}
-
-//Example Usage
-addPost("My First Post", "John Doe", "This is the content of my first post.");
-getPost("1678886400000").then(post => console.log(post)); //replace with your postId
+const db = admin.firestore();
+const storage = new Storage();
+const bucket = storage.bucket("your-storage-bucket-name"); // Replace with your bucket name
 
 ```
 
-**Step 4: Deployment**
+**3. Function to upload the post to Firebase Storage:**
 
-Deploy your application to Firebase Hosting or any other platform you're using.
+```javascript
+async function uploadPostToStorage(postTitle, postContent) {
+  const file = bucket.file(`${postTitle}.txt`); // Or use a unique ID for filename
+  const blobStream = file.createWriteStream({
+    metadata: {
+      contentType: 'text/plain'
+    }
+  });
 
+  blobStream.on('error', err => {
+    console.error('Something went wrong!', err);
+  });
+
+  blobStream.on('finish', () => {
+    console.log(`Successfully uploaded ${postTitle}.txt to ${bucket.name}`);
+    // Get the public URL for the file.  This will be stored in Firestore
+    file.getSignedUrl({action: 'read', expires: '03-09-2491'})
+      .then(signedUrls => {
+        const url = signedUrls[0];
+        console.log(`File URL: ${url}`)
+      });
+  });
+
+
+  blobStream.end(postContent);
+}
+
+```
+
+**4. Function to store the post reference in Firestore:**
+
+```javascript
+async function storePostReferenceInFirestore(postTitle, storageURL, otherPostData) {
+    const postRef = db.collection('posts').doc();
+    await postRef.set({
+        postId: postRef.id,
+        title: postTitle,
+        storageUrl: storageURL,
+        ...otherPostData //Add any other relevant post data
+    });
+    console.log('Post reference stored in Firestore', postRef.id);
+}
+
+```
+
+
+**5. Example Usage:**
+
+```javascript
+async function main() {
+    const postTitle = "My Amazing Post";
+    const postContent = "This is the content of my amazing post. It's quite long!";
+
+    await uploadPostToStorage(postTitle, postContent);
+    //  Use a Promise to ensure that upload is complete before getting signed URL
+    const urlPromise = new Promise((resolve, reject) => {
+        let url;
+        bucket.file(`${postTitle}.txt`).getSignedUrl({action: 'read', expires: '03-09-2491'})
+          .then(signedUrls => {
+            url = signedUrls[0];
+            resolve(url);
+          }).catch(err => reject(err));
+
+    })
+
+    const url = await urlPromise;
+    await storePostReferenceInFirestore(postTitle, url, {author: 'John Doe', tags: ['javascript', 'firebase']});
+
+}
+
+main();
+```
 
 ## Explanation
 
-This approach significantly improves scalability and performance:
-
-* **Reduced Document Size:**  Firestore documents contain only relatively small metadata.
-* **Faster Retrieval:**  Retrieving metadata is quick.  Fetching the content involves a separate call to Firebase Storage, which is optimized for large file handling.
-* **Improved Querying:** Queries on the `posts` collection remain efficient, unaffected by the size of the content.
-
+This approach separates concerns: Firestore manages metadata (title, author, tags, etc.) efficiently, and Cloud Storage handles the large text content.  When retrieving a post, you fetch the metadata from Firestore and then download the content from Cloud Storage using the provided URL. This results in significantly improved performance and scalability, particularly for applications with many large posts.  Remember to adjust the file type and `contentType` based on the type of your posts (e.g., `.txt`, `.html`, `application/json`).
 
 ## External References
 
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
 * [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
-* [Firebase JavaScript SDK](https://firebase.google.com/docs/web/setup)
+* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
+* [Google Cloud Storage Client Library for Node.js](https://cloud.google.com/storage/docs/libraries#client-libraries-install-nodejs)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
