@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data Retrieval Errors When Storing and Retrieving Posts
+
 
 This document addresses a common problem developers encounter when using Firebase Firestore to store and retrieve posts: efficiently handling potential errors during data retrieval, specifically focusing on situations where a post might not exist.
 
