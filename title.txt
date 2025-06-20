@@ -1,1 +1,1 @@
-Handling Firestore Data Consistency Issues with Multiple Concurrent Writes
+Efficiently Storing and Querying Large Post Datasets in Firebase Firestore
