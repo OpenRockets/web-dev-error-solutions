@@ -1,11 +1,11 @@
 # 🐞 CSS Challenge:  Animated Circular Progress Bar with Tailwind CSS
 
 
-This challenge focuses on creating an animated circular progress bar using Tailwind CSS.  The bar will visually represent a percentage value (we'll use 75% for this example), animating from 0% to the target percentage. We'll achieve the animation using CSS only, leveraging Tailwind's utility classes for efficient styling.
+This challenge involves creating an animated circular progress bar using Tailwind CSS.  The progress bar will visually represent a percentage value, updating smoothly as the percentage changes. We'll use CSS variables and animations to achieve a clean and efficient solution.
 
 **Description of the Styling:**
 
-The progress bar will be a circle composed of two overlapping SVG elements: a background circle and a foreground circle representing the progress.  The foreground circle will be animated to increase its stroke-dasharray value, creating the filling effect. Tailwind will handle the sizing, colors, and positioning.
+The progress bar will be a circle with a background color.  A semi-circle overlay will represent the progress, filling in from the right. The percentage value will be displayed in the center of the circle.  The animation will involve the semi-circle smoothly expanding or contracting to reflect the percentage change.  We'll leverage Tailwind's utility classes for easy styling and responsive design.
 
 
 **Full Code:**
@@ -17,25 +17,51 @@ The progress bar will be a circle composed of two overlapping SVG elements: a ba
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Circular Progress Bar</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
   .progress-ring {
-    transform: rotate(-90deg); /* Start at the top */
+    --progress: 0; /*initial value*/
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: animateProgress 2s forwards; /*animation to start*/
   }
 
-  .progress-ring__circle {
-    stroke-width: 10;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 0.5s ease-in-out; /* Smooth animation */
+  .progress-ring::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: #4299E1;
+    clip: rect(0, 50%, 100%, 0); /*half circle*/
+    transform: rotate(calc(var(--progress) * 3.6deg));
+    transform-origin: 50% 100%; /*rotation point*/
+    animation: animateProgress 2s forwards;
+  }
+
+  .progress-ring .percentage {
+    z-index: 1; /*make sure text is visible above the semi-circle*/
+    font-size: 1.2rem;
+    color: #fff;
+  }
+
+
+  @keyframes animateProgress{
+    from {--progress: 0}
+    to {--progress: var(--percentage)}
   }
 </style>
 </head>
 <body class="bg-gray-100 flex justify-center items-center h-screen">
-
-<svg class="progress-ring w-48 h-48" viewBox="0 0 100 100">
-  <circle class="progress-ring__circle text-gray-300" cx="50" cy="50" r="40" fill="transparent" stroke-dasharray="251.327" stroke-dashoffset="251.327"></circle>
-  <circle class="progress-ring__circle text-blue-500" cx="50" cy="50" r="40" fill="transparent" stroke-dasharray="251.327" stroke-dashoffset="62.83175" style="stroke-dashoffset: calc(251.327 - 251.327 * 0.75);"></circle>
-</svg>
+  <div class="progress-ring" style="--percentage: 75">  <!--Change this value to adjust initial percentage-->
+    <span class="percentage">75%</span>
+  </div>
 
 
 </body>
@@ -44,16 +70,22 @@ The progress bar will be a circle composed of two overlapping SVG elements: a ba
 
 **Explanation:**
 
-* **HTML Structure:**  We use an SVG `<circle>` element for the background and another for the progress.  The `viewBox` attribute defines the SVG's coordinate system.
-* **CSS Styling:** Tailwind classes (`w-48`, `h-48`, `text-gray-300`, `text-blue-500`) control the size and colors. The `stroke-dasharray` property sets the total length of the circle's circumference.  `stroke-dashoffset` controls the starting point of the stroke.  The initial `stroke-dashoffset` equals the `stroke-dasharray`, making the circle invisible at the start.  The animation is done by changing this offset.
-* **Animation:** The Javascript portion calculates the `stroke-dashoffset` dynamically based on the percentage (75% in this case).   The `transition` property ensures a smooth animation.  Note that the example has the percentage hardcoded, but this can easily be made dynamic with Javascript.
-* **Tailwind's Role:** Tailwind simplifies the styling by providing ready-to-use classes for colors, sizes, and spacing.
+* **Tailwind Classes:** We use `bg-gray-100`, `flex`, `justify-center`, `items-center`, and `h-screen` for basic layout and styling.
+* **CSS Variables:** `--progress` dynamically controls the animation, representing the percentage converted into degrees. `--percentage` is a custom property that sets the target percentage.
+
+* **Pseudo-element `::before`:** This creates the semi-circle that visually represents the progress. `clip` creates the semi-circle shape. `transform: rotate()`  rotates it based on the `--progress` value.
+
+
+* **`animateProgress` Keyframes:** This animation smoothly updates the `--progress` variable, driving the progress bar animation.
+
+
+* **Javascript (Optional):**  You can easily integrate JavaScript to dynamically change the `--percentage` CSS variable, allowing for real-time progress updates.
 
 
 **Links to Resources to Learn More:**
 
 * **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
-* **SVG Tutorial:** [https://developer.mozilla.org/en-US/docs/Web/SVG](https://developer.mozilla.org/en-US/docs/Web/SVG)
+* **CSS Variables (Custom Properties):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 * **CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
 
 

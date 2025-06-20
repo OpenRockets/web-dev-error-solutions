@@ -1,101 +1,91 @@
 
-This document addresses a common challenge developers encounter when managing a large number of posts in Firebase Firestore: inefficient data structuring leading to slow query performance and exceeding Firestore's query limitations.  Specifically, we'll tackle the problem of fetching posts with associated user data and limiting the amount of data retrieved.
+This challenge involves creating an animated circular progress bar using Tailwind CSS.  The progress bar will visually represent a percentage value, updating smoothly as the percentage changes. We'll use CSS variables and animations to achieve a clean and efficient solution.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-When storing posts, a naive approach might involve embedding the entire user object within each post document.  This leads to redundancy (the user data is duplicated for every post) and violates Firestore's query limitations (complex queries involving filtering by user properties and post properties become very slow or impossible due to the number of fields and document size).  Fetching a large number of posts with embedded user data results in slow loading times and potentially exceeding the maximum document size.
-
-
-**Step-by-Step Code Fix:**
-
-Instead of embedding user data, we'll use a normalized approach, storing posts and users in separate collections.  This allows for efficient querying and avoids data redundancy.
-
-**1. Data Structure:**
-
-* **Collection: `users`**
-    * Documents: User IDs (e.g., `user123`, `user456`)
-    * Fields: `uid`, `username`, `profilePictureUrl`, etc.
-
-* **Collection: `posts`**
-    * Documents: Post IDs (auto-generated)
-    * Fields: `postId`, `userId`, `content`, `timestamp`, `title`
-
-**2. Code (using Javascript with Firebase Admin SDK):**
-
-```javascript
-const admin = require('firebase-admin');
-admin.initializeApp();
-const db = admin.firestore();
-
-//Adding a new post (includes user ID instead of full user data)
-async function addPost(userId, postContent, postTitle) {
-  const newPostRef = db.collection('posts').doc();
-  const postId = newPostRef.id; // Assign a unique ID using Firestore's ID generator.
-  await newPostRef.set({
-    postId: postId,
-    userId: userId,
-    content: postContent,
-    timestamp: admin.firestore.FieldValue.serverTimestamp(),
-    title: postTitle
-  });
-  console.log(`Post added with ID: ${postId}`);
-}
+The progress bar will be a circle with a background color.  A semi-circle overlay will represent the progress, filling in from the right. The percentage value will be displayed in the center of the circle.  The animation will involve the semi-circle smoothly expanding or contracting to reflect the percentage change.  We'll leverage Tailwind's utility classes for easy styling and responsive design.
 
 
-//Fetching posts with user details (efficiently joining data)
-async function getPostsWithUserDetails(limit=10,startAfter=null){
-  const postsSnapshot = await db.collection('posts')
-      .orderBy('timestamp', 'desc')
-      .startAfter(startAfter)
-      .limit(limit)
-      .get();
+**Full Code:**
 
-  const posts = [];
-  const userIds = new Set();
-    postsSnapshot.forEach(doc =>{
-        posts.push({postId: doc.id,...doc.data()});
-        userIds.add(doc.data().userId);
-    })
-    
-    const userPromises = [...userIds].map(userId => db.collection('users').doc(userId).get());
-    const userDocs = await Promise.all(userPromises);
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circular Progress Bar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .progress-ring {
+    --progress: 0; /*initial value*/
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: animateProgress 2s forwards; /*animation to start*/
+  }
 
-    const users = {};
-    userDocs.forEach(userDoc =>{
-        users[userDoc.id] = userDoc.data();
-    })
+  .progress-ring::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: #4299E1;
+    clip: rect(0, 50%, 100%, 0); /*half circle*/
+    transform: rotate(calc(var(--progress) * 3.6deg));
+    transform-origin: 50% 100%; /*rotation point*/
+    animation: animateProgress 2s forwards;
+  }
+
+  .progress-ring .percentage {
+    z-index: 1; /*make sure text is visible above the semi-circle*/
+    font-size: 1.2rem;
+    color: #fff;
+  }
 
 
-  return posts.map(post => ({...post, user: users[post.userId]}));
+  @keyframes animateProgress{
+    from {--progress: 0}
+    to {--progress: var(--percentage)}
+  }
+</style>
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+  <div class="progress-ring" style="--percentage: 75">  <!--Change this value to adjust initial percentage-->
+    <span class="percentage">75%</span>
+  </div>
 
-}
 
-
-//Example Usage
-async function example(){
-    await addPost("user123", "This is my first post!", "First Post");
-    const posts = await getPostsWithUserDetails();
-    console.log(posts);
-    //Pagination Example
-    const nextPosts = await getPostsWithUserDetails(10, posts[posts.length-1]);
-    console.log(nextPosts)
-}
-
-example();
-
+</body>
+</html>
 ```
 
-**3. Explanation:**
+**Explanation:**
 
-The code demonstrates a normalized data model.  `addPost` adds a new post, storing only the `userId`, not the full user details.  `getPostsWithUserDetails` efficiently retrieves posts and then performs separate queries for user data using the `userIds`, only retrieving the necessary data using a single query for each user. This approach drastically improves performance compared to embedding user data in every post. This also allows for efficient pagination using `limit` and `startAfter`
+* **Tailwind Classes:** We use `bg-gray-100`, `flex`, `justify-center`, `items-center`, and `h-screen` for basic layout and styling.
+* **CSS Variables:** `--progress` dynamically controls the animation, representing the percentage converted into degrees. `--percentage` is a custom property that sets the target percentage.
 
-
-**External References:**
-
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firebase Security Rules](https://firebase.google.com/docs/firestore/security/get-started)
-* [Understanding Firestore Queries](https://firebase.google.com/docs/firestore/query-data/queries)
+* **Pseudo-element `::before`:** This creates the semi-circle that visually represents the progress. `clip` creates the semi-circle shape. `transform: rotate()`  rotates it based on the `--progress` value.
 
 
-**Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.**
+* **`animateProgress` Keyframes:** This animation smoothly updates the `--progress` variable, driving the progress bar animation.
+
+
+* **Javascript (Optional):**  You can easily integrate JavaScript to dynamically change the `--percentage` CSS variable, allowing for real-time progress updates.
+
+
+**Links to Resources to Learn More:**
+
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
+* **CSS Variables (Custom Properties):** [https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
+* **CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+
+
+Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
