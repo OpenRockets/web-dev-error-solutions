@@ -1,1 +1,1 @@
-Handling Firestore Data for Posts: Avoiding Excessive Reads and Writes
+CSS Challenge: Recreate a Simple Pricing Table
