@@ -1,3 +1,5 @@
+# 🐞 Efficiently Handling Large Post Datasets in Firebase Firestore
+
 
 This document addresses a common problem developers encounter when managing a large number of posts in Firebase Firestore: **performance degradation due to inefficient data fetching and querying**.  As the number of posts grows, retrieving and displaying them can become slow and impact the user experience.  This often manifests as long loading times, app freezes, or even crashes.
 
