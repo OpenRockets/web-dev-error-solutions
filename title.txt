@@ -1,1 +1,1 @@
-CSS Challenge: Responsive Image Card with Shadow and Hover Effect
+Handling Firestore Data Storage Limitations When Posting Large Amounts of Data

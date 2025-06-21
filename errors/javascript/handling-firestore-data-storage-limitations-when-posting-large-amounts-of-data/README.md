@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data Storage Limitations When Posting Large Amounts of Data
+
 
 This document addresses a common issue developers face when using Firebase Firestore to store large amounts of data related to posts, specifically exceeding Firestore's document size limits.  This can often occur when dealing with rich media (images, videos) or extensive textual content associated with each post.
 
