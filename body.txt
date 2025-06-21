@@ -1,144 +1,88 @@
 
-## Problem Description:  Performance Degradation with Increasing Post Data
+This challenge involves creating a 3D rotating cube using only CSS.  We'll leverage CSS transforms and animations to achieve this effect without any JavaScript.  This example uses plain CSS, but could easily be adapted to Tailwind CSS by replacing the inline styles with Tailwind classes.
 
-A common issue developers face with Firebase Firestore when managing a social media-style application or a blog is performance degradation as the number of posts increases.  Directly storing large amounts of post data (including text, images, user information, timestamps, etc.) in a single document quickly leads to slow query times, especially when fetching posts based on criteria like date or user activity. This is because Firestore retrieves the entire document, even if only a small portion is needed.  Large documents can exceed Firestore's index limits, preventing efficient querying.
+**Description of the Styling:**
 
-## Solution: Data Denormalization and Subcollections
+The cube is constructed using six divs, each representing a face.  These divs are positioned absolutely within a parent container.  `transform: rotateX`, `transform: rotateY`, and `transform: rotateZ` are used to create the 3D effect.  CSS animations are applied to continuously rotate the cube along the Y-axis.  Different colours are assigned to each face for visual clarity.
 
-The most effective approach is to denormalize your data and utilize Firestore's subcollections.  Instead of storing everything in a single "posts" collection, we'll separate data into smaller, more manageable chunks.
+**Full Code:**
 
-### Step-by-Step Code Implementation (using JavaScript/Node.js):
-
-**1. Data Structure:**
-
-Instead of:
-
-```
-posts: [
-  {
-    postId: "123",
-    user: {uid: "user123", name: "John Doe"},
-    text: "This is a long post...",
-    images: ["url1", "url2"],
-    comments: [...] // potentially large array
-    timestamp: 1678886400000
-  },
-  { ... }
-]
-```
-
-We'll use:
-
-- **Collection:** `posts` (stores post metadata for efficient querying)
-- **Subcollection (per post):** `comments` (for managing comments associated with a specific post)
-
-**2.  Storing a Post:**
-
-```javascript
-const db = require('firebase-admin').firestore();
-
-async function createPost(userId, userName, postText, images) {
-  const postRef = db.collection('posts').doc();
-  const postId = postRef.id;
-
-  await db.runTransaction(async (transaction) => {
-    // Store post metadata
-    await transaction.set(postRef, {
-      postId: postId,
-      userId: userId,
-      userName: userName,
-      textSnippet: postText.substring(0, 100), //Store a short snippet for search
-      timestamp: Date.now(),
-      images: images, //Store image URL's
-    });
-
-    // Create subcollection for comments (initially empty)
-
-  });
-  return postId;
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>3D Rotating Cube</title>
+<style>
+body {
+  perspective: 1000px; /* Necessary for 3D effect */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f0f0;
 }
 
-
-//Example Usage
-const postId = await createPost("user123", "John Doe", "This is a long post...", ["url1", "url2"])
-console.log("Post Created with ID:", postId);
-
-
-```
-
-**3. Querying Posts:**
-
-To get posts, we'll query the `posts` collection, filtering by date or user etc., then fetch comments from subcollections as needed:
-
-```javascript
-async function getPosts(limit = 10, lastPostTimestamp = null) {
-  let query = db.collection('posts')
-    .orderBy('timestamp', 'desc')
-    .limit(limit);
-
-  if (lastPostTimestamp) {
-    query = query.startAfter({timestamp: lastPostTimestamp});
-  }
-
-  const snapshot = await query.get();
-  const posts = [];
-  snapshot.forEach(doc => {
-    posts.push({ ...doc.data(), postId: doc.id });
-  });
-
-  //Further, comments can be loaded individually using postId
-  return posts;
+.cube {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  transform-style: preserve-3d; /* Essential for 3D rendering */
+  animation: rotate 10s linear infinite;
 }
 
-//Example Usage: Get the first 10 posts
-const posts = await getPosts();
-console.log(posts)
-
-```
-
-**4. Adding Comments:**
-
-```javascript
-async function addComment(postId, userId, userName, commentText) {
-  const commentRef = db.collection('posts').doc(postId).collection('comments').doc();
-  await commentRef.set({
-    commentId: commentRef.id,
-    userId: userId,
-    userName: userName,
-    text: commentText,
-    timestamp: Date.now()
-  });
+.face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 3em;
+  color: white;
+  backface-visibility: hidden; /* Prevents faces from showing through */
 }
-```
 
-**5. Fetching Comments for a Post:**
+.front { background-color: #007bff; transform: translateZ(100px); }
+.back { background-color: #28a745; transform: translateZ(-100px) rotateY(180deg); }
+.right { background-color: #dc3545; transform: translateX(100px) rotateY(90deg); }
+.left { background-color: #ffc107; transform: translateX(-100px) rotateY(-90deg); }
+.top { background-color: #17a2b8; transform: translateY(-100px) rotateX(90deg); }
+.bottom { background-color: #6c757d; transform: translateY(100px) rotateX(-90deg); }
 
-```javascript
-async function getCommentsForPost(postId){
-    const snapshot = await db.collection('posts').doc(postId).collection('comments').get();
-    const comments = [];
-    snapshot.forEach(doc => {
-        comments.push({...doc.data(), commentId: doc.id});
-    })
-    return comments;
+@keyframes rotate {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
 }
+</style>
+</head>
+<body>
+<div class="cube">
+  <div class="face front">Front</div>
+  <div class="face back">Back</div>
+  <div class="face right">Right</div>
+  <div class="face left">Left</div>
+  <div class="face top">Top</div>
+  <div class="face bottom">Bottom</div>
+</div>
+</body>
+</html>
 ```
 
-## Explanation:
+**Explanation:**
 
-This approach improves performance by:
+* **`perspective`:** This property on the `body` creates the 3D viewing space.
+* **`transform-style: preserve-3d;`:** This is crucial; it ensures that child elements are rendered in 3D space.
+* **`translateZ`:** Moves elements along the Z-axis (depth).
+* **`rotateX`, `rotateY`, `rotateZ`:** Rotate elements around the respective axes.
+* **`backface-visibility: hidden;`:** Prevents the back faces from being visible when rotated.
+* **`@keyframes rotate`:** Defines the animation that rotates the cube continuously.
 
-* **Reduced Document Size:**  Storing post metadata separately from comments keeps individual documents smaller, improving query speed.
-* **Efficient Queries:**  Queries on the `posts` collection are fast because the documents are small.
-* **Pagination:** The `getPosts` function demonstrates pagination to load posts in chunks, improving user experience for large datasets.
-* **Scalability:** This design scales better as the number of posts and comments increases.
 
+**Links to Resources to Learn More:**
 
-## External References:
-
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firebase Firestore Data Modeling](https://firebase.google.com/docs/firestore/data-model)
-* [Understanding Firestore Indexes](https://firebase.google.com/docs/firestore/query-data/indexing)
+* **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
+* **MDN Web Docs - CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
+* **CSS-Tricks - 3D Transforms:** [https://css-tricks.com/almanac/properties/t/transform/](https://css-tricks.com/almanac/properties/t/transform/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
