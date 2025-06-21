@@ -1,116 +1,124 @@
 
-This document addresses a common challenge developers encounter when managing a large number of posts within Firebase Firestore: **inefficient data structuring leading to slow query performance and exceeding the maximum document size limit.**  Storing all post data within a single document quickly becomes unwieldy as the number of posts grows.  Fetching all posts for display requires downloading an excessively large document, resulting in slow load times and potentially exceeding Firestore's 1 MB document size limit.
+This challenge involves creating a multi-level nested accordion menu using CSS.  The accordion should allow users to expand and collapse sections, with nested sections expanding and collapsing independently. We'll be using plain CSS (no JavaScript) for this, focusing on the power of CSS's `:target` pseudo-class and sibling selectors.
+
+**Description of the Styling:**
+
+The accordion will have a clean and modern look. Each section will have a title that, when clicked, toggles the visibility of its content. Nested sections will be indented to clearly show the hierarchy. We'll use a subtle background color change to indicate active sections.
 
 
-## The Problem
+**Full Code:**
 
-When dealing with many posts, each containing potentially rich data (text, images, user details, timestamps, etc.), directly storing all posts in a single collection with each post as a separate document can lead to inefficient queries and scaling issues. For example, if you want to retrieve the latest 20 posts, you'd need to fetch and filter a potentially enormous dataset. This negatively affects your app's performance and user experience.
-
-
-## Step-by-Step Solution: Implementing Pagination with Timestamps
-
-This solution uses pagination with timestamps to retrieve posts efficiently. We'll create a structured approach to manage posts, using timestamps for efficient querying.
-
-**1. Data Structure:**
-
-We'll structure our data as follows:
-
-* **Collection: `posts`**: This collection will store individual post documents.
-
-* **Document Structure (Example):**
-
-```json
-{
-  "postId": "uniquePostId123",
-  "authorId": "user123",
-  "content": "This is the post content...",
-  "timestamp": 1678886400 // Unix timestamp
-  // ... other post data ...
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Multi-level Nested Accordion</title>
+<style>
+body {
+  font-family: sans-serif;
 }
-```
 
-**2.  Fetching Posts with Pagination and Timestamps:**
+.accordion {
+  background-color: #f2f2f2;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  transition: 0.4s;
+}
 
-This code snippet demonstrates fetching the latest 20 posts using pagination.  We use the `orderBy` and `limit` clauses in our query. The last timestamp of fetched posts is stored and used in the next query, avoiding fetching duplicates.
+.active, .accordion:hover {
+  background-color: #ddd;
+}
 
-```javascript
-// Initial fetch
-let lastTimestamp = null;
-let posts = [];
+.accordion:after {
+  content: '\2795'; /* Unicode character for "plus" sign */
+  color: #777;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
 
-async function fetchPosts(limit = 20){
-  const query = firestore.collection('posts')
-                        .orderBy('timestamp', 'desc')
-                        .limit(limit);
+.active:after {
+  content: "\2796"; /* Unicode character for "minus" sign */
+}
 
-  if(lastTimestamp){
-    query.startAfter(firestore.Timestamp.fromDate(new Date(lastTimestamp)));
-  }
+.panel {
+  padding: 0 18px;
+  display: none;
+  background-color: white;
+  overflow: hidden;
+}
+
+.panel.show {
+  display: block;
+}
+
+.nested-accordion {
+  margin-left: 20px;
+}
+</style>
+</head>
+<body>
+
+<h2>Multi-level Nested Accordion</h2>
+
+<button class="accordion">Section 1
+  <div class="panel">
+    <p>Content for Section 1</p>
+    <button class="accordion nested-accordion">Nested Section 1.1
+      <div class="panel">
+        <p>Content for Nested Section 1.1</p>
+      </div>
+    </button>
+    <button class="accordion nested-accordion">Nested Section 1.2
+      <div class="panel">
+        <p>Content for Nested Section 1.2</p>
+      </div>
+    </button>
+  </div>
+</button>
+
+<button class="accordion">Section 2
+  <div class="panel">
+    <p>Content for Section 2</p>
+  </div>
+</button>
 
 
-  try {
-    const querySnapshot = await query.get();
-    querySnapshot.forEach(doc => {
-      posts.push({id: doc.id, ...doc.data()});
-    });
-    // Update lastTimestamp for next fetch.  Crucial for pagination!
-    if(querySnapshot.docs.length > 0){
-      lastTimestamp = querySnapshot.docs[querySnapshot.docs.length -1].data().timestamp.seconds * 1000;
+<script>
+var acc = document.getElementsByClassName("accordion");
+var i;
+
+for (i = 0; i < acc.length; i++) {
+  acc[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var panel = this.nextElementSibling;
+    if (panel.style.display === "block") {
+      panel.style.display = "none";
+    } else {
+      panel.style.display = "block";
     }
-
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-  }
-
+  });
 }
+</script>
 
-
-//Example usage:
-fetchPosts().then(() => {
-    console.log("Initial posts fetched:", posts)
-}).then(() => {
-  fetchPosts().then(() => {
-    console.log("Next batch fetched:",posts);
-  })
-});
-
+</body>
+</html>
 ```
 
+**Explanation:**
 
-**3. Adding a New Post:**
-
-Adding a new post is straightforward:
-
-```javascript
-async function addPost(postData) {
-  try {
-    const docRef = await firestore.collection('posts').add({
-      ...postData,
-      timestamp: firestore.FieldValue.serverTimestamp() // Use server timestamp for accuracy
-    });
-    console.log("Post added with ID: ", docRef.id);
-  } catch (error) {
-    console.error("Error adding post:", error);
-  }
-}
-```
+The code uses simple CSS to style the accordion. The `:target` pseudo-class is not used here because we're using Javascript for the interactive functionality. The JavaScript part adds event listeners to each accordion button.  When clicked, it toggles the `active` class, which changes the styling, and then shows or hides the corresponding panel using `display: block;` and `display: none;`.  The nested accordions work seamlessly because the same logic applies recursively.
 
 
-## Explanation
+**Links to Resources to Learn More:**
 
-This solution addresses the original problem by:
-
-* **Preventing the exceeding of document size limits:** Each post is stored in its own document, preventing issues with large documents.
-* **Improving query performance:**  `orderBy` and `limit` clauses combined with pagination allow fetching data efficiently, without downloading unnecessary documents.  The use of timestamps efficiently orders posts chronologically.
-* **Scalability:** This approach scales well to a large number of posts. The pagination ensures that only the necessary data is fetched at any given time.
-
-
-
-## External References
-
-* [Firestore Data Modeling](https://firebase.google.com/docs/firestore/modeling-data)
-* [Firestore Queries](https://firebase.google.com/docs/firestore/query-data/queries)
-* [Firestore Pagination](https://firebase.google.com/docs/firestore/query-data/cursors)
+* **MDN Web Docs - CSS Selectors:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
+* **MDN Web Docs - JavaScript Event Listeners:** [https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
+* **Understanding CSS Transitions and Animations:**  Search for tutorials on this topic - many excellent resources are available.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
