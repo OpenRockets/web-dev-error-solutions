@@ -3,117 +3,85 @@
 
 ## Description of the Error
 
-A common problem when working with Firebase Firestore and managing posts (e.g., blog posts, social media updates) is maintaining data consistency when multiple users or clients attempt to update the same document concurrently.  Without proper handling, this can lead to lost updates, overwritten data, or race conditions, resulting in incorrect post content or metadata (like likes, comments, or timestamps).  This usually manifests as unexpected values in your Firestore documents after multiple simultaneous updates.
+A common problem when working with Firestore and posts (e.g., blog posts, social media updates) is maintaining data consistency when multiple users or clients attempt to update the same document concurrently.  Without proper handling, concurrent updates can lead to data loss, overwriting of changes, and unexpected behavior.  Specifically, you might encounter situations where one user's changes are silently overwritten by another, leading to frustrating debugging and a poor user experience. This often manifests when incrementing counters (like likes or comments on a post) or updating nested fields within a post document.
+
 
 ## Fixing Step-by-Step with Code
 
-This example demonstrates how to address concurrent updates using Firestore's optimistic concurrency control with `FieldValue.increment()` for updating the likes count and transactions for more complex updates.
+This example demonstrates how to handle concurrent updates to a post's like count using optimistic concurrency control and transactions. We'll use a simple counter for demonstration, but the principle applies to more complex updates.
 
+**Initial Post Document Structure:**
 
-**Scenario:**  Incrementing the "likes" count of a post.
-
-**Bad Approach (Leading to Data Loss):**
-
-```javascript
-// INCORRECT: This will likely lead to lost updates
-db.collection("posts").doc(postId).update({
-  likes: firebase.firestore.FieldValue.increment(1)
-});
+```json
+{
+  "title": "My Awesome Post",
+  "content": "This is some great content!",
+  "likes": 0
+}
 ```
 
-**Good Approach (Using Optimistic Concurrency):**
+
+**Code (using Node.js with the Firebase Admin SDK):**
 
 ```javascript
+const { getFirestore } = require('firebase-admin/firestore');
+const db = getFirestore();
+
 async function incrementLikes(postId) {
-  const postRef = db.collection("posts").doc(postId);
   try {
-    await postRef.update({ likes: firebase.firestore.FieldValue.increment(1) });
-    console.log("Likes incremented successfully!");
-  } catch (error) {
-    if (error.code === "failed-precondition") {
-      // This error indicates a concurrent update occurred.  Handle it gracefully.
-      console.error("Concurrent update detected. Try again later.", error);
-      // Optionally: retry the operation after a short delay.  See retry logic below.
-    } else {
-      // Handle other errors appropriately.
-      console.error("Error incrementing likes:", error);
+    const docRef = db.collection('posts').doc(postId);
+
+    // Optimistic Concurrency Control: Get the current document
+    const docSnapshot = await docRef.get();
+    if (!docSnapshot.exists) {
+      throw new Error(`Post with ID ${postId} not found`);
     }
+
+    const currentLikes = docSnapshot.data().likes;
+
+    // Use a transaction to ensure atomicity
+    await db.runTransaction(async (transaction) => {
+      const docSnapshot2 = await transaction.get(docRef); //double check to ensure it hasn't changed
+      if (!docSnapshot2.exists) {
+        throw new Error(`Post with ID ${postId} not found`);
+      }
+      const updatedLikes = docSnapshot2.data().likes;
+      if (updatedLikes !== currentLikes) {
+        throw new Error("Concurrent update detected. Please try again.");
+      }
+      transaction.update(docRef, { likes: updatedLikes + 1 });
+    });
+
+    console.log('Likes incremented successfully!');
+  } catch (error) {
+    console.error('Error incrementing likes:', error);
+    // Handle the error appropriately, e.g., retry with exponential backoff
   }
 }
 
 
-// Retry Logic (Optional but Recommended)
-async function retryOperation(operation, retries = 3, delay = 100) {
-  try {
-    return await operation();
-  } catch (error) {
-    if (retries > 0 && error.code === "failed-precondition") {
-      console.log(`Retrying operation in ${delay}ms... (Retries remaining: ${retries - 1})`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return retryOperation(operation, retries - 1, delay * 2); // Exponential backoff
-    } else {
-      throw error; // Re-throw if not a concurrent update or retries exhausted
-    }
-  }
-}
-
-// Usage with retry:
-retryOperation(() => incrementLikes(postId));
-```
-
-
-**More Complex Updates using Transactions:**
-
-For more complex updates involving multiple fields or documents, use transactions to ensure atomicity:
-
-
-```javascript
-async function updatePostWithTransaction(postId, updatedData) {
-  return db.runTransaction(async (transaction) => {
-    const postRef = db.collection("posts").doc(postId);
-    const postSnapshot = await transaction.get(postRef);
-
-    if (!postSnapshot.exists) {
-      throw new Error("Post does not exist!");
-    }
-
-    // Update post data
-    transaction.update(postRef, updatedData);
-    return transaction.get(postRef); // get updated doc
-  });
-}
-
-// Example usage:
-const updatedData = {
-  title: "Updated Post Title",
-  content: "Updated post content...",
-  likes: firebase.firestore.FieldValue.increment(1), // Can combine with other updates
-};
-
-updatePostWithTransaction(postId, updatedData)
-  .then((updatedPost) => {
-      console.log("Post updated successfully!", updatedPost.data());
-  })
-  .catch((error) => {
-      console.error("Transaction failed:", error);
-  });
+//Example usage:
+incrementLikes("postID123")
+  .then(()=> console.log("finished"))
+  .catch(err=> console.log(err))
 
 ```
 
 
 ## Explanation
 
-* **`FieldValue.increment()`:** This is the simplest solution for atomic counter updates.  Firestore handles the concurrent updates internally.  The `failed-precondition` error indicates a concurrent modification, allowing for retry logic.
-* **Transactions:** For more complex updates where you need to guarantee that multiple changes happen together or not at all, use transactions.  They ensure atomicity and data consistency.
-* **Retry Logic:**  Implementing retry logic with exponential backoff helps prevent cascading failures due to transient network issues or high concurrency.
+1. **Optimistic Concurrency Control:** The code first retrieves the current like count before attempting to update it. This is crucial for detecting concurrent updates.
 
+2. **Transactions:** Firestore transactions guarantee atomicity. This means that either all the operations within the transaction succeed, or none do. This prevents partial updates and maintains data consistency. The transaction retrieves the document again *inside* the transaction to ensure no other client has modified it since the initial read. If it has, the transaction will fail, and we can alert the user to retry.
+
+3. **Error Handling:**  The `try...catch` block handles potential errors, including the case where the post doesn't exist or a concurrent update is detected.  Robust error handling is essential for a production-ready application.  Consider implementing retry logic with exponential backoff to handle transient network issues.
 
 ## External References
 
-* [Firestore Transactions](https://firebase.google.com/docs/firestore/manage-data/transactions)
-* [FieldValue.increment()](https://firebase.google.com/docs/firestore/manage-data/add-data#incrementing_a_numeric_field)
-* [Error Handling in Cloud Firestore](https://firebase.google.com/docs/firestore/manage-data/error-handling)
+* [Firestore Transactions Documentation](https://firebase.google.com/docs/firestore/manage-data/transactions)
+* [Firebase Admin SDK Node.js](https://firebase.google.com/docs/admin/setup)
+* [Optimistic Concurrency Control](https://en.wikipedia.org/wiki/Optimistic_concurrency_control)
 
 
-Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
+## Copyright (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
