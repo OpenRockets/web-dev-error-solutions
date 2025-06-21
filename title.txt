@@ -1,1 +1,1 @@
-Efficiently Handling Large Datasets in Firebase Firestore for Blog Posts
+Handling Firestore Data Limits When Storing Large Posts

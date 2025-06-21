@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data Limits When Storing Large Posts
+
 
 This document addresses a common issue developers encounter when storing large text posts (e.g., blog posts, articles) in Firebase Firestore: exceeding the document size limit.  Firestore has a limit on the size of a single document, and exceeding this limit results in errors during write operations.
 
