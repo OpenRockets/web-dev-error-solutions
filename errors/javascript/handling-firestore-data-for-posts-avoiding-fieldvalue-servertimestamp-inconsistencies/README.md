@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data for Posts: Avoiding `FieldValue.serverTimestamp()` Inconsistencies
+
 
 This document addresses a common issue developers encounter when using Firestore's `FieldValue.serverTimestamp()` to record post creation timestamps. The problem stems from potential inconsistencies and race conditions when multiple clients attempt to create posts concurrently, leading to inaccurate timestamps or unexpected ordering.
 
