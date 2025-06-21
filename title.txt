@@ -1,1 +1,1 @@
-CSS Challenge: Recreate a Simple Pricing Table
+Handling Firestore Data Consistency Issues with Multiple Concurrent Updates to Posts
