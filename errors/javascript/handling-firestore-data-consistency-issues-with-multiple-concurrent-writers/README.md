@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data Consistency Issues with Multiple Concurrent Writers
+
 
 This document addresses a common problem developers encounter when managing posts in Firebase Firestore: data inconsistency due to concurrent writes.  Specifically, we'll focus on scenarios where multiple users might attempt to update the same post simultaneously (e.g., incrementing a like count), leading to lost updates or incorrect data.
 
