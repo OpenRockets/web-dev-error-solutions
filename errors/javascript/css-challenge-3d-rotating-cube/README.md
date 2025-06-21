@@ -1,90 +1,111 @@
 # 🐞 CSS Challenge:  3D Rotating Cube
 
 
-This challenge involves creating a 3D rotating cube using only CSS.  We'll leverage CSS transforms and animations to achieve this effect without any JavaScript.  This example uses plain CSS, but could easily be adapted to Tailwind CSS by replacing the inline styles with Tailwind classes.
+This challenge involves creating a 3D rotating cube using only CSS.  We'll use CSS3 transforms and animations to achieve this effect.  No JavaScript is required.
 
 **Description of the Styling:**
 
-The cube is constructed using six divs, each representing a face.  These divs are positioned absolutely within a parent container.  `transform: rotateX`, `transform: rotateY`, and `transform: rotateZ` are used to create the 3D effect.  CSS animations are applied to continuously rotate the cube along the Y-axis.  Different colours are assigned to each face for visual clarity.
+The cube is constructed using six divs, each representing a face. These divs are positioned absolutely within a parent container.  CSS transforms (`rotateX`, `rotateY`, `translateZ`) are used to position and rotate the faces to create the 3D illusion.  `animation` is used to create the continuous rotation effect. The faces are styled with different background colors for clarity.
 
-**Full Code:**
+**Full Code (CSS only):**
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>3D Rotating Cube</title>
-<style>
-body {
-  perspective: 1000px; /* Necessary for 3D effect */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f0f0f0;
+```css
+.container {
+  width: 200px;
+  height: 200px;
+  perspective: 400px; /* Adjust for perspective effect */
+  margin: 50px auto;
 }
 
 .cube {
-  width: 200px;
-  height: 200px;
+  width: 100%;
+  height: 100%;
   position: relative;
-  transform-style: preserve-3d; /* Essential for 3D rendering */
-  animation: rotate 10s linear infinite;
+  transform-style: preserve-3d; /* Important for 3D rendering */
+  animation: rotate 8s linear infinite; /* Adjust animation speed and duration */
 }
 
 .face {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  width: 100px;
+  height: 100px;
+  background-color: #f00; /* Default red */
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 3em;
+  font-size: 2em;
   color: white;
-  backface-visibility: hidden; /* Prevents faces from showing through */
+  backface-visibility: hidden; /* Prevent back faces from showing */
 }
 
-.front { background-color: #007bff; transform: translateZ(100px); }
-.back { background-color: #28a745; transform: translateZ(-100px) rotateY(180deg); }
-.right { background-color: #dc3545; transform: translateX(100px) rotateY(90deg); }
-.left { background-color: #ffc107; transform: translateX(-100px) rotateY(-90deg); }
-.top { background-color: #17a2b8; transform: translateY(-100px) rotateX(90deg); }
-.bottom { background-color: #6c757d; transform: translateY(100px) rotateX(-90deg); }
+.face:nth-child(1) {
+  background-color: #f00; /* Red */
+  transform: translateZ(50px);
+}
+
+.face:nth-child(2) {
+  background-color: #0f0; /* Green */
+  transform: rotateY(90deg) translateZ(50px);
+}
+
+.face:nth-child(3) {
+  background-color: #00f; /* Blue */
+  transform: rotateY(180deg) translateZ(50px);
+}
+
+.face:nth-child(4) {
+  background-color: #ff0; /* Yellow */
+  transform: rotateY(-90deg) translateZ(50px);
+}
+
+.face:nth-child(5) {
+  background-color: #0ff; /* Cyan */
+  transform: rotateX(90deg) translateZ(50px);
+}
+
+.face:nth-child(6) {
+  background-color: #f0f; /* Magenta */
+  transform: rotateX(-90deg) translateZ(50px);
+}
+
 
 @keyframes rotate {
-  from { transform: rotateY(0deg); }
-  to { transform: rotateY(360deg); }
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
 }
-</style>
-</head>
-<body>
-<div class="cube">
-  <div class="face front">Front</div>
-  <div class="face back">Back</div>
-  <div class="face right">Right</div>
-  <div class="face left">Left</div>
-  <div class="face top">Top</div>
-  <div class="face bottom">Bottom</div>
+
+/* HTML Structure (Example):*/
+<div class="container">
+  <div class="cube">
+    <div class="face">1</div>
+    <div class="face">2</div>
+    <div class="face">3</div>
+    <div class="face">4</div>
+    <div class="face">5</div>
+    <div class="face">6</div>
+  </div>
 </div>
-</body>
-</html>
+
 ```
 
 **Explanation:**
 
-* **`perspective`:** This property on the `body` creates the 3D viewing space.
-* **`transform-style: preserve-3d;`:** This is crucial; it ensures that child elements are rendered in 3D space.
-* **`translateZ`:** Moves elements along the Z-axis (depth).
-* **`rotateX`, `rotateY`, `rotateZ`:** Rotate elements around the respective axes.
-* **`backface-visibility: hidden;`:** Prevents the back faces from being visible when rotated.
-* **`@keyframes rotate`:** Defines the animation that rotates the cube continuously.
+* **`perspective`:** This property on the container creates the 3D effect.  Adjusting this value changes the perspective.
+* **`transform-style: preserve-3d;`:** This is crucial; it tells the browser to render the child elements in 3D space.
+* **`rotateX`, `rotateY`, `translateZ`:** These transforms position each face in 3D space. `translateZ` moves the face along the z-axis (depth), creating the cube's structure. `rotateX` and `rotateY` rotate around the x and y axes, respectively.
+* **`backface-visibility: hidden;`:** Prevents the back faces of the cube from being visible.
+* **`animation`:** This creates the continuous rotation. The `@keyframes` rule defines the animation steps.
 
 
-**Links to Resources to Learn More:**
+**Resources to Learn More:**
 
 * **MDN Web Docs - CSS Transforms:** [https://developer.mozilla.org/en-US/docs/Web/CSS/transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 * **MDN Web Docs - CSS Animations:** [https://developer.mozilla.org/en-US/docs/Web/CSS/animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation)
-* **CSS-Tricks - 3D Transforms:** [https://css-tricks.com/almanac/properties/t/transform/](https://css-tricks.com/almanac/properties/t/transform/)
+* **CSS-Tricks - 3D Transforms:** [https://css-tricks.com/almanac/properties/t/transform/](https://css-tricks.com/almanac/properties/t/transform/) (Search for 3D related articles on this site)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
