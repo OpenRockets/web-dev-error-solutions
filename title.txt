@@ -1,1 +1,1 @@
-Handling Firestore Data Storage Limitations When Posting Large Amounts of Data
+Efficiently Storing and Retrieving Large Posts in Firebase Firestore
