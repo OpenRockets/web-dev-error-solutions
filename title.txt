@@ -1,1 +1,1 @@
-Handling Firestore Data Consistency Issues with Concurrent Updates in a Blog Post Application
+Handling Firestore Data Consistency Issues with Concurrent Updates in a Blogging App
