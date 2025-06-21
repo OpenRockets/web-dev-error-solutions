@@ -1,1 +1,1 @@
-Handling Firestore Data Duplicates When Creating Posts
+CSS Challenge: Responsive Pricing Table

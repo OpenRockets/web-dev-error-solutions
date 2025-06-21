@@ -1,114 +1,117 @@
 # 🐞 CSS Challenge: Responsive Pricing Table
 
 
-This challenge involves creating a responsive pricing table using CSS.  We'll build a table with three pricing plans (Basic, Pro, and Premium) that adapts gracefully to different screen sizes.  We'll use plain CSS for this example, focusing on fundamental techniques like flexbox and media queries.
+This challenge involves creating a responsive pricing table using CSS. The table should have three plans (Basic, Pro, and Premium) with different features and prices.  The design should be clean, visually appealing, and adapt seamlessly to different screen sizes. We'll use plain CSS for this example, but the principles can easily be adapted to Tailwind CSS.
 
-**Description of the Styling:**
+## Styling Description
 
-The pricing table will consist of three columns, each representing a pricing plan. Each column will contain the plan name, a list of features, the price, and a call-to-action button.  The design will be clean and modern, using a subtle color palette. The table should be responsive, adjusting its layout smoothly on smaller screens, potentially stacking the columns vertically on mobile.
-
-**Full Code:**
-
-```css
-body {
-  font-family: sans-serif;
-}
-
-.pricing-table {
-  display: flex;
-  justify-content: space-around; /* Distribute columns evenly */
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
-}
-
-.pricing-plan {
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 20px;
-  margin: 10px;
-  text-align: center;
-  min-width: 250px; /* Ensure minimum width for readability */
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.pricing-plan h2 {
-  margin-bottom: 10px;
-}
-
-.pricing-plan ul {
-  list-style: none;
-  padding: 0;
-}
-
-.pricing-plan li {
-  margin-bottom: 5px;
-}
-
-.pricing-plan .price {
-  font-size: 1.5em;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.pricing-plan button {
-  background-color: #4CAF50;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
+The pricing table will consist of a container with three columns, each representing a plan. Each plan will have a title, a list of features, a price, and a call-to-action button.  We'll use shadows, gradients, and hover effects to enhance the visual appeal.  Responsiveness will be achieved using media queries to adjust the layout for smaller screens, potentially stacking the columns vertically.
 
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .pricing-table {
-    flex-direction: column; /* Stack columns vertically */
-  }
-  .pricing-plan {
-    min-width: auto; /* Remove minimum width constraint */
-    margin: 10px 0;
-  }
-}
-```
+## Full Code
 
 ```html
 <!DOCTYPE html>
 <html>
 <head>
 <title>Responsive Pricing Table</title>
-<link rel="stylesheet" href="style.css">
+<style>
+body {
+  font-family: sans-serif;
+}
+
+.pricing-table {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.plan {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 300px; /* Adjust as needed */
+  text-align: center;
+}
+
+.plan h2 {
+  color: #333;
+}
+
+.plan ul {
+  list-style: none;
+  padding: 0;
+}
+
+.plan li {
+  margin-bottom: 10px;
+}
+
+.plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.plan button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.plan button:hover {
+  background-color: #0069d9;
+}
+
+/* Media Query for smaller screens */
+@media (max-width: 768px) {
+  .pricing-table {
+    flex-direction: column; /* Stack columns vertically */
+  }
+  .plan {
+    width: 90%; /* Adjust width for smaller screens */
+    margin: 10px auto;
+  }
+}
+</style>
 </head>
 <body>
 
 <div class="pricing-table">
-  <div class="pricing-plan">
+  <div class="plan">
     <h2>Basic</h2>
     <ul>
-      <li>10GB Storage</li>
-      <li>1 User</li>
-      <li>Email Support</li>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
     </ul>
     <p class="price">$9/month</p>
     <button>Sign Up</button>
   </div>
-  <div class="pricing-plan">
+  <div class="plan">
     <h2>Pro</h2>
     <ul>
-      <li>50GB Storage</li>
-      <li>5 Users</li>
-      <li>Priority Support</li>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
     </ul>
-    <p class="price">$49/month</p>
+    <p class="price">$19/month</p>
     <button>Sign Up</button>
   </div>
-  <div class="pricing-plan">
+  <div class="plan">
     <h2>Premium</h2>
     <ul>
-      <li>Unlimited Storage</li>
-      <li>Unlimited Users</li>
-      <li>24/7 Support</li>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
     </ul>
-    <p class="price">$99/month</p>
+    <p class="price">$29/month</p>
     <button>Sign Up</button>
   </div>
 </div>
@@ -117,16 +120,16 @@ body {
 </html>
 ```
 
-**Explanation:**
+## Explanation
 
-* **Flexbox:** The `flex` properties are used for easy column arrangement and responsiveness.  `flex-wrap` allows the columns to wrap onto multiple lines on smaller screens.
-* **Media Queries:** The `@media` rule targets screens smaller than 768 pixels wide, changing the `flex-direction` to column to stack the pricing plans vertically.
-* **CSS Selectors:**  Specific CSS selectors target elements within the pricing plans for styling (e.g., `h2`, `ul`, `.price`, `button`).
+The code utilizes flexbox for layout, making it easy to manage the arrangement of the pricing plans.  Media queries ensure responsiveness by changing the flex direction to column on smaller screens.  The CSS provides basic styling for the table, plans, and buttons, including hover effects.  This is a foundational example; further enhancements could include more sophisticated styling, animations, and potentially using a CSS framework like Tailwind CSS to streamline the process.
 
-**Links to Resources to Learn More:**
 
-* **CSS Flexbox:** [MDN Web Docs - CSS Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
-* **CSS Media Queries:** [MDN Web Docs - CSS Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+## Resources to Learn More
+
+* **CSS Flexbox:** [MDN Web Docs - Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+* **CSS Media Queries:** [MDN Web Docs - Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **Tailwind CSS:** [Tailwind CSS Official Website](https://tailwindcss.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

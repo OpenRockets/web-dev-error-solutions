@@ -1,96 +1,133 @@
 
-## Description of the Error
+This challenge involves creating a responsive pricing table using CSS. The table should have three plans (Basic, Pro, and Premium) with different features and prices.  The design should be clean, visually appealing, and adapt seamlessly to different screen sizes. We'll use plain CSS for this example, but the principles can easily be adapted to Tailwind CSS.
 
-A common issue when using Firebase Firestore to store posts (e.g., blog posts, social media updates) is the accidental creation of duplicate entries.  This can occur due to various reasons, including:
+## Styling Description
 
-* **Network issues:** A network interruption might cause a client to send the same post data twice without realizing the first attempt succeeded.
-* **UI glitches:**  A user might accidentally submit the same post multiple times due to a malfunctioning UI.
-* **Concurrency issues:** If multiple users are trying to create posts with similar data simultaneously, there's a possibility of duplicates if not handled properly.
+The pricing table will consist of a container with three columns, each representing a plan. Each plan will have a title, a list of features, a price, and a call-to-action button.  We'll use shadows, gradients, and hover effects to enhance the visual appeal.  Responsiveness will be achieved using media queries to adjust the layout for smaller screens, potentially stacking the columns vertically.
 
 
-This leads to inconsistencies in your database and can negatively impact application performance and data integrity.
+## Full Code
 
-
-## Fixing the Problem:  Using Transactions and Unique Identifiers
-
-
-The most robust solution involves using Firestore transactions to ensure atomicity and uniqueness.  We'll combine this with a unique identifier for each post to prevent duplicates reliably.  Here's a step-by-step guide:
-
-
-```javascript
-import { db } from './firebaseConfig'; //Import your Firebase configuration
-import { getFirestore, collection, addDoc, doc, getDoc, runTransaction, getDocs, query, where } from "firebase/firestore";
-
-// Function to generate a unique post ID (UUID recommended)
-function generatePostId() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responsive Pricing Table</title>
+<style>
+body {
+  font-family: sans-serif;
 }
 
+.pricing-table {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
 
-async function createPost(postData) {
-  const postId = generatePostId(); // Generate unique ID
-  const postRef = doc(db, "posts", postId);
+.plan {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 300px; /* Adjust as needed */
+  text-align: center;
+}
 
-  try {
-      await runTransaction(db, async (transaction) => {
-      const docSnap = await transaction.get(postRef);
+.plan h2 {
+  color: #333;
+}
 
-      if (docSnap.exists()) {
-          console.log("Post with ID already exists.  Duplicate prevented.");
-          throw new Error("Post already exists"); // Explicitly throw an error to handle the duplicate
-      } else {
-          // Add the post data along with the unique ID
-          transaction.set(postRef, { ...postData, postId });
-      }
-  });
-    console.log("Post created successfully with ID:", postId);
-  } catch (error) {
-    console.error("Error creating post:", error);
-    //Handle the error appropriately - e.g., display an error message to the user
+.plan ul {
+  list-style: none;
+  padding: 0;
+}
+
+.plan li {
+  margin-bottom: 10px;
+}
+
+.plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.plan button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.plan button:hover {
+  background-color: #0069d9;
+}
+
+/* Media Query for smaller screens */
+@media (max-width: 768px) {
+  .pricing-table {
+    flex-direction: column; /* Stack columns vertically */
+  }
+  .plan {
+    width: 90%; /* Adjust width for smaller screens */
+    margin: 10px auto;
   }
 }
+</style>
+</head>
+<body>
 
-// Example Usage
-const newPostData = {
-  title: "My New Post",
-  content: "This is the content of my new post.",
-  author: "John Doe",
-  timestamp: new Date(),
-};
+<div class="pricing-table">
+  <div class="plan">
+    <h2>Basic</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+    </ul>
+    <p class="price">$9/month</p>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Pro</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+    </ul>
+    <p class="price">$19/month</p>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Premium</h2>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+    </ul>
+    <p class="price">$29/month</p>
+    <button>Sign Up</button>
+  </div>
+</div>
 
-createPost(newPostData);
+</body>
+</html>
 ```
 
+## Explanation
+
+The code utilizes flexbox for layout, making it easy to manage the arrangement of the pricing plans.  Media queries ensure responsiveness by changing the flex direction to column on smaller screens.  The CSS provides basic styling for the table, plans, and buttons, including hover effects.  This is a foundational example; further enhancements could include more sophisticated styling, animations, and potentially using a CSS framework like Tailwind CSS to streamline the process.
 
 
-## Explanation:
+## Resources to Learn More
 
-1. **`generatePostId()`:** This function generates a universally unique identifier (UUID) for each post.  Using a library like `uuid` is also a good practice for more robust UUID generation.
-
-
-2. **`createPost(postData)`:** This asynchronous function handles the post creation process.
-
-
-3. **`runTransaction(db, async (transaction) => { ... })`:** This crucial part ensures atomicity. The transaction either completes entirely, creating the post, or it rolls back if an error occurs, preventing partial writes and duplicates.
-
-
-4. **`transaction.get(postRef)`:**  This checks if a post with the generated ID already exists within the transaction.
-
-
-5. **`if (docSnap.exists()) { ... }`:**  If a duplicate is detected, an error is thrown, preventing the creation of the duplicate post.
-
-
-6. **`transaction.set(postRef, { ...postData, postId })`:** If no duplicate exists, the post data (including the generated `postId`) is added to Firestore.
-
-
-
-## External References:
-
-* [Firestore Transactions Documentation](https://firebase.google.com/docs/firestore/manage-data/transactions)
-* [UUID Libraries (e.g., for Node.js)](https://www.npmjs.com/package/uuid)
+* **CSS Flexbox:** [MDN Web Docs - Flexbox](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Basic_Concepts_of_Flexbox)
+* **CSS Media Queries:** [MDN Web Docs - Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
+* **Tailwind CSS:** [Tailwind CSS Official Website](https://tailwindcss.com/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
