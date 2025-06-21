@@ -1,1 +1,1 @@
-Efficiently Handling Large Post Datasets in Firebase Firestore
+CSS Challenge: Responsive Pricing Table with Tailwind CSS
