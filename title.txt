@@ -1,1 +1,1 @@
-CSS Challenge:  The "Shimmering Card"
+Efficiently Handling Large Post Datasets in Firebase Firestore
