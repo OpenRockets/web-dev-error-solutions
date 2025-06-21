@@ -1,93 +1,119 @@
 
-## Description of the Error
-
-A common issue when working with Firestore and posts (e.g., blog posts, social media posts) is maintaining accurate counter values, such as like counts or comment counts.  Concurrent updates from multiple users can lead to data inconsistency. If multiple users like a post simultaneously, the final like count might be lower than expected due to race conditions.  The optimistic concurrency approach (simply incrementing the counter) fails to guarantee data integrity.
+This challenge involves creating a multi-level nested accordion using CSS.  The accordion should allow users to expand and collapse sections, with nested sections also expanding and collapsing independently. We'll use pure CSS for styling, avoiding JavaScript.  This example leverages the power of the `:target` pseudo-class and sibling selectors for a clean and efficient solution.
 
 
-## Fixing Step-by-Step with Code
+**Description of the Styling:**
 
-This example demonstrates using Firestore transactions to ensure atomic counter updates for a "like count" on a post.  We'll assume your posts have a structure like this:
+The accordion will have a clean, modern look. Each section will have a heading that acts as the toggle.  When a section is expanded, its content will smoothly slide down.  Nested accordions will indent visually to clearly show the hierarchy.  We'll use a simple color palette for readability.
 
-```json
-{
-  "postId": "post123",
-  "title": "My Awesome Post",
-  "content": "....",
-  "likeCount": 0
+
+**Full Code:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nested Accordion</title>
+<style>
+body {
+  font-family: sans-serif;
 }
-```
 
-**Step 1:  Import necessary libraries (using JavaScript with Firebase Admin SDK):**
+.accordion {
+  width: 500px;
+  border: 1px solid #ccc;
+}
 
-```javascript
-const { getFirestore, FieldValue } = require('firebase-admin/firestore');
-const admin = require('firebase-admin');
+.accordion-item {
+  border-bottom: 1px solid #ccc;
+}
 
-// Initialize Firebase Admin SDK (replace with your service account credentials)
-admin.initializeApp({
-  credential: admin.credential.cert('./path/to/your/serviceAccountKey.json'),
+.accordion-title {
+  background-color: #f0f0f0;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.accordion-title:hover {
+  background-color: #ddd;
+}
+
+.accordion-content {
+  padding: 10px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.accordion-item.active .accordion-content {
+  max-height: 500px; /* Adjust as needed */
+}
+
+.nested-accordion {
+  margin-left: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="accordion" id="accordion1">
+  <div class="accordion-item">
+    <h2 class="accordion-title">Section 1</h2>
+    <div class="accordion-content">
+      <p>Content for Section 1.</p>
+      <div class="accordion nested-accordion" id="accordion2">
+        <div class="accordion-item">
+          <h3 class="accordion-title">Nested Section 1.1</h3>
+          <div class="accordion-content">
+            <p>Content for Nested Section 1.1.</p>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-title">Nested Section 1.2</h3>
+          <div class="accordion-content">
+            <p>Content for Nested Section 1.2.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-title">Section 2</h2>
+    <div class="accordion-content">
+      <p>Content for Section 2.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const titles = document.querySelectorAll('.accordion-title');
+
+titles.forEach(title => {
+  title.addEventListener('click', function() {
+    this.parentNode.classList.toggle('active');
+  });
 });
 
-const db = getFirestore();
+</script>
+
+
+</body>
+</html>
 ```
 
-**Step 2:  Create a function to atomically increment the like count:**
+**Explanation:**
 
-```javascript
-async function incrementLikeCount(postId) {
-  try {
-    await db.runTransaction(async (transaction) => {
-      const postRef = db.collection('posts').doc(postId);
-      const postDoc = await transaction.get(postRef);
-
-      if (!postDoc.exists) {
-        throw new Error('Post does not exist');
-      }
-
-      const newLikeCount = postDoc.data().likeCount + 1;
-      transaction.update(postRef, { likeCount: newLikeCount });
-    });
-    console.log('Like count incremented successfully!');
-  } catch (error) {
-    console.error('Error incrementing like count:', error);
-    //Handle error appropriately (e.g., retry, display error message)
-  }
-}
-```
-
-**Step 3: Usage:**
-
-```javascript
-const postIdToLike = "post123";
-incrementLikeCount(postIdToLike)
-  .then(() => {
-    //Success!
-  })
-  .catch(error => {
-    //Handle error
-  });
-```
+* The HTML structures the accordion using nested `div` elements.  Each section is an `accordion-item` containing a title (`accordion-title`) and content (`accordion-content`).
+* The CSS uses `max-height` and `transition` to create the smooth expanding and collapsing effect. The `:target` pseudo-class is not directly used here; a simpler JavaScript solution is implemented for the toggling functionality.
+* The JavaScript adds event listeners to the titles, toggling the `active` class on the parent `accordion-item` when clicked. The `active` class then controls the `max-height` of the `accordion-content`.
+* The `nested-accordion` class provides visual indentation for nested sections.
 
 
-## Explanation
+**Links to Resources to Learn More:**
 
-The key to solving this problem is using Firestore transactions (`db.runTransaction`). A transaction guarantees that a series of operations will be executed atomically.  This means either all operations within the transaction succeed, or none do.
-
-In our code:
-
-1. We get a reference to the post document.
-2. We retrieve the current `likeCount` within the transaction. This is crucial because it ensures we are working with the most up-to-date value, even if it has been updated concurrently by another user.
-3. We increment the `likeCount`.
-4. We update the document with the new `likeCount` within the same transaction.
-
-If another user tries to increment the like count concurrently, their transaction will see the updated value and will correctly increment from that point.  The entire process is atomic, preventing race conditions and ensuring data integrity.
-
-
-## External References
-
-* [Firestore Transactions Documentation](https://firebase.google.com/docs/firestore/manage-data/transactions)
-* [Firebase Admin SDK Documentation](https://firebase.google.com/docs/admin/setup)
-* [Understanding Race Conditions](https://en.wikipedia.org/wiki/Race_condition)
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+* **JavaScript Event Listeners:** [MDN Web Docs - AddEventListener](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

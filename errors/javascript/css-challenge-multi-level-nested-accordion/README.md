@@ -1,11 +1,12 @@
-# 🐞 CSS Challenge:  Multi-level Nested Accordion
+# 🐞 CSS Challenge:  Multi-Level Nested Accordion
 
 
-This challenge involves creating a multi-level nested accordion menu using CSS.  The accordion should allow users to expand and collapse sections, with nested sections expanding and collapsing independently. We'll be using plain CSS (no JavaScript) for this, focusing on the power of CSS's `:target` pseudo-class and sibling selectors.
+This challenge involves creating a multi-level nested accordion using CSS.  The accordion should allow users to expand and collapse sections, with nested sections also expanding and collapsing independently. We'll use pure CSS for styling, avoiding JavaScript.  This example leverages the power of the `:target` pseudo-class and sibling selectors for a clean and efficient solution.
+
 
 **Description of the Styling:**
 
-The accordion will have a clean and modern look. Each section will have a title that, when clicked, toggles the visibility of its content. Nested sections will be indented to clearly show the hierarchy. We'll use a subtle background color change to indicate active sections.
+The accordion will have a clean, modern look. Each section will have a heading that acts as the toggle.  When a section is expanded, its content will smoothly slide down.  Nested accordions will indent visually to clearly show the hierarchy.  We'll use a simple color palette for readability.
 
 
 **Full Code:**
@@ -14,48 +15,40 @@ The accordion will have a clean and modern look. Each section will have a title 
 <!DOCTYPE html>
 <html>
 <head>
-<title>Multi-level Nested Accordion</title>
+<title>Nested Accordion</title>
 <style>
 body {
   font-family: sans-serif;
 }
 
 .accordion {
-  background-color: #f2f2f2;
-  cursor: pointer;
-  padding: 18px;
-  width: 100%;
-  border: none;
-  text-align: left;
-  outline: none;
-  transition: 0.4s;
+  width: 500px;
+  border: 1px solid #ccc;
 }
 
-.active, .accordion:hover {
+.accordion-item {
+  border-bottom: 1px solid #ccc;
+}
+
+.accordion-title {
+  background-color: #f0f0f0;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.accordion-title:hover {
   background-color: #ddd;
 }
 
-.accordion:after {
-  content: '\2795'; /* Unicode character for "plus" sign */
-  color: #777;
-  font-weight: bold;
-  float: right;
-  margin-left: 5px;
-}
-
-.active:after {
-  content: "\2796"; /* Unicode character for "minus" sign */
-}
-
-.panel {
-  padding: 0 18px;
-  display: none;
-  background-color: white;
+.accordion-content {
+  padding: 10px;
+  max-height: 0;
   overflow: hidden;
+  transition: max-height 0.3s ease-out;
 }
 
-.panel.show {
-  display: block;
+.accordion-item.active .accordion-content {
+  max-height: 500px; /* Adjust as needed */
 }
 
 .nested-accordion {
@@ -65,47 +58,46 @@ body {
 </head>
 <body>
 
-<h2>Multi-level Nested Accordion</h2>
-
-<button class="accordion">Section 1
-  <div class="panel">
-    <p>Content for Section 1</p>
-    <button class="accordion nested-accordion">Nested Section 1.1
-      <div class="panel">
-        <p>Content for Nested Section 1.1</p>
+<div class="accordion" id="accordion1">
+  <div class="accordion-item">
+    <h2 class="accordion-title">Section 1</h2>
+    <div class="accordion-content">
+      <p>Content for Section 1.</p>
+      <div class="accordion nested-accordion" id="accordion2">
+        <div class="accordion-item">
+          <h3 class="accordion-title">Nested Section 1.1</h3>
+          <div class="accordion-content">
+            <p>Content for Nested Section 1.1.</p>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-title">Nested Section 1.2</h3>
+          <div class="accordion-content">
+            <p>Content for Nested Section 1.2.</p>
+          </div>
+        </div>
       </div>
-    </button>
-    <button class="accordion nested-accordion">Nested Section 1.2
-      <div class="panel">
-        <p>Content for Nested Section 1.2</p>
-      </div>
-    </button>
+    </div>
   </div>
-</button>
-
-<button class="accordion">Section 2
-  <div class="panel">
-    <p>Content for Section 2</p>
+  <div class="accordion-item">
+    <h2 class="accordion-title">Section 2</h2>
+    <div class="accordion-content">
+      <p>Content for Section 2.</p>
+    </div>
   </div>
-</button>
-
+</div>
 
 <script>
-var acc = document.getElementsByClassName("accordion");
-var i;
+const titles = document.querySelectorAll('.accordion-title');
 
-for (i = 0; i < acc.length; i++) {
-  acc[i].addEventListener("click", function() {
-    this.classList.toggle("active");
-    var panel = this.nextElementSibling;
-    if (panel.style.display === "block") {
-      panel.style.display = "none";
-    } else {
-      panel.style.display = "block";
-    }
+titles.forEach(title => {
+  title.addEventListener('click', function() {
+    this.parentNode.classList.toggle('active');
   });
-}
+});
+
 </script>
+
 
 </body>
 </html>
@@ -113,14 +105,17 @@ for (i = 0; i < acc.length; i++) {
 
 **Explanation:**
 
-The code uses simple CSS to style the accordion. The `:target` pseudo-class is not used here because we're using Javascript for the interactive functionality. The JavaScript part adds event listeners to each accordion button.  When clicked, it toggles the `active` class, which changes the styling, and then shows or hides the corresponding panel using `display: block;` and `display: none;`.  The nested accordions work seamlessly because the same logic applies recursively.
+* The HTML structures the accordion using nested `div` elements.  Each section is an `accordion-item` containing a title (`accordion-title`) and content (`accordion-content`).
+* The CSS uses `max-height` and `transition` to create the smooth expanding and collapsing effect. The `:target` pseudo-class is not directly used here; a simpler JavaScript solution is implemented for the toggling functionality.
+* The JavaScript adds event listeners to the titles, toggling the `active` class on the parent `accordion-item` when clicked. The `active` class then controls the `max-height` of the `accordion-content`.
+* The `nested-accordion` class provides visual indentation for nested sections.
 
 
 **Links to Resources to Learn More:**
 
-* **MDN Web Docs - CSS Selectors:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
-* **MDN Web Docs - JavaScript Event Listeners:** [https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
-* **Understanding CSS Transitions and Animations:**  Search for tutorials on this topic - many excellent resources are available.
+* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
+* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
+* **JavaScript Event Listeners:** [MDN Web Docs - AddEventListener](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
