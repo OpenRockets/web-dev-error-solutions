@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Animated Gradient Background with Tailwind CSS
+
 
 This challenge involves creating a dynamically animated background using CSS gradients and Tailwind CSS for efficient styling.  The animation will smoothly transition between two predefined gradient colors, creating a visually appealing effect. We'll leverage Tailwind's utility classes to streamline the process and improve code readability.
 
