@@ -1,83 +1,118 @@
 
-This challenge focuses on building a card with a subtle 3D effect using only CSS.  We'll achieve this using box-shadow, transforms, and transitions to create a visually appealing and interactive element.  This example uses plain CSS3, but could easily be adapted to use a CSS framework like Tailwind.
+## Problem Description:  Performance Issues with Large Post Data
+
+Developers often encounter performance bottlenecks when storing and retrieving large amounts of data, especially posts containing images and rich text, directly within Firestore documents.  This can lead to slow loading times for users, increased latency, and exceeding Firestore's document size limits (1 MB).  Directly embedding large images within documents is highly inefficient and can cause significant performance degradation.
 
 
-**Description of the Styling:**
+## Solution:  Storing Images Separately and Using References
 
-The card will have a clean, minimalist design.  The 3D effect is achieved through a subtle shadow and a slight transformation upon hover.  The card will have rounded corners and a consistent color scheme.  The hover effect will subtly lift the card and intensify the shadow, giving the illusion of depth.
+The optimal approach involves decoupling image data from the main post document. We'll store image metadata (URLs) in the Firestore document and store the actual images in Cloud Storage. This allows for efficient querying of post data without loading large image files unnecessarily.
 
 
-**Full Code:**
+## Step-by-Step Code Solution (using Node.js and Firebase Admin SDK)
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>3D Card</title>
-<style>
-.card {
-  width: 300px;
-  height: 200px;
-  background-color: #f0f0f0;
-  border-radius: 10px;
-  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2); /*Initial shadow*/
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
-  overflow: hidden; /*Keeps content within card bounds*/
+
+**1. Project Setup:**
+
+Ensure you have the Firebase Admin SDK installed:
+
+```bash
+npm install firebase-admin
+```
+
+Initialize the Firebase Admin SDK:
+
+```javascript
+const admin = require('firebase-admin');
+const serviceAccount = require('./path/to/serviceAccountKey.json'); //Replace with your service account key
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  storageBucket: "your-storage-bucket.appspot.com" //Replace with your storage bucket
+});
+
+const db = admin.firestore();
+const bucket = admin.storage().bucket();
+```
+
+**2. Storing a Post with an Image:**
+
+```javascript
+async function createPost(postTitle, postContent, imageFile) {
+  try {
+    //Upload image to Cloud Storage
+    const file = bucket.file(`posts/${Date.now()}-${imageFile.originalname}`);
+    const stream = file.createWriteStream({
+      metadata: {
+        contentType: imageFile.mimetype,
+      },
+    });
+
+    stream.on('error', (err) => {
+      console.error('Error uploading image:', err);
+      throw err;
+    });
+
+    stream.on('finish', async () => {
+      //Make image public
+      await file.makePublic();
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
+
+      //Store post metadata in Firestore
+      await db.collection('posts').add({
+        title: postTitle,
+        content: postContent,
+        imageUrl: publicUrl,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      console.log('Post created successfully!');
+    });
+    stream.end(imageFile.buffer);
+  } catch (error) {
+      console.error('Error creating post:', error);
+      throw error;
+  }
 }
-
-.card:hover {
-  transform: translateY(-5px); /*Lift on hover*/
-  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.4); /*Intensified shadow on hover*/
-  cursor: pointer; /* Indicate interactivity */
-}
-
-.card-content {
-  padding: 20px;
-  text-align: center;
-}
-
-.card-title {
-  font-size: 1.5em;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.card-text {
-  font-size: 1em;
-  color: #333;
-}
-
-</style>
-</head>
-<body>
-
-<div class="card">
-  <div class="card-content">
-    <h2 class="card-title">My Awesome Card</h2>
-    <p class="card-text">This is a simple card with a 3D effect.</p>
-  </div>
-</div>
-
-</body>
-</html>
 ```
 
 
-**Explanation:**
+**3. Retrieving Posts:**
 
-* **`box-shadow`:**  Creates the shadow effect. The values control the horizontal offset, vertical offset, blur radius, and color/opacity.
-* **`transform: translateY(-5px)`:**  Moves the card slightly upwards on hover, creating the lift effect.
-* **`transition`:** Specifies the smooth transition for the `transform` and `box-shadow` properties, making the hover effect animated.
-* **`border-radius`:** Creates rounded corners for a modern look.
-* **Classes:** The HTML uses semantic classes to structure the card content.
+```javascript
+async function getPosts() {
+  const snapshot = await db.collection('posts').orderBy('timestamp', 'desc').get();
+  const posts = [];
+  snapshot.forEach(doc => {
+    posts.push({ id: doc.id, ...doc.data() });
+  });
+  return posts;
+}
+```
+
+**4. Example Usage (assuming you have a way to handle image uploads):**
 
 
-**Links to Resources to Learn More:**
+```javascript
+// Example usage - Replace with your image handling logic
+const imageFile = { originalname: 'image.jpg', mimetype: 'image/jpeg', buffer: Buffer.from('...', 'base64') }; //Replace with actual image data
 
-* **CSS Box Shadow:** [MDN Web Docs - box-shadow](https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow)
-* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/transition)
-* **Tailwind CSS:** [Tailwind CSS Docs](https://tailwindcss.com/docs/installation) (if you want to adapt this to Tailwind)
+createPost('My Awesome Post', 'This is the content of my post',imageFile)
+  .then(() => getPosts().then(posts => console.log(posts)))
+  .catch(error => console.error(error));
+```
+
+## Explanation:
+
+This solution avoids storing large images directly in Firestore by using Cloud Storage.  Firestore is optimized for structured data, while Cloud Storage is built for storing binary data like images.  This separation improves query performance and scalability, allowing your application to handle a much larger number of posts efficiently. The `makePublic()` method ensures the images are accessible publicly.  Remember to adjust the security rules in Firebase to ensure only authorized users can access and modify data.
+
+
+## External References:
+
+* [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
+* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
+* [Node.js Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
+
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
