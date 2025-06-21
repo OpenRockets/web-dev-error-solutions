@@ -1,1 +1,1 @@
-Handling Firestore Data Limits When Storing Large Posts
+CSS Challenge:  Responsive Navigation Bar with Subtle Animations
