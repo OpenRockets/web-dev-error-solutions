@@ -1,1 +1,1 @@
-Handling Firestore's "out of range" Error When Storing Large Posts
+Handling Firestore Data Retrieval Errors for Blog Posts
