@@ -1,1 +1,1 @@
-CSS Challenge:  Animated Expanding Card with Tailwind CSS
+Handling Firestore's `FieldValue.serverTimestamp()` Inconsistency with Client-Side Timestamps
