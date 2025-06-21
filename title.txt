@@ -1,1 +1,1 @@
-Handling Firestore Data Consistency Issues with Multiple Concurrent Updates to Posts
+CSS Challenge: Responsive Pricing Table with Tailwind CSS
