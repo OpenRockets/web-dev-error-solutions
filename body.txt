@@ -1,63 +1,125 @@
 
-This challenge focuses on creating a visually appealing card that simulates a 3D effect using only CSS. We'll achieve this through box-shadow manipulation and subtle transformations.  This example uses plain CSS3, but similar effects can be achieved with Tailwind CSS by utilizing its utility classes.
+## Description of the Error
 
-**Description of the Styling:**
+When storing large amounts of data, particularly rich text content or large media file URLs within your Firestore documents representing posts, you might encounter an error similar to `"DATA_LOSS: Document size exceeds the maximum size (currently 1 MiB)"`.  This "out of range" error essentially means your Firestore document has exceeded the 1 Megabyte size limit.  This is a common problem when dealing with detailed blog posts, articles, or social media updates containing extensive text and numerous image references.
 
-The goal is to create a card that appears to be slightly elevated and angled, giving it a three-dimensional look. This will be achieved primarily through strategically placed box-shadows to create depth and a subtle `transform: rotateX()` to suggest an angle. We will also use gradients for a modern feel.
+## Fixing the Error: Step-by-Step Code
+
+This solution demonstrates how to address the size limitation by separating large post content into smaller, manageable chunks. We'll use a separate collection to store the post body text.
+
+**1. Data Structure Changes:**
+
+Instead of storing the entire post body in a single field within the main `posts` collection, we'll create a new collection called `post_bodies`. Each document in `post_bodies` will contain a segment of the post's content.  The main `posts` collection will store metadata (title, author, timestamps, etc.) and a reference to the `post_bodies` documents.
+
+**2. Firebase Setup (assuming you're using JavaScript):**
+
+```javascript
+// Import necessary Firebase modules
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, addDoc, doc, getDoc, setDoc, getDocs } from "firebase/firestore";
+
+// Your Firebase configuration (replace with your actual config)
+const firebaseConfig = {
+  // ... your firebase config ...
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+```
+
+**3. Function to Store a Post:**
+
+```javascript
+async function storePost(postData) {
+  try {
+    // 1. Store metadata in the 'posts' collection
+    const postsRef = collection(db, "posts");
+    const postMetadata = {
+      title: postData.title,
+      author: postData.author,
+      timestamp: new Date(),
+      // Store references to post body segments
+      bodySegments: []
+    };
+
+    const postDocRef = await addDoc(postsRef, postMetadata);
 
 
-**Full Code (CSS3):**
+    // 2. Split the post body into chunks (adjust chunkSize as needed)
+    const chunkSize = 500; // Characters per chunk
+    const bodyChunks = splitStringIntoChunks(postData.body, chunkSize);
 
-```css
-.card {
-  width: 300px;
-  height: 200px;
-  background: linear-gradient(135deg, #f0f0f0, #d0d0d0);
-  border-radius: 10px;
-  box-shadow: 
-    5px 5px 10px rgba(0, 0, 0, 0.2), /* Main shadow for depth */
-    -5px -5px 10px rgba(255, 255, 255, 0.3); /* Inner shadow for lift */
-  transform: rotateX(3deg); /* Slight rotation for 3D effect */
-  padding: 20px;
-  color: #333;
+
+    // 3. Store each chunk in the 'post_bodies' collection
+    const postBodyRef = collection(db, "post_bodies");
+    for (const [index, chunk] of bodyChunks.entries()) {
+        const bodyChunkDocRef = await addDoc(postBodyRef, {
+            postId: postDocRef.id, //Link back to main post
+            segmentIndex: index,
+            text: chunk,
+        });
+        postMetadata.bodySegments.push({id:bodyChunkDocRef.id, index: index});
+    }
+
+    // Update the postMetadata in Firestore with all the segment IDs
+    await setDoc(doc(db, "posts", postDocRef.id), postMetadata);
+
+    console.log("Post stored successfully!");
+  } catch (error) {
+    console.error("Error storing post:", error);
+  }
 }
 
-.card h2 {
-  margin-top: 0;
+
+function splitStringIntoChunks(str, chunkSize) {
+    const numChunks = Math.ceil(str.length / chunkSize);
+    const chunks = [];
+    for (let i = 0; i < numChunks; i++) {
+        const start = i * chunkSize;
+        const end = Math.min((i + 1) * chunkSize, str.length);
+        chunks.push(str.substring(start, end));
+    }
+    return chunks;
 }
 
-.card p {
-  margin-bottom: 0;
+```
+
+**4. Retrieving a Post:**
+
+```javascript
+async function getPost(postId) {
+    try {
+        const postDocRef = doc(db, "posts", postId);
+        const postSnap = await getDoc(postDocRef);
+        if (!postSnap.exists()) {
+            return null;
+        }
+        const postData = postSnap.data();
+        const bodySegments = postData.bodySegments;
+        let fullBody = "";
+        for (const segment of bodySegments){
+            const segmentDocRef = doc(db, "post_bodies", segment.id);
+            const segmentSnap = await getDoc(segmentDocRef);
+            fullBody += segmentSnap.data().text;
+        }
+        // Merge the segments and return the full post data
+        return { ...postData, body: fullBody };
+    } catch (error) {
+        console.error("Error retrieving post:", error);
+        return null;
+    }
 }
 ```
 
-**Full Code (Equivalent using Tailwind CSS):**
+## Explanation
 
-```html
-<div class="bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg shadow-2xl shadow-gray-400/-5px -5px 10px
-             transform rotate-x-3 p-4">
-  <h2 class="text-xl font-bold mb-2">My Card Title</h2>
-  <p class="text-gray-700">This is some card content.  Add more as needed.</p>
-</div>
-```
-
-**Explanation:**
-
-* **`box-shadow`:**  This property is crucial. We use two shadows:
-    * The first (`5px 5px 10px rgba(0, 0, 0, 0.2)`) creates a dark shadow below and to the right, giving the card depth.
-    * The second (`-5px -5px 10px rgba(255, 255, 255, 0.3)`) creates a lighter shadow above and to the left, simulating a highlight and lifting the card.
-* **`transform: rotateX(3deg)`:** This subtly rotates the card along the x-axis, adding to the 3D illusion. Adjust the angle as needed.
-* **`linear-gradient`:**  This creates a smooth gradient background for a more modern look.  You can customize the colors easily.
-* **Tailwind CSS:** The Tailwind example showcases how concisely you can achieve a similar result using pre-defined utility classes.  `shadow-2xl`, `rotate-x-3` and the other classes directly map to CSS properties.
+This approach breaks down the large post content into smaller, manageable chunks stored separately in `post_bodies`. This bypasses the 1MB document size limit. The main `posts` document retains metadata and references to these smaller chunks.  Retrieving the post involves fetching the metadata and then iteratively fetching and concatenating the segments from `post_bodies`.  Remember to adjust the `chunkSize` variable in the `splitStringIntoChunks` function based on your content and your needs. Smaller chunks mean more documents, but a greater tolerance for larger posts.
 
 
+## External References
 
-**Links to Resources to Learn More:**
-
-* **CSS Box Shadow:** [MDN Web Docs - box-shadow](https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow)
-* **CSS Transforms:** [MDN Web Docs - transform](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
-* **CSS Gradients:** [MDN Web Docs - linear-gradient](https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient)
-* **Tailwind CSS Documentation:** [Tailwind CSS Docs](https://tailwindcss.com/docs)
+* **Firestore Data Limits:** [https://firebase.google.com/docs/firestore/quotas](https://firebase.google.com/docs/firestore/quotas)  (Check the official Firebase documentation for the most up-to-date limits)
+* **Firebase JavaScript SDK:** [https://firebase.google.com/docs/web/setup](https://firebase.google.com/docs/web/setup) (For setting up and using the Firebase JavaScript SDK)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
