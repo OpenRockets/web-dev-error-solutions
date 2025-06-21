@@ -1,3 +1,5 @@
+# 🐞 Firestore Data Ordering and Pagination for Posts: Handling Large Datasets
+
 
 This document addresses a common problem encountered when dealing with large collections of posts in Firebase Firestore: efficiently retrieving and paginating data while maintaining the correct order.  Simply querying a large collection can lead to performance issues and potentially exceed Firestore's query limits.
 
