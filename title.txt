@@ -1,1 +1,1 @@
-CSS Challenge: Responsive Pricing Table with Tailwind CSS
+Handling Firestore Data Updates and the "Concurrent Modification" Problem with Posts
