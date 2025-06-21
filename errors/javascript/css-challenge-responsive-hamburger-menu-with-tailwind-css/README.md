@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Hamburger Menu with Tailwind CSS
+
 
 This challenge focuses on building a responsive hamburger menu using Tailwind CSS. The menu should be neatly stacked vertically on smaller screens and transition smoothly to a horizontal navigation bar on larger screens.  We'll leverage Tailwind's utility classes for efficient styling and responsiveness.
 
