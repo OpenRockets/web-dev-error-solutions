@@ -3,101 +3,132 @@
 
 ## Description of the Problem
 
-A common issue when working with Firebase Firestore and applications involving posts (e.g., blog posts, social media updates) is efficiently handling large amounts of data within each post document.  Storing extensive text content, images (or references to images), and other rich media directly within a single Firestore document can lead to several problems:
+A common challenge when using Firebase Firestore for storing blog posts or similar content is managing large amounts of data efficiently.  Storing entire posts (including potentially large images, videos, or extensive text) directly within a single Firestore document can lead to several issues:
 
-* **Document Size Limits:** Firestore has document size limits (currently 1 MB).  Exceeding this limit will result in an error when attempting to write the document.
-* **Slow Query Performance:**  Retrieving large documents can significantly slow down your application, especially when querying multiple posts. Firestore queries are more efficient when working with smaller, focused documents.
-* **Inefficient Data Management:** Updating parts of a large document can be less efficient than updating smaller, independent documents.
+* **Document Size Limits:** Firestore has document size limits (currently 1 MB). Exceeding this limit results in errors when attempting to write or update the document.
+* **Slow Read/Write Operations:** Retrieving and updating large documents is significantly slower than working with smaller, more focused documents. This impacts application performance, especially on mobile devices.
+* **Inefficient Data Retrieval:** Often, you only need a subset of the post's data (e.g., title, summary, and thumbnail for a post list). Retrieving the entire document to display a small portion is wasteful and slow.
 
-This document outlines a solution to this problem by strategically splitting post data into smaller, manageable pieces.
+## Step-by-Step Solution: Using Storage and Subcollections
 
-## Step-by-Step Solution: Using Subcollections
+The optimal approach involves separating large media files (images, videos) to Firebase Storage and storing only references (URLs) to them in Firestore.  Furthermore, we can utilize subcollections to organize related data efficiently.
 
-Instead of storing all post data in a single document, we'll utilize Firestore's subcollections to organize the information.  This approach allows for more efficient querying and updating.
-
-**1. Data Structure:**
-
-We'll structure our data as follows:
-
-* **`posts` collection:** This collection will contain a document for each post.  Each document will contain essential metadata about the post, such as:
-    * `postId`: (string) Unique identifier for the post.
-    * `title`: (string) Title of the post.
-    * `authorId`: (string) ID of the post's author.
-    * `createdAt`: (timestamp) Timestamp indicating when the post was created.
-    * `imageUrls`: (array of strings) Array of URLs to images associated with the post.  We store URLs, not the images themselves in this document.
-
-* **`posts/{postId}/content` subcollection:** This subcollection will store the actual content of the post in smaller, manageable chunks.  Each document in this subcollection could represent a section of the post's text, or a specific piece of media (if you need more fine-grained control over data).  An example document:
-    * `contentId`: (string) Unique identifier for this content piece within the post.
-    * `contentText`: (string) A segment of the post's text content.
-
-
-**2. Code Example (JavaScript):**
+**Code (JavaScript):**
 
 ```javascript
-//Import the necessary Firebase libraries.  This assumes you have Firebase initialized.
-import { db } from './firebase'; // Your Firebase initialization
+// 1. Install necessary packages (if not already installed)
+// npm install firebase @firebase/storage
 
-// Function to create a new post
-async function createPost(title, authorId, content, imageUrls) {
-  const postId = db.collection('posts').doc().id;
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, addDoc, doc, getDoc, updateDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
-  // Create the main post document
-  await db.collection('posts').doc(postId).set({
-    postId,
-    title,
-    authorId,
-    createdAt: new Date(),
-    imageUrls: imageUrls,
+// Your Firebase configuration
+const firebaseConfig = {
+  // ... your config ...
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// 2. Function to upload an image to Firebase Storage and return the download URL
+async function uploadImage(image, postID) {
+  const storageRef = ref(storage, `posts/${postID}/image.jpg`); // or use a unique filename
+  const uploadTask = uploadBytesResumable(storageRef, image);
+
+  return new Promise((resolve, reject) => {
+    uploadTask.on('state_changed', 
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+          case 'paused':
+            console.log('Upload is paused');
+            break;
+          case 'running':
+            console.log('Upload is running');
+            break;
+        }
+      }, 
+      (error) => {
+        // Handle unsuccessful uploads
+        reject(error);
+      }, 
+      () => {
+        // Handle successful uploads on complete
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          resolve(downloadURL);
+        });
+      }
+    );
   });
+}
 
-  // Add content to the subcollection
-  content.forEach(async (segment, index) => {
-    const contentId = index.toString();  // Simple contentId for demonstration
-    await db.collection('posts').doc(postId).collection('content').doc(contentId).set({
-      contentId,
-      contentText: segment
+
+// 3. Function to create a new post
+async function createPost(title, content, image) {
+  try {
+    const imageURL = await uploadImage(image, Date.now()); // Upload image and get URL
+
+    const postRef = await addDoc(collection(db, "posts"), {
+      title: title,
+      content: content, // Consider limiting content length if necessary
+      imageUrl: imageURL,
+      createdAt: new Date(),
     });
-  });
+
+    console.log("Post created with ID: ", postRef.id);
+    // Optionally, you could add a comments subcollection here:
+    // const commentsCollectionRef = collection(postRef, 'comments');
+    return postRef.id;
+  } catch (error) {
+    console.error("Error creating post:", error);
+  }
 }
 
-
-// Function to retrieve a post
+// 4. Function to retrieve a post
 async function getPost(postId) {
-  const postDoc = await db.collection('posts').doc(postId).get();
-  if (!postDoc.exists) return null;
+    const docRef = doc(db, "posts", postId);
+    const docSnap = await getDoc(docRef);
 
-  const postData = postDoc.data();
-  const contentDocs = await db.collection('posts').doc(postId).collection('content').get();
-  postData.content = contentDocs.docs.map(doc => doc.data().contentText);
-  return postData;
+    if (docSnap.exists()) {
+        return docSnap.data();
+    } else {
+        console.log("No such document!");
+        return null;
+    }
 }
 
+//Example Usage
+createPost("My Awesome Post", "This is the content...", imageFile)
+    .then((postId) => {
+        // Do something with the postId like displaying it on the page.
+        console.log("Post ID:", postId);
+    });
 
-// Example usage:
-const newPostContent = ["This is the first part of the post.", "This is the second part."];
-createPost("My New Post", "user123", newPostContent, ["image1.jpg", "image2.png"])
-  .then(() => console.log("Post created successfully!"))
-  .catch(error => console.error("Error creating post:", error));
-
-getPost("somePostId")
-  .then(post => console.log("Retrieved post:", post))
-  .catch(error => console.error("Error retrieving post:", error));
+getPost("yourPostId").then((post) => {
+    console.log("Post data:", post);
+});
 
 ```
 
 ## Explanation
 
-This approach addresses the initial problems by:
+This solution addresses the problem by:
 
-* **Breaking down data:**  Storing content in a subcollection avoids exceeding the document size limit.
-* **Improved Querying:** Retrieving the main post metadata is quick.  Retrieving content is also efficient, as you only fetch the necessary content chunks.
-* **Efficient Updates:** Updating parts of a post only requires changing specific documents within the subcollection, improving performance and reducing potential conflicts.
+1. **Offloading Large Files:** Images and videos are stored in Firebase Storage, a service optimized for storing and serving binary data.  This keeps Firestore documents smaller and improves performance.
+2. **Using References:**  Firestore only stores URLs pointing to the files in Storage, significantly reducing document size.
+3. **Structured Data:** The code demonstrates how to upload an image and obtain its URL.  This URL is then stored in Firestore along with other post metadata (title, content, etc.).
+
 
 ## External References
 
-* [Firestore Data Modeling](https://firebase.google.com/docs/firestore/modeling-data)
-* [Firestore Document Size Limits](https://firebase.google.com/docs/firestore/quotas)
-* [Firestore Queries](https://firebase.google.com/docs/firestore/query-data/queries)
+* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
+* [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
+* [Firebase JavaScript SDK](https://firebase.google.com/docs/web/setup)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
