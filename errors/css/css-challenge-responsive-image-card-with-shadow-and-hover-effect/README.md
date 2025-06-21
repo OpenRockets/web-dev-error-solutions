@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Responsive Image Card with Shadow and Hover Effect
+
 
 This challenge involves creating a responsive image card using CSS. The card will feature a background image, a subtle shadow, and a hover effect that slightly enlarges the card and increases the shadow intensity.  We'll use plain CSS for this example, demonstrating fundamental techniques applicable to any CSS framework (like Tailwind).
 
