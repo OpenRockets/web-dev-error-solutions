@@ -1,1 +1,1 @@
-Handling Firestore Data Duplicates When Storing Posts
+CSS Challenge:  The Shimmering Card
