@@ -1,1 +1,1 @@
-Handling Firestore Data Ordering and Pagination for Posts
+Handling Firestore Data Retrieval Errors When Storing Posts
