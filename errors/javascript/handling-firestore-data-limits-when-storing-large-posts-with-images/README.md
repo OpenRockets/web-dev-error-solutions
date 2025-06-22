@@ -3,115 +3,117 @@
 
 ## Description of the Error
 
-A common issue when using Firebase Firestore to store blog posts or similar content with images is exceeding Firestore's document size limits.  Firestore documents have a maximum size of 1 MB.  If you're storing large images directly within the document, or have a very large amount of text, you'll quickly hit this limit.  This leads to errors during write operations, preventing your application from saving the post.  The specific error message might vary, but it will generally indicate a data size exceeding the limit.
+Developers often encounter issues when storing large amounts of data, particularly rich media like images within their posts in Firestore.  Firestore has document size limits (currently 1 MB).  Attempting to store large images directly within a Firestore document for each post will lead to errors if the combined size of the post data and image(s) exceeds this limit.  This results in a failure to write the document to Firestore, often manifesting as an error message indicating a document size exceeding the limit or a general write failure.
 
-## Fixing the Problem Step-by-Step
+## Fixing the Problem: Step-by-Step Code
 
-This solution involves storing images separately in Firebase Storage and referencing them in Firestore. This approach keeps your Firestore documents small and manageable while still allowing you to associate images with your posts.
+This solution uses Cloud Storage for images and stores only references to the images in Firestore.
 
-**Step 1: Upload Images to Firebase Storage**
+**Step 1: Upload Images to Cloud Storage**
 
-First, upload your images to Firebase Storage.  This requires the Firebase Storage SDK.  The following code snippet demonstrates uploading an image using the JavaScript SDK.  Remember to replace placeholders like `<your-storage-bucket>` with your actual values.
+First, we'll use the Firebase Admin SDK to upload images to Cloud Storage.  This code assumes you already have a Firebase project set up and the necessary credentials configured.
 
 ```javascript
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+const { initializeApp } = require('firebase/app');
+const { getStorage, ref, uploadBytesResumable, getDownloadURL } = require('firebase/storage');
 
-const storage = getStorage(); // Initialize Firebase Storage
+// Your Firebase configuration
+const firebaseConfig = {
+  // ... your firebase config ...
+};
 
-async function uploadImage(image, postId) {
-  const storageRef = ref(storage, `posts/${postId}/${image.name}`); // Create a reference to the image location
+const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
 
-  const uploadTask = uploadBytesResumable(storageRef, image); // Start uploading the image
+async function uploadImage(file, postID) {
+  const storageRef = ref(storage, `posts/${postID}/${file.name}`);
+  const uploadTask = uploadBytesResumable(storageRef, file);
 
-  uploadTask.on('state_changed',
-    (snapshot) => {
-      // Observe state change events such as progress, pause, and resume
-      // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      console.log('Upload is ' + progress + '% done');
-      switch (snapshot.state) {
-        case 'paused':
-          console.log('Upload is paused');
-          break;
-        case 'running':
-          console.log('Upload is running');
-          break;
+  return new Promise((resolve, reject) => {
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+          case 'paused':
+            console.log('Upload is paused');
+            break;
+          case 'running':
+            console.log('Upload is running');
+            break;
+        }
+      },
+      (error) => {
+        // Handle unsuccessful uploads
+        reject(error);
+      },
+      () => {
+        // Handle successful uploads on complete
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          resolve(downloadURL);
+        });
       }
-    },
-    (error) => {
-      // Handle unsuccessful uploads
-      console.error("Error uploading image:", error);
-    },
-    () => {
-      // Handle successful uploads on complete
-      getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-        console.log('File available at', downloadURL);
-        // Use the downloadURL to update your Firestore document
-        return downloadURL;
-      });
-    }
-  );
+    );
+  });
 }
 
 
-// Example Usage:
-const image = /* Your image file object */;
-const postId = 'yourPostId';
+//Example Usage
+const file = /* your image file */; //replace with actual file
+const postID = 'yourPostID'; // replace with your post ID
 
-uploadImage(image, postId)
-  .then(downloadURL => {
-    //Now you can store this downloadURL in firestore
-  })
-  .catch(error => console.error("Error uploading and getting URL", error));
-
+uploadImage(file, postID).then((downloadURL) => {
+  console.log('File available at', downloadURL);
+  //Store downloadURL in Firestore
+}).catch((error) => {
+    console.error('Upload failed:', error);
+});
 
 ```
 
-**Step 2: Update Firestore Document with Image URL**
 
-Once the image is uploaded, retrieve the download URL and store it in your Firestore document.  This URL acts as a reference to the image.
+**Step 2: Store Image URLs in Firestore**
+
+After uploading, store only the Cloud Storage URLs in your Firestore documents. This keeps document sizes small.
 
 ```javascript
-import { collection, addDoc } from "firebase/firestore";
-import { db } from './firebaseConfig' //Import your Firestore instance
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+const db = getFirestore(app);
 
-async function addPostToFirestore(postData, imageUrl){
+async function createPost(postID, text, imageUrl) {
     try {
-        const docRef = await addDoc(collection(db, "posts"), {
-            title: postData.title,
-            content: postData.content,
+        await setDoc(doc(db, "posts", postID), {
+            text: text,
             imageUrl: imageUrl,
             // ... other post data
         });
-        console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-        console.error("Error adding document: ", e);
+    } catch (error) {
+        console.error("Error adding document: ", error);
     }
 }
 
 
-// Example Usage (after successful uploadImage call):
-const postData = {
-  title: "My Awesome Post",
-  content: "This is the content of my awesome post...",
-  // ... other post data
-};
+//Example Usage:
+const postID = 'yourPostID';
+const text = "This is your post";
+const imageUrl = 'yourImageURL';
 
-addPostToFirestore(postData, downloadURL); //Pass the download URL here.
-
-
+createPost(postID, text, imageUrl);
 ```
+
 
 ## Explanation
 
-This solution follows a common pattern for handling large files in NoSQL databases like Firestore.  By separating the image data from the document data, we avoid exceeding the size limits. Firestore is optimized for storing structured data, while Firebase Storage is ideal for storing unstructured binary data like images and videos.  Using this approach, you maintain a clean, efficient data model and avoid potential errors related to exceeding document size limits.
+This approach leverages Cloud Storage's scalability to handle large files.  Firestore is best suited for structured data and metadata, not large binary files. By separating image storage from your post data in Firestore, you avoid exceeding document size limits.  The application fetches the images from Cloud Storage only when needed for display, optimizing performance and storage costs.
 
 
 ## External References
 
-* **Firebase Storage Documentation:** [https://firebase.google.com/docs/storage](https://firebase.google.com/docs/storage)
-* **Firebase Firestore Documentation:** [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
-* **Firebase JavaScript SDK:** [https://firebase.google.com/docs/web/setup](https://firebase.google.com/docs/web/setup)
+* [Firestore Data Types and Limits](https://firebase.google.com/docs/firestore/quotas)
+* [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
+* [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
