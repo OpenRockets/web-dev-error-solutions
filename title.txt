@@ -1,1 +1,1 @@
-Efficiently Storing and Retrieving Large Posts in Firebase Firestore
+Efficiently Handling Large Datasets in Firebase Firestore for Blog Posts
