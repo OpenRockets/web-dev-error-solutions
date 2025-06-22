@@ -1,84 +1,90 @@
-# 🐞 CSS Challenge: Responsive Pricing Table with Tailwind CSS
+# 🐞 CSS Challenge:  Responsive Pricing Table with Tailwind CSS
 
 
-This challenge involves creating a responsive pricing table using Tailwind CSS. The table will feature three pricing plans (Basic, Pro, and Enterprise) with different features and prices, displayed neatly in a responsive layout that adapts well to different screen sizes.  We'll focus on clear visual hierarchy, easy readability, and a modern aesthetic.
+This challenge involves creating a responsive pricing table using Tailwind CSS. The table should display three different pricing plans (Basic, Pro, and Enterprise) with clear distinctions in features and pricing.  The design should be clean, modern, and adapt seamlessly to different screen sizes.
 
 **Description of the Styling:**
 
-The pricing table will utilize Tailwind's utility classes to achieve its styling.  Key elements include:
+The pricing table will use Tailwind CSS classes to style each plan in a separate card. Each card will contain:
 
-* **Card structure:** Each pricing plan will be contained within a card-like structure with a subtle shadow and rounded corners.
-* **Color scheme:**  A muted color palette will be used for readability and a professional look.
-* **Typography:**  Clear headings, concise descriptions, and easily readable pricing will be implemented.
-* **Responsiveness:**  The layout will adapt gracefully to different screen sizes, using Tailwind's responsive modifiers.
-* **Highlighting:** The "Pro" plan will have a slightly more prominent visual style to suggest it's the recommended option.
+* A plan title (e.g., "Basic", "Pro", "Enterprise").
+* A monthly price prominently displayed.
+* A list of included features using bullet points.
+* A clear call to action button ("Select Plan").
 
+The overall layout will use a grid system provided by Tailwind to ensure proper alignment and responsiveness across different devices.  We will aim for a clean visual hierarchy, emphasizing the pricing and key features of each plan.
 
 **Full Code:**
 
 ```html
-<div class="container mx-auto px-4">
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<title>Pricing Table</title>
+</head>
+<body class="bg-gray-100">
+
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold text-center mb-8">Choose Your Plan</h1>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-    <div class="bg-white shadow-md rounded-lg p-6">
-      <h3 class="text-xl font-bold mb-2 text-gray-800">Basic</h3>
-      <p class="text-gray-600 mb-4">Ideal for individuals</p>
-      <div class="text-4xl font-bold mb-4 text-blue-600">$9<span class="text-base">/mo</span></div>
-      <ul class="list-disc list-inside text-gray-700">
+    <!-- Basic Plan -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-bold mb-4">Basic</h2>
+      <p class="text-4xl font-bold text-gray-800 mb-4">$9/month</p>
+      <ul class="list-disc list-inside mb-4">
+        <li>10GB Storage</li>
         <li>1 User</li>
-        <li>10 GB Storage</li>
         <li>Basic Support</li>
       </ul>
-      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
-        Sign Up
-      </button>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Select Plan</button>
     </div>
 
-    <div class="bg-gray-100 shadow-md rounded-lg p-6 border border-gray-300">
-      <h3 class="text-xl font-bold mb-2 text-gray-800">Pro</h3>
-      <p class="text-gray-600 mb-4">Perfect for teams</p>
-      <div class="text-4xl font-bold mb-4 text-blue-600">$49<span class="text-base">/mo</span></div>
-      <ul class="list-disc list-inside text-gray-700">
+    <!-- Pro Plan -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-bold mb-4">Pro</h2>
+      <p class="text-4xl font-bold text-gray-800 mb-4">$49/month</p>
+      <ul class="list-disc list-inside mb-4">
+        <li>100GB Storage</li>
         <li>5 Users</li>
-        <li>100 GB Storage</li>
         <li>Priority Support</li>
         <li>Advanced Features</li>
       </ul>
-      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
-        Sign Up
-      </button>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Select Plan</button>
     </div>
 
-    <div class="bg-white shadow-md rounded-lg p-6">
-      <h3 class="text-xl font-bold mb-2 text-gray-800">Enterprise</h3>
-      <p class="text-gray-600 mb-4">For large organizations</p>
-      <div class="text-4xl font-bold mb-4 text-blue-600">$99<span class="text-base">/mo</span></div>
-      <ul class="list-disc list-inside text-gray-700">
-        <li>Unlimited Users</li>
+
+    <!-- Enterprise Plan -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-bold mb-4">Enterprise</h2>
+      <p class="text-4xl font-bold text-gray-800 mb-4">$99/month</p>
+      <ul class="list-disc list-inside mb-4">
         <li>Unlimited Storage</li>
+        <li>Unlimited Users</li>
         <li>Dedicated Support</li>
         <li>All Features</li>
       </ul>
-      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
-        Sign Up
-      </button>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Select Plan</button>
     </div>
 
   </div>
 </div>
-```
 
+</body>
+</html>
+```
 
 **Explanation:**
 
-The code utilizes Tailwind's grid system (`grid grid-cols-1 md:grid-cols-3`) for responsiveness.  On smaller screens, the pricing plans stack vertically.  On medium-sized screens and larger, they arrange themselves in three columns.  Other classes control spacing, shadows, colors, typography, and button styles, all using pre-defined Tailwind utility classes.  This makes the code concise and easy to understand.
-
+The code utilizes Tailwind's grid system (`grid grid-cols-1 md:grid-cols-3`) to create a responsive layout.  On smaller screens, the plans stack vertically.  On medium-sized screens and larger, they arrange themselves into three columns.  Other classes handle styling such as background color, shadows, padding, text sizes, and button styles.  The responsive nature is key to the challenge.
 
 **Links to Resources to Learn More:**
 
-* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)
-* **Tailwind CSS Cheat Sheet:** [Many available online, search "Tailwind CSS Cheat Sheet"]
-* **Learn CSS Grid:** [Numerous tutorials available on sites like MDN Web Docs and freeCodeCamp]
+* **Tailwind CSS Documentation:** [https://tailwindcss.com/docs](https://tailwindcss.com/docs)  (Official documentation for Tailwind CSS)
+* **Tailwind CSS Cheat Sheet:** [Various cheat sheets available on Google search](Search "Tailwind CSS Cheat Sheet") (Helpful for quick reference of classes)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
