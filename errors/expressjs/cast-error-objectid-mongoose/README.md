@@ -1,8 +1,4 @@
-Perfect, Shafiq! Below is a **single `.md` file**, properly structured and formatted. You can copy everything below and **paste it directly into your `README.md`** file — no editing needed.
 
----
-
-```md
 # CastError: Cast to ObjectId failed
 
 <!-- Example: CastError: Cast to ObjectId failed for value "abc123" at path "_id" for model "Product" -->
