@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Three-Column Layout with Sticky Header
+
 
 This challenge focuses on creating a responsive three-column layout using CSS.  We'll implement a sticky header that remains fixed at the top of the viewport as the user scrolls.  This example uses plain CSS, but could easily be adapted to use a framework like Tailwind CSS.
 
