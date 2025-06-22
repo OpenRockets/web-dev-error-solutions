@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data in a Blog Post Application: Avoiding `FieldValue.serverTimestamp()` Issues
+
 
 This document addresses a common problem developers encounter when using Firebase Firestore to store timestamps in blog post applications: inconsistent or inaccurate timestamps when using `FieldValue.serverTimestamp()`.  This often manifests as timestamps that are slightly off, or even older than expected, leading to display issues and data inconsistencies.
 
