@@ -1,1 +1,1 @@
-Efficiently Storing and Querying Large Post Collections in Firebase Firestore
+Handling Firestore Data with Timestamps in Posts
