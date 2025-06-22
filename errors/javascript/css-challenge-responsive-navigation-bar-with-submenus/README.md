@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Responsive Navigation Bar with Submenus
+
 
 This challenge involves creating a responsive navigation bar that gracefully handles different screen sizes and includes nested submenus for enhanced user experience.  We'll be using CSS3 for the styling.  No JavaScript is required for this specific implementation.
 
