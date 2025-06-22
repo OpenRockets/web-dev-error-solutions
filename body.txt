@@ -1,89 +1,121 @@
 
-This document addresses a common issue developers encounter when displaying posts in a Firestore database ordered by timestamp:  inconsistent ordering due to the nature of Firestore's `serverTimestamp()` function and potential variations in client clock synchronization.
+This challenge focuses on creating a clean and responsive pricing table using CSS. We'll leverage CSS Grid for layout and some basic styling techniques to achieve a visually appealing result.  No frameworks like Tailwind CSS are used to keep the focus on fundamental CSS skills.
 
-**Description of the Error:**
+**Description of the Styling:**
 
-When using `FieldValue.serverTimestamp()` to record the creation time of posts in Firestore, you might find that the displayed order isn't perfectly chronological. This inconsistency arises because client clocks aren't perfectly synchronized with Firestore's servers.  While `serverTimestamp()` aims for accuracy, slight variations in timing can lead to posts appearing out of order, especially with high volumes of concurrent posts.
+The pricing table will consist of three columns representing different pricing plans (Basic, Pro, and Premium). Each column will include a plan name, a price, a list of features, and a call-to-action button.  The design aims for a clean, modern look with clear visual hierarchy. We'll use a subtle gradient background for added visual interest.
 
-**Code (Fixing Step-by-Step):**
+**Full Code:**
 
-This example uses JavaScript with the Firebase Admin SDK, but the principles apply to other SDKs as well.  We'll focus on efficiently fetching and ordering posts.
-
-**1. Data Structure:**
-
-Assume your posts collection has documents like this:
-
-```json
-{
-  "postId": "post123",
-  "author": "user456",
-  "content": "This is a sample post.",
-  "timestamp": {
-    // This field will be populated by FieldValue.serverTimestamp()
-    "_seconds": 1678886400,
-    "_nanoseconds": 0
-  }
-}
-```
-
-
-**2. Fetching and Ordering (Efficient Approach):**
-
-Instead of fetching all posts and sorting them client-side (inefficient for large datasets), we'll use Firestore's built-in ordering capabilities.
-
-```javascript
-const admin = require('firebase-admin');
-admin.initializeApp();
-const db = admin.firestore();
-
-async function getPosts() {
-  try {
-    const snapshot = await db.collection('posts').orderBy('timestamp', 'desc').limit(20).get(); // Limit for pagination
-    const posts = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    return posts;
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-    return [];
-  }
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pricing Table</title>
+<style>
+body {
+  font-family: sans-serif;
+  background: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
 }
 
-getPosts().then(posts => {
-  console.log(posts); // Posts are now ordered correctly
-});
-```
-
-This code fetches the 20 most recent posts, ordered by timestamp in descending order (`desc`).  You can adjust the `limit` for pagination.
-
-
-**3. Handling Pagination:**
-
-For larger datasets, implement pagination using the `snapshot.docs` and `lastVisible` parameters from the Firestore query results.
-
-```javascript
-async function getMorePosts(lastVisible) {
-    let query = db.collection('posts').orderBy('timestamp', 'desc').limit(20);
-    if (lastVisible) {
-      query = query.startAfter(lastVisible);
-    }
-
-    // ... rest of the getPosts function remains the same ...
+.pricing-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-gap: 20px;
+  padding: 20px;
 }
 
+.plan {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+}
+
+.plan h2 {
+  margin-top: 0;
+}
+
+.plan .price {
+  font-size: 2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.plan ul {
+  list-style: none;
+  padding: 0;
+}
+
+.plan li {
+  margin-bottom: 5px;
+}
+
+.plan button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="pricing-table">
+  <div class="plan">
+    <h2>Basic</h2>
+    <div class="price">$9.99/month</div>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Pro</h2>
+    <div class="price">$29.99/month</div>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Premium</h2>
+    <div class="price">$49.99/month</div>
+    <ul>
+      <li>Feature 1</li>
+      <li>Feature 2</li>
+      <li>Feature 3</li>
+      <li>Feature 4</li>
+      <li>Feature 5</li>
+      <li>Feature 6</li>
+      <li>Feature 7</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
 **Explanation:**
 
-The key improvement is using Firestore's `orderBy('timestamp', 'desc')` to perform the ordering on the server. This is significantly more efficient than fetching all data and sorting it client-side, especially with large numbers of posts.  The `serverTimestamp()` ensures that even with slight clock variations, the order is generally reliable because the server-side timestamp is authoritative.
+The CSS uses `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` to create a responsive grid that adapts to different screen sizes.  `auto-fit` ensures columns reflow nicely, and `minmax(300px, 1fr)` sets a minimum width of 300px per column while allowing them to expand to fill available space.  The rest of the CSS handles styling elements like background, shadows, fonts, and button styles.
 
+**Links to Resources to Learn More:**
 
-**External References:**
-
-* [Firestore Data Ordering](https://firebase.google.com/docs/firestore/query-data/order-limit-data)
-* [FieldValue.serverTimestamp()](https://firebase.google.com/docs/reference/js/firebase.firestore.FieldValue#serverTimestamp)
-* [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)
+* **CSS Grid Layout:** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/)
+* **CSS Box Model:** [https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing)
+* **CSS Selectors:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
