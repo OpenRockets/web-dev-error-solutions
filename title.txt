@@ -1,1 +1,1 @@
-Efficiently Handling Large Datasets in Firebase Firestore for Blog Posts
+CSS Challenge:  Responsive Navigation Bar with Subtle Animations
