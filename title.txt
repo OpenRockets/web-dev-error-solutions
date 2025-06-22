@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Navigation Bar with a Sticky Header
+Handling Firestore Data Duplication When Storing Posts
