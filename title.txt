@@ -1,1 +1,1 @@
-Handling Firestore Data Consistency Issues with Concurrent Updates to Posts
+Handling Firestore Data Duplicates When Storing Posts
