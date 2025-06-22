@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data: Efficiently Storing and Retrieving Large Post Datasets
+
 
 This document addresses a common issue developers encounter when managing posts in Firebase Firestore: **inefficient data storage and retrieval leading to slow application performance and potential exceeding of Firestore's query limitations.**  Specifically, we will focus on the problem of fetching and displaying a large number of posts, potentially with associated comments or media, while maintaining a good user experience.
 

@@ -1,1 +1,1 @@
-CSS Challenge: Recreate a Simple Pricing Table
+Handling Firestore Data: Efficiently Storing and Retrieving Large Post Datasets
