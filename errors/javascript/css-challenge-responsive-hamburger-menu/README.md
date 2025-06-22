@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge: Responsive Hamburger Menu
+
 
 This challenge focuses on creating a responsive hamburger menu using pure CSS.  The menu should be a simple three-line icon that expands to reveal a navigation list on click.  The styling should be clean and modern, adapting seamlessly to different screen sizes. We'll be using CSS3 for this implementation.
 
