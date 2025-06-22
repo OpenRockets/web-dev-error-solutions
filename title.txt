@@ -1,1 +1,1 @@
-Handling Firestore Data Ordering and Pagination for Large Post Collections
+Efficiently Storing and Retrieving Large Posts in Firebase Firestore
