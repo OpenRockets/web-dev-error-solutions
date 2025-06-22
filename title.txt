@@ -1,1 +1,1 @@
-Handling Firestore Data: Efficiently Storing and Retrieving Large Post Datasets
+Efficiently Storing and Querying Large Post Datasets in Firebase Firestore
