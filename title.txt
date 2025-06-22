@@ -1,1 +1,1 @@
-Handling Firestore Data Ordering for Efficient Post Retrieval
+Handling Firestore Data Storage Limits for Large Posts
