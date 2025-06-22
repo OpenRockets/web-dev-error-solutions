@@ -1,15 +1,13 @@
 # 🐞 CSS Challenge: Recreate a Simple Pricing Table
 
 
-This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll use standard CSS3 for the styling, focusing on fundamental concepts like flexbox for layout and responsive design principles.  While Tailwind CSS could be used for faster development,  this example sticks to pure CSS3 to illustrate the core concepts.
+This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll leverage CSS Grid for layout and some basic CSS properties for styling.  No frameworks like Tailwind CSS will be used for this example to focus on fundamental CSS principles.
 
+**Description of the Styling:**
 
-## Description of the Styling
+The pricing table will consist of three columns representing different pricing plans (Basic, Pro, and Premium). Each plan will have a title, a price, a list of features, and a call to action button.  The styling will emphasize clarity and visual separation between the plans. We'll use subtle gradients and shadows for visual appeal.
 
-The pricing table will have three columns representing different pricing tiers: Basic, Pro, and Premium. Each tier will have a title, a list of features, a price, and a call-to-action button.  The styling will emphasize visual clarity and a modern aesthetic. We will aim for responsiveness, ensuring the table adapts well to different screen sizes.
-
-
-## Full Code
+**Full Code:**
 
 ```html
 <!DOCTYPE html>
@@ -19,119 +17,111 @@ The pricing table will have three columns representing different pricing tiers: 
 <style>
 body {
   font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f4f4;
 }
 
 .pricing-table {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.pricing-column {
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
+  grid-gap: 20px;
+  background-color: #fff;
   padding: 20px;
-  margin: 10px;
-  width: 300px; /* Adjust as needed for responsiveness */
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
 }
 
-.pricing-column h2 {
+.plan {
+  background-color: #f9f9f9;
+  padding: 20px;
   text-align: center;
+  border-radius: 5px;
+}
+
+.plan h2 {
+  color: #333;
   margin-bottom: 10px;
 }
 
-.pricing-column ul {
-  list-style: none;
-  padding: 0;
+.plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 15px;
 }
 
-.pricing-column li {
+.plan ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.plan li {
   margin-bottom: 5px;
 }
 
-.pricing-column .price {
-  font-size: 1.5em;
-  font-weight: bold;
-  text-align: center;
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-
-.pricing-column button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  background-color: #4CAF50;
-  color: white;
+.plan button {
+  background-color: #007bff;
+  color: #fff;
   border: none;
+  padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .pricing-column {
-    width: 100%;
-  }
+.plan button:hover {
+  background-color: #0069d9;
 }
 </style>
 </head>
 <body>
-
 <div class="pricing-table">
-  <div class="pricing-column">
+  <div class="plan">
     <h2>Basic</h2>
+    <p class="price">$9.99/month</p>
     <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
+      <li>10GB Storage</li>
+      <li>1 User</li>
+      <li>Basic Support</li>
     </ul>
-    <div class="price">$9.99/month</div>
     <button>Sign Up</button>
   </div>
-  <div class="pricing-column">
+  <div class="plan">
     <h2>Pro</h2>
+    <p class="price">$29.99/month</p>
     <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
+      <li>100GB Storage</li>
+      <li>5 Users</li>
+      <li>Priority Support</li>
     </ul>
-    <div class="price">$19.99/month</div>
     <button>Sign Up</button>
   </div>
-  <div class="pricing-column">
+  <div class="plan">
     <h2>Premium</h2>
+    <p class="price">$99.99/month</p>
     <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
-      <li>Feature 6</li>
+      <li>Unlimited Storage</li>
+      <li>Unlimited Users</li>
+      <li>Dedicated Support</li>
     </ul>
-    <div class="price">$29.99/month</div>
     <button>Sign Up</button>
   </div>
 </div>
-
 </body>
 </html>
 ```
 
+**Explanation:**
 
-## Explanation
+The CSS uses `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` to create a responsive grid.  `auto-fit` allows columns to adjust based on screen size, ensuring optimal layout on different devices.  `minmax(300px, 1fr)` sets a minimum column width of 300px, while `1fr` distributes the remaining space equally among the columns. Other CSS is used for basic styling, ensuring that the elements are visually appealing and easy to read.
 
-The code utilizes flexbox for easy horizontal arrangement and responsive adjustments.  The `pricing-table` div uses `flex-wrap: wrap` to allow columns to stack vertically on smaller screens. The `@media` query ensures the columns take up full width on smaller screens.  Each column is styled individually with borders, padding, and shadows for visual appeal.  The styling is straightforward and easy to customize further.
+**Links to Resources to Learn More:**
 
-
-## Resources to Learn More
-
-* **MDN Web Docs CSS:** [https://developer.mozilla.org/en-US/docs/Web/CSS](https://developer.mozilla.org/en-US/docs/Web/CSS) – A comprehensive resource for all things CSS.
-* **Flexbox Froggy:** [https://flexboxfroggy.com/](https://flexboxfroggy.com/) – A fun and interactive game to learn Flexbox.
-* **CSS-Tricks:** [https://css-tricks.com/](https://css-tricks.com/) – A blog and resource site with many articles on CSS techniques.
+* **CSS Grid Layout:** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/)
+* **MDN CSS Reference:** [https://developer.mozilla.org/en-US/docs/Web/CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

@@ -1,92 +1,125 @@
 
-## Problem Description: Performance Degradation with Large Post Collections
+This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll leverage CSS Grid for layout and some basic CSS properties for styling.  No frameworks like Tailwind CSS will be used for this example to focus on fundamental CSS principles.
 
-A common challenge in Firebase Firestore when building applications with a significant number of posts (e.g., a social media app or blog) is performance degradation.  As the number of posts grows, queries can become slow, leading to a poor user experience.  This is especially true for queries that don't leverage efficient indexing strategies or attempt to retrieve large amounts of data at once.  The problem manifests as slow loading times for feeds, search results, or any operation requiring retrieving a subset of the posts collection.
+**Description of the Styling:**
 
+The pricing table will consist of three columns representing different pricing plans (Basic, Pro, and Premium). Each plan will have a title, a price, a list of features, and a call to action button.  The styling will emphasize clarity and visual separation between the plans. We'll use subtle gradients and shadows for visual appeal.
 
-## Fixing the Problem: Implementing Pagination and Efficient Queries
+**Full Code:**
 
-The solution involves a two-pronged approach: pagination and optimized querying.
-
-**1. Pagination:** Instead of fetching all posts at once, fetch posts in batches (pages). This limits the amount of data retrieved in a single request, significantly improving performance.
-
-**2. Optimized Queries:** Use appropriate Firestore query operators and indexing to retrieve only the necessary data. Avoid wildcard queries (`where('field', '==', '*')`) whenever possible, as they often lead to full collection scans.
-
-
-## Step-by-Step Code Example (JavaScript)
-
-
-This example demonstrates pagination with a simple post structure and a date-based ordering.  We assume you've already set up a Firestore project and have the necessary Firebase SDKs installed.
-
-```javascript
-import { db } from './firebase'; // Your Firebase configuration
-
-const pageSize = 10; // Number of posts per page
-
-async function getPosts(currentPage = 1) {
-  const startIndex = (currentPage - 1) * pageSize;
-  const querySnapshot = await db.collection('posts').orderBy('createdAt', 'desc').limit(pageSize).offset(startIndex).get();
-
-  const posts = [];
-  querySnapshot.forEach((doc) => {
-    posts.push({ id: doc.id, ...doc.data() });
-  });
-  
-  return posts;
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pricing Table</title>
+<style>
+body {
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f4f4;
 }
 
+.pricing-table {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
+  grid-gap: 20px;
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}
 
-// Example usage: Fetch the first page of posts
-getPosts(1)
-  .then((posts) => {
-    console.log('Posts:', posts);
-    // Render posts on the UI
-  })
-  .catch((error) => {
-    console.error('Error fetching posts:', error);
-  });
+.plan {
+  background-color: #f9f9f9;
+  padding: 20px;
+  text-align: center;
+  border-radius: 5px;
+}
 
-//Example usage: Fetch the second page of posts
-getPosts(2)
-  .then((posts) => {
-    console.log('Posts:', posts);
-    // Render posts on the UI
-  })
-  .catch((error) => {
-    console.error('Error fetching posts:', error);
-  });
+.plan h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.plan .price {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 15px;
+}
+
+.plan ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.plan li {
+  margin-bottom: 5px;
+}
+
+.plan button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.plan button:hover {
+  background-color: #0069d9;
+}
+</style>
+</head>
+<body>
+<div class="pricing-table">
+  <div class="plan">
+    <h2>Basic</h2>
+    <p class="price">$9.99/month</p>
+    <ul>
+      <li>10GB Storage</li>
+      <li>1 User</li>
+      <li>Basic Support</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Pro</h2>
+    <p class="price">$29.99/month</p>
+    <ul>
+      <li>100GB Storage</li>
+      <li>5 Users</li>
+      <li>Priority Support</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+  <div class="plan">
+    <h2>Premium</h2>
+    <p class="price">$99.99/month</p>
+    <ul>
+      <li>Unlimited Storage</li>
+      <li>Unlimited Users</li>
+      <li>Dedicated Support</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+</div>
+</body>
+</html>
 ```
-
 
 **Explanation:**
 
-* `pageSize`:  Controls the number of posts fetched per page. Adjust this value based on your needs.
-* `getPosts(currentPage)`: This function fetches a page of posts based on the provided `currentPage`.  It utilizes `limit()` to constrain the results, `offset()` to skip to the correct starting point, and `orderBy()` to ensure consistent ordering.
-* `orderBy('createdAt', 'desc')`: This sorts posts in descending order of their creation timestamp (`createdAt`). Replace `createdAt` with the appropriate field if you are using a different field for ordering.  Ensure you have an index on the `createdAt` field (see below).
-* Error handling is included using `.catch()` to handle potential errors during the query.
+The CSS uses `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` to create a responsive grid.  `auto-fit` allows columns to adjust based on screen size, ensuring optimal layout on different devices.  `minmax(300px, 1fr)` sets a minimum column width of 300px, while `1fr` distributes the remaining space equally among the columns. Other CSS is used for basic styling, ensuring that the elements are visually appealing and easy to read.
 
+**Links to Resources to Learn More:**
 
-##  Firestore Indexing
-
-To ensure optimal query performance, create a composite index in your Firestore console:
-
-1. Go to your Firestore database in the Firebase console.
-2. Navigate to "Indexes".
-3. Create a new index.
-4. Choose "Collection": `posts`
-5. Choose "Field": `createdAt`
-6. Order: Descending
-7. Save the index.
-
-
-This index will allow Firestore to efficiently execute the `orderBy('createdAt', 'desc')` query.
-
-
-## External References:
-
-* [Firestore Documentation on Queries](https://firebase.google.com/docs/firestore/query-data/queries)
-* [Firestore Documentation on Indexes](https://firebase.google.com/docs/firestore/query-data/indexing)
-* [Firebase JavaScript SDK](https://firebase.google.com/docs/web/setup)
+* **CSS Grid Layout:** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/)
+* **MDN CSS Reference:** [https://developer.mozilla.org/en-US/docs/Web/CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
