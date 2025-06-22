@@ -1,1 +1,1 @@
-CSS Challenge:  Responsive Navigation Bar with a Toggle
+Handling Firestore Data Duplication When Posting

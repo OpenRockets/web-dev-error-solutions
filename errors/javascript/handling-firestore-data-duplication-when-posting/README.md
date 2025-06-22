@@ -1,3 +1,5 @@
+# 🐞 Handling Firestore Data Duplication When Posting
+
 
 This document addresses a common issue developers encounter when using Firebase Firestore to store posts: data duplication.  This often occurs when multiple users try to submit posts concurrently, or if there's a race condition in your code.  This leads to multiple entries with identical or very similar content.
 
