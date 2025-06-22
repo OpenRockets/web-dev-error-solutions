@@ -1,1 +1,1 @@
-CSS Challenge: Responsive Pricing Table with Tailwind CSS
+Handling Firestore Data Ordering and Pagination for Large Post Collections
