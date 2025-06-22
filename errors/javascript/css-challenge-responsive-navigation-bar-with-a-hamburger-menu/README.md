@@ -1,12 +1,11 @@
 # 🐞 CSS Challenge:  Responsive Navigation Bar with a Hamburger Menu
 
 
-This challenge involves creating a responsive navigation bar that adapts to different screen sizes using CSS.  For smaller screens, it will collapse into a hamburger menu icon that reveals the navigation links when clicked. We'll use plain CSS (no Tailwind or other frameworks) for this example, to keep the core concepts clear.
-
+This challenge involves creating a responsive navigation bar that adapts to different screen sizes using CSS.  For smaller screens, a hamburger menu will be used to reveal the navigation links. We will use plain CSS3 for this example, avoiding any CSS frameworks like Tailwind CSS to focus on fundamental concepts.
 
 **Description of the Styling:**
 
-The navigation bar will contain a logo on the left and a list of navigation links on the right.  On larger screens (e.g., above 768px), the logo and links will be displayed inline.  On smaller screens, the links will be hidden by default and revealed when the hamburger menu icon is clicked.  The styling will include appropriate padding, margins, and colors to ensure a visually appealing design.  The hamburger menu will be implemented using a simple checkbox and associated CSS.
+The navigation bar will be a fixed-width element centered horizontally. On larger screens (above 768px), the navigation links will be displayed inline.  On smaller screens, the navigation links will be hidden by default, and a hamburger icon will be visible. Clicking the hamburger icon will toggle the visibility of the navigation links.
 
 **Full Code:**
 
@@ -40,59 +39,57 @@ body {
   color: black;
 }
 
-.navbar .icon {
-  display: none;
+.navbar .hamburger {
+  display: none; /* Hidden on larger screens */
+  cursor: pointer;
+  float: right;
+  padding: 14px 20px;
 }
 
-.navbar .icon:hover {
-    cursor: pointer;
+.navbar .hamburger span {
+  display: block;
+  height: 2px;
+  width: 25px;
+  background-color: white;
+  margin: 5px 0;
 }
 
+/* Style for smaller screens */
 @media screen and (max-width: 768px) {
-  .navbar a:not(:first-child) {display: none;}
-  .navbar a.icon {
-    float: right;
+  .navbar a:not(:first-child) {
+    display: none;
+  }
+
+  .navbar .hamburger {
+    display: block;
+  }
+
+  .navbar.active a:not(:first-child){
     display: block;
   }
 }
 
-@media screen and (max-width: 768px) {
-  .navbar.responsive {position: relative;}
-  .navbar.responsive .icon {
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
-  .navbar.responsive a {
-    float: none;
-    display: block;
-    text-align: left;
-  }
-}
-
-
-/* Add styles for the checked input to show the menu */
-input[type="checkbox"]:checked ~ .navbar a {
-    display: block;
-}
+/* JavaScript to toggle the menu */
 </style>
 </head>
 <body>
 
-<div class="navbar">
-    <a href="#home">Logo</a>
-  <input type="checkbox" id="check">
-  <label for="check" class="icon">&#9776;</label>
-  <a href="#news">News</a>
-  <a href="#contact">Contact</a>
-  <a href="#about">About</a>
+<div class="navbar" id="myNavbar">
+  <a href="#">Home</a>
+  <a href="#">About</a>
+  <a href="#">Services</a>
+  <a href="#">Contact</a>
+  <div class="hamburger" onclick="toggleNavbar()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
 </div>
 
 <script>
-    const checkbox = document.getElementById('check');
-    checkbox.addEventListener('change', function() {
-        document.querySelector('.navbar').classList.toggle('responsive');
-    });
+function toggleNavbar() {
+  document.getElementById("myNavbar").classList.toggle("active");
+}
 </script>
 
 </body>
@@ -101,16 +98,14 @@ input[type="checkbox"]:checked ~ .navbar a {
 
 **Explanation:**
 
-* **HTML Structure:**  A simple `<nav>` element contains the logo and links.  A checkbox is used as a toggle for the hamburger menu.
-* **CSS for Large Screens:**  The `float: left` property aligns the logo and links horizontally.
-* **CSS for Small Screens:**  Media queries are used to hide the links and show the hamburger icon (`.icon`) on smaller screens.  The `display: none` and `display: block` properties control the visibility of elements. The `responsive` class is toggled using Javascript when the checkbox is clicked.
-* **Javascript:**  A small script toggles the `responsive` class on the navbar when the checkbox state changes, revealing/hiding the menu items.  This is optional, you could implement this purely with CSS using the `:target` pseudo-class, but Javascript offers more flexibility.
+* **CSS:** We use `float` for horizontal alignment of links, `display: none;`  to hide elements, and `@media` queries for responsive design.  The hamburger menu is styled with spans to create the three-line effect.
+* **JavaScript:**  A simple JavaScript function toggles the `active` class on the navbar, which changes the display style of the navigation links using CSS.
 
 **Links to Resources to Learn More:**
 
-* **CSS Media Queries:** [MDN Web Docs - Media Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries)
-* **CSS Floats:** [MDN Web Docs - CSS Floats](https://developer.mozilla.org/en-US/docs/Web/CSS/float)
-* **CSS Display Property:** [MDN Web Docs - CSS Display](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
+* **CSS Media Queries:** [https://www.w3schools.com/cssref/css3_pr_mediaquery.asp](https://www.w3schools.com/cssref/css3_pr_mediaquery.asp)
+* **CSS Flexbox (alternative layout method):** [https://css-tricks.com/snippets/css/a-guide-to-flexbox/](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
+* **CSS Grid (another alternative layout method):** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
