@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Centered, Responsive Image Card
+
 
 This challenge involves creating a responsive image card that is centered on the page, regardless of screen size.  The card will contain an image, a title, and a short description.  We'll use CSS3 for styling.
 

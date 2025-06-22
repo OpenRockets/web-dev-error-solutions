@@ -1,1 +1,1 @@
-Handling Firestore's `FieldValue.serverTimestamp()` Inconsistencies with Post Timestamps
+CSS Challenge:  Centered, Responsive Image Card
