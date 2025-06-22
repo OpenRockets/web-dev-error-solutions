@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Navigation Bar with a Toggle
+
 
 This challenge focuses on creating a responsive navigation bar that adapts to different screen sizes.  We'll utilize CSS Grid for layout and a checkbox-based toggle for the mobile menu.  This example uses plain CSS; adapting it to Tailwind CSS is straightforward and will be briefly discussed.
 
