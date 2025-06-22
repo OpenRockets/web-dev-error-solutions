@@ -1,112 +1,73 @@
 
-## Description of the Problem
+This challenge involves creating an animated circular progress bar using only CSS.  We'll achieve this effect using CSS animations and transformations to create a visually appealing and dynamic progress indicator.  No JavaScript is required.
 
-A common issue developers face when using Firebase Firestore to manage blog posts or similar content is efficiently handling large amounts of text data within each post.  Storing the entire post body directly within a single Firestore document can lead to performance bottlenecks, especially when querying and retrieving many posts.  Large documents can slow down read and write operations, impact your application's responsiveness, and potentially exceed Firestore's document size limits (currently 1 MB).  This problem is exacerbated when you need to perform queries based on parts of the post content (e.g., searching for keywords).
+## Description of the Styling
 
-## Solution:  Storing Post Content Separately and Using Indexing
+The progress bar will be a circle, partially filled with a vibrant color.  The fill will animate from 0% to a specified percentage (we'll use 75% in this example), creating a loading or progress visualization.  We'll style it with a clean and modern look, using only CSS.
 
-The optimal solution involves separating the post's body text from the main post document. This allows for efficient querying and avoids hitting document size limits. We will use a separate collection to store the post bodies and reference them in the main post documents.  Additionally, we will utilize Firestore's indexing capabilities to enable efficient keyword searches.
+## Full Code (CSS Only)
 
-
-## Step-by-Step Code (using Node.js and the Firebase Admin SDK)
-
-This example demonstrates creating a post and searching for posts containing a specific keyword.
-
-**1. Project Setup:**
-
-```bash
-npm install firebase-admin
-```
-
-**2.  Firebase Initialization:**
-
-```javascript
-const admin = require('firebase-admin');
-const serviceAccount = require('./path/to/your/serviceAccountKey.json'); // Replace with your path
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "YOUR_DATABASE_URL" //Replace with your database URL
-});
-
-const db = admin.firestore();
-```
-
-**3.  Post Schema (Main Collection: 'posts'):**
-
-We store a reference to the post body in the 'postBody' field.
-
-```javascript
-// Main post document
-const post = {
-  title: "My Awesome Post",
-  author: "John Doe",
-  createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  postBodyRef: db.doc('postBodies/postBody1'), //Reference to the post body document.
-  tags: ["javascript", "firebase"]
-};
-```
-
-**4.  Storing the Post Body (Collection: 'postBodies'):**
-
-```javascript
-const postBody = {
-  content: "This is the content of my awesome post. It's quite long and detailed, containing many paragraphs and examples of JavaScript and Firebase integration."
-};
-
-async function createPost(post, postBody) {
-  const postRef = await db.collection('posts').add(post);
-  await db.collection('postBodies').doc(postRef.id).set(postBody);
-  return postRef.id;
-};
-
-async function run() {
-    const postId = await createPost(post, postBody);
-    console.log(`Post created with ID: ${postId}`);
+```css
+.progress-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #f0f0f0; /* Light gray background */
+  border: 5px solid #ddd; /* Light gray border */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-run();
-```
-
-**5.  Querying Posts by Keyword:**
-
-This requires creating an index on the `content` field in the `postBodies` collection (see Firestore documentation for how to create indexes).  We will perform a query on the `postBodies` collection based on a keyword and then retrieve the corresponding main posts.  Note that we only retrieve the relevant portion of post content through the query.  This is much more efficient than retrieving the full content of all documents in a potentially very large collection.
-
-```javascript
-async function searchPosts(keyword) {
-  const posts = [];
-  const querySnapshot = await db.collection('postBodies').where('content', '>', keyword).get(); //This query needs to be changed based on your index and needs
-  querySnapshot.forEach(doc => {
-    //Retrieve relevant post from main collection using ID
-    db.collection('posts').doc(doc.id).get()
-      .then(doc => {
-        if(doc.exists){
-          posts.push({...doc.data(), id: doc.id});
-        }
-      });
-  });
-  return posts;
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #4CAF50; /* Green fill color */
+  clip-path: polygon(50% 50%, 0% 50%, 0% 0%); /* Initially half-filled */
+  animation: progress-animation 2s linear forwards;
 }
 
-searchPosts("Firebase").then(results => console.log(results));
+@keyframes progress-animation {
+  to {
+    clip-path: polygon(50% 50%, 0% 50%, 0% 0%, 75% 0%, 75% 100%, 0% 100%); /* Animate to 75% fill */
+  }
+}
+
+/* Optional: Add text overlay */
+.progress-ring span {
+  position: absolute;
+  font-size: 1.2em;
+  color: #333;
+  font-weight: bold;
+}
 ```
 
+To use this code, simply create a `div` with the class `progress-ring` and optionally add a `<span>` inside for text display (e.g., percentage complete):
+
+
+```html
+<div class="progress-ring">
+  <span>75%</span>
+</div>
+```
 
 
 ## Explanation
 
-This approach significantly improves efficiency by:
-
-* **Reducing Document Size:**  Large text bodies are stored separately, preventing individual documents from exceeding size limits.
-* **Optimized Queries:** Queries become faster because they operate on smaller documents.  The use of indexes on the `content` field in `postBodies` further optimizes search queries.
-* **Scalability:** The system is better equipped to handle a growing number of posts.
+* **`progress-ring` class:** This sets up the base circular structure using `border-radius`, dimensions, and positioning.
+* **`::before` pseudo-element:** This creates the circular fill.  The `clip-path` property initially creates a triangle, then animates to a shape representing the desired progress percentage using the `polygon()` function.
+* **`@keyframes progress-animation`:** Defines the animation, changing the `clip-path` from the initial triangle to a shape representing 75% filled circle over 2 seconds.  `linear` makes the animation move at a constant speed, and `forwards` makes the animation stay at the end state.
 
 
-## External References
+## Resources to Learn More
 
-* **Firebase Firestore Documentation:** [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
-* **Firebase Admin SDK (Node.js):** [https://firebase.google.com/docs/admin/setup](https://firebase.google.com/docs/admin/setup)
-* **Firestore Indexing:** [https://firebase.google.com/docs/firestore/query-data/indexing](https://firebase.google.com/docs/firestore/query-data/indexing)
+* **CSS Animations:** [MDN Web Docs - CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations)
+* **CSS `clip-path`:** [MDN Web Docs - clip-path](https://developer.mozilla.org/en-US/docs/Web/CSS/clip-path)
+* **CSS Transforms:** [MDN Web Docs - CSS Transforms](https://developer.mozilla.org/en-US/docs/Web/CSS/transform)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
