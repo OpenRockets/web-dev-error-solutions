@@ -1,123 +1,114 @@
 # 🐞 Efficiently Storing and Querying Large Posts in Firebase Firestore
 
 
-This document addresses a common issue developers encounter when managing posts (e.g., blog posts, social media updates) with rich text content in Firebase Firestore: **inefficient data storage and slow query performance due to large document sizes**.  Storing large text fields directly within Firestore documents can lead to performance bottlenecks, especially when retrieving or filtering posts based on content.
+## Description of the Problem
 
-## The Problem
+A common issue developers face when using Firebase Firestore to manage blog posts or similar content is efficiently handling large amounts of text data within each post.  Storing the entire post body directly within a single Firestore document can lead to performance bottlenecks, especially when querying and retrieving many posts.  Large documents can slow down read and write operations, impact your application's responsiveness, and potentially exceed Firestore's document size limits (currently 1 MB).  This problem is exacerbated when you need to perform queries based on parts of the post content (e.g., searching for keywords).
 
-Firestore's optimal performance relies on relatively small document sizes.  Storing large text content (like blog posts or detailed descriptions) directly within a document can exceed the optimal size, resulting in:
+## Solution:  Storing Post Content Separately and Using Indexing
 
-* **Slow read speeds:** Retrieving documents with large text fields takes longer.
-* **Inefficient indexing:**  Firestore's indexing mechanisms become less effective with large documents, making queries based on text content slow or impossible.
-* **Increased costs:**  Larger documents contribute to higher Firestore usage costs.
+The optimal solution involves separating the post's body text from the main post document. This allows for efficient querying and avoids hitting document size limits. We will use a separate collection to store the post bodies and reference them in the main post documents.  Additionally, we will utilize Firestore's indexing capabilities to enable efficient keyword searches.
 
 
-## The Solution: Separate Text Content into a Storage Service
+## Step-by-Step Code (using Node.js and the Firebase Admin SDK)
 
-The most effective solution is to separate the rich text content from the main post document and store it in a cloud storage service like Firebase Storage.  The Firestore document will then contain only a reference (URL) to the text in Storage.
+This example demonstrates creating a post and searching for posts containing a specific keyword.
 
-## Step-by-Step Code Example (JavaScript)
-
-This example demonstrates storing a post's title and a reference to its content stored in Firebase Storage.
-
-**1. Install necessary packages:**
+**1. Project Setup:**
 
 ```bash
-npm install firebase @firebase/storage
+npm install firebase-admin
 ```
 
-**2. Initialize Firebase:**
+**2.  Firebase Initialization:**
 
 ```javascript
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+const admin = require('firebase-admin');
+const serviceAccount = require('./path/to/your/serviceAccountKey.json'); // Replace with your path
 
-// Your Firebase config
-const firebaseConfig = {
-  // ... your config ...
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "YOUR_DATABASE_URL" //Replace with your database URL
+});
+
+const db = admin.firestore();
+```
+
+**3.  Post Schema (Main Collection: 'posts'):**
+
+We store a reference to the post body in the 'postBody' field.
+
+```javascript
+// Main post document
+const post = {
+  title: "My Awesome Post",
+  author: "John Doe",
+  createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  postBodyRef: db.doc('postBodies/postBody1'), //Reference to the post body document.
+  tags: ["javascript", "firebase"]
+};
+```
+
+**4.  Storing the Post Body (Collection: 'postBodies'):**
+
+```javascript
+const postBody = {
+  content: "This is the content of my awesome post. It's quite long and detailed, containing many paragraphs and examples of JavaScript and Firebase integration."
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
-```
+async function createPost(post, postBody) {
+  const postRef = await db.collection('posts').add(post);
+  await db.collection('postBodies').doc(postRef.id).set(postBody);
+  return postRef.id;
+};
 
-**3. Function to create a new post:**
-
-```javascript
-async function createPost(title, content) {
-  try {
-    // 1. Upload the text content to Firebase Storage.
-    const storageRef = ref(storage, `posts/${Date.now()}.txt`); //Generate Unique Filename
-    const uploadTask = uploadBytesResumable(storageRef, new Blob([content]));
-
-    uploadTask.on('state_changed',
-      (snapshot) => {
-        // Observe state change events such as progress, pause, and resume
-        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log('Upload is ' + progress + '% done');
-        switch (snapshot.state) {
-          case 'paused':
-            console.log('Upload is paused');
-            break;
-          case 'running':
-            console.log('Upload is running');
-            break;
-        }
-      },
-      (error) => {
-        // Handle unsuccessful uploads
-        console.error(error);
-      },
-      () => {
-        // Handle successful uploads on complete
-        // Get the download URL from ref.
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            // 2. Store the post metadata (title and storage URL) in Firestore.
-            addDoc(collection(db, "posts"), {
-                title: title,
-                contentUrl: downloadURL
-            }).then(() => {
-                console.log("Post created successfully!");
-            }).catch((error) => {
-                console.error("Error creating post:", error);
-            });
-        });
-      }
-    );
-
-  } catch (error) {
-    console.error("Error creating post:", error);
-  }
+async function run() {
+    const postId = await createPost(post, postBody);
+    console.log(`Post created with ID: ${postId}`);
 }
+
+run();
 ```
 
-**4. Example usage:**
+**5.  Querying Posts by Keyword:**
+
+This requires creating an index on the `content` field in the `postBodies` collection (see Firestore documentation for how to create indexes).  We will perform a query on the `postBodies` collection based on a keyword and then retrieve the corresponding main posts.  Note that we only retrieve the relevant portion of post content through the query.  This is much more efficient than retrieving the full content of all documents in a potentially very large collection.
 
 ```javascript
-const postTitle = "My Awesome Post";
-const postContent = "This is the content of my awesome post. It can be very long!";
+async function searchPosts(keyword) {
+  const posts = [];
+  const querySnapshot = await db.collection('postBodies').where('content', '>', keyword).get(); //This query needs to be changed based on your index and needs
+  querySnapshot.forEach(doc => {
+    //Retrieve relevant post from main collection using ID
+    db.collection('posts').doc(doc.id).get()
+      .then(doc => {
+        if(doc.exists){
+          posts.push({...doc.data(), id: doc.id});
+        }
+      });
+  });
+  return posts;
+}
 
-createPost(postTitle, postContent);
+searchPosts("Firebase").then(results => console.log(results));
 ```
+
+
 
 ## Explanation
 
-This approach significantly improves performance and scalability:
+This approach significantly improves efficiency by:
 
-* **Smaller Documents:** Firestore documents now only contain metadata, keeping their size small and improving query performance.
-* **Scalability:**  Storage is designed to handle large files efficiently.
-* **Efficient Queries:** Queries on the Firestore `posts` collection are fast because documents are small.  You can efficiently query based on the `title` field.
-* **Content Retrieval:** You fetch the content from Firebase Storage using the URL stored in the Firestore document when needed.
+* **Reducing Document Size:**  Large text bodies are stored separately, preventing individual documents from exceeding size limits.
+* **Optimized Queries:** Queries become faster because they operate on smaller documents.  The use of indexes on the `content` field in `postBodies` further optimizes search queries.
+* **Scalability:** The system is better equipped to handle a growing number of posts.
 
 
 ## External References
 
-* **Firebase Storage Documentation:** [https://firebase.google.com/docs/storage](https://firebase.google.com/docs/storage)
 * **Firebase Firestore Documentation:** [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
-* **Firebase Best Practices:** [https://firebase.google.com/docs/firestore/best-practices](https://firebase.google.com/docs/firestore/best-practices)
+* **Firebase Admin SDK (Node.js):** [https://firebase.google.com/docs/admin/setup](https://firebase.google.com/docs/admin/setup)
+* **Firestore Indexing:** [https://firebase.google.com/docs/firestore/query-data/indexing](https://firebase.google.com/docs/firestore/query-data/indexing)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
