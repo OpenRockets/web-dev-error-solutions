@@ -1,1 +1,1 @@
-CSS Challenge:  Centered, Responsive Image Card
+Handling Firestore's `FieldValue.serverTimestamp()` Inconsistencies with Posts
