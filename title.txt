@@ -1,1 +1,1 @@
-Handling Firestore Data Consistency Issues with Multiple Concurrent Updates
+Efficiently Handling Large Datasets in Firebase Firestore for Posting Applications
