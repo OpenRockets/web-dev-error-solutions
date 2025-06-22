@@ -1,118 +1,141 @@
 # 🐞 CSS Challenge:  Multi-level Nested List with Stylish Accordions
 
 
-This challenge focuses on creating a visually appealing, multi-level nested list using CSS (specifically CSS3) where each list item acts as an accordion, revealing its sub-items on click.  We'll achieve this using only CSS, avoiding JavaScript for enhanced performance and simplicity.
+This challenge focuses on creating a multi-level nested list that utilizes CSS-only accordions for expanding and collapsing each list item's sub-items.  We'll leverage CSS3 features for styling and functionality. No JavaScript will be used.
 
-## Styling Description:
+**Description of the Styling:**
 
-The styling aims for a clean, modern look.  Each top-level list item will have a distinct background color and a "+" or "-" icon to indicate the expansion state. Sub-levels will be progressively indented and use a lighter background color.  The overall structure will be easy to read and understand.  We'll utilize CSS transitions for smooth animations.
+The nested list will have a clean and modern appearance.  Top-level list items will be displayed with a distinct heading style.  Subsequent levels will be indented and visually differentiated through color and spacing.  The accordion functionality will involve using the `:target` pseudo-class and sibling selectors to elegantly hide and show nested list items without JavaScript. Each list item will have a visually appealing toggle element to trigger the expansion/collapse.
 
-## Full Code:
 
-```css
-/* Style for the main list container */
-.accordion-list {
-  list-style: none;
-  padding: 0;
-  margin: 20px;
-}
-
-/* Style for top-level list items */
-.accordion-list > li {
-  background-color: #f0f0f0;
-  padding: 10px;
-  cursor: pointer;
-  border-bottom: 1px solid #ddd;
-  transition: background-color 0.3s ease; /* Smooth transition for hover */
-}
-
-/* Style for top-level list items when hovered */
-.accordion-list > li:hover {
-  background-color: #e0e0e0;
-}
-
-/* Style for the plus/minus icon */
-.accordion-list > li .icon {
-  float: right;
-  font-size: 1.2em;
-  transition: transform 0.3s ease; /* Smooth transition for icon rotation */
-}
-
-/* Style for sub-level list items */
-.accordion-list > li ul {
-  list-style: none;
-  padding-left: 20px;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease; /* Smooth transition for height change */
-}
-
-/* Style for open list items */
-.accordion-list > li.open ul {
-  max-height: 200px; /* Adjust as needed */
-}
-
-/* Style for open list items' icons */
-.accordion-list > li.open .icon {
-  transform: rotate(90deg);
-}
-
-/* Style for nested levels, progressively lighter */
-.accordion-list li ul li {
-  background-color: #fafafa;
-}
-
-.accordion-list li ul li ul li {
-  background-color: #fcfcfc;
-}
-```
+**Full Code:**
 
 ```html
-<ul class="accordion-list">
-  <li>
-    <span class="icon">+</span>Item 1
-    <ul>
-      <li>Sub-item 1.1</li>
-      <li>Sub-item 1.2
-        <ul>
-          <li>Sub-sub-item 1.2.1</li>
-          <li>Sub-sub-item 1.2.2</li>
-        </ul>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Nested List Accordion</title>
+<style>
+body {
+  font-family: sans-serif;
+}
+
+.accordion {
+  background-color: #f2f2f2;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  transition: 0.4s;
+}
+
+.active, .accordion:hover {
+  background-color: #ddd;
+}
+
+.accordion:after {
+  content: '\2795'; /* Unicode character for "plus" sign */
+  color: #777;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2796"; /* Unicode character for "minus" sign */
+}
+
+.panel {
+  padding: 0 18px;
+  background-color: white;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+}
+
+.panel.show {
+  max-height: 500px;  /* Adjust as needed */
+}
+
+ol {
+    list-style-type: decimal;
+    margin-left: 20px;
+}
+
+ol ol {
+  margin-left: 40px;
+}
+
+ol li {
+    margin-bottom: 10px;
+}
+
+h3 {
+  margin-top: 0;
+}
+</style>
+</head>
+<body>
+
+<h2>Nested List with Accordions</h2>
+
+<div class="accordion">
+  <h3>Item 1</h3>
+  <div class="panel">
+    <ol>
+      <li>Subitem 1.1</li>
+      <li>Subitem 1.2
+        <ol>
+          <li>Subsubitem 1.2.1</li>
+          <li>Subsubitem 1.2.2</li>
+        </ol>
       </li>
-    </ul>
-  </li>
-  <li>
-    <span class="icon">+</span>Item 2
-    <ul>
-      <li>Sub-item 2.1</li>
-      <li>Sub-item 2.2</li>
-    </ul>
-  </li>
-  <li>
-    <span class="icon">+</span>Item 3</li>
-</ul>
+      <li>Subitem 1.3</li>
+    </ol>
+  </div>
+</div>
+
+<div class="accordion">
+  <h3>Item 2</h3>
+  <div class="panel">
+    <p>Content for Item 2</p>
+  </div>
+</div>
 
 <script>
-  const accordionItems = document.querySelectorAll('.accordion-list > li');
-  accordionItems.forEach(item => {
-    item.addEventListener('click', () => {
-      item.classList.toggle('open');
-      item.querySelector('.icon').textContent = item.classList.contains('open') ? '-' : '+';
-    });
+var acc = document.getElementsByClassName("accordion");
+var i;
+
+for (i = 0; i < acc.length; i++) {
+  acc[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var panel = this.nextElementSibling;
+    if (panel.style.maxHeight){
+      panel.style.maxHeight = null;
+    } else {
+      panel.style.maxHeight = panel.scrollHeight + "px";
+    }
   });
+}
 </script>
+
+</body>
+</html>
 ```
 
-## Explanation:
 
-The CSS uses `max-height` and transitions to control the height of the sub-lists, creating the accordion effect. The `open` class is toggled on click, changing the `max-height` and the icon.  The JavaScript portion is minimal and only handles toggling the `open` class and updating the plus/minus icon.  This is a pure CSS solution for simpler nested lists and more complex list will require JavaScript libraries or frameworks to make the functionality more robust.
+**Explanation:**
 
-## Resources to Learn More:
+The CSS uses the `:target` pseudo-class in conjunction with the `max-height` property to control the visibility of nested lists.  The JavaScript is used to add functionality for collapsing and expanding the content. The `accordion` class manages the styling of the list items, while `panel` handles the collapsible content.  The `active` class applies styling changes when the accordion is expanded.
 
+
+**Links to Resources to Learn More:**
+
+* **CSS Selectors:** [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/Selectors)
 * **CSS Transitions:** [MDN Web Docs - CSS Transitions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Transitions/Using_CSS_transitions)
-* **CSS Selectors:** [MDN Web Docs - CSS Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
-* **Understanding the Box Model:** [CSS-Tricks - Understanding the Box Model](https://css-tricks.com/box-sizing/)
-
+* **CSS Pseudo-classes:** [MDN Web Docs - CSS Pseudo-classes](https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-classes)
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
 
