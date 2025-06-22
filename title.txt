@@ -1,1 +1,1 @@
-Handling Firestore Data Limits When Storing Large Posts with Images
+Handling Firestore Data Ordering and Pagination for Large Post Collections
