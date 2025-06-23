@@ -1,111 +1,161 @@
 
-This challenge focuses on creating a responsive, multi-level navigation menu using CSS.  The menu should collapse on smaller screens and expand smoothly on hover or click. We'll use plain CSS (no preprocessors like Sass or Less) for this example, focusing on fundamental CSS principles.
+## Description of the Problem
+
+A common challenge when using Firebase Firestore to store and retrieve blog posts or other content-rich data is managing the size of individual documents.  Firestore has document size limits (currently 1 MB).  Storing large amounts of text, images, or other media directly within a single Firestore document can easily exceed this limit, leading to errors and preventing data from being saved.  Simply splitting the post into multiple documents can complicate data retrieval and require complex querying and stitching operations on the client-side.
 
 
-## Description of the Styling
+## Step-by-Step Solution: Using Storage for Media and Separate Collections for Metadata
 
-The navigation menu will consist of a main level with sub-menus cascading downwards.  The styling should include:
+This solution involves using Firebase Storage to handle large media files (images, videos) and storing only metadata (like title, author, short description, timestamps, and links to media files in Storage) in Firestore. This approach keeps Firestore documents small and manageable while allowing for efficient retrieval of complete posts.
 
-* **Main Navigation:** A horizontal list of main menu items.
-* **Sub-Menus:**  These appear on hover (or click for smaller screens) below their parent main menu item.
-* **Responsiveness:** The menu should adapt to different screen sizes, ideally collapsing into a hamburger menu on smaller screens (e.g., mobile).
-* **Visual Appeal:**  The menu should be visually appealing, with clear hierarchy and easy navigation. We'll aim for a clean, modern look.
+### Step 1: Set up Firebase Storage
 
+Ensure you have Firebase Storage properly configured in your project. You can find instructions in the official Firebase documentation: [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
 
-## Full Code
+### Step 2:  Upload Media to Storage
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-<title>Multi-Level Navigation Menu</title>
-<style>
-nav {
-  background-color: #333;
-  overflow: hidden;
+Before saving the post to Firestore, upload your media files (images, videos etc.) to Firebase Storage.  The upload process returns a download URL.  This URL will be stored as metadata in Firestore.
+
+```javascript
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
+async function uploadMedia(file) {
+  const storage = getStorage();
+  const storageRef = ref(storage, `posts/${file.name}`);
+  const uploadTask = uploadBytesResumable(storageRef, file);
+
+  return new Promise((resolve, reject) => {
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+          case 'paused':
+            console.log('Upload is paused');
+            break;
+          case 'running':
+            console.log('Upload is running');
+            break;
+        }
+      },
+      (error) => {
+        // Handle unsuccessful uploads
+        reject(error);
+      },
+      () => {
+        // Handle successful uploads on complete
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          resolve(downloadURL);
+        });
+      }
+    );
+  });
 }
 
-nav ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
 
-nav li {
-  float: left;
-}
+//Example Usage:
+const imageFile = document.getElementById("imageFile").files[0];
+uploadMedia(imageFile)
+  .then((downloadURL) => {
+    console.log('File available at', downloadURL);
+    //Now use downloadURL to save in Firestore
+  })
+  .catch((error) => {
+    console.error('Upload failed:', error);
+  });
+```
 
-nav a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-}
+### Step 3: Create a Firestore Collection for Post Metadata
 
-nav a:hover {
-  background-color: #111;
-}
+Create a collection in Firestore, for example, named "posts".  Each document in this collection will represent a single post and contain only the metadata.
 
-nav ul ul {
-  display: none;
-  position: absolute;
-  background-color: #333;
-}
+### Step 4: Store Post Metadata in Firestore
 
-nav li:hover > ul {
-  display: block;
-}
+After uploading the media to Storage, save the metadata (title, author, short description,  timestamp, and the download URLs from Storage) to your "posts" collection in Firestore.
 
-/* Responsive styles */
-@media screen and (max-width: 600px) {
-  nav li {
-    float: none;
+```javascript
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+
+async function savePostToFirestore(postData) {
+  const db = getFirestore();
+  const postsCollection = collection(db, "posts");
+  try {
+    await addDoc(postsCollection, postData);
+  } catch (error) {
+    console.error("Error adding document: ", error);
   }
-  nav ul ul {
-    position: static;
-  }
 }
-</style>
-</head>
-<body>
 
-<nav>
-  <ul>
-    <li><a href="#">Home</a></li>
-    <li><a href="#">About</a>
-      <ul>
-        <li><a href="#">Our Team</a></li>
-        <li><a href="#">Our History</a></li>
-      </ul>
-    </li>
-    <li><a href="#">Services</a>
-      <ul>
-        <li><a href="#">Service 1</a></li>
-        <li><a href="#">Service 2</a></li>
-      </ul>
-    </li>
-    <li><a href="#">Contact</a></li>
-  </ul>
-</nav>
+// Example usage (assuming you have postTitle, postAuthor, postDescription, and imageURL from previous steps)
+const postData = {
+  title: postTitle,
+  author: postAuthor,
+  description: postDescription,
+  imageUrl: imageURL, //from uploadMedia function
+  timestamp: firebase.firestore.FieldValue.serverTimestamp()
+};
 
-</body>
-</html>
+savePostToFirestore(postData)
+  .then(() => {
+    console.log("Post saved successfully!");
+  })
+  .catch((error) => {
+    console.error("Error saving post:", error);
+  });
+```
+
+### Step 5: Retrieve Post Data
+
+To retrieve a post, fetch the metadata from Firestore and then use the download URLs to retrieve the media from Storage.
+
+```javascript
+import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+
+
+async function getPost(postId) {
+  const db = getFirestore();
+  const postsCollection = collection(db, "posts");
+  const q = query(postsCollection, where(firebase.firestore.FieldPath.documentId(), "==", postId));
+  const querySnapshot = await getDocs(q);
+  if (querySnapshot.empty) {
+    return null; //Post not found
+  }
+  const postData = querySnapshot.docs[0].data();
+  const storage = getStorage();
+
+  // Fetch images from Storage (modify for other media types)
+  if(postData.imageUrl){
+    const storageRef = ref(storage, postData.imageUrl.split("?alt=media")[0].substring(1)); // remove query parameters and starting / from storage path
+    const url = await getDownloadURL(storageRef);
+    postData.imageUrl = url;
+  }
+
+  return postData;
+}
+
+getPost("yourPostId")
+  .then(post => {
+    console.log(post); //The post data, including the media URLs is available here
+  })
+  .catch(error => {
+    console.error("Error getting post:", error);
+  });
 ```
 
 
 ## Explanation
 
-The CSS uses a combination of `float`, `position: absolute`, and media queries to achieve the desired effect.  The main navigation items are floated left, creating a horizontal list. Sub-menus are initially hidden (`display: none`) and positioned absolutely.  The `:hover` pseudo-class reveals the sub-menus on hover.  The media query adjusts the layout for smaller screens, removing the floats and making the sub-menus appear inline.
-
-This is a basic implementation; more advanced techniques (like using JavaScript for animations or a more sophisticated responsive design) could be added for enhanced user experience.
+This strategy significantly improves scalability and avoids exceeding Firestore's document size limits.  By separating media from metadata, you can handle much larger posts efficiently.  The client-side code retrieves the metadata and then fetches the media assets only as needed, optimizing bandwidth usage.
 
 
-## Links to Resources to Learn More
+## External References
 
-* **MDN Web Docs (CSS):** [https://developer.mozilla.org/en-US/docs/Web/CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)  - The ultimate resource for CSS documentation.
-* **CSS-Tricks:** [https://css-tricks.com/](https://css-tricks.com/) - A fantastic website for CSS tutorials and articles.
-* **freeCodeCamp:** [https://www.freecodecamp.org/](https://www.freecodecamp.org/) - Offers interactive CSS challenges and courses.
+* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
+* [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
+* [Firebase JavaScript SDK](https://firebase.google.com/docs/web/setup)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

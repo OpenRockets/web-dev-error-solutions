@@ -1,133 +1,163 @@
 # 🐞 Efficiently Storing and Retrieving Large Posts in Firebase Firestore
 
 
-## Problem Description:  Performance Issues with Large Post Data
+## Description of the Problem
 
-A common issue when using Firebase Firestore to store and retrieve blog posts or other content-rich data is performance degradation.  Storing large amounts of text, images (even if stored separately, their references can still add up), and other data within a single Firestore document can lead to slow read and write operations, especially as your data grows.  This can result in noticeable delays for users, impacting the user experience.  Furthermore, Firestore has document size limits, making it impractical to store excessively large posts within a single document.
+A common challenge when using Firebase Firestore to store and retrieve blog posts or other content-rich data is managing the size of individual documents.  Firestore has document size limits (currently 1 MB).  Storing large amounts of text, images, or other media directly within a single Firestore document can easily exceed this limit, leading to errors and preventing data from being saved.  Simply splitting the post into multiple documents can complicate data retrieval and require complex querying and stitching operations on the client-side.
 
-## Solution: Data Denormalization and Subcollections
 
-The most effective solution is to employ data denormalization and break down large posts into smaller, manageable pieces stored across multiple documents and subcollections.  This improves read performance by reducing the amount of data retrieved for each operation and avoids hitting document size limits.
+## Step-by-Step Solution: Using Storage for Media and Separate Collections for Metadata
 
-## Step-by-Step Code Example (JavaScript)
+This solution involves using Firebase Storage to handle large media files (images, videos) and storing only metadata (like title, author, short description, timestamps, and links to media files in Storage) in Firestore. This approach keeps Firestore documents small and manageable while allowing for efficient retrieval of complete posts.
 
-This example demonstrates storing a blog post with its title, summary, body, and associated images (stored separately in Cloud Storage with only URLs stored in Firestore)
+### Step 1: Set up Firebase Storage
 
-**1. Cloud Storage Setup (Conceptual):**
+Ensure you have Firebase Storage properly configured in your project. You can find instructions in the official Firebase documentation: [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
 
-Before storing the post in Firestore, assume you've already uploaded your images to Cloud Storage and obtained their public URLs.
+### Step 2:  Upload Media to Storage
+
+Before saving the post to Firestore, upload your media files (images, videos etc.) to Firebase Storage.  The upload process returns a download URL.  This URL will be stored as metadata in Firestore.
 
 ```javascript
-// This is a placeholder, actual implementation will depend on your Cloud Storage setup
-async function uploadImageToStorage(imagePath) {
-  // ... Cloud Storage upload logic ...
-  return "gs://your-bucket-name/image.jpg"; // Return the public URL
-}
-```
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
+async function uploadMedia(file) {
+  const storage = getStorage();
+  const storageRef = ref(storage, `posts/${file.name}`);
+  const uploadTask = uploadBytesResumable(storageRef, file);
 
-**2. Firestore Data Structure:**
-
-Instead of storing everything in one document, we'll use a main document for the post metadata and a subcollection for the post body (broken into chunks if necessary)
-
-* **posts collection:**
-    * `postId`: {
-        `title`: "My Awesome Post",
-        `summary`: "A short summary...",
-        `authorId`: "user123",
-        `imageUrls`: ["image1URL", "image2URL"],
-        `createdAt`: Firestore.FieldValue.serverTimestamp(),
-        `bodyReference`: { path: `posts/${postId}/body` },  //Reference to the subcollection
+  return new Promise((resolve, reject) => {
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+        switch (snapshot.state) {
+          case 'paused':
+            console.log('Upload is paused');
+            break;
+          case 'running':
+            console.log('Upload is running');
+            break;
+        }
+      },
+      (error) => {
+        // Handle unsuccessful uploads
+        reject(error);
+      },
+      () => {
+        // Handle successful uploads on complete
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          resolve(downloadURL);
+        });
       }
-* **posts/{postId}/body subcollection:** (This allows flexible chunk size)
-    * `chunkId`: {
-        `content`: "Chunk 1 of the post body text...",
-        `chunkNumber`: 1,
-    }
-
-**3. Firebase Functions (for efficient saving):**
-
-This demonstrates creating a post. Error handling and input validation are omitted for brevity but are crucial in a production environment.
-
-
-```javascript
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-admin.initializeApp();
-const db = admin.firestore();
-
-exports.createPost = functions.https.onCall(async (data, context) => {
-  const { title, summary, authorId, imageUrls, body } = data;
-
-  const postId = db.collection("posts").doc().id;
-
-  const postRef = db.collection("posts").doc(postId);
-
-  const bodyChunks = [];
-  const chunkSize = 500; // Adjust as needed
-  for (let i = 0; i < body.length; i += chunkSize) {
-    bodyChunks.push({
-      content: body.substring(i, i + chunkSize),
-      chunkNumber: i / chunkSize + 1,
-    });
-  }
-
-  const batch = db.batch();
-
-  batch.set(postRef, {
-    title,
-    summary,
-    authorId,
-    imageUrls,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    bodyReference: { path: `posts/${postId}/body` },
+    );
   });
+}
 
-  const bodySubcollection = postRef.collection("body");
-  bodyChunks.forEach((chunk) => {
-    batch.set(bodySubcollection.doc(chunk.chunkNumber.toString()), chunk);
+
+//Example Usage:
+const imageFile = document.getElementById("imageFile").files[0];
+uploadMedia(imageFile)
+  .then((downloadURL) => {
+    console.log('File available at', downloadURL);
+    //Now use downloadURL to save in Firestore
+  })
+  .catch((error) => {
+    console.error('Upload failed:', error);
   });
-
-  await batch.commit();
-
-  return { postId };
-});
-
-
 ```
 
-**4. Retrieving a Post:**
+### Step 3: Create a Firestore Collection for Post Metadata
+
+Create a collection in Firestore, for example, named "posts".  Each document in this collection will represent a single post and contain only the metadata.
+
+### Step 4: Store Post Metadata in Firestore
+
+After uploading the media to Storage, save the metadata (title, author, short description,  timestamp, and the download URLs from Storage) to your "posts" collection in Firestore.
 
 ```javascript
-async function getPost(postId) {
-  const postDoc = await db.collection('posts').doc(postId).get();
-  if (!postDoc.exists) {
-    return null;
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+
+async function savePostToFirestore(postData) {
+  const db = getFirestore();
+  const postsCollection = collection(db, "posts");
+  try {
+    await addDoc(postsCollection, postData);
+  } catch (error) {
+    console.error("Error adding document: ", error);
   }
-  const postData = postDoc.data();
+}
 
-  // Fetch body chunks
-  const bodyChunksSnapshot = await db.doc(postData.bodyReference.path).collection('body').orderBy('chunkNumber').get();
-  const bodyChunks = bodyChunksSnapshot.docs.map(doc => doc.data().content).join('');
+// Example usage (assuming you have postTitle, postAuthor, postDescription, and imageURL from previous steps)
+const postData = {
+  title: postTitle,
+  author: postAuthor,
+  description: postDescription,
+  imageUrl: imageURL, //from uploadMedia function
+  timestamp: firebase.firestore.FieldValue.serverTimestamp()
+};
 
-  //Combine post data and body
-  postData.body = bodyChunks;
+savePostToFirestore(postData)
+  .then(() => {
+    console.log("Post saved successfully!");
+  })
+  .catch((error) => {
+    console.error("Error saving post:", error);
+  });
+```
+
+### Step 5: Retrieve Post Data
+
+To retrieve a post, fetch the metadata from Firestore and then use the download URLs to retrieve the media from Storage.
+
+```javascript
+import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+
+
+async function getPost(postId) {
+  const db = getFirestore();
+  const postsCollection = collection(db, "posts");
+  const q = query(postsCollection, where(firebase.firestore.FieldPath.documentId(), "==", postId));
+  const querySnapshot = await getDocs(q);
+  if (querySnapshot.empty) {
+    return null; //Post not found
+  }
+  const postData = querySnapshot.docs[0].data();
+  const storage = getStorage();
+
+  // Fetch images from Storage (modify for other media types)
+  if(postData.imageUrl){
+    const storageRef = ref(storage, postData.imageUrl.split("?alt=media")[0].substring(1)); // remove query parameters and starting / from storage path
+    const url = await getDownloadURL(storageRef);
+    postData.imageUrl = url;
+  }
+
   return postData;
 }
 
+getPost("yourPostId")
+  .then(post => {
+    console.log(post); //The post data, including the media URLs is available here
+  })
+  .catch(error => {
+    console.error("Error getting post:", error);
+  });
 ```
 
 
-## Explanation:
+## Explanation
 
-This approach utilizes data denormalization by storing the post body in a separate subcollection.  This improves read performance significantly, as retrieving the post metadata only involves a single document read.  The body is then retrieved in smaller chunks, making it more efficient. The use of `batch` operations ensures atomicity and efficiency of saving the whole post data. Adjusting the `chunkSize` parameter allows tuning performance based on the average post length and desired granularity.  This structure also facilitates efficient partial updates and allows for more sophisticated search capabilities if you implement indexing for the body chunks in the future (not shown here).
+This strategy significantly improves scalability and avoids exceeding Firestore's document size limits.  By separating media from metadata, you can handle much larger posts efficiently.  The client-side code retrieves the metadata and then fetches the media assets only as needed, optimizing bandwidth usage.
 
-## External References:
 
-* [Firestore Data Modeling](https://firebase.google.com/docs/firestore/modeling)
-* [Firestore Document Size Limits](https://firebase.google.com/docs/firestore/quotas)
-* [Firebase Cloud Storage](https://firebase.google.com/docs/storage)
-* [Firebase Functions](https://firebase.google.com/docs/functions)
+## External References
+
+* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
+* [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
+* [Firebase JavaScript SDK](https://firebase.google.com/docs/web/setup)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
