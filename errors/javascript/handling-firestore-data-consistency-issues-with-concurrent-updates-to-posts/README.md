@@ -3,23 +3,25 @@
 
 ## Description of the Error
 
-A common problem when working with Firestore and posts (or any frequently updated data) is data inconsistency due to concurrent updates.  Imagine multiple users trying to "like" a post simultaneously.  Without proper handling, one or more updates might be overwritten, leading to incorrect like counts.  This often manifests as race conditions where the final like count doesn't reflect the actual number of likes.  Firestore's optimistic concurrency model, while generally efficient, requires careful handling to avoid these issues.
+A common problem when working with Firebase Firestore and posts (or any frequently updated data) is data inconsistency caused by concurrent updates.  Imagine multiple users trying to "like" a post simultaneously.  Without proper handling, the like count might not accurately reflect the total number of likes due to race conditions.  This leads to inaccurate data and a poor user experience.  The standard `increment()` method, while convenient, isn't sufficient for more complex scenarios involving multiple field updates.
 
-## Fixing Step-by-Step with Code
+## Fixing the Issue Step-by-Step
 
-This example demonstrates how to safely increment the like count of a post using transactions. We'll use Node.js with the Firebase Admin SDK, but the principle applies to other platforms.
+This solution utilizes a transaction to ensure atomicity in updating the post's like count and other fields.  This prevents race conditions and maintains data consistency.
 
-**1. Project Setup (Assuming you have a Firebase project and Admin SDK installed):**
+**Step 1: Project Setup (Assuming you have a Firebase project and Firestore database set up)**
+
+This example uses Node.js with the Firebase Admin SDK.  You'll need to install it:
 
 ```bash
 npm install firebase-admin
 ```
 
-**2. Initialize Firebase Admin:**
+**Step 2: Initialize Firebase Admin SDK**
 
 ```javascript
 const admin = require('firebase-admin');
-const serviceAccount = require('./path/to/serviceAccountKey.json'); // Replace with your path
+const serviceAccount = require('./path/to/your/serviceAccountKey.json'); // Replace with your service account key
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -29,51 +31,70 @@ admin.initializeApp({
 const db = admin.firestore();
 ```
 
-**3. Increment Like Count using a Transaction:**
+
+**Step 3:  Transaction Function to Update Post Data**
 
 ```javascript
-async function incrementLikeCount(postId) {
+async function updatePostLikes(postId, userId) {
   try {
+    const postRef = db.collection('posts').doc(postId);
+
     await db.runTransaction(async (transaction) => {
-      const postRef = db.collection('posts').doc(postId);
       const postDoc = await transaction.get(postRef);
 
       if (!postDoc.exists) {
-        throw new Error('Post not found');
+        throw new Error('Post not found!');
       }
 
-      const newLikeCount = postDoc.data().likes + 1;
-      transaction.update(postRef, { likes: newLikeCount });
+      const data = postDoc.data();
+      const currentLikes = data.likes || 0;
+      const likedBy = data.likedBy || [];
+
+      // Check if user has already liked the post
+      const userAlreadyLiked = likedBy.includes(userId);
+
+      // Update likes and likedBy array atomically
+      transaction.update(postRef, {
+        likes: userAlreadyLiked ? currentLikes -1 : currentLikes + 1,
+        likedBy: userAlreadyLiked ? likedBy.filter(id => id !== userId) : [...likedBy, userId],
+      });
     });
-    console.log('Like count incremented successfully!');
+
+    console.log('Post updated successfully!');
   } catch (error) {
-    console.error('Error incrementing like count:', error);
-    // Handle error appropriately, e.g., retry or inform the user.
+    console.error('Error updating post:', error);
+    // Handle error appropriately (e.g., retry logic)
   }
 }
 
-//Example usage
-incrementLikeCount("postID123");
+
 ```
 
+**Step 4: Call the Function**
 
-**Explanation:**
+```javascript
+const postId = 'YOUR_POST_ID'; // Replace with your post ID
+const userId = 'YOUR_USER_ID'; // Replace with your user ID
 
-* **`db.runTransaction()`:** This function ensures atomicity.  The entire operation within the transaction either completes successfully, or it rolls back, preventing partial updates.
-* **`transaction.get(postRef)`:** This retrieves the current post data.
-* **`postDoc.data().likes + 1`:** This calculates the new like count.  Crucially, we're reading the current count *from the database within the transaction*, avoiding race conditions.
-* **`transaction.update(postRef, { likes: newLikeCount })`:**  This atomically updates the like count.
+updatePostLikes(postId, userId)
+  .then(() => {
+    //Success!
+  })
+  .catch(error => {
+    //Handle Error
+  });
+```
+
+## Explanation
+
+The core of the solution is the use of `db.runTransaction()`. This function guarantees that the read and write operations within the transaction are atomic.  This means that either all operations succeed together, or none of them do. This eliminates the race condition that caused inconsistent data.  The code first checks if the post exists.  Then, it reads the current `likes` count and `likedBy` array.  It then updates both values correctly based on whether the user is liking or unliking the post.  The transaction ensures these changes are applied as a single, atomic operation.
 
 
 ## External References
 
-* **Firebase Firestore Documentation on Transactions:** [https://firebase.google.com/docs/firestore/manage-data/transactions](https://firebase.google.com/docs/firestore/manage-data/transactions)
-* **Firebase Admin SDK Documentation for Node.js:** [https://firebase.google.com/docs/admin/setup](https://firebase.google.com/docs/admin/setup)
-
-
-## Explanation of the Solution
-
-The core solution is to use Firestore transactions. Transactions guarantee that a series of operations are executed atomically; either all succeed, or none do. This eliminates the possibility of inconsistent data due to concurrent updates.  By fetching the current like count *within* the transaction, and then updating it based on that retrieved value, we ensure that only one update succeeds, even if multiple clients try to increment the count simultaneously.  This approach guarantees data consistency.
+* **Firebase Firestore Documentation:** [https://firebase.google.com/docs/firestore](https://firebase.google.com/docs/firestore)
+* **Firebase Admin SDK Documentation:** [https://firebase.google.com/docs/admin/setup](https://firebase.google.com/docs/admin/setup)
+* **Understanding Transactions in Firestore:**  [https://firebase.google.com/docs/firestore/manage-data/transactions](https://firebase.google.com/docs/firestore/manage-data/transactions)
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
