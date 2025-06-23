@@ -1,1 +1,1 @@
-Handling Firestore Data Ordering for Recent Posts
+Handling Firestore Data Ordering for Efficient Post Retrieval
