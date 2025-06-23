@@ -1,1 +1,1 @@
-Efficiently Storing and Querying Large Post Collections in Firebase Firestore
+CSS Challenge:  Responsive Image Gallery with CSS Grid
