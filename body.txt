@@ -1,161 +1,133 @@
 
-## Description of the Problem
-
-A common challenge when using Firebase Firestore to store and retrieve blog posts or other content-rich data is managing the size of individual documents.  Firestore has document size limits (currently 1 MB).  Storing large amounts of text, images, or other media directly within a single Firestore document can easily exceed this limit, leading to errors and preventing data from being saved.  Simply splitting the post into multiple documents can complicate data retrieval and require complex querying and stitching operations on the client-side.
+This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll use plain CSS (no frameworks like Tailwind) to emphasize fundamental CSS concepts. The goal is to build a table with three pricing plans: Basic, Pro, and Premium, each showcasing different features and prices.  The design should be visually appealing and easily adaptable to different screen sizes.
 
 
-## Step-by-Step Solution: Using Storage for Media and Separate Collections for Metadata
+## Styling Description
 
-This solution involves using Firebase Storage to handle large media files (images, videos) and storing only metadata (like title, author, short description, timestamps, and links to media files in Storage) in Firestore. This approach keeps Firestore documents small and manageable while allowing for efficient retrieval of complete posts.
+The pricing table will have a clean, modern look. Each plan will be contained within a separate card with a distinct background color.  The table will be responsive, adjusting its layout seamlessly for various screen sizes.  We'll use clear typography and consistent spacing to improve readability.
 
-### Step 1: Set up Firebase Storage
 
-Ensure you have Firebase Storage properly configured in your project. You can find instructions in the official Firebase documentation: [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
+## Full Code
 
-### Step 2:  Upload Media to Storage
-
-Before saving the post to Firestore, upload your media files (images, videos etc.) to Firebase Storage.  The upload process returns a download URL.  This URL will be stored as metadata in Firestore.
-
-```javascript
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-
-async function uploadMedia(file) {
-  const storage = getStorage();
-  const storageRef = ref(storage, `posts/${file.name}`);
-  const uploadTask = uploadBytesResumable(storageRef, file);
-
-  return new Promise((resolve, reject) => {
-    uploadTask.on('state_changed',
-      (snapshot) => {
-        // Observe state change events such as progress, pause, and resume
-        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log('Upload is ' + progress + '% done');
-        switch (snapshot.state) {
-          case 'paused':
-            console.log('Upload is paused');
-            break;
-          case 'running':
-            console.log('Upload is running');
-            break;
-        }
-      },
-      (error) => {
-        // Handle unsuccessful uploads
-        reject(error);
-      },
-      () => {
-        // Handle successful uploads on complete
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          resolve(downloadURL);
-        });
-      }
-    );
-  });
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pricing Table</title>
+<style>
+body {
+  font-family: sans-serif;
 }
 
+.pricing-table {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
-//Example Usage:
-const imageFile = document.getElementById("imageFile").files[0];
-uploadMedia(imageFile)
-  .then((downloadURL) => {
-    console.log('File available at', downloadURL);
-    //Now use downloadURL to save in Firestore
-  })
-  .catch((error) => {
-    console.error('Upload failed:', error);
-  });
-```
+.pricing-card {
+  width: 300px;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
 
-### Step 3: Create a Firestore Collection for Post Metadata
+.pricing-card.basic {
+  background-color: #f0f0f0;
+}
 
-Create a collection in Firestore, for example, named "posts".  Each document in this collection will represent a single post and contain only the metadata.
+.pricing-card.pro {
+  background-color: #e0f7fa;
+}
 
-### Step 4: Store Post Metadata in Firestore
+.pricing-card.premium {
+  background-color: #e0f2f7;
+}
 
-After uploading the media to Storage, save the metadata (title, author, short description,  timestamp, and the download URLs from Storage) to your "posts" collection in Firestore.
+.pricing-card h2 {
+  margin-top: 0;
+}
 
-```javascript
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+.pricing-card ul {
+  list-style: none;
+  padding: 0;
+}
 
-async function savePostToFirestore(postData) {
-  const db = getFirestore();
-  const postsCollection = collection(db, "posts");
-  try {
-    await addDoc(postsCollection, postData);
-  } catch (error) {
-    console.error("Error adding document: ", error);
+.pricing-card li {
+  margin-bottom: 10px;
+}
+
+.pricing-card .price {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pricing-card {
+    width: calc(50% - 40px);
   }
 }
 
-// Example usage (assuming you have postTitle, postAuthor, postDescription, and imageURL from previous steps)
-const postData = {
-  title: postTitle,
-  author: postAuthor,
-  description: postDescription,
-  imageUrl: imageURL, //from uploadMedia function
-  timestamp: firebase.firestore.FieldValue.serverTimestamp()
-};
-
-savePostToFirestore(postData)
-  .then(() => {
-    console.log("Post saved successfully!");
-  })
-  .catch((error) => {
-    console.error("Error saving post:", error);
-  });
-```
-
-### Step 5: Retrieve Post Data
-
-To retrieve a post, fetch the metadata from Firestore and then use the download URLs to retrieve the media from Storage.
-
-```javascript
-import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
-
-
-async function getPost(postId) {
-  const db = getFirestore();
-  const postsCollection = collection(db, "posts");
-  const q = query(postsCollection, where(firebase.firestore.FieldPath.documentId(), "==", postId));
-  const querySnapshot = await getDocs(q);
-  if (querySnapshot.empty) {
-    return null; //Post not found
+@media (max-width: 480px) {
+  .pricing-card {
+    width: calc(100% - 40px);
   }
-  const postData = querySnapshot.docs[0].data();
-  const storage = getStorage();
-
-  // Fetch images from Storage (modify for other media types)
-  if(postData.imageUrl){
-    const storageRef = ref(storage, postData.imageUrl.split("?alt=media")[0].substring(1)); // remove query parameters and starting / from storage path
-    const url = await getDownloadURL(storageRef);
-    postData.imageUrl = url;
-  }
-
-  return postData;
 }
+</style>
+</head>
+<body>
 
-getPost("yourPostId")
-  .then(post => {
-    console.log(post); //The post data, including the media URLs is available here
-  })
-  .catch(error => {
-    console.error("Error getting post:", error);
-  });
+<div class="pricing-table">
+  <div class="pricing-card basic">
+    <h2>Basic</h2>
+    <p class="price">$9.99/month</p>
+    <ul>
+      <li>10GB Storage</li>
+      <li>Basic Support</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+  <div class="pricing-card pro">
+    <h2>Pro</h2>
+    <p class="price">$19.99/month</p>
+    <ul>
+      <li>50GB Storage</li>
+      <li>Priority Support</li>
+      <li>Advanced Features</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+  <div class="pricing-card premium">
+    <h2>Premium</h2>
+    <p class="price">$49.99/month</p>
+    <ul>
+      <li>Unlimited Storage</li>
+      <li>Dedicated Support</li>
+      <li>All Features</li>
+    </ul>
+    <button>Sign Up</button>
+  </div>
+</div>
+
+</body>
+</html>
 ```
 
 
 ## Explanation
 
-This strategy significantly improves scalability and avoids exceeding Firestore's document size limits.  By separating media from metadata, you can handle much larger posts efficiently.  The client-side code retrieves the metadata and then fetches the media assets only as needed, optimizing bandwidth usage.
+The code utilizes flexbox for easy layout management. The `pricing-table` div uses `flex-wrap: wrap` to handle different screen sizes, and media queries further refine the layout for smaller screens.  Each pricing card is styled individually using classes, allowing for customized colors and content.  The use of semantic HTML elements enhances accessibility.
 
 
-## External References
+## Resources to Learn More
 
-* [Firebase Firestore Documentation](https://firebase.google.com/docs/firestore)
-* [Firebase Storage Documentation](https://firebase.google.com/docs/storage)
-* [Firebase JavaScript SDK](https://firebase.google.com/docs/web/setup)
+* **MDN Web Docs CSS:** [https://developer.mozilla.org/en-US/docs/Web/CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)  - Comprehensive guide to CSS.
+* **Flexbox Froggy:** [https://flexboxfroggy.com/](https://flexboxfroggy.com/) - Interactive game to learn Flexbox.
+* **CSS-Tricks:** [https://css-tricks.com/](https://css-tricks.com/) - Articles and tutorials on various CSS techniques.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.

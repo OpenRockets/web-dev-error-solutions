@@ -1,13 +1,15 @@
 # 🐞 CSS Challenge: Recreate a Simple Pricing Table
 
 
-This challenge focuses on creating a clean and responsive pricing table using CSS. We'll leverage CSS Grid for layout and some basic styling techniques to achieve a visually appealing result.  No frameworks like Tailwind CSS are used to keep the focus on fundamental CSS skills.
+This challenge focuses on creating a clean and responsive pricing table using CSS.  We'll use plain CSS (no frameworks like Tailwind) to emphasize fundamental CSS concepts. The goal is to build a table with three pricing plans: Basic, Pro, and Premium, each showcasing different features and prices.  The design should be visually appealing and easily adaptable to different screen sizes.
 
-**Description of the Styling:**
 
-The pricing table will consist of three columns representing different pricing plans (Basic, Pro, and Premium). Each column will include a plan name, a price, a list of features, and a call-to-action button.  The design aims for a clean, modern look with clear visual hierarchy. We'll use a subtle gradient background for added visual interest.
+## Styling Description
 
-**Full Code:**
+The pricing table will have a clean, modern look. Each plan will be contained within a separate card with a distinct background color.  The table will be responsive, adjusting its layout seamlessly for various screen sizes.  We'll use clear typography and consistent spacing to improve readability.
+
+
+## Full Code
 
 ```html
 <!DOCTYPE html>
@@ -17,89 +19,97 @@ The pricing table will consist of three columns representing different pricing p
 <style>
 body {
   font-family: sans-serif;
-  background: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
 }
 
 .pricing-table {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  grid-gap: 20px;
-  padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
-.plan {
-  background-color: white;
+.pricing-card {
+  width: 300px;
+  margin: 20px;
+  padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 20px;
   text-align: center;
 }
 
-.plan h2 {
+.pricing-card.basic {
+  background-color: #f0f0f0;
+}
+
+.pricing-card.pro {
+  background-color: #e0f7fa;
+}
+
+.pricing-card.premium {
+  background-color: #e0f2f7;
+}
+
+.pricing-card h2 {
   margin-top: 0;
 }
 
-.plan .price {
-  font-size: 2em;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.plan ul {
+.pricing-card ul {
   list-style: none;
   padding: 0;
 }
 
-.plan li {
-  margin-bottom: 5px;
+.pricing-card li {
+  margin-bottom: 10px;
 }
 
-.plan button {
-  background-color: #4CAF50;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+.pricing-card .price {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pricing-card {
+    width: calc(50% - 40px);
+  }
+}
+
+@media (max-width: 480px) {
+  .pricing-card {
+    width: calc(100% - 40px);
+  }
 }
 </style>
 </head>
 <body>
 
 <div class="pricing-table">
-  <div class="plan">
+  <div class="pricing-card basic">
     <h2>Basic</h2>
-    <div class="price">$9.99/month</div>
+    <p class="price">$9.99/month</p>
     <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
+      <li>10GB Storage</li>
+      <li>Basic Support</li>
     </ul>
     <button>Sign Up</button>
   </div>
-  <div class="plan">
+  <div class="pricing-card pro">
     <h2>Pro</h2>
-    <div class="price">$29.99/month</div>
+    <p class="price">$19.99/month</p>
     <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
+      <li>50GB Storage</li>
+      <li>Priority Support</li>
+      <li>Advanced Features</li>
     </ul>
     <button>Sign Up</button>
   </div>
-  <div class="plan">
+  <div class="pricing-card premium">
     <h2>Premium</h2>
-    <div class="price">$49.99/month</div>
+    <p class="price">$49.99/month</p>
     <ul>
-      <li>Feature 1</li>
-      <li>Feature 2</li>
-      <li>Feature 3</li>
-      <li>Feature 4</li>
-      <li>Feature 5</li>
-      <li>Feature 6</li>
-      <li>Feature 7</li>
+      <li>Unlimited Storage</li>
+      <li>Dedicated Support</li>
+      <li>All Features</li>
     </ul>
     <button>Sign Up</button>
   </div>
@@ -109,15 +119,17 @@ body {
 </html>
 ```
 
-**Explanation:**
 
-The CSS uses `grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));` to create a responsive grid that adapts to different screen sizes.  `auto-fit` ensures columns reflow nicely, and `minmax(300px, 1fr)` sets a minimum width of 300px per column while allowing them to expand to fill available space.  The rest of the CSS handles styling elements like background, shadows, fonts, and button styles.
+## Explanation
 
-**Links to Resources to Learn More:**
+The code utilizes flexbox for easy layout management. The `pricing-table` div uses `flex-wrap: wrap` to handle different screen sizes, and media queries further refine the layout for smaller screens.  Each pricing card is styled individually using classes, allowing for customized colors and content.  The use of semantic HTML elements enhances accessibility.
 
-* **CSS Grid Layout:** [https://css-tricks.com/snippets/css/complete-guide-grid/](https://css-tricks.com/snippets/css/complete-guide-grid/)
-* **CSS Box Model:** [https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing)
-* **CSS Selectors:** [https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors)
+
+## Resources to Learn More
+
+* **MDN Web Docs CSS:** [https://developer.mozilla.org/en-US/docs/Web/CSS](https://developer.mozilla.org/en-US/docs/Web/CSS)  - Comprehensive guide to CSS.
+* **Flexbox Froggy:** [https://flexboxfroggy.com/](https://flexboxfroggy.com/) - Interactive game to learn Flexbox.
+* **CSS-Tricks:** [https://css-tricks.com/](https://css-tricks.com/) - Articles and tutorials on various CSS techniques.
 
 
 Copyrights (c) OpenRockets Open-source Network. Free to use, copy, share, edit or publish.
