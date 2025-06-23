@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Dynamically Expanding Card
+
 
 This challenge involves creating a card that expands vertically when hovered over, revealing hidden content. We'll use CSS3 transitions and transforms to achieve a smooth and engaging animation.  No JavaScript is required.
 
