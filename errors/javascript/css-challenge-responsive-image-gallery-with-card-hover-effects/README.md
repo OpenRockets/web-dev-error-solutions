@@ -1,3 +1,5 @@
+# 🐞 CSS Challenge:  Responsive Image Gallery with Card Hover Effects
+
 
 This challenge focuses on creating a responsive image gallery using CSS Grid or Flexbox and enhancing it with subtle hover effects on each image card.  We'll achieve a clean, modern look suitable for showcasing a portfolio or product lineup.  This solution uses CSS Grid for layout and pure CSS for the hover effects, avoiding the need for JavaScript.
 
